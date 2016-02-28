@@ -1023,7 +1023,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
 
     // lower-bound search for where this object should enter in the tree
     QDBusReadLocker lock(ObjectRegisteredAtAction, d);
-    const QDBusConnectionPrivate::ObjectTreeNode *node = &d->rootNode;
+    auto node = static_cast<QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator>(&d->rootNode);
 
     int i = 1;
     while (node) {
@@ -1032,8 +1032,8 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
         if ((node->flags & QDBusConnectionPrivate::VirtualObject) && (node->flags & QDBusConnection::SubPath))
             return node->obj;
 
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it =
-            std::lower_bound(node->children.constBegin(), node->children.constEnd(), pathComponents.at(i));
+        auto it = static_cast<QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator>(
+            std::lower_bound(node->children.constBegin(), node->children.constEnd(), pathComponents.at(i)));
         if (it == node->children.constEnd() || it->name != pathComponents.at(i))
             break;              // node not found
 

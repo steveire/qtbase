@@ -360,7 +360,7 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
             memcpy(remainingCharsData, &state->state_data[0], remainingCharsCount);
             memcpy(remainingCharsData + remainingCharsCount, src, newCharsToCopy);
 
-            const uchar *begin = &remainingCharsData[1];
+            auto begin = static_cast<const uchar *>(&remainingCharsData[1]);
             res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(remainingCharsData[0], dst, begin,
                     static_cast<const uchar *>(remainingCharsData) + remainingCharsCount + newCharsToCopy);
             if (res == QUtf8BaseTraits::Error || (res == QUtf8BaseTraits::EndOfString && len == 0)) {

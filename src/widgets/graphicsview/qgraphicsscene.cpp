@@ -6416,7 +6416,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                     if (parentPropagatedGestures.contains(*it)) {
                         QGesture *gesture = *it;
                         const Qt::GestureType gestureType = gesture->gestureType();
-                        QGraphicsItem *item = receiver.data();
+                        auto item = static_cast<QGraphicsItem*>(receiver.data());
                         while (item) {
                             if (QGraphicsObject *obj = item->toGraphicsObject()) {
                                 if (item->d_func()->gestureContext.contains(gestureType)) {

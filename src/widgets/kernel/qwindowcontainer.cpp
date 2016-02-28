@@ -112,7 +112,7 @@ public:
 
     void markParentChain() {
         Q_Q(QWindowContainer);
-        QWidget *p = q;
+        auto p = static_cast<QWidget*>(q);
         while (p) {
             QWidgetPrivate *d = static_cast<QWidgetPrivate *>(QWidgetPrivate::get(p));
             d->createExtra();

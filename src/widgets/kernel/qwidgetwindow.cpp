@@ -71,7 +71,7 @@ class QWidgetWindowPrivate : public QWindowPrivate
 public:
     QWindow *eventReceiver() Q_DECL_OVERRIDE {
         Q_Q(QWidgetWindow);
-        QWindow *w = q;
+        auto w = static_cast<QWindow*>(q);
         while (w->parent() && qobject_cast<QWidgetWindow *>(w) && qobject_cast<QWidgetWindow *>(w->parent())) {
             w = w->parent();
         }
@@ -339,8 +339,8 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
         if (systemEvent) {
             if (QWidgetWindow *enterWindow = qobject_cast<QWidgetWindow *>(systemEvent->enter))
             {
-                QWindow *thisParent = this;
-                QWindow *enterParent = enterWindow;
+                auto thisParent = static_cast<QWindow*>(this);
+                auto enterParent = static_cast<QWindow*>(enterWindow);
                 while (thisParent->parent())
                     thisParent = thisParent->parent();
                 while (enterParent->parent())
@@ -622,7 +622,7 @@ void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
     if (QApplicationPrivate::instance()->modalState() && !qt_try_modal(m_widget, event->type()))
         return;
 
-    QObject *receiver = QWidget::keyboardGrabber();
+    auto receiver = static_cast<QObject*>(QWidget::keyboardGrabber());
     if (!receiver && QApplicationPrivate::inPopupMode()) {
         QWidget *popup = QApplication::activePopupWidget();
         QWidget *popupFocusWidget = popup->focusWidget();

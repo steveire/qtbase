@@ -186,7 +186,7 @@ QPoint QCursor::pos(const QScreen *screen)
 {
     if (screen) {
         if (const QPlatformCursor *cursor = screen->handle()->cursor()) {
-            const QPlatformScreen *ps = screen->handle();
+            auto ps = static_cast<const QPlatformScreen *>(screen->handle());
             QPoint nativePos = cursor->pos();
             ps = ps->screenForPosition(nativePos);
             return QHighDpi::fromNativePixels(nativePos, ps->screen());

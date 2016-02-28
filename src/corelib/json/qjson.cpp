@@ -415,7 +415,7 @@ void Value::copyData(const QJsonValue &v, char *dest, bool compressed)
     }
     case QJsonValue::Array:
     case QJsonValue::Object: {
-        const QJsonPrivate::Base *b = v.base;
+        auto b = static_cast<const QJsonPrivate::Base *>(v.base);
         if (!b)
             b = (v.t == QJsonValue::Array ? &emptyArray : &emptyObject);
         memcpy(dest, b, b->size);

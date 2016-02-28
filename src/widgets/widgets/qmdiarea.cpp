@@ -1280,7 +1280,7 @@ QRect QMdiAreaPrivate::resizeToMinimumTileSize(const QSize &minSubWindowSize, in
     // Increase area size if necessary. Scroll bars are provided if we're not able
     // to resize to the minimum size.
     if (!tileCalledFromResizeEvent) {
-        QWidget *topLevel = q;
+        QWidget *topLevel = static_cast<QWidget*>(q);
         // Find the topLevel for this area, either a real top-level or a sub-window.
         while (topLevel && !topLevel->isWindow() && topLevel->windowType() != Qt::SubWindow)
             topLevel = topLevel->parentWidget();

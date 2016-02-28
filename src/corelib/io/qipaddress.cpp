@@ -154,7 +154,7 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
     if (ret)
         return ret;
 
-    const char *ptr = buffer.data();
+    const char *ptr = static_cast<const char*>(buffer.data());
 
     // count the colons
     int colonCount = 0;

@@ -297,7 +297,7 @@ QPushButton::~QPushButton()
 QDialog *QPushButtonPrivate::dialogParent() const
 {
     Q_Q(const QPushButton);
-    const QWidget *p = q;
+    auto p = static_cast<const QWidget*>(q);
     while (p && !p->isWindow()) {
         p = p->parentWidget();
         if (const QDialog *dialog = qobject_cast<const QDialog *>(p))

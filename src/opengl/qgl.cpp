@@ -1582,7 +1582,7 @@ QGLFormat QGLFormat::defaultOverlayFormat()
 
 void QGLFormat::setDefaultOverlayFormat(const QGLFormat &f)
 {
-    QGLFormat *defaultFormat = defaultOverlayFormatInstance();
+    auto defaultFormat = static_cast<QGLFormat*>(defaultOverlayFormatInstance());
     *defaultFormat = f;
     // Make sure the user doesn't request that the overlays themselves
     // have overlays, since it is unlikely that the system supports

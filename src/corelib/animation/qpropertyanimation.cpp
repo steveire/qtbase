@@ -307,7 +307,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
     //we need to do that after the mutex was unlocked
     if (animToStop) {
         // try to stop the top level group
-        QAbstractAnimation *current = animToStop;
+        auto current = static_cast<QAbstractAnimation*>(animToStop);
         while (current->group() && current->state() != Stopped)
             current = current->group();
         current->stop();

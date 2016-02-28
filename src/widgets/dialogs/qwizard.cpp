@@ -1515,7 +1515,7 @@ void QWizardPrivate::updateButtonLayout()
 
 void QWizardPrivate::setButtonLayout(const QWizard::WizardButton *array, int size)
 {
-    QWidget *prev = pageFrame;
+    auto prev = static_cast<QWidget*>(pageFrame);
 
     for (int i = buttonLayout->count() - 1; i >= 0; --i) {
         QLayoutItem *item = buttonLayout->takeAt(i);

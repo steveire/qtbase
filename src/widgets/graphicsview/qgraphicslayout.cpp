@@ -265,7 +265,7 @@ void QGraphicsLayout::activate()
 
     // we don't call activate on a sublayout, but somebody might.
     // Therefore, we walk to the parentitem of the toplevel layout.
-    QGraphicsLayoutItem *parentItem = this;
+    auto parentItem = static_cast<QGraphicsLayoutItem*>(this);
     while (parentItem && parentItem->isLayout())
         parentItem = parentItem->parentLayoutItem();
     if (!parentItem)
@@ -315,7 +315,7 @@ void QGraphicsLayout::invalidate()
         updateGeometry();
     } else {
         // only mark layouts as invalid (activated = false) if we can post a LayoutRequest event.
-        QGraphicsLayoutItem *layoutItem = this;
+        auto layoutItem = static_cast<QGraphicsLayoutItem*>(this);
         while (layoutItem && layoutItem->isLayout()) {
             // we could call updateGeometry(), but what if that method
             // does not call the base implementation? In addition, updateGeometry()

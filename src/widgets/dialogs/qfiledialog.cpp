@@ -668,7 +668,7 @@ void QFileDialogPrivate::retranslateStrings()
         return;
 
     QList<QAction*> actions = qFileDialogUi->treeView->header()->actions();
-    QAbstractItemModel *abstractModel = model;
+    auto abstractModel = static_cast<QAbstractItemModel*>(model);
 #ifndef QT_NO_PROXYMODEL
     if (proxyModel)
         abstractModel = proxyModel;
@@ -2772,7 +2772,7 @@ bool QFileDialogPrivate::restoreWidgetState(QStringList &history, int splitterPo
         return false;
 
     QList<QAction*> actions = headerView->actions();
-    QAbstractItemModel *abstractModel = model;
+    auto abstractModel = static_cast<QAbstractItemModel*>(model);
 #ifndef QT_NO_PROXYMODEL
     if (proxyModel)
         abstractModel = proxyModel;
@@ -2938,7 +2938,7 @@ void QFileDialogPrivate::createWidgets()
     QObject::connect(showActionGroup, SIGNAL(triggered(QAction*)),
                      q, SLOT(_q_showHeader(QAction*)));;
 
-    QAbstractItemModel *abstractModel = model;
+    auto abstractModel = static_cast<QAbstractItemModel*>(model);
 #ifndef QT_NO_PROXYMODEL
     if (proxyModel)
         abstractModel = proxyModel;

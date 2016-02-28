@@ -957,7 +957,7 @@ bool QDialogButtonBox::event(QEvent *event)
         QPushButton *firstAcceptButton = acceptRoleList.isEmpty() ? 0 : qobject_cast<QPushButton *>(acceptRoleList.at(0));
         bool hasDefault = false;
         QWidget *dialog = 0;
-        QWidget *p = this;
+        auto p = static_cast<QWidget*>(this);
         while (p && !p->isWindow()) {
             p = p->parentWidget();
             if ((dialog = qobject_cast<QDialog *>(p)))

@@ -429,7 +429,7 @@ void QGroupBoxPrivate::_q_fixFocus(Qt::FocusReason reason)
     if (!fw || fw == q) {
         QWidget * best = 0;
         QWidget * candidate = 0;
-        QWidget * w = q;
+        QWidget * w = static_cast<QWidget*>(q);
         while ((w = w->nextInFocusChain()) != q) {
             if (q->isAncestorOf(w) && (w->focusPolicy() & Qt::TabFocus) == Qt::TabFocus && w->isVisibleTo(q)) {
                 if (!best && qobject_cast<QRadioButton*>(w) && ((QRadioButton*)w)->isChecked())

@@ -152,7 +152,7 @@ QRect QXcbSystemTrayTracker::systemTrayWindowGlobalGeometry(xcb_window_t window)
 
 inline void QXcbSystemTrayTracker::emitSystemTrayWindowChanged()
 {
-    if (const QPlatformScreen *ps = m_connection->primaryScreen())
+    if (auto ps = static_cast<const QPlatformScreen*>(m_connection->primaryScreen()))
         emit systemTrayWindowChanged(ps->screen());
 }
 

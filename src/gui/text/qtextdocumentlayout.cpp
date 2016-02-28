@@ -3223,7 +3223,7 @@ QRectF QTextDocumentLayout::tableBoundingRect(QTextTable *table) const
 
     QPointF pos;
     const int framePos = table->firstPosition();
-    QTextFrame *f = table;
+    auto f = static_cast<QTextFrame*>(table);
     while (f) {
         QTextFrameData *fd = data(f);
         pos += fd->position.toPointF();

@@ -539,7 +539,7 @@ void QMenuPrivate::setSyncAction()
     QAction *current = currentAction;
     if(current && (!current->isEnabled() || current->menu() || current->isSeparator()))
         current = 0;
-    for(QWidget *caused = q; caused;) {
+    for(QWidget *caused = static_cast<QWidget*>(q); caused;) {
         if (QMenu *m = qobject_cast<QMenu*>(caused)) {
             caused = m->d_func()->causedPopup.widget;
             if (m->d_func()->eventLoop)

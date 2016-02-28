@@ -327,7 +327,7 @@ QString QHostInfo::localDomainName()
     resolveLibrary();
     if (local_res_ninit) {
         // using thread-safe version
-        res_state_ptr state = res_state_ptr(malloc(sizeof(*state)));
+        auto state = res_state_ptr(malloc(16));
         Q_CHECK_PTR(state);
         memset(state, 0, sizeof(*state));
         local_res_ninit(state);
