@@ -127,11 +127,11 @@ QList<QNetworkConfigurationPrivate *> QConnmanEngine::getConfigurations()
     QMutexLocker locker(&mutex);
     QList<QNetworkConfigurationPrivate *> fetchedConfigurations;
     QNetworkConfigurationPrivate* cpPriv = 0;
-    const int numFoundConfigurations = foundConfigurations.count();
+    const auto numFoundConfigurations = foundConfigurations.count();
     fetchedConfigurations.reserve(numFoundConfigurations);
 
-    for (int i = 0; i < numFoundConfigurations; ++i) {
-        QNetworkConfigurationPrivate *config = new QNetworkConfigurationPrivate;
+    for (auto i = 0; i < numFoundConfigurations; ++i) {
+        auto config = new QNetworkConfigurationPrivate;
         cpPriv = foundConfigurations.at(i);
 
         config->name = cpPriv->name;
@@ -165,7 +165,7 @@ void QConnmanEngine::connectToId(const QString &id)
 {
     QMutexLocker locker(&mutex);
 
-    QConnmanServiceInterface *serv = connmanServiceInterfaces.value(id);
+    auto serv = connmanServiceInterfaces.value(id);
 
     if (!serv || !serv->isValid()) {
         emit connectionError(id, QBearerEngineImpl::InterfaceLookupError);
@@ -186,7 +186,7 @@ void QConnmanEngine::connectToId(const QString &id)
 void QConnmanEngine::disconnectFromId(const QString &id)
 {
     QMutexLocker locker(&mutex);
-    QConnmanServiceInterface *serv = connmanServiceInterfaces.value(id);
+    auto serv = connmanServiceInterfaces.value(id);
 
     if (!serv || !serv->isValid()) {
         emit connectionError(id, DisconnectionError);
@@ -219,7 +219,7 @@ void QConnmanEngine::updateServices(const ConnmanMapList &changed, const QList<Q
     }
 
     foreach (const ConnmanMap &connmanMap, changed) {
-        const QString id = connmanMap.objectPath.path();
+        const auto id = connmanMap.objectPath.path();
         if (accessPointConfigurations.contains(id)) {
             configurationChange(connmanServiceInterfaces.value(id));
         } else {
@@ -233,17 +233,17 @@ QNetworkSession::State QConnmanEngine::sessionStateForId(const QString &id)
 {
     QMutexLocker locker(&mutex);
 
-    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
+    auto ptr = accessPointConfigurations.value(id);
 
     if (!ptr || !ptr->isValid)
         return QNetworkSession::Invalid;
 
-    QString service = id;
-    QConnmanServiceInterface *serv = connmanServiceInterfaces.value(service);
+    auto service = id;
+    auto serv = connmanServiceInterfaces.value(service);
     if (!serv)
         return QNetworkSession::Invalid;
 
-    QString servState = serv->state();
+    auto servState = serv->state();
 
     if (serv->favorite() && (servState == QLatin1String("idle") || servState == QLatin1String("failure"))) {
         return QNetworkSession::Disconnected;
@@ -274,7 +274,7 @@ quint64 QConnmanEngine::bytesWritten(const QString &id)
 {//TODO use connman counter API
     QMutexLocker locker(&mutex);
     quint64 result = 0;
-    QString devFile = getInterfaceFromId(id);
+    auto devFile = getInterfaceFromId(id);
     QFile tx("/sys/class/net/"+devFile+"/statistics/tx_bytes");
     if (tx.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&tx);
@@ -289,7 +289,7 @@ quint64 QConnmanEngine::bytesReceived(const QString &id)
 {//TODO use connman counter API
     QMutexLocker locker(&mutex);
     quint64 result = 0;
-    QString devFile = getInterfaceFromId(id);
+    auto devFile = getInterfaceFromId(id);
     QFile rx("/sys/class/net/"+devFile+"/statistics/rx_bytes");
     if (rx.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&rx);
@@ -336,7 +336,7 @@ QNetworkConfigurationPrivatePointer QConnmanEngine::defaultConfiguration()
 
 void QConnmanEngine::serviceStateChanged(const QString &state)
 {
-    QConnmanServiceInterface *service = qobject_cast<QConnmanServiceInterface *>(sender());
+    auto service = qobject_cast<QConnmanServiceInterface *>(sender());
     configurationChange(service);
 
     if (state == QLatin1String("failure")) {
@@ -349,13 +349,13 @@ void QConnmanEngine::configurationChange(QConnmanServiceInterface *serv)
     if (!serv)
         return;
     QMutexLocker locker(&mutex);
-    QString id = serv->path();
+    auto id = serv->path();
 
     if (accessPointConfigurations.contains(id)) {
-        bool changed = false;
-        QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
-        QString networkName = serv->name();
-        QNetworkConfiguration::StateFlags curState = getStateForService(serv->path());
+        auto changed = false;
+        auto ptr = accessPointConfigurations.value(id);
+        auto networkName = serv->name();
+        auto curState = getStateForService(serv->path());
         ptr->mutex.lock();
 
         if (!ptr->isValid) {
@@ -388,11 +388,11 @@ void QConnmanEngine::configurationChange(QConnmanServiceInterface *serv)
 QNetworkConfiguration::StateFlags QConnmanEngine::getStateForService(const QString &service)
 {
     QMutexLocker locker(&mutex);
-    QConnmanServiceInterface *serv = connmanServiceInterfaces.value(service);
+    auto serv = connmanServiceInterfaces.value(service);
     if (!serv)
         return QNetworkConfiguration::Undefined;
 
-    QString state = serv->state();
+    auto state = serv->state();
     QNetworkConfiguration::StateFlags flag = QNetworkConfiguration::Defined;
 
     if (serv->type() == QLatin1String("cellular")) {
@@ -439,7 +439,7 @@ QNetworkConfiguration::BearerType QConnmanEngine::typeToBearer(const QString &ty
 QNetworkConfiguration::BearerType QConnmanEngine::ofonoTechToBearerType(const QString &/*type*/)
 {
     if (ofonoNetwork) {
-        QString currentTechnology = ofonoNetwork->getTechnology();
+        auto currentTechnology = ofonoNetwork->getTechnology();
         if (currentTechnology == QLatin1String("gsm")) {
             return QNetworkConfiguration::Bearer2G;
         } else if (currentTechnology == QLatin1String("edge")) {
@@ -474,9 +474,9 @@ void QConnmanEngine::removeConfiguration(const QString &id)
         disconnect(connmanServiceInterfaces.value(id),SIGNAL(stateChanged(QString)),
                 this,SLOT(serviceStateChanged(QString)));
         serviceNetworks.removeOne(id);
-        QConnmanServiceInterface *service  = connmanServiceInterfaces.take(id);
+        auto service  = connmanServiceInterfaces.take(id);
         delete service;
-        QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(id);
+        auto ptr = accessPointConfigurations.take(id);
         foundConfigurations.removeOne(ptr.data());
         locker.unlock();
         emit configurationRemoved(ptr);
@@ -488,7 +488,7 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
 {
     QMutexLocker locker(&mutex);
     if (!connmanServiceInterfaces.contains(servicePath)) {
-        QConnmanServiceInterface *serv = new QConnmanServiceInterface(servicePath, this);
+        auto serv = new QConnmanServiceInterface(servicePath, this);
         connmanServiceInterfaces.insert(serv->path(),serv);
     }
 
@@ -499,12 +499,12 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
         connect(connmanServiceInterfaces.value(servicePath),SIGNAL(stateChanged(QString)),
                 this,SLOT(serviceStateChanged(QString)));
 
-        QNetworkConfigurationPrivate* cpPriv = new QNetworkConfigurationPrivate();
-        QConnmanServiceInterface *service = connmanServiceInterfaces.value(servicePath);
+        auto cpPriv = new QNetworkConfigurationPrivate();
+        auto service = connmanServiceInterfaces.value(servicePath);
 
-        QString networkName = service->name();
+        auto networkName = service->name();
 
-        const QString connectionType = service->type();
+        const auto connectionType = service->type();
         if (connectionType == QLatin1String("ethernet")) {
             cpPriv->bearerType = QNetworkConfiguration::BearerEthernet;
         } else if (connectionType == QLatin1String("wifi")) {

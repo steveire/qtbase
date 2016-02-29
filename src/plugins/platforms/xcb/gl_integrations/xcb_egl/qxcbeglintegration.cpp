@@ -86,8 +86,8 @@ QXcbWindow *QXcbEglIntegration::createWindow(QWindow *window) const
 
 QPlatformOpenGLContext *QXcbEglIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
-    QXcbEglContext *platformContext = new QXcbEglContext(context->format(),
+    auto screen = static_cast<QXcbScreen *>(context->screen()->handle());
+    auto platformContext = new QXcbEglContext(context->format(),
                                                          context->shareHandle(),
                                                          eglDisplay(),
                                                          screen->connection(),

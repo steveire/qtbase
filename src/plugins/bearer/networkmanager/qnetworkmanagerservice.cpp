@@ -114,7 +114,7 @@ bool QNetworkManagerInterface::setConnections()
                                   QLatin1String("PropertiesChanged"),
                                   this,SLOT(propertiesSwap(QMap<QString,QVariant>)));
 
-    bool allOk = false;
+    auto allOk = false;
     if (QDBusConnection::systemBus().connect(QLatin1String(NM_DBUS_SERVICE),
                                   QLatin1String(NM_DBUS_PATH),
                                   QLatin1String(NM_DBUS_INTERFACE),
@@ -147,12 +147,12 @@ void QNetworkManagerInterface::activateConnection(QDBusObjectPath connectionPath
                                                   QDBusObjectPath devicePath,
                                                   QDBusObjectPath specificObject)
 {
-    QDBusPendingCall pendingCall = asyncCall(QLatin1String("ActivateConnection"),
+    auto pendingCall = asyncCall(QLatin1String("ActivateConnection"),
                                                                     QVariant::fromValue(connectionPath),
                                                                     QVariant::fromValue(devicePath),
                                                                     QVariant::fromValue(specificObject));
 
-   QDBusPendingCallWatcher *callWatcher = new QDBusPendingCallWatcher(pendingCall);
+   auto callWatcher = new QDBusPendingCallWatcher(pendingCall);
    connect(callWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                     this, SIGNAL(activationFinished(QDBusPendingCallWatcher*)));
 }
@@ -221,7 +221,7 @@ void QNetworkManagerInterface::propertiesSwap(QMap<QString,QVariant> map)
         propertyMap.insert(i.key(),i.value());
 
         if (i.key() == QLatin1String("State")) {
-            quint32 state = i.value().toUInt();
+            auto state = i.value().toUInt();
             if (state == NM_DEVICE_STATE_ACTIVATED
                 || state == NM_DEVICE_STATE_DISCONNECTED
                 || state == NM_DEVICE_STATE_UNAVAILABLE
@@ -244,7 +244,7 @@ QNetworkManagerInterfaceAccessPoint::QNetworkManagerInterfaceAccessPoint(const Q
     if (!isValid()) {
         return;
     }
-    PropertiesDBusInterface *accessPointPropertiesInterface = new PropertiesDBusInterface(QLatin1String(NM_DBUS_SERVICE),
+    auto accessPointPropertiesInterface = new PropertiesDBusInterface(QLatin1String(NM_DBUS_SERVICE),
                                                   dbusPathName,
                                                   DBUS_PROPERTIES_INTERFACE,
                                                   QDBusConnection::systemBus());
@@ -567,7 +567,7 @@ QNetworkManagerInterfaceDeviceWireless::QNetworkManagerInterfaceDeviceWireless(c
     QDBusPendingReply<QList<QDBusObjectPath> > reply
             = asyncCall(QLatin1String("GetAccessPoints"));
 
-    QDBusPendingCallWatcher *callWatcher = new QDBusPendingCallWatcher(reply);
+    auto callWatcher = new QDBusPendingCallWatcher(reply);
     connect(callWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                      this, SLOT(accessPointsFinished(QDBusPendingCallWatcher*)));
 }
@@ -593,8 +593,8 @@ bool QNetworkManagerInterfaceDeviceWireless::setConnections()
     if (!isValid())
         return false;
 
-    QDBusConnection dbusConnection = QDBusConnection::systemBus();
-    bool allOk = true;
+    auto dbusConnection = QDBusConnection::systemBus();
+    auto allOk = true;
 
     if (!dbusConnection.connect(QLatin1String(NM_DBUS_SERVICE),
                                interfacePath,
@@ -631,7 +631,7 @@ void QNetworkManagerInterfaceDeviceWireless::accessPointsFinished(QDBusPendingCa
         accessPointsList = reply.value();
     }
 
-    for (int i = 0; i < accessPointsList.size(); i++) {
+    for (auto i = 0; i < accessPointsList.size(); i++) {
         Q_EMIT accessPointAdded(accessPointsList.at(i).path());
     }
 }
@@ -786,7 +786,7 @@ QNetworkManagerSettings::~QNetworkManagerSettings()
 
 bool QNetworkManagerSettings::setConnections()
 {
-    bool allOk = true;
+    auto allOk = true;
     if (!QDBusConnection::systemBus().connect(interfacePath,
                                              QLatin1String(NM_DBUS_PATH_SETTINGS),
                                              QLatin1String(NM_DBUS_IFACE_SETTINGS),
@@ -846,8 +846,8 @@ bool QNetworkManagerSettingsConnection::setConnections()
     if (!isValid())
         return false;
 
-    QDBusConnection dbusConnection = QDBusConnection::systemBus();
-    bool allOk = true;
+    auto dbusConnection = QDBusConnection::systemBus();
+    auto allOk = true;
     if (!dbusConnection.connect(service(),
                                interfacepath,
                                QLatin1String(NM_DBUS_IFACE_SETTINGS_CONNECTION),
@@ -883,7 +883,7 @@ QNmSettingsMap QNetworkManagerSettingsConnection::getSettings()
 
 NMDeviceType QNetworkManagerSettingsConnection::getType()
 {
-    const QString devType =
+    const auto devType =
         settingsMap.value(QLatin1String("connection")).value(QLatin1String("type")).toString();
 
     if (devType == QLatin1String("802-3-ethernet"))
@@ -898,7 +898,7 @@ NMDeviceType QNetworkManagerSettingsConnection::getType()
 
 bool QNetworkManagerSettingsConnection::isAutoConnect()
 {
-    const QVariant autoConnect =
+    const auto autoConnect =
         settingsMap.value(QLatin1String("connection")).value(QLatin1String("autoconnect"));
 
     // NetworkManager default is to auto connect
@@ -921,7 +921,7 @@ QString QNetworkManagerSettingsConnection::getId()
 
 QString QNetworkManagerSettingsConnection::getUuid()
 {
-    const QString id = settingsMap.value(QLatin1String("connection"))
+    const auto id = settingsMap.value(QLatin1String("connection"))
                                      .value(QLatin1String("uuid")).toString();
 
     // is no uuid, return the connection path
@@ -936,7 +936,7 @@ QString QNetworkManagerSettingsConnection::getSsid()
 
 QString QNetworkManagerSettingsConnection::getMacAddress()
 {
-    NMDeviceType type = getType();
+    auto type = getType();
 
     if (type == DEVICE_TYPE_ETHERNET) {
         return settingsMap.value(QLatin1String("802-3-ethernet"))
@@ -1056,7 +1056,7 @@ void QNetworkManagerConnectionActive::propertiesSwap(QMap<QString,QVariant> map)
         i.next();
         propertyMap.insert(i.key(),i.value());
         if (i.key() == QLatin1String("State")) {
-            quint32 state = i.value().toUInt();
+            auto state = i.value().toUInt();
             if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED
                 || state == NM_ACTIVE_CONNECTION_STATE_DEACTIVATED) {
                 Q_EMIT propertiesChanged(map);

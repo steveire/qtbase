@@ -88,7 +88,7 @@ void QOffscreenWindow::setGeometry(const QRect &rect)
 
 void QOffscreenWindow::setGeometryImpl(const QRect &rect)
 {
-    QRect adjusted = rect;
+    auto adjusted = rect;
     if (adjusted.width() <= 0)
         adjusted.setWidth(1);
     if (adjusted.height() <= 0)

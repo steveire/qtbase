@@ -105,8 +105,8 @@ void QEglFSWindow::create()
     // Stop if there is already a window backed by a native window and surface. Additional
     // raster windows will not have their own native window, surface and context. Instead,
     // they will be composited onto the root window's surface.
-    QEglFSScreen *screen = this->screen();
-    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
+    auto screen = this->screen();
+    auto compositor = QOpenGLCompositor::instance();
     if (screen->primarySurface() != EGL_NO_SURFACE) {
         if (Q_UNLIKELY(!isRaster() || !compositor->targetWindow())) {
 #if !defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK)
@@ -127,7 +127,7 @@ void QEglFSWindow::create()
     resetSurface();
 
     if (Q_UNLIKELY(m_surface == EGL_NO_SURFACE)) {
-        EGLint error = eglGetError();
+        auto error = eglGetError();
         eglTerminate(screen->display());
         qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
     }
@@ -135,7 +135,7 @@ void QEglFSWindow::create()
     screen->setPrimarySurface(m_surface);
 
     if (isRaster()) {
-        QOpenGLContext *context = new QOpenGLContext(QGuiApplication::instance());
+        auto context = new QOpenGLContext(QGuiApplication::instance());
         context->setShareContext(qt_gl_global_share_context());
         context->setFormat(m_format);
         context->setScreen(window()->screen());
@@ -155,9 +155,9 @@ void QEglFSWindow::create()
 
 void QEglFSWindow::destroy()
 {
-    QEglFSScreen *screen = this->screen();
+    auto screen = this->screen();
     if (m_flags.testFlag(HasNativeWindow)) {
-        QEglFSCursor *cursor = qobject_cast<QEglFSCursor *>(screen->cursor());
+        auto cursor = qobject_cast<QEglFSCursor *>(screen->cursor());
         if (cursor)
             cursor->resetResources();
 
@@ -183,8 +183,8 @@ void QEglFSWindow::invalidateSurface()
 
 void QEglFSWindow::resetSurface()
 {
-    EGLDisplay display = screen()->display();
-    QSurfaceFormat platformFormat = qt_egl_device_integration()->surfaceFormatFor(window()->requestedFormat());
+    auto display = screen()->display();
+    auto platformFormat = qt_egl_device_integration()->surfaceFormatFor(window()->requestedFormat());
 
     m_config = QEglFSIntegration::chooseConfig(display, platformFormat);
     m_format = q_glFormatFromConfig(display, m_config, platformFormat);
@@ -194,9 +194,9 @@ void QEglFSWindow::resetSurface()
 
 void QEglFSWindow::setVisible(bool visible)
 {
-    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
-    QList<QOpenGLCompositorWindow *> windows = compositor->windows();
-    QWindow *wnd = window();
+    auto compositor = QOpenGLCompositor::instance();
+    auto windows = compositor->windows();
+    auto wnd = window();
 
     if (wnd->type() != Qt::Desktop) {
         if (visible) {
@@ -218,7 +218,7 @@ void QEglFSWindow::setVisible(bool visible)
 void QEglFSWindow::setGeometry(const QRect &r)
 {
     QRect rect;
-    bool forceFullscreen = m_flags.testFlag(HasNativeWindow);
+    auto forceFullscreen = m_flags.testFlag(HasNativeWindow);
     if (forceFullscreen)
         rect = screen()->availableGeometry();
     else
@@ -247,14 +247,14 @@ void QEglFSWindow::requestActivateWindow()
     if (window()->type() != Qt::Desktop)
         QOpenGLCompositor::instance()->moveToTop(this);
 
-    QWindow *wnd = window();
+    auto wnd = window();
     QWindowSystemInterface::handleWindowActivated(wnd);
     QWindowSystemInterface::handleExposeEvent(wnd, QRect(QPoint(0, 0), wnd->geometry().size()));
 }
 
 void QEglFSWindow::raise()
 {
-    QWindow *wnd = window();
+    auto wnd = window();
     if (wnd->type() != Qt::Desktop) {
         QOpenGLCompositor::instance()->moveToTop(this);
         QWindowSystemInterface::handleExposeEvent(wnd, QRect(QPoint(0, 0), wnd->geometry().size()));
@@ -263,10 +263,10 @@ void QEglFSWindow::raise()
 
 void QEglFSWindow::lower()
 {
-    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
-    QList<QOpenGLCompositorWindow *> windows = compositor->windows();
+    auto compositor = QOpenGLCompositor::instance();
+    auto windows = compositor->windows();
     if (window()->type() != Qt::Desktop && windows.count() > 1) {
-        int idx = windows.indexOf(this);
+        auto idx = windows.indexOf(this);
         if (idx > 0) {
             compositor->changeWindowIndex(this, idx - 1);
             QWindowSystemInterface::handleExposeEvent(windows.last()->sourceWindow(),

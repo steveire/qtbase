@@ -181,7 +181,7 @@ QPlatformTheme *QEglFSIntegration::createPlatformTheme(const QString &name) cons
 
 QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    QOpenGLCompositorBackingStore *bs = new QOpenGLCompositorBackingStore(window);
+    auto bs = new QOpenGLCompositorBackingStore(window);
     if (!window->handle())
         window->create();
     static_cast<QEglFSWindow *>(window->handle())->setBackingStore(bs);
@@ -191,7 +191,7 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 {
     QWindowSystemInterface::flushWindowSystemEvents();
-    QEglFSWindow *w = qt_egl_device_integration()->createWindow(window);
+    auto w = qt_egl_device_integration()->createWindow(window);
     w->create();
     if (window->type() != Qt::ToolTip)
         w->requestActivateWindow();
@@ -200,14 +200,14 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 
 QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    EGLDisplay dpy = context->screen() ? static_cast<QEglFSScreen *>(context->screen()->handle())->display() : display();
-    QPlatformOpenGLContext *share = context->shareHandle();
-    QVariant nativeHandle = context->nativeHandle();
+    auto dpy = context->screen() ? static_cast<QEglFSScreen *>(context->screen()->handle())->display() : display();
+    auto share = context->shareHandle();
+    auto nativeHandle = context->nativeHandle();
 
     QEglFSContext *ctx;
-    QSurfaceFormat adjustedFormat = qt_egl_device_integration()->surfaceFormatFor(context->format());
+    auto adjustedFormat = qt_egl_device_integration()->surfaceFormatFor(context->format());
     if (nativeHandle.isNull()) {
-        EGLConfig config = QEglFSIntegration::chooseConfig(dpy, adjustedFormat);
+        auto config = QEglFSIntegration::chooseConfig(dpy, adjustedFormat);
         ctx = new QEglFSContext(adjustedFormat, share, dpy, &config, QVariant());
     } else {
         ctx = new QEglFSContext(adjustedFormat, share, dpy, 0, nativeHandle);
@@ -220,8 +220,8 @@ QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLCo
 
 QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    EGLDisplay dpy = surface->screen() ? static_cast<QEglFSScreen *>(surface->screen()->handle())->display() : display();
-    QSurfaceFormat fmt = qt_egl_device_integration()->surfaceFormatFor(surface->requestedFormat());
+    auto dpy = surface->screen() ? static_cast<QEglFSScreen *>(surface->screen()->handle())->display() : display();
+    auto fmt = qt_egl_device_integration()->surfaceFormatFor(surface->requestedFormat());
     if (qt_egl_device_integration()->supportsPBuffers()) {
         QEGLPlatformContext::Flags flags = 0;
         if (!qt_egl_device_integration()->supportsSurfacelessContexts())
@@ -275,8 +275,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("display"),
         QByteArrayLiteral("server_wl_display")
     };
-    const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
-    const QByteArray *result = std::find(names, end, key);
+    auto end = names + sizeof(names) / sizeof(names[0]);
+    auto result = std::find(names, end, key);
     if (result == end)
         result = std::find(names, end, key.toLower());
     return int(result - names);
@@ -370,7 +370,7 @@ static void *eglContextForContext(QOpenGLContext *context)
 {
     Q_ASSERT(context);
 
-    QEglFSContext *handle = static_cast<QEglFSContext *>(context->handle());
+    auto handle = static_cast<QEglFSContext *>(context->handle());
     if (!handle)
         return 0;
 
@@ -379,7 +379,7 @@ static void *eglContextForContext(QOpenGLContext *context)
 
 QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::nativeResourceFunctionForContext(const QByteArray &resource)
 {
-    QByteArray lowerCaseResource = resource.toLower();
+    auto lowerCaseResource = resource.toLower();
     if (lowerCaseResource == "get_egl_context")
         return NativeResourceForContextFunction(eglContextForContext);
 
@@ -401,7 +401,7 @@ QFunctionPointer QEglFSIntegration::platformFunction(const QByteArray &function)
 void QEglFSIntegration::loadKeymapStatic(const QString &filename)
 {
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-    QEglFSIntegration *self = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    auto self = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
     if (self->m_kbdMgr)
         self->m_kbdMgr->loadKeymap(filename);
     else

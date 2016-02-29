@@ -87,7 +87,7 @@ extern "C" {
 
 static void my_error_exit (j_common_ptr cinfo)
 {
-    my_error_mgr* myerr = (my_error_mgr*) cinfo->err;
+    auto myerr = (my_error_mgr*) cinfo->err;
     char buffer[JMSG_LENGTH_MAX];
     (*cinfo->err->format_message)(cinfo, buffer);
     qWarning("%s", buffer);
@@ -124,7 +124,7 @@ static void qt_init_source(j_decompress_ptr)
 
 static boolean qt_fill_input_buffer(j_decompress_ptr cinfo)
 {
-    my_jpeg_source_mgr* src = (my_jpeg_source_mgr*)cinfo->src;
+    auto src = (my_jpeg_source_mgr*)cinfo->src;
     qint64 num_read = 0;
     if (src->memDevice) {
         src->next_input_byte = (const JOCTET *)(src->memDevice->data().constData() + src->memDevice->pos());
@@ -148,7 +148,7 @@ static boolean qt_fill_input_buffer(j_decompress_ptr cinfo)
 
 static void qt_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 {
-    my_jpeg_source_mgr* src = (my_jpeg_source_mgr*)cinfo->src;
+    auto src = (my_jpeg_source_mgr*)cinfo->src;
 
     // `dumb' implementation from jpeglib
 
@@ -171,7 +171,7 @@ static void qt_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 
 static void qt_term_source(j_decompress_ptr cinfo)
 {
-    my_jpeg_source_mgr* src = (my_jpeg_source_mgr*)cinfo->src;
+    auto src = (my_jpeg_source_mgr*)cinfo->src;
     if (!src->device->isSequential())
         src->device->seek(src->device->pos() - src->bytes_in_buffer);
 }
@@ -206,7 +206,7 @@ inline static bool read_jpeg_size(int &w, int &h, j_decompress_ptr cinfo)
 inline static bool read_jpeg_format(QImage::Format &format, j_decompress_ptr cinfo)
 {
 
-    bool result = true;
+    auto result = true;
     switch (cinfo->output_components) {
     case 1:
         format = QImage::Format_Grayscale8;
@@ -253,7 +253,7 @@ static bool read_jpeg_image(QImage *outImage,
 {
     if (!setjmp(err->setjmp_buffer)) {
         // -1 means default quality.
-        int quality = inQuality;
+        auto quality = inQuality;
         if (quality < 0)
             quality = 75;
 
@@ -296,7 +296,7 @@ static bool read_jpeg_image(QImage *outImage,
         // Determine the scale factor to pass to libjpeg for quick downscaling.
         if (!scaledSize.isEmpty() && info->image_width && info->image_height) {
             if (clipRect.isEmpty()) {
-                double f = qMin(double(info->image_width) / scaledSize.width(),
+                auto f = qMin(double(info->image_width) / scaledSize.width(),
                                 double(info->image_height) / scaledSize.height());
 
                 // libjpeg supports M/8 scaling with M=[1,16]. All downscaling factors
@@ -362,7 +362,7 @@ static bool read_jpeg_image(QImage *outImage,
             longjmp(err->setjmp_buffer, 1);
 
         // Avoid memcpy() overhead if grayscale with no clipping.
-        bool quickGray = (info->output_components == 1 &&
+        auto quickGray = (info->output_components == 1 &&
                           clip == imageRect);
         if (!quickGray) {
             // Ask the jpeg library to allocate a temporary row.
@@ -371,14 +371,14 @@ static bool read_jpeg_image(QImage *outImage,
             // jpeg_start_decompress().  We can't use "new" here
             // because we are inside the setjmp() block and an error
             // in the jpeg input stream would cause a memory leak.
-            JSAMPARRAY rows = (info->mem->alloc_sarray)
+            auto rows = (info->mem->alloc_sarray)
                               ((j_common_ptr)info, JPOOL_IMAGE,
                                info->output_width * info->output_components, 1);
 
             (void) jpeg_start_decompress(info);
 
             while (info->output_scanline < info->output_height) {
-                int y = int(info->output_scanline) - clip.y();
+                auto y = int(info->output_scanline) - clip.y();
                 if (y >= clip.height())
                     break;      // We've read the entire clip region, so abort.
 
@@ -388,14 +388,14 @@ static bool read_jpeg_image(QImage *outImage,
                     continue;   // Haven't reached the starting line yet.
 
                 if (info->output_components == 3) {
-                    uchar *in = rows[0] + clip.x() * 3;
-                    QRgb *out = (QRgb*)outImage->scanLine(y);
+                    auto in = rows[0] + clip.x() * 3;
+                    auto out = (QRgb*)outImage->scanLine(y);
                     converter(out, in, clip.width());
                 } else if (info->out_color_space == JCS_CMYK) {
                     // Convert CMYK->RGB.
-                    uchar *in = rows[0] + clip.x() * 4;
-                    QRgb *out = (QRgb*)outImage->scanLine(y);
-                    for (int i = 0; i < clip.width(); ++i) {
+                    auto in = rows[0] + clip.x() * 4;
+                    auto out = (QRgb*)outImage->scanLine(y);
+                    for (auto i = 0; i < clip.width(); ++i) {
                         int k = in[3];
                         *out++ = qRgb(k * in[0] / 255, k * in[1] / 255,
                                       k * in[2] / 255);
@@ -411,7 +411,7 @@ static bool read_jpeg_image(QImage *outImage,
             // Load unclipped grayscale data directly into the QImage.
             (void) jpeg_start_decompress(info);
             while (info->output_scanline < info->output_height) {
-                uchar *row = outImage->scanLine(info->output_scanline);
+                auto row = outImage->scanLine(info->output_scanline);
                 (void) jpeg_read_scanlines(info, &row, 1);
             }
         }
@@ -457,7 +457,7 @@ static void qt_init_destination(j_compress_ptr)
 
 static boolean qt_empty_output_buffer(j_compress_ptr cinfo)
 {
-    my_jpeg_destination_mgr* dest = (my_jpeg_destination_mgr*)cinfo->dest;
+    auto dest = (my_jpeg_destination_mgr*)cinfo->dest;
 
     int written = dest->device->write((char*)dest->buffer, max_buf);
     if (written == -1)
@@ -471,10 +471,10 @@ static boolean qt_empty_output_buffer(j_compress_ptr cinfo)
 
 static void qt_term_destination(j_compress_ptr cinfo)
 {
-    my_jpeg_destination_mgr* dest = (my_jpeg_destination_mgr*)cinfo->dest;
+    auto dest = (my_jpeg_destination_mgr*)cinfo->dest;
     qint64 n = max_buf - dest->free_in_buffer;
 
-    qint64 written = dest->device->write((char*)dest->buffer, n);
+    auto written = dest->device->write((char*)dest->buffer, n);
     if (written == -1)
         (*cinfo->err->error_exit)((j_common_ptr)cinfo);
 }
@@ -500,13 +500,13 @@ static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QSt
             text.insert(key, image.text(key));
     }
     foreach (const QString &pair, description.split(QLatin1String("\n\n"))) {
-        int index = pair.indexOf(QLatin1Char(':'));
+        auto index = pair.indexOf(QLatin1Char(':'));
         if (index >= 0 && pair.indexOf(QLatin1Char(' ')) < index) {
-            QString s = pair.simplified();
+            auto s = pair.simplified();
             if (!s.isEmpty())
                 text.insert(QLatin1String("Description"), s);
         } else {
-            QString key = pair.left(index);
+            auto key = pair.left(index);
             if (!key.simplified().isEmpty())
                 text.insert(key, pair.mid(index + 2).simplified());
         }
@@ -514,8 +514,8 @@ static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QSt
     if (text.isEmpty())
         return;
 
-    for (QMap<QString, QString>::ConstIterator it = text.constBegin(); it != text.constEnd(); ++it) {
-        QByteArray comment = it.key().toLatin1();
+    for (auto it = text.constBegin(); it != text.constEnd(); ++it) {
+        auto comment = it.key().toLatin1();
         if (!comment.isEmpty())
             comment += ": ";
         comment += it.value().toLatin1();
@@ -527,8 +527,8 @@ static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QSt
 
 static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile int sourceQuality, const QString &description, bool optimize, bool progressive)
 {
-    bool success = false;
-    const QVector<QRgb> cmap = image.colorTable();
+    auto success = false;
+    const auto cmap = image.colorTable();
 
     if (image.format() == QImage::Format_Invalid || image.format() == QImage::Format_Alpha8)
         return false;
@@ -537,7 +537,7 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
     JSAMPROW row_pointer[1];
     row_pointer[0] = 0;
 
-    struct my_jpeg_destination_mgr *iod_dest = new my_jpeg_destination_mgr(device);
+    auto iod_dest = new my_jpeg_destination_mgr(device);
     struct my_error_mgr jerr;
 
     cinfo.err = jpeg_std_error(&jerr);
@@ -556,13 +556,13 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
         cinfo.image_width = image.width();
         cinfo.image_height = image.height();
 
-        bool gray = false;
+        auto gray = false;
         switch (image.format()) {
         case QImage::Format_Mono:
         case QImage::Format_MonoLSB:
         case QImage::Format_Indexed8:
             gray = true;
-            for (int i = image.colorCount(); gray && i; i--) {
+            for (auto i = image.colorCount(); gray && i; i--) {
                 gray = gray & qIsGray(cmap[i-1]);
             }
             cinfo.input_components = gray ? 1 : 3;
@@ -580,9 +580,9 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
 
         jpeg_set_defaults(&cinfo);
 
-        qreal diffInch = qAbs(image.dotsPerMeterX()*2.54/100. - qRound(image.dotsPerMeterX()*2.54/100.))
+        auto diffInch = qAbs(image.dotsPerMeterX()*2.54/100. - qRound(image.dotsPerMeterX()*2.54/100.))
                          + qAbs(image.dotsPerMeterY()*2.54/100. - qRound(image.dotsPerMeterY()*2.54/100.));
-        qreal diffCm = (qAbs(image.dotsPerMeterX()/100. - qRound(image.dotsPerMeterX()/100.))
+        auto diffCm = (qAbs(image.dotsPerMeterX()/100. - qRound(image.dotsPerMeterX()/100.))
                         + qAbs(image.dotsPerMeterY()/100. - qRound(image.dotsPerMeterY()/100.)))*2.54;
         if (diffInch < diffCm) {
             cinfo.density_unit = 1; // dots/inch
@@ -600,7 +600,7 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
         if (progressive)
             jpeg_simple_progression(&cinfo);
 
-        int quality = sourceQuality >= 0 ? qMin(int(sourceQuality),100) : 75;
+        auto quality = sourceQuality >= 0 ? qMin(int(sourceQuality),100) : 75;
         jpeg_set_quality(&cinfo, quality, TRUE /* limit to baseline-JPEG values */);
         jpeg_start_compress(&cinfo, TRUE);
 
@@ -609,35 +609,35 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
         row_pointer[0] = new uchar[cinfo.image_width*cinfo.input_components];
         int w = cinfo.image_width;
         while (cinfo.next_scanline < cinfo.image_height) {
-            uchar *row = row_pointer[0];
+            auto row = row_pointer[0];
             switch (image.format()) {
             case QImage::Format_Mono:
             case QImage::Format_MonoLSB:
                 if (gray) {
-                    const uchar* data = image.constScanLine(cinfo.next_scanline);
+                    auto data = image.constScanLine(cinfo.next_scanline);
                     if (image.format() == QImage::Format_MonoLSB) {
-                        for (int i=0; i<w; i++) {
-                            bool bit = !!(*(data + (i >> 3)) & (1 << (i & 7)));
+                        for (auto i=0; i<w; i++) {
+                            auto bit = !!(*(data + (i >> 3)) & (1 << (i & 7)));
                             row[i] = qRed(cmap[bit]);
                         }
                     } else {
-                        for (int i=0; i<w; i++) {
-                            bool bit = !!(*(data + (i >> 3)) & (1 << (7 -(i & 7))));
+                        for (auto i=0; i<w; i++) {
+                            auto bit = !!(*(data + (i >> 3)) & (1 << (7 -(i & 7))));
                             row[i] = qRed(cmap[bit]);
                         }
                     }
                 } else {
-                    const uchar* data = image.constScanLine(cinfo.next_scanline);
+                    auto data = image.constScanLine(cinfo.next_scanline);
                     if (image.format() == QImage::Format_MonoLSB) {
-                        for (int i=0; i<w; i++) {
-                            bool bit = !!(*(data + (i >> 3)) & (1 << (i & 7)));
+                        for (auto i=0; i<w; i++) {
+                            auto bit = !!(*(data + (i >> 3)) & (1 << (i & 7)));
                             *row++ = qRed(cmap[bit]);
                             *row++ = qGreen(cmap[bit]);
                             *row++ = qBlue(cmap[bit]);
                         }
                     } else {
-                        for (int i=0; i<w; i++) {
-                            bool bit = !!(*(data + (i >> 3)) & (1 << (7 -(i & 7))));
+                        for (auto i=0; i<w; i++) {
+                            auto bit = !!(*(data + (i >> 3)) & (1 << (7 -(i & 7))));
                             *row++ = qRed(cmap[bit]);
                             *row++ = qGreen(cmap[bit]);
                             *row++ = qBlue(cmap[bit]);
@@ -647,14 +647,14 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
                 break;
             case QImage::Format_Indexed8:
                 if (gray) {
-                    const uchar* pix = image.constScanLine(cinfo.next_scanline);
-                    for (int i=0; i<w; i++) {
+                    auto pix = image.constScanLine(cinfo.next_scanline);
+                    for (auto i=0; i<w; i++) {
                         *row = qRed(cmap[*pix]);
                         ++row; ++pix;
                     }
                 } else {
-                    const uchar* pix = image.constScanLine(cinfo.next_scanline);
-                    for (int i=0; i<w; i++) {
+                    auto pix = image.constScanLine(cinfo.next_scanline);
+                    for (auto i=0; i<w; i++) {
                         *row++ = qRed(cmap[*pix]);
                         *row++ = qGreen(cmap[*pix]);
                         *row++ = qBlue(cmap[*pix]);
@@ -672,8 +672,8 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
             case QImage::Format_ARGB32:
             case QImage::Format_ARGB32_Premultiplied:
                 {
-                    const QRgb* rgb = (const QRgb*)image.constScanLine(cinfo.next_scanline);
-                    for (int i=0; i<w; i++) {
+                    auto rgb = (const QRgb*)image.constScanLine(cinfo.next_scanline);
+                    for (auto i=0; i<w; i++) {
                         *row++ = qRed(*rgb);
                         *row++ = qGreen(*rgb);
                         *row++ = qBlue(*rgb);
@@ -684,9 +684,9 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
             default:
                 {
                     // (Testing shows that this way is actually faster than converting to RGB888 + memcpy)
-                    QImage rowImg = image.copy(0, cinfo.next_scanline, w, 1).convertToFormat(QImage::Format_RGB32);
-                    const QRgb* rgb = (const QRgb*)rowImg.constScanLine(0);
-                    for (int i=0; i<w; i++) {
+                    auto rowImg = image.copy(0, cinfo.next_scanline, w, 1).convertToFormat(QImage::Format_RGB32);
+                    auto rgb = (const QRgb*)rowImg.constScanLine(0);
+                    for (auto i=0; i<w; i++) {
                         *row++ = qRed(*rgb);
                         *row++ = qGreen(*rgb);
                         *row++ = qBlue(*rgb);
@@ -793,7 +793,7 @@ static int getExifOrientation(QByteArray &exifData)
 
     quint16 val;
     quint32 offset;
-    const qint64 headerStart = stream.device()->pos();
+    const auto headerStart = stream.device()->pos();
 
     // read byte order marker
     stream >> val;
@@ -816,7 +816,7 @@ static int getExifOrientation(QByteArray &exifData)
         quint16 numEntries;
 
         // skip offset bytes to get the next IFD
-        const qint64 bytesToSkip = offset - (stream.device()->pos() - headerStart);
+        const auto bytesToSkip = offset - (stream.device()->pos() - headerStart);
 
         if (stream.skipRawData(bytesToSkip) != bytesToSkip)
             return -1;
@@ -902,8 +902,8 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
             (void) jpeg_read_header(&info, TRUE);
 
-            int width = 0;
-            int height = 0;
+            auto width = 0;
+            auto height = 0;
             read_jpeg_size(width, height, &info);
             size = QSize(width, height);
 
@@ -912,11 +912,11 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
             QByteArray exifData;
 
-            for (jpeg_saved_marker_ptr marker = info.marker_list; marker != NULL; marker = marker->next) {
+            for (auto marker = info.marker_list; marker != NULL; marker = marker->next) {
                 if (marker->marker == JPEG_COM) {
                     QString key, value;
-                    QString s = QString::fromLatin1((const char *)marker->data, marker->data_length);
-                    int index = s.indexOf(QLatin1String(": "));
+                    auto s = QString::fromLatin1((const char *)marker->data, marker->data_length);
+                    auto index = s.indexOf(QLatin1String(": "));
                     if (index == -1 || s.indexOf(QLatin1Char(' ')) < index) {
                         key = QLatin1String("Description");
                         value = s;
@@ -936,7 +936,7 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
             if (!exifData.isEmpty()) {
                 // Exif data present
-                int exifOrientation = getExifOrientation(exifData);
+                auto exifOrientation = getExifOrientation(exifData);
                 if (exifOrientation > 0)
                     transformation = exif2Qt(exifOrientation);
             }
@@ -961,9 +961,9 @@ bool QJpegHandlerPrivate::read(QImage *image)
 
     if(state == ReadHeader)
     {
-        bool success = read_jpeg_image(image, scaledSize, scaledClipRect, clipRect, quality, rgb888ToRgb32ConverterPtr, &info, &err);
+        auto success = read_jpeg_image(image, scaledSize, scaledClipRect, clipRect, quality, rgb888ToRgb32ConverterPtr, &info, &err);
         if (success) {
-            for (int i = 0; i < readTexts.size()-1; i+=2)
+            for (auto i = 0; i < readTexts.size()-1; i+=2)
                 image->setText(readTexts.at(i), readTexts.at(i+1));
 
             state = ReadingEnd;
@@ -1047,7 +1047,7 @@ bool QJpegHandler::write(const QImage &image)
 {
     if (d->transformation != QImageIOHandler::TransformationNone) {
         // We don't support writing EXIF headers so apply the transform to the data.
-        QImage img = image;
+        auto img = image;
         qt_imageTransform(img, d->transformation);
         return write_jpeg_image(img, device(), d->quality, d->description, d->optimize, d->progressive);
     }
@@ -1127,7 +1127,7 @@ void QJpegHandler::setOption(ImageOption option, const QVariant &value)
         d->progressive = value.toBool();
         break;
     case ImageTransformation: {
-        int transformation = value.toInt();
+        auto transformation = value.toInt();
         if (transformation > 0 && transformation < 8)
             d->transformation = QImageIOHandler::Transformations(transformation);
     }

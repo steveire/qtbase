@@ -82,8 +82,8 @@ QStringList QEGLDeviceIntegrationFactory::keys(const QString &pluginPath)
             const QString postFix = QStringLiteral(" (from ")
                     + QDir::toNativeSeparators(pluginPath)
                     + QLatin1Char(')');
-            const QStringList::iterator end = list.end();
-            for (QStringList::iterator it = list.begin(); it != end; ++it)
+            const auto end = list.end();
+            for (auto it = list.begin(); it != end; ++it)
                 (*it).append(postFix);
         }
     }
@@ -120,7 +120,7 @@ static int framebuffer = -1;
 
 QByteArray QEGLDeviceIntegration::fbDeviceName() const
 {
-    QByteArray fbDev = qgetenv("QT_QPA_EGLFS_FB");
+    auto fbDev = qgetenv("QT_QPA_EGLFS_FB");
     if (fbDev.isEmpty())
         fbDev = QByteArrayLiteral("/dev/fb0");
 
@@ -129,10 +129,10 @@ QByteArray QEGLDeviceIntegration::fbDeviceName() const
 
 int QEGLDeviceIntegration::framebufferIndex() const
 {
-    int fbIndex = 0;
+    auto fbIndex = 0;
 #ifndef QT_NO_REGULAREXPRESSION
     QRegularExpression fbIndexRx(QLatin1String("fb(\\d+)"));
-    QRegularExpressionMatch match = fbIndexRx.match(QString::fromLocal8Bit(fbDeviceName()));
+    auto match = fbIndexRx.match(QString::fromLocal8Bit(fbDeviceName()));
     if (match.hasMatch())
         fbIndex = match.captured(1).toInt();
 #endif
@@ -141,7 +141,7 @@ int QEGLDeviceIntegration::framebufferIndex() const
 
 void QEGLDeviceIntegration::platformInit()
 {
-    QByteArray fbDev = fbDeviceName();
+    auto fbDev = fbDeviceName();
 
     framebuffer = qt_safe_open(fbDev, O_RDONLY);
 
@@ -183,8 +183,8 @@ void QEGLDeviceIntegration::screenInit()
 
 void QEGLDeviceIntegration::screenDestroy()
 {
-    QGuiApplication *app = qGuiApp;
-    QEglFSIntegration *platformIntegration = static_cast<QEglFSIntegration *>(
+    auto app = qGuiApp;
+    auto platformIntegration = static_cast<QEglFSIntegration *>(
         QGuiApplicationPrivate::platformIntegration());
     while (!app->screens().isEmpty())
         platformIntegration->removeScreen(app->screens().last()->handle());
@@ -202,8 +202,8 @@ QSize QEGLDeviceIntegration::screenSize() const
 
 QDpi QEGLDeviceIntegration::logicalDpi() const
 {
-    const QSizeF ps = physicalScreenSize();
-    const QSize s = screenSize();
+    const auto ps = physicalScreenSize();
+    const auto s = screenSize();
 
     if (!ps.isEmpty() && !s.isEmpty())
         return QDpi(25.4 * s.width() / ps.width(),
@@ -249,7 +249,7 @@ EGLint QEGLDeviceIntegration::surfaceType() const
 
 QSurfaceFormat QEGLDeviceIntegration::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
 {
-    QSurfaceFormat format = inputFormat;
+    auto format = inputFormat;
 
     static const bool force888 = qEnvironmentVariableIntValue("QT_QPA_EGLFS_FORCE888");
     if (force888) {
@@ -310,7 +310,7 @@ void QEGLDeviceIntegration::waitForVSync(QPlatformSurface *surface) const
 #if defined(FBIO_WAITFORVSYNC)
     static const bool forceSync = qEnvironmentVariableIntValue("QT_QPA_EGLFS_FORCEVSYNC");
     if (forceSync && framebuffer != -1) {
-        int arg = 0;
+        auto arg = 0;
         if (ioctl(framebuffer, FBIO_WAITFORVSYNC, &arg) == -1)
             qWarning("Could not wait for vsync.");
     }

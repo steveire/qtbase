@@ -114,7 +114,7 @@ QStringList QOfonoManagerInterface::getModems()
 
 QString QOfonoManagerInterface::currentModem()
 {
-    QStringList modems = getModems();
+    auto modems = getModems();
     foreach (const QString &modem, modems) {
         QOfonoModemInterface device(modem);
         if (device.isPowered() && device.isOnline()
@@ -165,19 +165,19 @@ void QOfonoModemInterface::propertyChanged(const QString &name,const QDBusVarian
 
 bool QOfonoModemInterface::isPowered()
 {
-    QVariant var = getProperty(QStringLiteral("Powered"));
+    auto var = getProperty(QStringLiteral("Powered"));
     return qdbus_cast<bool>(var);
 }
 
 bool QOfonoModemInterface::isOnline()
 {
-    QVariant var = getProperty(QStringLiteral("Online"));
+    auto var = getProperty(QStringLiteral("Online"));
     return qdbus_cast<bool>(var);
 }
 
 QStringList QOfonoModemInterface::interfaces()
 {
-    const QVariant var = getProperty(QStringLiteral("Interfaces"));
+    const auto var = getProperty(QStringLiteral("Interfaces"));
     return var.toStringList();
 }
 
@@ -196,7 +196,7 @@ QVariantMap QOfonoModemInterface::getProperties()
 QVariant QOfonoModemInterface::getProperty(const QString &property)
 {
     QVariant var;
-    QVariantMap map = getProperties();
+    auto map = getProperties();
     if (map.contains(property))
         var = map.value(property);
     return var;
@@ -217,14 +217,14 @@ QOfonoNetworkRegistrationInterface::~QOfonoNetworkRegistrationInterface()
 
 QString QOfonoNetworkRegistrationInterface::getTechnology()
 {
-    QVariant var = getProperty(QStringLiteral("Technology"));
+    auto var = getProperty(QStringLiteral("Technology"));
     return qdbus_cast<QString>(var);
 }
 
 QVariant QOfonoNetworkRegistrationInterface::getProperty(const QString &property)
 {
     QVariant var;
-    QVariantMap map = getProperties();
+    auto map = getProperties();
     if (map.contains(property))
         var = map.value(property);
     return var;
@@ -288,13 +288,13 @@ PathPropertiesList QOfonoDataConnectionManagerInterface::contextsWithProperties(
 
 bool QOfonoDataConnectionManagerInterface::roamingAllowed()
 {
-    QVariant var = getProperty(QStringLiteral("RoamingAllowed"));
+    auto var = getProperty(QStringLiteral("RoamingAllowed"));
     return qdbus_cast<bool>(var);
 }
 
 QString QOfonoDataConnectionManagerInterface::bearer()
 {
-    QVariant var = getProperty(QStringLiteral("Bearer"));
+    auto var = getProperty(QStringLiteral("Bearer"));
     return qdbus_cast<QString>(var);
 }
 
@@ -360,7 +360,7 @@ void QOfonoConnectionContextInterface::propertyChanged(const QString &name, cons
 QVariant QOfonoConnectionContextInterface::getProperty(const QString &property)
 {
     QVariant var;
-    QVariantMap map = getProperties();
+    auto map = getProperties();
     if (map.contains(property))
         var = map.value(property);
     return var;
@@ -368,19 +368,19 @@ QVariant QOfonoConnectionContextInterface::getProperty(const QString &property)
 
 bool QOfonoConnectionContextInterface::active()
 {
-    QVariant var = getProperty(QStringLiteral("Active"));
+    auto var = getProperty(QStringLiteral("Active"));
     return qdbus_cast<bool>(var);
 }
 
 QString QOfonoConnectionContextInterface::accessPointName()
 {
-    QVariant var = getProperty(QStringLiteral("AccessPointName"));
+    auto var = getProperty(QStringLiteral("AccessPointName"));
     return qdbus_cast<QString>(var);
 }
 
 QString QOfonoConnectionContextInterface::name()
 {
-    QVariant var = getProperty(QStringLiteral("Name"));
+    auto var = getProperty(QStringLiteral("Name"));
     return qdbus_cast<QString>(var);
 }
 

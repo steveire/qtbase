@@ -119,7 +119,7 @@ void EventReader::run()
         uint response_type = event->response_type & ~0x80;
         switch (response_type) {
         case XCB_BUTTON_PRESS: {
-            xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
+            auto press = (xcb_button_press_event_t *)event;
             QPoint p(press->event_x, press->event_y);
             buttons = (buttons & ~0x7) | translateMouseButtons(press->state);
             buttons |= translateMouseButton(press->detail);
@@ -127,7 +127,7 @@ void EventReader::run()
             break;
             }
         case XCB_BUTTON_RELEASE: {
-            xcb_button_release_event_t *release = (xcb_button_release_event_t *)event;
+            auto release = (xcb_button_release_event_t *)event;
             QPoint p(release->event_x, release->event_y);
             buttons = (buttons & ~0x7) | translateMouseButtons(release->state);
             buttons &= ~translateMouseButton(release->detail);
@@ -135,18 +135,18 @@ void EventReader::run()
             break;
             }
         case XCB_MOTION_NOTIFY: {
-            xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
+            auto motion = (xcb_motion_notify_event_t *)event;
             QPoint p(motion->event_x, motion->event_y);
             QWindowSystemInterface::handleMouseEvent(0, motion->time, p, p, buttons);
             break;
             }
         case XCB_CLIENT_MESSAGE: {
-            xcb_client_message_event_t *client = (xcb_client_message_event_t *) event;
-            const xcb_atom_t *atoms = m_integration->atoms();
+            auto client = (xcb_client_message_event_t *) event;
+            auto atoms = m_integration->atoms();
             if (client->format == 32
                 && client->type == atoms[Atoms::WM_PROTOCOLS]
                 && client->data.data32[0] == atoms[Atoms::WM_DELETE_WINDOW]) {
-                QWindow *window = m_integration->platformWindow() ? m_integration->platformWindow()->window() : 0;
+                auto window = m_integration->platformWindow() ? m_integration->platformWindow()->window() : 0;
                 if (window)
                     QWindowSystemInterface::handleCloseEvent(window);
             }
@@ -186,7 +186,7 @@ void QEglFSX11Integration::platformInit()
 
     running.ref();
 
-    xcb_screen_iterator_t it = xcb_setup_roots_iterator(xcb_get_setup(m_connection));
+    auto it = xcb_setup_roots_iterator(xcb_get_setup(m_connection));
 
     m_connectionEventListener = xcb_generate_id(m_connection);
     xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
@@ -221,7 +221,7 @@ EGLNativeDisplayType QEglFSX11Integration::platformDisplay() const
 QSize QEglFSX11Integration::screenSize() const
 {
     if (m_screenSize.isEmpty()) {
-        QList<QByteArray> env = qgetenv("EGLFS_X11_SIZE").split('x');
+        auto env = qgetenv("EGLFS_X11_SIZE").split('x');
         if (env.length() == 2) {
             m_screenSize = QSize(env.at(0).toInt(), env.at(1).toInt());
         } else {
@@ -241,7 +241,7 @@ EGLNativeWindowType QEglFSX11Integration::createNativeWindow(QPlatformWindow *pl
 
     m_platformWindow = platformWindow;
 
-    xcb_screen_iterator_t it = xcb_setup_roots_iterator(xcb_get_setup(m_connection));
+    auto it = xcb_setup_roots_iterator(xcb_get_setup(m_connection));
     m_window = xcb_generate_id(m_connection);
     xcb_create_window(m_connection, XCB_COPY_FROM_PARENT, m_window, it.data->root,
                       0, 0, size.width(), size.height(), 0,
@@ -258,9 +258,9 @@ EGLNativeWindowType QEglFSX11Integration::createNativeWindow(QPlatformWindow *pl
         "_NET_WM_STATE_FULLSCREEN"
     };
 
-    for (int i = 0; i < Atoms::N_ATOMS; ++i) {
+    for (auto i = 0; i < Atoms::N_ATOMS; ++i) {
         cookies[i] = xcb_intern_atom(m_connection, false, strlen(atomNames[i]), atomNames[i]);
-        xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(m_connection, cookies[i], 0);
+        auto reply = xcb_intern_atom_reply(m_connection, cookies[i], 0);
         m_atoms[i] = reply->atom;
         free(reply);
     }

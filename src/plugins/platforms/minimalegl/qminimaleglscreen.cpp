@@ -62,8 +62,8 @@ public:
 
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) Q_DECL_OVERRIDE
     {
-        QMinimalEglWindow *window = static_cast<QMinimalEglWindow *>(surface);
-        QMinimalEglScreen *screen = static_cast<QMinimalEglScreen *>(window->screen());
+        auto window = static_cast<QMinimalEglWindow *>(surface);
+        auto screen = static_cast<QMinimalEglScreen *>(window->screen());
         return screen->surface();
     }
 };
@@ -116,7 +116,7 @@ void QMinimalEglScreen::createAndSetPlatformContext()
 {
     QSurfaceFormat platformFormat;
 
-    QByteArray depthString = qgetenv("QT_QPA_EGLFS_DEPTH");
+    auto depthString = qgetenv("QT_QPA_EGLFS_DEPTH");
     if (depthString.toInt() == 16) {
         platformFormat.setDepthBufferSize(16);
         platformFormat.setRedBufferSize(5);
@@ -137,7 +137,7 @@ void QMinimalEglScreen::createAndSetPlatformContext()
     if (!qEnvironmentVariableIsEmpty("QT_QPA_EGLFS_MULTISAMPLE"))
         platformFormat.setSamples(4);
 
-    EGLConfig config = q_configFromGLFormat(m_dpy, platformFormat);
+    auto config = q_configFromGLFormat(m_dpy, platformFormat);
 
     EGLNativeWindowType eglWindow = 0;
 #ifdef Q_OPENKODE
@@ -161,7 +161,7 @@ void QMinimalEglScreen::createAndSetPlatformContext()
     }
     //    qWarning("Created surface %dx%d\n", w, h);
 
-    QEGLPlatformContext *platformContext = new QMinimalEglContext(platformFormat, 0, m_dpy);
+    auto platformContext = new QMinimalEglContext(platformFormat, 0, m_dpy);
     m_platformContext = platformContext;
 
     EGLint w,h;                    // screen size detection
@@ -194,7 +194,7 @@ QImage::Format QMinimalEglScreen::format() const
 QPlatformOpenGLContext *QMinimalEglScreen::platformContext() const
 {
     if (!m_platformContext) {
-        QMinimalEglScreen *that = const_cast<QMinimalEglScreen *>(this);
+        auto that = const_cast<QMinimalEglScreen *>(this);
         that->createAndSetPlatformContext();
     }
     return m_platformContext;

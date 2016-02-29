@@ -76,7 +76,7 @@ QMinimalIntegration::QMinimalIntegration(const QStringList &parameters)
         m_options |= DebugBackingStore | EnableFonts;
     }
 
-    QMinimalScreen *mPrimaryScreen = new QMinimalScreen();
+    auto mPrimaryScreen = new QMinimalScreen();
 
     mPrimaryScreen->mGeometry = QRect(0, 0, 240, 320);
     mPrimaryScreen->mDepth = 32;
@@ -120,7 +120,7 @@ QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const
 QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWindow *window) const
 {
     Q_UNUSED(window);
-    QPlatformWindow *w = new QPlatformWindow(window);
+    auto w = new QPlatformWindow(window);
     w->requestActivateWindow();
     return w;
 }

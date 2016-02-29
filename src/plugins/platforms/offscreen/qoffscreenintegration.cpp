@@ -130,7 +130,7 @@ bool QOffscreenIntegration::hasCapability(QPlatformIntegration::Capability cap) 
 QPlatformWindow *QOffscreenIntegration::createPlatformWindow(QWindow *window) const
 {
     Q_UNUSED(window);
-    QPlatformWindow *w = new QOffscreenWindow(window);
+    auto w = new QOffscreenWindow(window);
     w->requestActivateWindow();
     return w;
 }

@@ -115,7 +115,7 @@ QPlatformWindow *QMinimalEglIntegration::createPlatformWindow(QWindow *window) c
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QMinimalEglIntegration::createPlatformWindow %p\n",window);
 #endif
-    QPlatformWindow *w = new QMinimalEglWindow(window);
+    auto w = new QMinimalEglWindow(window);
     w->requestActivateWindow();
     return w;
 }

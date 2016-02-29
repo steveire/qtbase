@@ -60,7 +60,7 @@ QImageIOPlugin::Capabilities QICOPlugin::capabilities(QIODevice *device, const Q
 
 QImageIOHandler *QICOPlugin::create(QIODevice *device, const QByteArray &format) const
 {
-    QImageIOHandler *handler = new QtIcoHandler(device);
+    auto handler = new QtIcoHandler(device);
 
     handler->setFormat(format);
     return handler;

@@ -74,8 +74,8 @@ void QMinimalBackingStore::flush(QWindow *window, const QRegion &region, const Q
     Q_UNUSED(offset);
 
     if (mDebug) {
-        static int c = 0;
-        QString filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
+        static auto c = 0;
+        auto filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
         qDebug() << "QMinimalBackingStore::flush() saving contents to" << filename.toLocal8Bit().constData();
         mImage.save(filename);
     }
@@ -83,7 +83,7 @@ void QMinimalBackingStore::flush(QWindow *window, const QRegion &region, const Q
 
 void QMinimalBackingStore::resize(const QSize &size, const QRegion &)
 {
-    QImage::Format format = QGuiApplication::primaryScreen()->handle()->format();
+    auto format = QGuiApplication::primaryScreen()->handle()->format();
     if (mImage.size() != size)
         mImage = QImage(size, format);
 }

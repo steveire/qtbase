@@ -78,14 +78,14 @@ QPlatformNativeInterface::NativeResourceForContextFunction QXcbGlxNativeInterfac
 void *QXcbGlxNativeInterfaceHandler::glxContextForContext(QOpenGLContext *context)
 {
     Q_ASSERT(context);
-    QGLXContext *glxPlatformContext = static_cast<QGLXContext *>(context->handle());
+    auto glxPlatformContext = static_cast<QGLXContext *>(context->handle());
     return glxPlatformContext->glxContext();
 }
 
 void *QXcbGlxNativeInterfaceHandler::glxConfigForContext(QOpenGLContext *context)
 {
     Q_ASSERT(context);
-    QGLXContext *glxPlatformContext = static_cast<QGLXContext *>(context->handle());
+    auto glxPlatformContext = static_cast<QGLXContext *>(context->handle());
     return glxPlatformContext->glxConfig();
 
 }

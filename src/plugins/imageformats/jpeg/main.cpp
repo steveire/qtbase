@@ -65,7 +65,7 @@ QImageIOPlugin::Capabilities QJpegPlugin::capabilities(QIODevice *device, const 
 
 QImageIOHandler *QJpegPlugin::create(QIODevice *device, const QByteArray &format) const
 {
-    QImageIOHandler *handler = new QJpegHandler;
+    auto handler = new QJpegHandler;
     handler->setDevice(device);
     handler->setFormat(format);
     return handler;

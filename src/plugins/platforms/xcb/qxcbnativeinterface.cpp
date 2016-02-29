@@ -87,8 +87,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("nofonthinting"),
         QByteArrayLiteral("atspibus")
     };
-    const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
-    const QByteArray *result = std::find(names, end, key);
+    auto end = names + sizeof(names) / sizeof(names[0]);
+    auto result = std::find(names, end, key);
     return int(result - names);
 }
 
@@ -124,11 +124,11 @@ QRect QXcbNativeInterface::systemTrayWindowGlobalGeometry(const QWindow *window)
 xcb_window_t QXcbNativeInterface::locateSystemTray(xcb_connection_t *conn, const QXcbScreen *screen)
 {
     if (m_sysTraySelectionAtom == XCB_ATOM_NONE) {
-        const QByteArray net_sys_tray = QString::fromLatin1("_NET_SYSTEM_TRAY_S%1").arg(screen->screenNumber()).toLatin1();
-        xcb_intern_atom_cookie_t intern_c =
+        const auto net_sys_tray = QString::fromLatin1("_NET_SYSTEM_TRAY_S%1").arg(screen->screenNumber()).toLatin1();
+        auto intern_c =
             xcb_intern_atom_unchecked(conn, true, net_sys_tray.length(), net_sys_tray);
 
-        xcb_intern_atom_reply_t *intern_r = xcb_intern_atom_reply(conn, intern_c, 0);
+        auto intern_r = xcb_intern_atom_reply(conn, intern_c, 0);
 
         if (!intern_r)
             return XCB_WINDOW_NONE;
@@ -137,13 +137,13 @@ xcb_window_t QXcbNativeInterface::locateSystemTray(xcb_connection_t *conn, const
         free(intern_r);
     }
 
-    xcb_get_selection_owner_cookie_t sel_owner_c = xcb_get_selection_owner_unchecked(conn, m_sysTraySelectionAtom);
-    xcb_get_selection_owner_reply_t *sel_owner_r = xcb_get_selection_owner_reply(conn, sel_owner_c, 0);
+    auto sel_owner_c = xcb_get_selection_owner_unchecked(conn, m_sysTraySelectionAtom);
+    auto sel_owner_r = xcb_get_selection_owner_reply(conn, sel_owner_c, 0);
 
     if (!sel_owner_r)
         return XCB_WINDOW_NONE;
 
-    xcb_window_t selection_window = sel_owner_r->owner;
+    auto selection_window = sel_owner_r->owner;
     free(sel_owner_r);
 
     return selection_window;
@@ -161,8 +161,8 @@ void QXcbNativeInterface::setParentRelativeBackPixmap(QWindow *window)
 
 void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resourceString)
 {
-    QByteArray lowerCaseResource = resourceString.toLower();
-    void *result = handlerNativeResourceForIntegration(lowerCaseResource);
+    auto lowerCaseResource = resourceString.toLower();
+    auto result = handlerNativeResourceForIntegration(lowerCaseResource);
     if (result)
         return result;
 
@@ -194,8 +194,8 @@ void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resour
 
 void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
 {
-    QByteArray lowerCaseResource = resourceString.toLower();
-    void *result = handlerNativeResourceForContext(lowerCaseResource, context);
+    auto lowerCaseResource = resourceString.toLower();
+    auto result = handlerNativeResourceForContext(lowerCaseResource, context);
     return result;
 }
 
@@ -206,12 +206,12 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
         return Q_NULLPTR;
     }
 
-    QByteArray lowerCaseResource = resourceString.toLower();
-    void *result = handlerNativeResourceForScreen(lowerCaseResource, screen);
+    auto lowerCaseResource = resourceString.toLower();
+    auto result = handlerNativeResourceForScreen(lowerCaseResource, screen);
     if (result)
         return result;
 
-    const QXcbScreen *xcbScreen = static_cast<QXcbScreen *>(screen->handle());
+    auto xcbScreen = static_cast<QXcbScreen *>(screen->handle());
     switch (resourceType(lowerCaseResource)) {
     case Display:
 #ifdef XCB_USE_XLIB
@@ -234,7 +234,7 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
         result = reinterpret_cast<void *>(xcbScreen->antialiasingEnabled() + 1);
         break;
     case TrayWindow:
-        if (QXcbSystemTrayTracker *s = systemTrayTracker(screen))
+        if (auto s = systemTrayTracker(screen))
             result = (void *)quintptr(s->trayWindow());
         break;
     case GetTimestamp:
@@ -254,8 +254,8 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
 
 void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
-    QByteArray lowerCaseResource = resourceString.toLower();
-    void *result = handlerNativeResourceForWindow(lowerCaseResource, window);
+    auto lowerCaseResource = resourceString.toLower();
+    auto result = handlerNativeResourceForWindow(lowerCaseResource, window);
     if (result)
         return result;
 
@@ -278,8 +278,8 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
 
 void *QXcbNativeInterface::nativeResourceForBackingStore(const QByteArray &resourceString, QBackingStore *backingStore)
 {
-    const QByteArray lowerCaseResource = resourceString.toLower();
-    void *result = handlerNativeResourceForBackingStore(lowerCaseResource,backingStore);
+    const auto lowerCaseResource = resourceString.toLower();
+    auto result = handlerNativeResourceForBackingStore(lowerCaseResource,backingStore);
     return result;
 }
 
@@ -287,9 +287,9 @@ void *QXcbNativeInterface::nativeResourceForBackingStore(const QByteArray &resou
 void *QXcbNativeInterface::nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor)
 {
     if (resource == QByteArrayLiteral("xcbcursor")) {
-        if (const QScreen *primaryScreen = QGuiApplication::primaryScreen()) {
-            if (const QPlatformCursor *pCursor= primaryScreen->handle()->cursor()) {
-                xcb_cursor_t xcbCursor = static_cast<const QXcbCursor *>(pCursor)->xcbCursor(cursor);
+        if (auto primaryScreen = QGuiApplication::primaryScreen()) {
+            if (auto pCursor= primaryScreen->handle()->cursor()) {
+                auto xcbCursor = static_cast<const QXcbCursor *>(pCursor)->xcbCursor(cursor);
                 return reinterpret_cast<void *>(quintptr(xcbCursor));
             }
         }
@@ -300,7 +300,7 @@ void *QXcbNativeInterface::nativeResourceForCursor(const QByteArray &resource, c
 
 QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
 {
-    const QByteArray lowerCaseResource = resource.toLower();
+    const auto lowerCaseResource = resource.toLower();
     QPlatformNativeInterface::NativeResourceForIntegrationFunction func = handlerNativeResourceFunctionForIntegration(lowerCaseResource);
     if (func)
         return func;
@@ -312,7 +312,7 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterfa
 
 QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::nativeResourceFunctionForContext(const QByteArray &resource)
 {
-    const QByteArray lowerCaseResource = resource.toLower();
+    const auto lowerCaseResource = resource.toLower();
     QPlatformNativeInterface::NativeResourceForContextFunction func = handlerNativeResourceFunctionForContext(lowerCaseResource);
     if (func)
         return func;
@@ -321,7 +321,7 @@ QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::
 
 QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::nativeResourceFunctionForScreen(const QByteArray &resource)
 {
-    const QByteArray lowerCaseResource = resource.toLower();
+    const auto lowerCaseResource = resource.toLower();
     NativeResourceForScreenFunction func = handlerNativeResourceFunctionForScreen(lowerCaseResource);
     if (func)
         return func;
@@ -335,21 +335,21 @@ QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::n
 
 QPlatformNativeInterface::NativeResourceForWindowFunction QXcbNativeInterface::nativeResourceFunctionForWindow(const QByteArray &resource)
 {
-    const QByteArray lowerCaseResource = resource.toLower();
+    const auto lowerCaseResource = resource.toLower();
     NativeResourceForWindowFunction func = handlerNativeResourceFunctionForWindow(lowerCaseResource);
     return func;
 }
 
 QPlatformNativeInterface::NativeResourceForBackingStoreFunction QXcbNativeInterface::nativeResourceFunctionForBackingStore(const QByteArray &resource)
 {
-    const QByteArray lowerCaseResource = resource.toLower();
+    const auto lowerCaseResource = resource.toLower();
     NativeResourceForBackingStoreFunction func = handlerNativeResourceFunctionForBackingStore(resource);
     return func;
 }
 
 QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &function) const
 {
-    const QByteArray lowerCaseFunction = function.toLower();
+    const auto lowerCaseFunction = function.toLower();
     QFunctionPointer func = handlerPlatformFunction(lowerCaseFunction);
     if (func)
         return func;
@@ -405,8 +405,8 @@ void *QXcbNativeInterface::getTimestamp(const QXcbScreen *screen)
 
 void *QXcbNativeInterface::startupId()
 {
-    QXcbIntegration* integration = QXcbIntegration::instance();
-    QXcbConnection *defaultConnection = integration->defaultConnection();
+    auto integration = QXcbIntegration::instance();
+    auto defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return reinterpret_cast<void *>(const_cast<char *>(defaultConnection->startupId().constData()));
     return 0;
@@ -414,8 +414,8 @@ void *QXcbNativeInterface::startupId()
 
 void *QXcbNativeInterface::x11Screen()
 {
-    QXcbIntegration *integration = QXcbIntegration::instance();
-    QXcbConnection *defaultConnection = integration->defaultConnection();
+    auto integration = QXcbIntegration::instance();
+    auto defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return reinterpret_cast<void *>(defaultConnection->primaryScreenNumber());
     return 0;
@@ -423,8 +423,8 @@ void *QXcbNativeInterface::x11Screen()
 
 void *QXcbNativeInterface::rootWindow()
 {
-    QXcbIntegration *integration = QXcbIntegration::instance();
-    QXcbConnection *defaultConnection = integration->defaultConnection();
+    auto integration = QXcbIntegration::instance();
+    auto defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return reinterpret_cast<void *>(defaultConnection->rootWindow());
     return 0;
@@ -433,8 +433,8 @@ void *QXcbNativeInterface::rootWindow()
 void *QXcbNativeInterface::display()
 {
 #ifdef XCB_USE_XLIB
-    QXcbIntegration *integration = QXcbIntegration::instance();
-    QXcbConnection *defaultConnection = integration->defaultConnection();
+    auto integration = QXcbIntegration::instance();
+    auto defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return defaultConnection->xlib_display();
 #endif
@@ -443,29 +443,29 @@ void *QXcbNativeInterface::display()
 
 void *QXcbNativeInterface::connection()
 {
-    QXcbIntegration *integration = QXcbIntegration::instance();
+    auto integration = QXcbIntegration::instance();
     return integration->defaultConnection()->xcb_connection();
 }
 
 void *QXcbNativeInterface::atspiBus()
 {
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    QXcbConnection *defaultConnection = integration->defaultConnection();
+    auto integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    auto defaultConnection = integration->defaultConnection();
     if (defaultConnection) {
-        xcb_atom_t atspiBusAtom = defaultConnection->internAtom("AT_SPI_BUS");
-        xcb_get_property_cookie_t cookie = Q_XCB_CALL2(xcb_get_property(
+        auto atspiBusAtom = defaultConnection->internAtom("AT_SPI_BUS");
+        auto cookie = Q_XCB_CALL2(xcb_get_property(
                                                            defaultConnection->xcb_connection(),
                                                            false, defaultConnection->rootWindow(),
                                                            atspiBusAtom, XCB_ATOM_STRING, 0, 128),
                                                        defaultConnection);
-        xcb_get_property_reply_t *reply = Q_XCB_CALL2(xcb_get_property_reply(
+        auto reply = Q_XCB_CALL2(xcb_get_property_reply(
                                                           defaultConnection->xcb_connection(),
                                                           cookie, 0),
                                                       defaultConnection);
         Q_ASSERT(!reply->bytes_after);
-        char *data = (char *)xcb_get_property_value(reply);
-        int length = xcb_get_property_value_length(reply);
-        QByteArray *busAddress = new QByteArray(data, length);
+        auto data = (char *)xcb_get_property_value(reply);
+        auto length = xcb_get_property_value_length(reply);
+        auto busAddress = new QByteArray(data, length);
         free(reply);
         return busAddress;
     }
@@ -489,8 +489,8 @@ void QXcbNativeInterface::setAppUserTime(QScreen* screen, xcb_timestamp_t time)
 void QXcbNativeInterface::setStartupId(const char *data)
 {
     QByteArray startupId(data);
-    QXcbIntegration *integration = QXcbIntegration::instance();
-    QXcbConnection *defaultConnection = integration->defaultConnection();
+    auto integration = QXcbIntegration::instance();
+    auto defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         defaultConnection->setStartupId(startupId);
 }
@@ -499,10 +499,10 @@ QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)
 {
     QXcbScreen *screen;
     if (window) {
-        QScreen *qs = window->screen();
+        auto qs = window->screen();
         screen = static_cast<QXcbScreen *>(qs ? qs->handle() : Q_NULLPTR);
     } else {
-        QScreen *qs = QGuiApplication::primaryScreen();
+        auto qs = QGuiApplication::primaryScreen();
         screen = static_cast<QXcbScreen *>(qs ? qs->handle() : Q_NULLPTR);
     }
     return screen;
@@ -511,7 +511,7 @@ QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)
 void *QXcbNativeInterface::displayForWindow(QWindow *window)
 {
 #if defined(XCB_USE_XLIB)
-    QXcbScreen *screen = qPlatformScreenForWindow(window);
+    auto screen = qPlatformScreenForWindow(window);
     return screen ? screen->connection()->xlib_display() : Q_NULLPTR;
 #else
     Q_UNUSED(window);
@@ -521,13 +521,13 @@ void *QXcbNativeInterface::displayForWindow(QWindow *window)
 
 void *QXcbNativeInterface::connectionForWindow(QWindow *window)
 {
-    QXcbScreen *screen = qPlatformScreenForWindow(window);
+    auto screen = qPlatformScreenForWindow(window);
     return screen ? screen->xcb_connection() : Q_NULLPTR;
 }
 
 void *QXcbNativeInterface::screenForWindow(QWindow *window)
 {
-    QXcbScreen *screen = qPlatformScreenForWindow(window);
+    auto screen = qPlatformScreenForWindow(window);
     return screen ? screen->screen() : Q_NULLPTR;
 }
 
@@ -544,8 +544,8 @@ void QXcbNativeInterface::removeHandler(QXcbNativeInterfaceHandler *handler)
 
 QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterface::handlerNativeResourceFunctionForIntegration(const QByteArray &resource) const
 {
-    for (int i = 0; i < m_handlers.size(); i++) {
-        QXcbNativeInterfaceHandler *handler = m_handlers.at(i);
+    for (auto i = 0; i < m_handlers.size(); i++) {
+        auto handler = m_handlers.at(i);
         NativeResourceForIntegrationFunction result = handler->nativeResourceFunctionForIntegration(resource);
         if (result)
             return result;
@@ -555,8 +555,8 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterfa
 
 QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::handlerNativeResourceFunctionForContext(const QByteArray &resource) const
 {
-    for (int i = 0; i < m_handlers.size(); i++) {
-        QXcbNativeInterfaceHandler *handler = m_handlers.at(i);
+    for (auto i = 0; i < m_handlers.size(); i++) {
+        auto handler = m_handlers.at(i);
         NativeResourceForContextFunction result = handler->nativeResourceFunctionForContext(resource);
         if (result)
             return result;
@@ -566,8 +566,8 @@ QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::
 
 QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::handlerNativeResourceFunctionForScreen(const QByteArray &resource) const
 {
-    for (int i = 0; i < m_handlers.size(); i++) {
-        QXcbNativeInterfaceHandler *handler = m_handlers.at(i);
+    for (auto i = 0; i < m_handlers.size(); i++) {
+        auto handler = m_handlers.at(i);
         NativeResourceForScreenFunction result = handler->nativeResourceFunctionForScreen(resource);
         if (result)
             return result;
@@ -577,8 +577,8 @@ QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::h
 
 QPlatformNativeInterface::NativeResourceForWindowFunction QXcbNativeInterface::handlerNativeResourceFunctionForWindow(const QByteArray &resource) const
 {
-    for (int i = 0; i < m_handlers.size(); i++) {
-        QXcbNativeInterfaceHandler *handler = m_handlers.at(i);
+    for (auto i = 0; i < m_handlers.size(); i++) {
+        auto handler = m_handlers.at(i);
         NativeResourceForWindowFunction result = handler->nativeResourceFunctionForWindow(resource);
         if (result)
             return result;
@@ -588,8 +588,8 @@ QPlatformNativeInterface::NativeResourceForWindowFunction QXcbNativeInterface::h
 
 QPlatformNativeInterface::NativeResourceForBackingStoreFunction QXcbNativeInterface::handlerNativeResourceFunctionForBackingStore(const QByteArray &resource) const
 {
-    for (int i = 0; i < m_handlers.size(); i++) {
-        QXcbNativeInterfaceHandler *handler = m_handlers.at(i);
+    for (auto i = 0; i < m_handlers.size(); i++) {
+        auto handler = m_handlers.at(i);
         NativeResourceForBackingStoreFunction result = handler->nativeResourceFunctionForBackingStore(resource);
         if (result)
             return result;
@@ -599,8 +599,8 @@ QPlatformNativeInterface::NativeResourceForBackingStoreFunction QXcbNativeInterf
 
 QFunctionPointer QXcbNativeInterface::handlerPlatformFunction(const QByteArray &function) const
 {
-    for (int i = 0; i < m_handlers.size(); i++) {
-        QXcbNativeInterfaceHandler *handler = m_handlers.at(i);
+    for (auto i = 0; i < m_handlers.size(); i++) {
+        auto handler = m_handlers.at(i);
         QFunctionPointer func = handler->platformFunction(function);
         if (func)
             return func;

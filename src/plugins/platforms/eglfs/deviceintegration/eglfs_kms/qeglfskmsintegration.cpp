@@ -78,8 +78,8 @@ void QEglFSKmsIntegration::platformInit()
         qCDebug(qLcEglfsKmsDebug) << "Using DRM device" << m_devicePath << "specified in config file";
     } else {
 
-        QDeviceDiscovery *d = QDeviceDiscovery::create(QDeviceDiscovery::Device_VideoMask);
-        QStringList devices = d->scanConnectedDevices();
+        auto d = QDeviceDiscovery::create(QDeviceDiscovery::Device_VideoMask);
+        auto devices = d->scanConnectedDevices();
         qCDebug(qLcEglfsKmsDebug) << "Found the following video devices:" << devices;
         d->deleteLater();
 
@@ -136,7 +136,7 @@ EGLNativeWindowType QEglFSKmsIntegration::createNativeWindow(QPlatformWindow *pl
     Q_UNUSED(size);
     Q_UNUSED(format);
 
-    QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(platformWindow->screen());
+    auto screen = static_cast<QEglFSKmsScreen *>(platformWindow->screen());
     if (screen->surface()) {
         qWarning("Only single window per screen supported!");
         return 0;
@@ -151,7 +151,7 @@ EGLNativeWindowType QEglFSKmsIntegration::createNativeOffscreenWindow(const QSur
     Q_ASSERT(m_device);
 
     qCDebug(qLcEglfsKmsDebug) << "Creating native off screen window";
-    gbm_surface *surface = gbm_surface_create(m_device->device(),
+    auto surface = gbm_surface_create(m_device->device(),
                                               1, 1,
                                               GBM_FORMAT_XRGB8888,
                                               GBM_BO_USE_RENDERING);
@@ -161,7 +161,7 @@ EGLNativeWindowType QEglFSKmsIntegration::createNativeOffscreenWindow(const QSur
 
 void QEglFSKmsIntegration::destroyNativeWindow(EGLNativeWindowType window)
 {
-    gbm_surface *surface = reinterpret_cast<gbm_surface *>(window);
+    auto surface = reinterpret_cast<gbm_surface *>(window);
     gbm_surface_destroy(surface);
 }
 
@@ -187,16 +187,16 @@ QPlatformCursor *QEglFSKmsIntegration::createCursor(QPlatformScreen *screen) con
 
 void QEglFSKmsIntegration::waitForVSync(QPlatformSurface *surface) const
 {
-    QWindow *window = static_cast<QWindow *>(surface->surface());
-    QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(window->screen()->handle());
+    auto window = static_cast<QWindow *>(surface->surface());
+    auto screen = static_cast<QEglFSKmsScreen *>(window->screen()->handle());
 
     screen->waitForFlip();
 }
 
 void QEglFSKmsIntegration::presentBuffer(QPlatformSurface *surface)
 {
-    QWindow *window = static_cast<QWindow *>(surface->surface());
-    QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(window->screen()->handle());
+    auto window = static_cast<QWindow *>(surface->surface());
+    auto screen = static_cast<QEglFSKmsScreen *>(window->screen()->handle());
 
     screen->flip();
 }
@@ -223,7 +223,7 @@ QMap<QString, QVariantMap> QEglFSKmsIntegration::outputSettings() const
 
 void QEglFSKmsIntegration::loadConfig()
 {
-    static QByteArray json = qgetenv("QT_QPA_EGLFS_KMS_CONFIG");
+    static auto json = qgetenv("QT_QPA_EGLFS_KMS_CONFIG");
     if (json.isEmpty())
         return;
 
@@ -236,26 +236,26 @@ void QEglFSKmsIntegration::loadConfig()
         return;
     }
 
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    const auto doc = QJsonDocument::fromJson(file.readAll());
     if (!doc.isObject()) {
         qCDebug(qLcEglfsKmsDebug) << "Invalid config file" << json
                                   << "- no top-level JSON object";
         return;
     }
 
-    const QJsonObject object = doc.object();
+    const auto object = doc.object();
 
     m_hwCursor = object.value(QStringLiteral("hwcursor")).toBool(m_hwCursor);
     m_pbuffers = object.value(QStringLiteral("pbuffers")).toBool(m_pbuffers);
     m_devicePath = object.value(QStringLiteral("device")).toString();
     m_separateScreens = object.value(QStringLiteral("separateScreens")).toBool(m_separateScreens);
 
-    const QJsonArray outputs = object.value(QStringLiteral("outputs")).toArray();
-    for (int i = 0; i < outputs.size(); i++) {
-        const QVariantMap outputSettings = outputs.at(i).toObject().toVariantMap();
+    const auto outputs = object.value(QStringLiteral("outputs")).toArray();
+    for (auto i = 0; i < outputs.size(); i++) {
+        const auto outputSettings = outputs.at(i).toObject().toVariantMap();
 
         if (outputSettings.contains(QStringLiteral("name"))) {
-            const QString name = outputSettings.value(QStringLiteral("name")).toString();
+            const auto name = outputSettings.value(QStringLiteral("name")).toString();
 
             if (m_outputSettings.contains(name)) {
                 qCDebug(qLcEglfsKmsDebug) << "Output" << name << "configured multiple times!";

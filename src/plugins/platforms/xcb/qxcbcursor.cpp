@@ -282,7 +282,7 @@ QXcbCursorCacheKey::QXcbCursorCacheKey(const QCursor &c)
     : shape(c.shape()), bitmapCacheKey(0), maskCacheKey(0)
 {
     if (shape == Qt::BitmapCursor) {
-        const qint64 pixmapCacheKey = c.pixmap().cacheKey();
+        const auto pixmapCacheKey = c.pixmap().cacheKey();
         if (pixmapCacheKey) {
             bitmapCacheKey = pixmapCacheKey;
         } else {
@@ -307,10 +307,10 @@ QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
     xcb_open_font(xcb_connection(), cursorFont, strlen(cursorStr), cursorStr);
 
 #if defined(XCB_USE_XLIB) && !defined(QT_NO_LIBRARY)
-    static bool function_ptrs_not_initialized = true;
+    static auto function_ptrs_not_initialized = true;
     if (function_ptrs_not_initialized) {
         QLibrary xcursorLib(QLatin1String("Xcursor"), 1);
-        bool xcursorFound = xcursorLib.load();
+        auto xcursorFound = xcursorLib.load();
         if (!xcursorFound) { // try without the version number
             xcursorLib.setFileName(QLatin1String("Xcursor"));
             xcursorFound = xcursorLib.load();
@@ -333,7 +333,7 @@ QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
 
 QXcbCursor::~QXcbCursor()
 {
-    xcb_connection_t *conn = xcb_connection();
+    auto conn = xcb_connection();
 
     if (m_gtkCursorThemeInitialized) {
         m_screen->xSettings()->removeCallbackForHandle(this);
@@ -361,9 +361,9 @@ void QXcbCursor::changeCursor(QCursor *cursor, QWindow *widget)
     xcb_cursor_t c = XCB_CURSOR_NONE;
     if (cursor) {
         const QXcbCursorCacheKey key(*cursor);
-        CursorHash::iterator it = m_cursorHash.find(key);
+        auto it = m_cursorHash.find(key);
         if (it == m_cursorHash.end()) {
-            const Qt::CursorShape shape = cursor->shape();
+            const auto shape = cursor->shape();
             it = m_cursorHash.insert(key, shape == Qt::BitmapCursor ? createBitmapCursor(cursor) : createFontCursor(shape));
         }
         c = it.value();
@@ -374,7 +374,7 @@ void QXcbCursor::changeCursor(QCursor *cursor, QWindow *widget)
 
 static int cursorIdForShape(int cshape)
 {
-    int cursorId = 0;
+    auto cursorId = 0;
     switch (cshape) {
     case Qt::ArrowCursor:
         cursorId = XC_left_ptr;
@@ -429,64 +429,64 @@ static int cursorIdForShape(int cshape)
 xcb_cursor_t QXcbCursor::createNonStandardCursor(int cshape)
 {
     xcb_cursor_t cursor = 0;
-    xcb_connection_t *conn = xcb_connection();
+    auto conn = xcb_connection();
 
     if (cshape == Qt::BlankCursor) {
-        xcb_pixmap_t cp = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(), cur_blank_bits, 16, 16,
+        auto cp = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(), cur_blank_bits, 16, 16,
                                                              1, 0, 0, 0);
-        xcb_pixmap_t mp = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(), cur_blank_bits, 16, 16,
+        auto mp = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(), cur_blank_bits, 16, 16,
                                                              1, 0, 0, 0);
         cursor = xcb_generate_id(conn);
         xcb_create_cursor(conn, cursor, cp, mp, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, 8, 8);
     } else if (cshape >= Qt::SizeVerCursor && cshape < Qt::SizeAllCursor) {
-        int i = (cshape - Qt::SizeVerCursor) * 2;
-        xcb_pixmap_t pm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
+        auto i = (cshape - Qt::SizeVerCursor) * 2;
+        auto pm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
                                                              const_cast<uint8_t*>(cursor_bits16[i]),
                                                              16, 16, 1, 0, 0, 0);
-        xcb_pixmap_t pmm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
+        auto pmm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
                                                               const_cast<uint8_t*>(cursor_bits16[i + 1]),
                                                               16, 16, 1, 0, 0, 0);
         cursor = xcb_generate_id(conn);
         xcb_create_cursor(conn, cursor, pm, pmm, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, 8, 8);
     } else if ((cshape >= Qt::SplitVCursor && cshape <= Qt::SplitHCursor)
                || cshape == Qt::WhatsThisCursor || cshape == Qt::BusyCursor) {
-        int i = (cshape - Qt::SplitVCursor) * 2;
-        xcb_pixmap_t pm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
+        auto i = (cshape - Qt::SplitVCursor) * 2;
+        auto pm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
                                                              const_cast<uint8_t*>(cursor_bits32[i]),
                                                              32, 32, 1, 0, 0, 0);
-        xcb_pixmap_t pmm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
+        auto pmm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
                                                               const_cast<uint8_t*>(cursor_bits32[i + 1]),
                                                               32, 32, 1, 0, 0, 0);
-        int hs = (cshape == Qt::PointingHandCursor || cshape == Qt::WhatsThisCursor
+        auto hs = (cshape == Qt::PointingHandCursor || cshape == Qt::WhatsThisCursor
                   || cshape == Qt::BusyCursor) ? 0 : 16;
         cursor = xcb_generate_id(conn);
         xcb_create_cursor(conn, cursor, pm, pmm, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, hs, hs);
     } else if (cshape == Qt::ForbiddenCursor) {
-        int i = (cshape - Qt::ForbiddenCursor) * 2;
-        xcb_pixmap_t pm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
+        auto i = (cshape - Qt::ForbiddenCursor) * 2;
+        auto pm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
                                                              const_cast<uint8_t*>(cursor_bits20[i]),
                                                              20, 20, 1, 0, 0, 0);
-        xcb_pixmap_t pmm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
+        auto pmm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
                                                               const_cast<uint8_t*>(cursor_bits20[i + 1]),
                                                               20, 20, 1, 0, 0, 0);
         cursor = xcb_generate_id(conn);
         xcb_create_cursor(conn, cursor, pm, pmm, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, 10, 10);
     } else if (cshape == Qt::OpenHandCursor || cshape == Qt::ClosedHandCursor) {
-        bool open = cshape == Qt::OpenHandCursor;
-        xcb_pixmap_t pm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
+        auto open = cshape == Qt::OpenHandCursor;
+        auto pm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
                                                              const_cast<uint8_t*>(open ? openhand_bits : closedhand_bits),
                                                              16, 16, 1, 0, 0, 0);
-        xcb_pixmap_t pmm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
+        auto pmm = xcb_create_pixmap_from_bitmap_data(conn, m_screen->root(),
                                                              const_cast<uint8_t*>(open ? openhandm_bits : closedhandm_bits),
                                                              16, 16, 1, 0, 0, 0);
         cursor = xcb_generate_id(conn);
         xcb_create_cursor(conn, cursor, pm, pmm, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, 8, 8);
     } else if (cshape == Qt::DragCopyCursor || cshape == Qt::DragMoveCursor
                || cshape == Qt::DragLinkCursor) {
-        QImage image = QGuiApplicationPrivate::instance()->getPixmapCursor(static_cast<Qt::CursorShape>(cshape)).toImage();
+        auto image = QGuiApplicationPrivate::instance()->getPixmapCursor(static_cast<Qt::CursorShape>(cshape)).toImage();
         if (!image.isNull()) {
-            xcb_pixmap_t pm = qt_xcb_XPixmapFromBitmap(m_screen, image);
-            xcb_pixmap_t pmm = qt_xcb_XPixmapFromBitmap(m_screen, image.createAlphaMask());
+            auto pm = qt_xcb_XPixmapFromBitmap(m_screen, image);
+            auto pmm = qt_xcb_XPixmapFromBitmap(m_screen, image.createAlphaMask());
             cursor = xcb_generate_id(conn);
             xcb_create_cursor(conn, cursor, pm, pmm, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, 8, 8);
             xcb_free_pixmap(conn, pm);
@@ -506,7 +506,7 @@ bool updateCursorTheme(void *dpy, const QByteArray &theme) {
     if (oldTheme == theme)
         return false;
 
-    int setTheme = ptrXcursorLibrarySetTheme(dpy,theme.constData());
+    auto setTheme = ptrXcursorLibrarySetTheme(dpy,theme.constData());
     return setTheme;
 }
 
@@ -514,7 +514,7 @@ bool updateCursorTheme(void *dpy, const QByteArray &theme) {
 {
     Q_UNUSED(screen);
     Q_UNUSED(name);
-    QXcbCursor *self = static_cast<QXcbCursor *>(handle);
+    auto self = static_cast<QXcbCursor *>(handle);
     updateCursorTheme(self->connection()->xlib_display(),property.toByteArray());
 }
 
@@ -545,18 +545,18 @@ static xcb_cursor_t loadCursor(void *dpy, int cshape)
 
 xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
 {
-    xcb_connection_t *conn = xcb_connection();
-    int cursorId = cursorIdForShape(cshape);
+    auto conn = xcb_connection();
+    auto cursorId = cursorIdForShape(cshape);
     xcb_cursor_t cursor = XCB_NONE;
 
     // Try Xcursor first
 #if defined(XCB_USE_XLIB) && !defined(QT_NO_LIBRARY)
     if (cshape >= 0 && cshape <= Qt::LastCursor) {
-        void *dpy = connection()->xlib_display();
+        auto dpy = connection()->xlib_display();
         // special case for non-standard dnd-* cursors
         cursor = loadCursor(dpy, cshape);
         if (!cursor && !m_gtkCursorThemeInitialized && m_screen->xSettings()->initialized()) {
-            QByteArray gtkCursorTheme = m_screen->xSettings()->setting("Gtk/CursorThemeName").toByteArray();
+            auto gtkCursorTheme = m_screen->xSettings()->setting("Gtk/CursorThemeName").toByteArray();
             m_screen->xSettings()->registerCallbackForProperty("Gtk/CursorThemeName",cursorThemePropertyChanged,this);
             if (updateCursorTheme(dpy,gtkCursorTheme)) {
                 cursor = loadCursor(dpy, cshape);
@@ -586,7 +586,7 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
     }
 
     if (cursor && cshape >= 0 && cshape < Qt::LastCursor && connection()->hasXFixes()) {
-        const char *name = cursorNames[cshape];
+        auto name = cursorNames[cshape];
         xcb_xfixes_set_cursor_name(conn, cursor, strlen(name), name);
     }
 
@@ -595,14 +595,14 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
 
 xcb_cursor_t QXcbCursor::createBitmapCursor(QCursor *cursor)
 {
-    xcb_connection_t *conn = xcb_connection();
-    QPoint spot = cursor->hotSpot();
+    auto conn = xcb_connection();
+    auto spot = cursor->hotSpot();
     xcb_cursor_t c = XCB_NONE;
     if (cursor->pixmap().depth() > 1)
         c = qt_xcb_createCursorXRender(m_screen, cursor->pixmap().toImage(), spot);
     if (!c) {
-        xcb_pixmap_t cp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->bitmap()->toImage());
-        xcb_pixmap_t mp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->mask()->toImage());
+        auto cp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->bitmap()->toImage());
+        auto mp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->mask()->toImage());
         c = xcb_generate_id(conn);
         xcb_create_cursor(conn, c, cp, mp, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF,
                           spot.x(), spot.y());
@@ -618,10 +618,10 @@ void QXcbCursor::queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDes
     if (pos)
         *pos = QPoint();
 
-    xcb_window_t root = c->primaryVirtualDesktop()->root();
-    xcb_query_pointer_cookie_t cookie = xcb_query_pointer(c->xcb_connection(), root);
+    auto root = c->primaryVirtualDesktop()->root();
+    auto cookie = xcb_query_pointer(c->xcb_connection(), root);
     xcb_generic_error_t *err = 0;
-    xcb_query_pointer_reply_t *reply = xcb_query_pointer_reply(c->xcb_connection(), cookie, &err);
+    auto reply = xcb_query_pointer_reply(c->xcb_connection(), cookie, &err);
     if (!err && reply) {
         if (virtualDesktop) {
             foreach (QXcbVirtualDesktop *vd, c->virtualDesktops()) {

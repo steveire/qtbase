@@ -105,17 +105,17 @@ bool QXcbGlxIntegration::initialize(QXcbConnection *connection)
     m_connection = connection;
 #ifdef XCB_HAS_XCB_GLX
 
-    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection->xcb_connection(), &xcb_glx_id);
+    auto reply = xcb_get_extension_data(m_connection->xcb_connection(), &xcb_glx_id);
     if (!reply || !reply->present)
         return false;
 
     m_glx_first_event = reply->first_event;
 
     xcb_generic_error_t *error = 0;
-    xcb_glx_query_version_cookie_t xglx_query_cookie = xcb_glx_query_version(m_connection->xcb_connection(),
+    auto xglx_query_cookie = xcb_glx_query_version(m_connection->xcb_connection(),
                                                                              XCB_GLX_MAJOR_VERSION,
                                                                              XCB_GLX_MINOR_VERSION);
-    xcb_glx_query_version_reply_t *xglx_query = xcb_glx_query_version_reply(m_connection->xcb_connection(),
+    auto xglx_query = xcb_glx_query_version_reply(m_connection->xcb_connection(),
                                                                             xglx_query_cookie, &error);
     if (!xglx_query || error) {
         qCWarning(QT_XCB_GLINTEGRATION) << "QXcbConnection: Failed to initialize GLX";
@@ -133,12 +133,12 @@ bool QXcbGlxIntegration::initialize(QXcbConnection *connection)
 
 bool QXcbGlxIntegration::handleXcbEvent(xcb_generic_event_t *event, uint responseType)
 {
-    bool handled = false;
+    auto handled = false;
     // Check if a custom XEvent constructor was registered in xlib for this event type, and call it discarding the constructed XEvent if any.
     // XESetWireToEvent might be used by libraries to intercept messages from the X server e.g. the OpenGL lib waiting for DRI2 events.
-    Display *xdisplay = static_cast<Display *>(m_connection->xlib_display());
+    auto xdisplay = static_cast<Display *>(m_connection->xlib_display());
     XLockDisplay(xdisplay);
-    bool locked = true;
+    auto locked = true;
     Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent(xdisplay, responseType, 0);
     if (proc) {
         XESetWireToEvent(xdisplay, responseType, proc);
@@ -151,10 +151,10 @@ bool QXcbGlxIntegration::handleXcbEvent(xcb_generic_event_t *event, uint respons
             // by DRI2WireToEvent(). For an application to be able to see the event
             // we have to convert it to an xcb_glx_buffer_swap_complete_event_t and
             // pass it to the native event filter.
-            const uint swap_complete = m_glx_first_event + XCB_GLX_BUFFER_SWAP_COMPLETE;
-            QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
+            const auto swap_complete = m_glx_first_event + XCB_GLX_BUFFER_SWAP_COMPLETE;
+            auto dispatcher = QAbstractEventDispatcher::instance();
             if (dispatcher && uint(dummy.type) == swap_complete && responseType != swap_complete) {
-                QGLXBufferSwapComplete *xev = reinterpret_cast<QGLXBufferSwapComplete *>(&dummy);
+                auto xev = reinterpret_cast<QGLXBufferSwapComplete *>(&dummy);
                 xcb_glx_buffer_swap_complete_event_t ev;
                 memset(&ev, 0, sizeof(xcb_glx_buffer_swap_complete_event_t));
                 ev.response_type = xev->type;
@@ -169,7 +169,7 @@ bool QXcbGlxIntegration::handleXcbEvent(xcb_generic_event_t *event, uint respons
                 // Unlock the display before calling the native event filter
                 XUnlockDisplay(xdisplay);
                 locked = false;
-                QByteArray genericEventFilterType = m_connection->nativeInterface()->genericEventFilterType();
+                auto genericEventFilterType = m_connection->nativeInterface()->genericEventFilterType();
                 long result = 0;
                 handled = dispatcher->filterNativeEvent(genericEventFilterType, &ev, &result);
             }
@@ -188,8 +188,8 @@ QXcbWindow *QXcbGlxIntegration::createWindow(QWindow *window) const
 
 QPlatformOpenGLContext *QXcbGlxIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
-    QGLXContext *platformContext = new QGLXContext(screen, context->format(),
+    auto screen = static_cast<QXcbScreen *>(context->screen()->handle());
+    auto platformContext = new QGLXContext(screen, context->format(),
                                                    context->shareHandle(), context->nativeHandle());
     context->setNativeHandle(platformContext->nativeHandle());
     return platformContext;
@@ -197,16 +197,16 @@ QPlatformOpenGLContext *QXcbGlxIntegration::createPlatformOpenGLContext(QOpenGLC
 
 QPlatformOffscreenSurface *QXcbGlxIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    static bool vendorChecked = false;
-    static bool glxPbufferUsable = true;
+    static auto vendorChecked = false;
+    static auto glxPbufferUsable = true;
     if (!vendorChecked) {
         vendorChecked = true;
-        Display *display = glXGetCurrentDisplay();
+        auto display = glXGetCurrentDisplay();
 #ifdef XCB_USE_XLIB
         if (!display)
             display = static_cast<Display *>(m_connection->xlib_display());
 #endif
-        const char *glxvendor = glXGetClientString(display, GLX_VENDOR);
+        auto glxvendor = glXGetClientString(display, GLX_VENDOR);
         if (glxvendor && !strcmp(glxvendor, "ATI"))
             glxPbufferUsable = false;
     }

@@ -62,12 +62,12 @@ void QXcbWMSupport::updateNetWMAtoms()
 {
     net_wm_atoms.clear();
 
-    xcb_window_t root = connection()->primaryScreen()->root();
-    int offset = 0;
-    int remaining = 0;
+    auto root = connection()->primaryScreen()->root();
+    auto offset = 0;
+    auto remaining = 0;
     do {
-        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_SUPPORTED), XCB_ATOM_ATOM, offset, 1024);
-        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, NULL);
+        auto cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_SUPPORTED), XCB_ATOM_ATOM, offset, 1024);
+        auto reply = xcb_get_property_reply(xcb_connection(), cookie, NULL);
         if (!reply)
             break;
 
@@ -75,8 +75,8 @@ void QXcbWMSupport::updateNetWMAtoms()
 
         if (reply->type == XCB_ATOM_ATOM && reply->format == 32) {
             int len = xcb_get_property_value_length(reply)/sizeof(xcb_atom_t);
-            xcb_atom_t *atoms = (xcb_atom_t *)xcb_get_property_value(reply);
-            int s = net_wm_atoms.size();
+            auto atoms = (xcb_atom_t *)xcb_get_property_value(reply);
+            auto s = net_wm_atoms.size();
             net_wm_atoms.resize(s + len);
             memcpy(net_wm_atoms.data() + s, atoms, len*sizeof(xcb_atom_t));
 
@@ -96,12 +96,12 @@ void QXcbWMSupport::updateVirtualRoots()
     if (!isSupportedByWM(atom(QXcbAtom::_NET_VIRTUAL_ROOTS)))
         return;
 
-    xcb_window_t root = connection()->primaryScreen()->root();
-    int offset = 0;
-    int remaining = 0;
+    auto root = connection()->primaryScreen()->root();
+    auto offset = 0;
+    auto remaining = 0;
     do {
-        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_VIRTUAL_ROOTS), XCB_ATOM_WINDOW, offset, 1024);
-        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, NULL);
+        auto cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_VIRTUAL_ROOTS), XCB_ATOM_WINDOW, offset, 1024);
+        auto reply = xcb_get_property_reply(xcb_connection(), cookie, NULL);
         if (!reply)
             break;
 
@@ -109,8 +109,8 @@ void QXcbWMSupport::updateVirtualRoots()
 
         if (reply->type == XCB_ATOM_WINDOW && reply->format == 32) {
             int len = xcb_get_property_value_length(reply)/sizeof(xcb_window_t);
-            xcb_window_t *roots = (xcb_window_t *)xcb_get_property_value(reply);
-            int s = net_virtual_roots.size();
+            auto roots = (xcb_window_t *)xcb_get_property_value(reply);
+            auto s = net_virtual_roots.size();
             net_virtual_roots.resize(s + len);
             memcpy(net_virtual_roots.data() + s, roots, len*sizeof(xcb_window_t));
 

@@ -82,7 +82,7 @@ QConnmanManagerInterface::QConnmanManagerInterface( QObject *parent)
 
     QList<QVariant> argumentList;
     QDBusPendingReply<QVariantMap> props_reply = asyncCallWithArgumentList(QLatin1String("GetProperties"), argumentList);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(props_reply, this);
+    auto watcher = new QDBusPendingCallWatcher(props_reply, this);
 
     QObject::connect(watcher,SIGNAL(finished(QDBusPendingCallWatcher*)),
                      this, SLOT(propertiesReply(QDBusPendingCallWatcher*)));
@@ -108,7 +108,7 @@ QConnmanManagerInterface::QConnmanManagerInterface( QObject *parent)
 
     QList<QVariant> argumentList2;
     QDBusPendingReply<ConnmanMapList> serv_reply = asyncCallWithArgumentList(QLatin1String("GetServices"), argumentList2);
-    QDBusPendingCallWatcher *watcher2 = new QDBusPendingCallWatcher(serv_reply, this);
+    auto watcher2 = new QDBusPendingCallWatcher(serv_reply, this);
 
     QObject::connect(watcher2,SIGNAL(finished(QDBusPendingCallWatcher*)),
                 this, SLOT(servicesReply(QDBusPendingCallWatcher*)));
@@ -155,7 +155,7 @@ void QConnmanManagerInterface::servicesReply(QDBusPendingCallWatcher *call)
 
 void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
 {
-    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanManagerInterface::propertyChanged);
+    static const auto propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanManagerInterface::propertyChanged);
     if (signal == propertyChangedSignal) {
         if (!connection().connect(QLatin1String(CONNMAN_SERVICE),
                                QLatin1String(CONNMAN_MANAGER_PATH),
@@ -166,7 +166,7 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
         }
     }
 
-    static const QMetaMethod servicesChangedSignal = QMetaMethod::fromSignal(&QConnmanManagerInterface::servicesChanged);
+    static const auto servicesChangedSignal = QMetaMethod::fromSignal(&QConnmanManagerInterface::servicesChanged);
     if (signal == servicesChangedSignal) {
         if (!connection().connect(QLatin1String(CONNMAN_SERVICE),
                                QLatin1String(CONNMAN_MANAGER_PATH),
@@ -215,7 +215,7 @@ QString QConnmanManagerInterface::getState()
 
 bool QConnmanManagerInterface::getOfflineMode()
 {
-    QVariant var = getProperty(QStringLiteral("OfflineMode"));
+    auto var = getProperty(QStringLiteral("OfflineMode"));
     return qdbus_cast<bool>(var);
 }
 
@@ -273,7 +273,7 @@ void QConnmanManagerInterface::technologyRemoved(const QDBusObjectPath &path)
 {
     if (technologiesList.contains(path.path())) {
         technologiesList.removeOne(path.path());
-        QConnmanTechnologyInterface * tech = technologiesMap.take(path.path());
+        auto tech = technologiesMap.take(path.path());
         delete tech;
     }
 }
@@ -287,7 +287,7 @@ QConnmanServiceInterface::QConnmanServiceInterface(const QString &dbusPathName,Q
     QList<QVariant> argumentList;
     QDBusPendingReply<QVariantMap> props_reply = asyncCallWithArgumentList(QLatin1String("GetProperties"), argumentList);
 
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(props_reply, this);
+    auto watcher = new QDBusPendingCallWatcher(props_reply, this);
 
     QObject::connect(watcher,SIGNAL(finished(QDBusPendingCallWatcher*)),
             this, SLOT(propertiesReply(QDBusPendingCallWatcher*)));
@@ -329,7 +329,7 @@ void QConnmanServiceInterface::propertiesReply(QDBusPendingCallWatcher *call)
 
 void QConnmanServiceInterface::connectNotify(const QMetaMethod &signal)
 {
-    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanServiceInterface::propertyChanged);
+    static const auto propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanServiceInterface::propertyChanged);
     if (signal == propertyChangedSignal) {
         QDBusConnection::systemBus().connect(QLatin1String(CONNMAN_SERVICE),
                                path(),
@@ -349,7 +349,7 @@ void QConnmanServiceInterface::changedProperty(const QString &name, const QDBusV
 QVariant QConnmanServiceInterface::getProperty(const QString &property)
 {
     QVariant var;
-    QVariantMap map = getProperties();
+    auto map = getProperties();
     var = map.value(property);
     return var;
 }
@@ -372,73 +372,73 @@ void QConnmanServiceInterface::remove()
 // properties
 QString QConnmanServiceInterface::state()
 {
-    QVariant var = getProperty(QStringLiteral("State"));
+    auto var = getProperty(QStringLiteral("State"));
     return qdbus_cast<QString>(var);
 }
 
 QString QConnmanServiceInterface::lastError()
 {
-    QVariant var = getProperty(QStringLiteral("Error"));
+    auto var = getProperty(QStringLiteral("Error"));
     return qdbus_cast<QString>(var);
 }
 
 QString QConnmanServiceInterface::name()
 {
-    QVariant var = getProperty(QStringLiteral("Name"));
+    auto var = getProperty(QStringLiteral("Name"));
     return qdbus_cast<QString>(var);
 }
 
 QString QConnmanServiceInterface::type()
 {
-    QVariant var = getProperty(QStringLiteral("Type"));
+    auto var = getProperty(QStringLiteral("Type"));
     return qdbus_cast<QString>(var);
 }
 
 QString QConnmanServiceInterface::security()
 {
-    QVariant var = getProperty(QStringLiteral("Security"));
+    auto var = getProperty(QStringLiteral("Security"));
     return qdbus_cast<QString>(var);
 }
 
 bool QConnmanServiceInterface::favorite()
 {
-    QVariant var = getProperty(QStringLiteral("Favorite"));
+    auto var = getProperty(QStringLiteral("Favorite"));
     return qdbus_cast<bool>(var);
 }
 
 bool QConnmanServiceInterface::autoConnect()
 {
-    QVariant var = getProperty(QStringLiteral("AutoConnect"));
+    auto var = getProperty(QStringLiteral("AutoConnect"));
     return qdbus_cast<bool>(var);
 }
 
 bool QConnmanServiceInterface::roaming()
 {
-    QVariant var = getProperty(QStringLiteral("Roaming"));
+    auto var = getProperty(QStringLiteral("Roaming"));
     return qdbus_cast<bool>(var);
 }
 
 QVariantMap QConnmanServiceInterface::ethernet()
 {
-    QVariant var = getProperty(QStringLiteral("Ethernet"));
+    auto var = getProperty(QStringLiteral("Ethernet"));
     return qdbus_cast<QVariantMap >(var);
 }
 
 QString QConnmanServiceInterface::serviceInterface()
 {
-    QVariantMap map = ethernet();
+    auto map = ethernet();
     return map.value(QStringLiteral("Interface")).toString();
 }
 
 bool QConnmanServiceInterface::isOfflineMode()
 {
-    QVariant var = getProperty(QStringLiteral("OfflineMode"));
+    auto var = getProperty(QStringLiteral("OfflineMode"));
     return qdbus_cast<bool>(var);
 }
 
 QStringList QConnmanServiceInterface::services()
 {
-    QVariant var = getProperty(QStringLiteral("Services"));
+    auto var = getProperty(QStringLiteral("Services"));
     return qdbus_cast<QStringList>(var);
 }
 
@@ -457,7 +457,7 @@ QConnmanTechnologyInterface::~QConnmanTechnologyInterface()
 
 void QConnmanTechnologyInterface::connectNotify(const QMetaMethod &signal)
 {
-    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanTechnologyInterface::propertyChanged);
+    static const auto propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanTechnologyInterface::propertyChanged);
     if (signal == propertyChangedSignal) {
         QDBusConnection::systemBus().connect(QLatin1String(CONNMAN_SERVICE),
                                path(),
@@ -480,21 +480,21 @@ QVariantMap QConnmanTechnologyInterface::properties()
 QVariant QConnmanTechnologyInterface::getProperty(const QString &property)
 {
     QVariant var;
-    QVariantMap map = properties();
+    auto map = properties();
     var = map.value(property);
     return var;
 }
 
 QString QConnmanTechnologyInterface::type()
 {
-    QVariant var = getProperty(QStringLiteral("Type"));
+    auto var = getProperty(QStringLiteral("Type"));
     return qdbus_cast<QString>(var);
 }
 
 void QConnmanTechnologyInterface::scan()
 {
     QDBusPendingReply<> reply = asyncCall(QLatin1String("Scan"));
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+    auto watcher = new QDBusPendingCallWatcher(reply, this);
     connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
             this, SLOT(scanReply(QDBusPendingCallWatcher*)));
 }

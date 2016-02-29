@@ -71,10 +71,10 @@ private:
 
 void QEglFSKmsScreen::bufferDestroyedHandler(gbm_bo *bo, void *data)
 {
-    FrameBuffer *fb = static_cast<FrameBuffer *>(data);
+    auto fb = static_cast<FrameBuffer *>(data);
 
     if (fb->fb) {
-        gbm_device *device = gbm_bo_get_device(bo);
+        auto device = gbm_bo_get_device(bo);
         drmModeRmFB(gbm_device_get_fd(device), fb->fb);
     }
 
@@ -84,19 +84,19 @@ void QEglFSKmsScreen::bufferDestroyedHandler(gbm_bo *bo, void *data)
 QEglFSKmsScreen::FrameBuffer *QEglFSKmsScreen::framebufferForBufferObject(gbm_bo *bo)
 {
     {
-        FrameBuffer *fb = static_cast<FrameBuffer *>(gbm_bo_get_user_data(bo));
+        auto fb = static_cast<FrameBuffer *>(gbm_bo_get_user_data(bo));
         if (fb)
             return fb;
     }
 
-    uint32_t width = gbm_bo_get_width(bo);
-    uint32_t height = gbm_bo_get_height(bo);
-    uint32_t stride = gbm_bo_get_stride(bo);
-    uint32_t handle = gbm_bo_get_handle(bo).u32;
+    auto width = gbm_bo_get_width(bo);
+    auto height = gbm_bo_get_height(bo);
+    auto stride = gbm_bo_get_stride(bo);
+    auto handle = gbm_bo_get_handle(bo).u32;
 
     QScopedPointer<FrameBuffer> fb(new FrameBuffer);
 
-    int ret = drmModeAddFB(m_device->fd(), width, height, 24, 32,
+    auto ret = drmModeAddFB(m_device->fd(), width, height, 24, 32,
                            stride, handle, &fb->fb);
 
     if (ret) {
@@ -143,7 +143,7 @@ QEglFSKmsScreen::~QEglFSKmsScreen()
 
 QRect QEglFSKmsScreen::geometry() const
 {
-    const int mode = m_output.mode;
+    const auto mode = m_output.mode;
     return QRect(m_pos.x(), m_pos.y(),
                  m_output.modes[mode].hdisplay,
                  m_output.modes[mode].vdisplay);
@@ -166,8 +166,8 @@ QSizeF QEglFSKmsScreen::physicalSize() const
 
 QDpi QEglFSKmsScreen::logicalDpi() const
 {
-    const QSizeF ps = physicalSize();
-    const QSize s = geometry().size();
+    const auto ps = physicalSize();
+    const auto s = geometry().size();
 
     if (!ps.isEmpty() && !s.isEmpty())
         return QDpi(25.4 * s.width() / ps.width(),
@@ -198,7 +198,7 @@ QPlatformCursor *QEglFSKmsScreen::cursor() const
             return m_device->globalCursor();
 
         if (m_cursor.isNull()) {
-            QEglFSKmsScreen *that = const_cast<QEglFSKmsScreen *>(this);
+            auto that = const_cast<QEglFSKmsScreen *>(this);
             that->m_cursor.reset(new QEglFSKmsCursor(that));
         }
 
@@ -263,10 +263,10 @@ void QEglFSKmsScreen::flip()
         return;
     }
 
-    FrameBuffer *fb = framebufferForBufferObject(m_gbm_bo_next);
+    auto fb = framebufferForBufferObject(m_gbm_bo_next);
 
     if (!m_output.mode_set) {
-        int ret = drmModeSetCrtc(m_device->fd(),
+        auto ret = drmModeSetCrtc(m_device->fd(),
                                  m_output.crtc_id,
                                  fb->fb,
                                  0, 0,
@@ -281,7 +281,7 @@ void QEglFSKmsScreen::flip()
         }
     }
 
-    int ret = drmModePageFlip(m_device->fd(),
+    auto ret = drmModePageFlip(m_device->fd(),
                               m_output.crtc_id,
                               fb->fb,
                               DRM_MODE_PAGE_FLIP_EVENT,
@@ -319,7 +319,7 @@ void QEglFSKmsScreen::restoreMode()
 
 qreal QEglFSKmsScreen::refreshRate() const
 {
-    quint32 refresh = m_output.modes[m_output.mode].vrefresh;
+    auto refresh = m_output.modes[m_output.mode].vrefresh;
     return refresh > 0 ? refresh : 60;
 }
 

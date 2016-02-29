@@ -76,7 +76,7 @@ EGLSurface QEglFSContext::createTemporaryOffscreenSurface()
             return EGL_NO_SURFACE;
         }
     }
-    EGLConfig config = q_configFromGLFormat(eglDisplay(), format());
+    auto config = q_configFromGLFormat(eglDisplay(), format());
     return eglCreateWindowSurface(eglDisplay(), config, m_tempWindow, 0);
 }
 
@@ -95,7 +95,7 @@ void QEglFSContext::runGLChecks()
 {
     // Note that even though there is an EGL context current here,
     // QOpenGLContext and QOpenGLFunctions are not yet usable at this stage.
-    const char *renderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+    auto renderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
     // Be nice and warn about a common source of confusion.
     if (renderer && strstr(renderer, "llvmpipe"))
         qWarning("Running on a software rasterizer (LLVMpipe), expect limited performance.");
@@ -105,8 +105,8 @@ void QEglFSContext::swapBuffers(QPlatformSurface *surface)
 {
     // draw the cursor
     if (surface->surface()->surfaceClass() == QSurface::Window) {
-        QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
-        if (QEglFSCursor *cursor = qobject_cast<QEglFSCursor *>(window->screen()->cursor()))
+        auto window = static_cast<QPlatformWindow *>(surface);
+        if (auto cursor = qobject_cast<QEglFSCursor *>(window->screen()->cursor()))
             cursor->paintOnScreen();
     }
 

@@ -263,9 +263,9 @@ int ICOReader::count()
 
 bool ICOReader::canRead(QIODevice *iodev)
 {
-    bool isProbablyICO = false;
+    auto isProbablyICO = false;
     if (iodev) {
-        qint64 oldPos = iodev->pos();
+        auto oldPos = iodev->pos();
 
         ICONDIR ikonDir;
         if (readIconDir(iodev, &ikonDir)) {
@@ -285,7 +285,7 @@ bool ICOReader::canRead(QIODevice *iodev)
 
                 if (iodev->isSequential()) {
                     // Our structs might be padded due to alignment, so we need to fetch each member before we ungetChar() !
-                    quint32 tmp = ikonDir.idEntries[0].dwImageOffset;
+                    auto tmp = ikonDir.idEntries[0].dwImageOffset;
                     iodev->ungetChar((tmp >> 24) & 0xff);
                     iodev->ungetChar((tmp >> 16) & 0xff);
                     iodev->ungetChar((tmp >>  8) & 0xff);
@@ -384,7 +384,7 @@ void ICOReader::readColorTable(QImage & image)
     if (iod) {
         image.setColorCount(icoAttrib.ncolors);
         uchar rgb[4];
-        for (int i=0; i<icoAttrib.ncolors; i++) {
+        for (auto i=0; i<icoAttrib.ncolors; i++) {
             if (iod->read((char*)rgb, 4) != 4) {
             image = QImage();
             break;
@@ -419,8 +419,8 @@ void ICOReader::read1BitBMP(QImage & image)
 {
     if (iod) {
 
-        int h = image.height();
-        int bpl = image.bytesPerLine();
+        auto h = image.height();
+        auto bpl = image.bytesPerLine();
 
         while (--h >= 0) {
             if (iod->read((char*)image.scanLine(h),bpl) != bpl) {
@@ -437,9 +437,9 @@ void ICOReader::read4BitBMP(QImage & image)
 {
     if (iod) {
 
-        int h = icoAttrib.h;
-        int buflen = ((icoAttrib.w+7)/8)*4;
-        uchar *buf = new uchar[buflen];
+        auto h = icoAttrib.h;
+        auto buflen = ((icoAttrib.w+7)/8)*4;
+        auto buf = new uchar[buflen];
         Q_CHECK_PTR(buf);
 
         while (--h >= 0) {
@@ -447,9 +447,9 @@ void ICOReader::read4BitBMP(QImage & image)
                 image = QImage();
                 break;
             }
-            uchar *p = image.scanLine(h);
-            uchar *b = buf;
-            for (int i=0; i<icoAttrib.w/2; i++) {   // convert nibbles to bytes
+            auto p = image.scanLine(h);
+            auto b = buf;
+            for (auto i=0; i<icoAttrib.w/2; i++) {   // convert nibbles to bytes
                 *p++ = *b >> 4;
                 *p++ = *b++ & 0x0f;
             }
@@ -468,8 +468,8 @@ void ICOReader::read8BitBMP(QImage & image)
 {
     if (iod) {
 
-        int h = icoAttrib.h;
-        int bpl = image.bytesPerLine();
+        auto h = icoAttrib.h;
+        auto bpl = image.bytesPerLine();
 
         while (--h >= 0) {
             if (iod->read((char *)image.scanLine(h), bpl) != bpl) {
@@ -485,11 +485,11 @@ void ICOReader::read8BitBMP(QImage & image)
 void ICOReader::read16_24_32BMP(QImage & image)
 {
     if (iod) {
-        int h = icoAttrib.h;
+        auto h = icoAttrib.h;
         QRgb *p;
         QRgb  *end;
-        uchar *buf = new uchar[image.bytesPerLine()];
-        int    bpl = ((icoAttrib.w*icoAttrib.nbits+31)/32)*4;
+        auto buf = new uchar[image.bytesPerLine()];
+        auto bpl = ((icoAttrib.w*icoAttrib.nbits+31)/32)*4;
         uchar *b;
 
         while (--h >= 0) {
@@ -531,12 +531,12 @@ QImage ICOReader::iconAt(int index)
 
             iod->seek(iconEntry.dwImageOffset);
 
-            const QByteArray pngMagic = QByteArray::fromRawData((const char*)pngMagicData, sizeof(pngMagicData));
-            const bool isPngImage = (iod->read(pngMagic.size()) == pngMagic);
+            const auto pngMagic = QByteArray::fromRawData((const char*)pngMagicData, sizeof(pngMagicData));
+            const auto isPngImage = (iod->read(pngMagic.size()) == pngMagic);
 
             if (isPngImage) {
                 iod->seek(iconEntry.dwImageOffset);
-                QImage image = QImage::fromData(iod->read(iconEntry.dwBytesInRes), "png");
+                auto image = QImage::fromData(iod->read(iconEntry.dwBytesInRes), "png");
                 image.setText(QLatin1String(icoOrigDepthKey), QString::number(iconEntry.wBitCount));
                 return image;
             }
@@ -571,7 +571,7 @@ QImage ICOReader::iconAt(int index)
                 if (icoAttrib.h == 0) // means 256 pixels
                     icoAttrib.h = header.biHeight/2;
 
-                QImage::Format format = QImage::Format_ARGB32;
+                auto format = QImage::Format_ARGB32;
                 if (icoAttrib.nbits == 24)
                     format = QImage::Format_RGB32;
                 else if (icoAttrib.ncolors == 2 && icoAttrib.depth == 1)
@@ -624,9 +624,9 @@ QVector<QImage> ICOReader::read(QIODevice *device)
     QVector<QImage> images;
 
     ICOReader reader(device);
-    const int N = reader.count();
+    const auto N = reader.count();
     images.reserve(N);
-    for (int i = 0; i < N; i++)
+    for (auto i = 0; i < N; i++)
         images += reader.iconAt(i);
 
     return images;
@@ -647,24 +647,24 @@ QVector<QImage> ICOReader::read(QIODevice *device)
 */
 bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
 {
-    bool retValue = false;
+    auto retValue = false;
 
     if (images.count()) {
 
-        qint64 origOffset = device->pos();
+        auto origOffset = device->pos();
 
         ICONDIR id;
         id.idReserved = 0;
         id.idType = 1;
         id.idCount = images.count();
 
-        ICONDIRENTRY * entries = new ICONDIRENTRY[id.idCount];
-        BMP_INFOHDR * bmpHeaders = new BMP_INFOHDR[id.idCount];
-        QByteArray * imageData = new QByteArray[id.idCount];
+        auto entries = new ICONDIRENTRY[id.idCount];
+        auto bmpHeaders = new BMP_INFOHDR[id.idCount];
+        auto imageData = new QByteArray[id.idCount];
 
-        for (int i=0; i<id.idCount; i++) {
+        for (auto i=0; i<id.idCount; i++) {
 
-            QImage image = images[i];
+            auto image = images[i];
             // Scale down the image if it is larger than 256 pixels in either width or height
             // because this is a maximum size of image in the ICO file.
             if (image.width() > 256 || image.height() > 256)
@@ -681,8 +681,8 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
             }
             maskImage = maskImage.convertToFormat(QImage::Format_Mono);
 
-            int    nbits = 32;
-            int    bpl_bmp = ((image.width()*nbits+31)/32)*4;
+            auto nbits = 32;
+            auto bpl_bmp = ((image.width()*nbits+31)/32)*4;
 
             entries[i].bColorCount = 0;
             entries[i].bReserved = 0;
@@ -713,16 +713,16 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
             QBuffer buffer(&imageData[i]);
             buffer.open(QIODevice::WriteOnly);
 
-            uchar *buf = new uchar[bpl_bmp];
+            auto buf = new uchar[bpl_bmp];
             uchar *b;
             memset( buf, 0, bpl_bmp );
             int y;
             for (y = image.height() - 1; y >= 0; y--) {    // write the image bits
                 // 32 bits
-                QRgb *p   = (QRgb *)image.scanLine(y);
-                QRgb *end = p + image.width();
+                auto p   = (QRgb *)image.scanLine(y);
+                auto end = p + image.width();
                 b = buf;
-                int x = 0;
+                auto x = 0;
                 while (p < end) {
                     *b++ = qBlue(*p);
                     *b++ = qGreen(*p);
@@ -745,7 +745,7 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
 
         if (writeIconDir(device, id)) {
             int i;
-            bool bOK = true;
+            auto bOK = true;
             for (i = 0; i < id.idCount && bOK; i++) {
                 bOK = writeIconDirEntry(device, entries[i]);
             }
@@ -826,8 +826,8 @@ bool QtIcoHandler::supportsOption(ImageOption option) const
  */
 bool QtIcoHandler::canRead() const
 {
-    bool bCanRead = false;
-    QIODevice *device = QImageIOHandler::device();
+    auto bCanRead = false;
+    auto device = QImageIOHandler::device();
     if (device) {
         bCanRead = ICOReader::canRead(device);
         if (bCanRead)
@@ -852,8 +852,8 @@ bool QtIcoHandler::canRead(QIODevice *device)
 */
 bool QtIcoHandler::read(QImage *image)
 {
-    bool bSuccess = false;
-    QImage img = m_pICOReader->iconAt(m_currentIconIndex);
+    auto bSuccess = false;
+    auto img = m_pICOReader->iconAt(m_currentIconIndex);
 
     // Make sure we only write to \a image when we succeed.
     if (!img.isNull()) {
@@ -870,7 +870,7 @@ bool QtIcoHandler::read(QImage *image)
 */
 bool QtIcoHandler::write(const QImage &image)
 {
-    QIODevice *device = QImageIOHandler::device();
+    auto device = QImageIOHandler::device();
     QVector<QImage> imgs;
     imgs.append(image);
     return ICOReader::write(device, imgs);

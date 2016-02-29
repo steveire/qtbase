@@ -89,12 +89,12 @@ QOscBundle::QOscBundle(const QByteArray &data)
     // (editor's note: one may wonder how a 64bit big-endian number can also be
     // two 32bit numbers, without specifying in which order they occur or
     // anything, and one may indeed continue to wonder.)
-    quint32 oscTimeEpoch = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
+    auto oscTimeEpoch = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
     parsedBytes += sizeof(quint32);
-    quint32 oscTimePico = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
+    auto oscTimePico = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
     parsedBytes += sizeof(quint32);
 
-    bool isImmediate = false;
+    auto isImmediate = false;
 
     if (oscTimeEpoch == 0 && oscTimePico == 1) {
         // "The time tag value consisting of 63 zero bits followed by a
@@ -113,7 +113,7 @@ QOscBundle::QOscBundle(const QByteArray &data)
         if (data.size() - parsedBytes < sizeof(quint32))
             return;
 
-        quint32 size = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
+        auto size = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
         parsedBytes += sizeof(quint32);
 
         if (data.size() - parsedBytes < size)
@@ -132,7 +132,7 @@ QOscBundle::QOscBundle(const QByteArray &data)
 
         // "The contents are either an OSC Message or an OSC Bundle.
         // Note this recursive definition: bundle may contain bundles."
-        QByteArray subdata = data.mid(parsedBytes, size);
+        auto subdata = data.mid(parsedBytes, size);
         parsedBytes += size;
 
         // "The contents of an OSC packet must be either an OSC Message or an OSC Bundle.

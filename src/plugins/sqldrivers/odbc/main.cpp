@@ -62,7 +62,7 @@ QODBCDriverPlugin::QODBCDriverPlugin()
 QSqlDriver* QODBCDriverPlugin::create(const QString &name)
 {
     if (name == QLatin1String("QODBC") || name == QLatin1String("QODBC3")) {
-        QODBCDriver* driver = new QODBCDriver();
+        auto driver = new QODBCDriver();
         return driver;
     }
     return 0;

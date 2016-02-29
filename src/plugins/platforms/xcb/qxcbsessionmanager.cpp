@@ -56,7 +56,7 @@ class QSmSocketReceiver : public QObject
 public:
     QSmSocketReceiver(int socket)
     {
-        QSocketNotifier* sn = new QSocketNotifier(socket, QSocketNotifier::Read, this);
+        auto sn = new QSocketNotifier(socket, QSocketNotifier::Read, this);
         connect(sn, SIGNAL(activated(int)), this, SLOT(socketActivated(int)));
     }
 
@@ -128,7 +128,7 @@ static void sm_setProperty(const char *name, const char *type,
 
 static void sm_setProperty(const QString &name, const QString &value)
 {
-    QByteArray v = value.toUtf8();
+    auto v = value.toUtf8();
     SmPropValue prop;
     prop.length = v.length();
     prop.value = (SmPointer) const_cast<char *>(v.constData());
@@ -137,11 +137,11 @@ static void sm_setProperty(const QString &name, const QString &value)
 
 static void sm_setProperty(const QString &name, const QStringList &value)
 {
-    SmPropValue *prop = new SmPropValue[value.count()];
-    int count = 0;
+    auto prop = new SmPropValue[value.count()];
+    auto count = 0;
     QList<QByteArray> vl;
     vl.reserve(value.size());
-    for (QStringList::ConstIterator it = value.begin(); it != value.end(); ++it) {
+    for (auto it = value.begin(); it != value.end(); ++it) {
       prop[count].length = (*it).length();
       vl.append((*it).toUtf8());
       prop[count].value = (char*)vl.last().data();
@@ -192,8 +192,8 @@ static void sm_performSaveYourself(QXcbSessionManager *sm)
                       QLatin1Char('_') +
                       QString::number(qulonglong(tv.tv_usec)));
 
-    QStringList arguments = QCoreApplication::arguments();
-    QString argument0 = arguments.isEmpty() ? QCoreApplication::applicationFilePath()
+    auto arguments = QCoreApplication::arguments();
+    auto argument0 = arguments.isEmpty() ? QCoreApplication::applicationFilePath()
                                             : arguments.at(0);
 
     // tell the session manager about our program in best POSIX style
@@ -339,8 +339,8 @@ QXcbSessionManager::QXcbSessionManager(const QString &id, const QString &key)
     resetSmState();
     char cerror[256];
     char* myId = 0;
-    QByteArray b_id = id.toLatin1();
-    char* prevId = b_id.data();
+    auto b_id = id.toLatin1();
+    auto prevId = b_id.data();
 
     SmcCallbacks cb;
     cb.save_yourself.callback = sm_saveYourselfCallback;
@@ -369,7 +369,7 @@ QXcbSessionManager::QXcbSessionManager(const QString &id, const QString &key)
     setSessionId(QString::fromLatin1(myId));
     ::free(myId); // it was allocated by C
 
-    QString error = QString::fromLocal8Bit(cerror);
+    auto error = QString::fromLocal8Bit(cerror);
     if (!smcConnection)
         qWarning("Qt: Session management error: %s", qPrintable(error));
     else

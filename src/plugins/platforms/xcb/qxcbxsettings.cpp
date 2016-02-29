@@ -106,11 +106,11 @@ public:
     {
         QXcbConnectionGrabber connectionGrabber(screen->connection());
 
-        int offset = 0;
+        auto offset = 0;
         QByteArray settings;
-        xcb_atom_t _xsettings_atom = screen->connection()->atom(QXcbAtom::_XSETTINGS_SETTINGS);
+        auto _xsettings_atom = screen->connection()->atom(QXcbAtom::_XSETTINGS_SETTINGS);
         while (1) {
-            xcb_get_property_cookie_t get_prop_cookie =
+            auto get_prop_cookie =
                     xcb_get_property_unchecked(screen->xcb_connection(),
                                                false,
                                                x_settings_window,
@@ -118,8 +118,8 @@ public:
                                                _xsettings_atom,
                                                offset/4,
                                                8192);
-            xcb_get_property_reply_t *reply = xcb_get_property_reply(screen->xcb_connection(), get_prop_cookie, NULL);
-            bool more = false;
+            auto reply = xcb_get_property_reply(screen->xcb_connection(), get_prop_cookie, NULL);
+            auto more = false;
             if (!reply)
                 return settings;
 
@@ -139,7 +139,7 @@ public:
 
     static int round_to_nearest_multiple_of_4(int value)
     {
-        int remainder = value % 4;
+        auto remainder = value % 4;
         if (!remainder)
             return value;
         return value + 4 - remainder;
@@ -150,7 +150,7 @@ public:
     {
         if (xSettings.length() < 12)
             return;
-        char byteOrder = xSettings.at(0);
+        auto byteOrder = xSettings.at(0);
         if (byteOrder != LSBFirst && byteOrder != MSBFirst) {
             qWarning("ByteOrder byte %d not 0 or 1", byteOrder);
             return;
@@ -166,17 +166,17 @@ public:
             return;                                                     \
         }
 
-        uint number_of_settings = ADJUST_BO(byteOrder, quint32, xSettings.mid(8,4).constData());
-        const char *data = xSettings.constData() + 12;
+        auto number_of_settings = ADJUST_BO(byteOrder, quint32, xSettings.mid(8,4).constData());
+        auto data = xSettings.constData() + 12;
         size_t offset = 0;
         for (uint i = 0; i < number_of_settings; i++) {
-            int local_offset = 0;
+            auto local_offset = 0;
             VALIDATE_LENGTH(2);
-            XSettingsType type = static_cast<XSettingsType>(*reinterpret_cast<const quint8 *>(data + offset));
+            auto type = static_cast<XSettingsType>(*reinterpret_cast<const quint8 *>(data + offset));
             local_offset += 2;
 
             VALIDATE_LENGTH(2);
-            quint16 name_len = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
+            auto name_len = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
             local_offset += 2;
 
             VALIDATE_LENGTH(name_len);
@@ -184,14 +184,14 @@ public:
             local_offset += round_to_nearest_multiple_of_4(name_len);
 
             VALIDATE_LENGTH(4);
-            int last_change_serial = ADJUST_BO(byteOrder, qint32, data + offset + local_offset);
+            auto last_change_serial = ADJUST_BO(byteOrder, qint32, data + offset + local_offset);
             Q_UNUSED(last_change_serial);
             local_offset += 4;
 
             QVariant value;
             if (type == XSettingsTypeString) {
                 VALIDATE_LENGTH(4);
-                int value_length = ADJUST_BO(byteOrder, qint32, data + offset + local_offset);
+                auto value_length = ADJUST_BO(byteOrder, qint32, data + offset + local_offset);
                 local_offset+=4;
                 VALIDATE_LENGTH(value_length);
                 QByteArray value_string(data + offset + local_offset, value_length);
@@ -199,18 +199,18 @@ public:
                 local_offset += round_to_nearest_multiple_of_4(value_length);
             } else if (type == XSettingsTypeInteger) {
                 VALIDATE_LENGTH(4);
-                int value_length = ADJUST_BO(byteOrder, qint32, data + offset + local_offset);
+                auto value_length = ADJUST_BO(byteOrder, qint32, data + offset + local_offset);
                 local_offset += 4;
                 value.setValue(value_length);
             } else if (type == XSettingsTypeColor) {
                 VALIDATE_LENGTH(2*4);
-                quint16 red = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
+                auto red = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
                 local_offset += 2;
-                quint16 green = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
+                auto green = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
                 local_offset += 2;
-                quint16 blue = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
+                auto blue = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
                 local_offset += 2;
-                quint16 alpha= ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
+                auto alpha= ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
                 local_offset += 2;
                 QColor color_value(red,green,blue,alpha);
                 value.setValue(color_value);
@@ -234,23 +234,23 @@ QXcbXSettings::QXcbXSettings(QXcbVirtualDesktop *screen)
 {
     QByteArray settings_atom_for_screen("_XSETTINGS_S");
     settings_atom_for_screen.append(QByteArray::number(screen->number()));
-    xcb_intern_atom_cookie_t atom_cookie = xcb_intern_atom(screen->xcb_connection(),
+    auto atom_cookie = xcb_intern_atom(screen->xcb_connection(),
                                                            true,
                                                            settings_atom_for_screen.length(),
                                                            settings_atom_for_screen.constData());
     xcb_generic_error_t *error = 0;
-    xcb_intern_atom_reply_t *atom_reply = xcb_intern_atom_reply(screen->xcb_connection(),atom_cookie,&error);
+    auto atom_reply = xcb_intern_atom_reply(screen->xcb_connection(),atom_cookie,&error);
     if (error) {
         free(error);
         return;
     }
-    xcb_atom_t selection_owner_atom = atom_reply->atom;
+    auto selection_owner_atom = atom_reply->atom;
     free(atom_reply);
 
-    xcb_get_selection_owner_cookie_t selection_cookie =
+    auto selection_cookie =
             xcb_get_selection_owner(screen->xcb_connection(), selection_owner_atom);
 
-    xcb_get_selection_owner_reply_t *selection_result =
+    auto selection_result =
             xcb_get_selection_owner_reply(screen->xcb_connection(), selection_cookie, &error);
     if (error) {
         free(error);
@@ -316,7 +316,7 @@ void QXcbXSettings::removeCallbackForHandle(const QByteArray &property, void *ha
 void QXcbXSettings::removeCallbackForHandle(void *handle)
 {
     Q_D(QXcbXSettings);
-    for (QMap<QByteArray, QXcbXSettingsPropertyValue>::const_iterator it = d->settings.cbegin();
+    for (auto it = d->settings.cbegin();
          it != d->settings.cend(); ++it) {
         removeCallbackForHandle(it.key(),handle);
     }

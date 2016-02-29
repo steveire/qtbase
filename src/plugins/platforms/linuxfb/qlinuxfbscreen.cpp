@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 
 static int openFramebufferDevice(const QString &dev)
 {
-    int fd = -1;
+    auto fd = -1;
 
     if (access(dev.toLatin1().constData(), R_OK|W_OK) == 0)
         fd = QT_OPEN(dev.toLatin1().constData(), O_RDWR);
@@ -108,7 +108,7 @@ static QRect determineGeometry(const fb_var_screeninfo &vinfo, const QRect &user
         if ((uint)h > vinfo.yres)
             h = vinfo.yres;
 
-        int xxoff = userGeometry.x(), yyoff = userGeometry.y();
+        auto xxoff = userGeometry.x(), yyoff = userGeometry.y();
         if (xxoff != 0 || yyoff != 0) {
             if (xxoff < 0 || xxoff + w > (int)(vinfo.xres))
                 xxoff = vinfo.xres - w;
@@ -136,7 +136,7 @@ static QRect determineGeometry(const fb_var_screeninfo &vinfo, const QRect &user
 
 static QSizeF determinePhysicalSize(const fb_var_screeninfo &vinfo, const QSize &mmSize, const QSize &res)
 {
-    int mmWidth = mmSize.width(), mmHeight = mmSize.height();
+    auto mmWidth = mmSize.width(), mmHeight = mmSize.height();
 
     if (mmWidth <= 0 && mmHeight <= 0) {
         if (vinfo.width != 0 && vinfo.height != 0
@@ -144,7 +144,7 @@ static QSizeF determinePhysicalSize(const fb_var_screeninfo &vinfo, const QSize 
             mmWidth = vinfo.width;
             mmHeight = vinfo.height;
         } else {
-            const int dpi = 100;
+            const auto dpi = 100;
             mmWidth = qRound(res.width() * 25.4 / dpi);
             mmHeight = qRound(res.height() * 25.4 / dpi);
         }
@@ -162,7 +162,7 @@ static QImage::Format determineFormat(const fb_var_screeninfo &info, int depth)
     const fb_bitfield rgba[4] = { info.red, info.green,
                                   info.blue, info.transp };
 
-    QImage::Format format = QImage::Format_Invalid;
+    auto format = QImage::Format_Invalid;
 
     switch (depth) {
     case 32: {
@@ -249,7 +249,7 @@ static int openTtyDevice(const QString &device)
 {
     const char *const devs[] = { "/dev/tty0", "/dev/tty", "/dev/console", 0 };
 
-    int fd = -1;
+    auto fd = -1;
     if (device.isEmpty()) {
         for (const char * const *dev = devs; *dev; ++dev) {
             fd = QT_OPEN(*dev, O_RDWR);
@@ -315,7 +315,7 @@ bool QLinuxFbScreen::initialize()
     QString fbDevice, ttyDevice;
     QSize userMmSize;
     QRect userGeometry;
-    bool doSwitchToGraphicsMode = true;
+    auto doSwitchToGraphicsMode = true;
 
     // Parse arguments
     foreach (const QString &arg, mArgs) {
@@ -369,14 +369,14 @@ bool QLinuxFbScreen::initialize()
 
     mDepth = determineDepth(vinfo);
     mBytesPerLine = finfo.line_length;
-    QRect geometry = determineGeometry(vinfo, userGeometry);
+    auto geometry = determineGeometry(vinfo, userGeometry);
     mGeometry = QRect(QPoint(0, 0), geometry.size());
     mFormat = determineFormat(vinfo, mDepth);
     mPhysicalSize = determinePhysicalSize(vinfo, userMmSize, geometry.size());
 
     // mmap the framebuffer
     mMmap.size = finfo.smem_len;
-    uchar *data = (unsigned char *)mmap(0, mMmap.size, PROT_READ | PROT_WRITE, MAP_SHARED, mFbFd, 0);
+    auto data = (unsigned char *)mmap(0, mMmap.size, PROT_READ | PROT_WRITE, MAP_SHARED, mFbFd, 0);
     if ((long)data == -1) {
         qErrnoWarning(errno, "Failed to mmap framebuffer");
         return false;
@@ -406,7 +406,7 @@ bool QLinuxFbScreen::initialize()
 
 QRegion QLinuxFbScreen::doRedraw()
 {
-    QRegion touched = QFbScreen::doRedraw();
+    auto touched = QFbScreen::doRedraw();
 
     if (touched.isEmpty())
         return touched;
@@ -414,8 +414,8 @@ QRegion QLinuxFbScreen::doRedraw()
     if (!mBlitter)
         mBlitter = new QPainter(&mFbScreenImage);
 
-    QVector<QRect> rects = touched.rects();
-    for (int i = 0; i < rects.size(); i++)
+    auto rects = touched.rects();
+    for (auto i = 0; i < rects.size(); i++)
         mBlitter->drawImage(rects[i], *mScreenImage, rects[i]);
     return touched;
 }
@@ -432,9 +432,9 @@ QPixmap QLinuxFbScreen::grabWindow(WId wid, int x, int y, int width, int height)
         return QPixmap::fromImage(mFbScreenImage).copy(x, y, width, height);
     }
 
-    QFbWindow *window = windowForId(wid);
+    auto window = windowForId(wid);
     if (window) {
-        const QRect geom = window->geometry();
+        const auto geom = window->geometry();
         if (width < 0)
             width = geom.width() - x;
         if (height < 0)

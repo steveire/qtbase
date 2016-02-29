@@ -70,7 +70,7 @@ QNetworkManagerEnginePlugin::~QNetworkManagerEnginePlugin()
 QBearerEngine *QNetworkManagerEnginePlugin::create(const QString &key) const
 {
     if (key == QLatin1String("networkmanager")) {
-        QNetworkManagerEngine *engine = new QNetworkManagerEngine;
+        auto engine = new QNetworkManagerEngine;
         return engine;
     }
 

@@ -94,7 +94,7 @@ QComposeInputContext::QComposeInputContext()
 
 bool QComposeInputContext::filterEvent(const QEvent *event)
 {
-    const QKeyEvent *keyEvent = (const QKeyEvent *)event;
+    auto keyEvent = (const QKeyEvent *)event;
     // should pass only the key presses
     if (keyEvent->type() != QEvent::KeyPress) {
         return false;
@@ -105,8 +105,8 @@ bool QComposeInputContext::filterEvent(const QEvent *event)
     if (m_compositionTableInitialized && (m_tableState & TableGenerator::NoErrors) != TableGenerator::NoErrors)
         return false;
 
-    int keyval = keyEvent->key();
-    int keysym = 0;
+    auto keyval = keyEvent->key();
+    auto keysym = 0;
 
     if (ignoreKey(keyval))
         return false;
@@ -116,7 +116,7 @@ bool QComposeInputContext::filterEvent(const QEvent *event)
 
     keysym = keyEvent->nativeVirtualKey();
 
-    int nCompose = 0;
+    auto nCompose = 0;
     while (nCompose < QT_KEYSEQUENCE_MAX_LEN && m_composeBuffer[nCompose] != 0)
         nCompose++;
 
@@ -173,14 +173,14 @@ bool QComposeInputContext::checkComposeTable()
 
         m_compositionTableInitialized = true;
     }
-    QVector<QComposeTableElement>::const_iterator it =
+    auto it =
             std::lower_bound(m_composeTable.constBegin(), m_composeTable.constEnd(), m_composeBuffer, Compare());
 
     // prevent dereferencing an 'end' iterator, which would result in a crash
     if (it == m_composeTable.constEnd())
         it -= 1;
 
-    QComposeTableElement elem = *it;
+    auto elem = *it;
     // would be nicer if qLowerBound had API that tells if the item was actually found
     if (m_composeBuffer[0] != elem.keys[0]) {
 #ifdef DEBUG_COMPOSING
@@ -190,7 +190,7 @@ bool QComposeInputContext::checkComposeTable()
         return false;
     }
     // check if compose buffer is matched
-    for (int i=0; i < QT_KEYSEQUENCE_MAX_LEN; i++) {
+    for (auto i=0; i < QT_KEYSEQUENCE_MAX_LEN; i++) {
 
         // check if partial match
         if (m_composeBuffer[i] == 0 && elem.keys[i]) {
@@ -214,11 +214,11 @@ bool QComposeInputContext::checkComposeTable()
 
     // check if the key sequence is overwriten - see the comment in
     // TableGenerator::orderComposeTable()
-    int next = 1;
+    auto next = 1;
     do {
         // if we are at the end of the table, then we have nothing to do here
         if (it + next != m_composeTable.end()) {
-            QComposeTableElement nextElem = *(it + next);
+            auto nextElem = *(it + next);
             if (isDuplicate(elem, nextElem)) {
                 elem = nextElem;
                 next++;

@@ -67,7 +67,7 @@ QImageIOPlugin::Capabilities QGifPlugin::capabilities(QIODevice *device, const Q
 
 QImageIOHandler *QGifPlugin::create(QIODevice *device, const QByteArray &format) const
 {
-    QImageIOHandler *handler = new QGifHandler;
+    auto handler = new QGifHandler;
     handler->setDevice(device);
     handler->setFormat(format);
     return handler;

@@ -68,15 +68,15 @@ void QXcbEglWindow::resolveFormat()
 void *QXcbEglWindow::createVisual()
 {
 #ifdef XCB_USE_XLIB
-    Display *xdpy = static_cast<Display *>(m_glIntegration->xlib_display());
-    VisualID id = QXlibEglIntegration::getCompatibleVisualId(xdpy, m_glIntegration->eglDisplay(), m_config);
+    auto xdpy = static_cast<Display *>(m_glIntegration->xlib_display());
+    auto id = QXlibEglIntegration::getCompatibleVisualId(xdpy, m_glIntegration->eglDisplay(), m_config);
 
     XVisualInfo visualInfoTemplate;
     memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
     visualInfoTemplate.visualid = id;
 
     XVisualInfo *visualInfo;
-    int matchingCount = 0;
+    auto matchingCount = 0;
     visualInfo = XGetVisualInfo(xdpy, VisualIDMask, &visualInfoTemplate, &matchingCount);
     return visualInfo;
 #else

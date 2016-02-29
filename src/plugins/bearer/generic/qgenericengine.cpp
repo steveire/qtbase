@@ -177,12 +177,12 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
     qDebug() << medium << physicalMedium;
 #endif
 #elif defined(Q_OS_LINUX)
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+    auto sock = socket(AF_INET, SOCK_DGRAM, 0);
 
     ifreq request;
     strncpy(request.ifr_name, interface.toLocal8Bit().data(), sizeof(request.ifr_name));
     request.ifr_name[sizeof(request.ifr_name) - 1] = '\0';
-    int result = ioctl(sock, SIOCGIFHWADDR, &request);
+    auto result = ioctl(sock, SIOCGIFHWADDR, &request);
     close(sock);
 
     if (result >= 0 && request.ifr_hwaddr.sa_family == ARPHRD_ETHER)
@@ -331,7 +331,7 @@ void QGenericEngine::doRequestUpdate()
     // QNetworkInterface::allInterfaces() will sometimes return an empty list. Calling it again a
     // second time results in a non-empty list. If we loose interfaces we will end up removing
     // network configurations which will break current sessions.
-    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+    auto interfaces = QNetworkInterface::allInterfaces();
     if (interfaces.isEmpty())
         interfaces = QNetworkInterface::allInterfaces();
 
@@ -339,7 +339,7 @@ void QGenericEngine::doRequestUpdate()
 
     // create configuration for each interface
     while (!interfaces.isEmpty()) {
-        QNetworkInterface interface = interfaces.takeFirst();
+        auto interface = interfaces.takeFirst();
 
         if (!interface.isValid())
             continue;
@@ -360,11 +360,11 @@ void QGenericEngine::doRequestUpdate()
         else
             identifier = qHash(QLatin1String("generic:") + interface.hardwareAddress());
 
-        const QString id = QString::number(identifier);
+        const auto id = QString::number(identifier);
 
         previous.removeAll(id);
 
-        QString name = interface.humanReadableName();
+        auto name = interface.humanReadableName();
         if (name.isEmpty())
             name = interface.name();
 
@@ -373,9 +373,9 @@ void QGenericEngine::doRequestUpdate()
             state |= QNetworkConfiguration::Active;
 
         if (accessPointConfigurations.contains(id)) {
-            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
+            auto ptr = accessPointConfigurations.value(id);
 
-            bool changed = false;
+            auto changed = false;
 
             ptr->mutex.lock();
 
@@ -426,7 +426,7 @@ void QGenericEngine::doRequestUpdate()
     }
 
     while (!previous.isEmpty()) {
-        QNetworkConfigurationPrivatePointer ptr =
+        auto ptr =
             accessPointConfigurations.take(previous.takeFirst());
 
         configurationInterface.remove(ptr->id);
@@ -446,7 +446,7 @@ QNetworkSession::State QGenericEngine::sessionStateForId(const QString &id)
 {
     QMutexLocker locker(&mutex);
 
-    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
+    auto ptr = accessPointConfigurations.value(id);
 
     if (!ptr)
         return QNetworkSession::Invalid;

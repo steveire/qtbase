@@ -84,8 +84,8 @@ QOscMessage::QOscMessage(const QByteArray &data)
     QList<QVariant> arguments;
 
     // "followed by zero or more OSC Arguments."
-    for (int i = 1; i < typeTagString.size(); ++i) {
-        char typeTag = typeTagString.at(i);
+    for (auto i = 1; i < typeTagString.size(); ++i) {
+        auto typeTag = typeTagString.at(i);
         if (typeTag == 's') { // osc-string
             QByteArray aString;
             if (!qt_readOscString(data, aString, parsedBytes))
@@ -95,7 +95,7 @@ QOscMessage::QOscMessage(const QByteArray &data)
             if (parsedBytes > (quint32)data.size() || data.size() - parsedBytes < sizeof(quint32))
                 return;
 
-            quint32 anInt = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
+            auto anInt = qFromBigEndian<quint32>((const uchar*)data.constData() + parsedBytes);
             parsedBytes += sizeof(quint32);
 
             // TODO: is int32 in OSC signed, or unsigned?

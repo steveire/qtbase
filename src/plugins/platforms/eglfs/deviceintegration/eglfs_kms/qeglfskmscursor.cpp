@@ -95,7 +95,7 @@ QEglFSKmsCursor::QEglFSKmsCursor(QEglFSKmsScreen *screen)
 QEglFSKmsCursor::~QEglFSKmsCursor()
 {
     Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
-        QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
+        auto kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
         drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0, 0);
         drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0);
     }
@@ -117,23 +117,23 @@ void QEglFSKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     if (!m_visible)
         return;
 
-    const Qt::CursorShape newShape = windowCursor ? windowCursor->shape() : Qt::ArrowCursor;
+    const auto newShape = windowCursor ? windowCursor->shape() : Qt::ArrowCursor;
     if (newShape == Qt::BitmapCursor) {
         m_cursorImage.set(windowCursor->pixmap().toImage(),
                           windowCursor->hotSpot().x(),
                           windowCursor->hotSpot().y());
     } else {
         // Standard cursor, look up in atlas
-        const int width = m_cursorAtlas.cursorWidth;
-        const int height = m_cursorAtlas.cursorHeight;
-        const qreal ws = (qreal)m_cursorAtlas.cursorWidth / m_cursorAtlas.width;
-        const qreal hs = (qreal)m_cursorAtlas.cursorHeight / m_cursorAtlas.height;
+        const auto width = m_cursorAtlas.cursorWidth;
+        const auto height = m_cursorAtlas.cursorHeight;
+        const auto ws = (qreal)m_cursorAtlas.cursorWidth / m_cursorAtlas.width;
+        const auto hs = (qreal)m_cursorAtlas.cursorHeight / m_cursorAtlas.height;
 
         QRect textureRect(ws * (newShape % m_cursorAtlas.cursorsPerRow) * m_cursorAtlas.width,
                           hs * (newShape / m_cursorAtlas.cursorsPerRow) * m_cursorAtlas.height,
                           width,
                           height);
-        QPoint hotSpot = m_cursorAtlas.hotSpots[newShape];
+        auto hotSpot = m_cursorAtlas.hotSpots[newShape];
         m_cursorImage.set(m_cursorAtlas.image.copy(textureRect),
                           hotSpot.x(),
                           hotSpot.y());
@@ -152,12 +152,12 @@ void QEglFSKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 
     gbm_bo_write(m_bo, cursorImage.constBits(), cursorImage.byteCount());
 
-    uint32_t handle = gbm_bo_get_handle(m_bo).u32;
+    auto handle = gbm_bo_get_handle(m_bo).u32;
 
     Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
-        QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
+        auto kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
 
-        int status = drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, handle,
+        auto status = drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, handle,
                                       m_cursorSize.width(), m_cursorSize.height());
         if (status != 0)
             qWarning("Could not set cursor on screen %s: %d", kmsScreen->name().toLatin1().constData(), status);
@@ -173,12 +173,12 @@ QPoint QEglFSKmsCursor::pos() const
 void QEglFSKmsCursor::setPos(const QPoint &pos)
 {
     Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
-        QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
-        QPoint origin = kmsScreen->geometry().topLeft();
-        QPoint localPos = pos - origin;
-        QPoint adjustedPos = localPos - m_cursorImage.hotspot();
+        auto kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
+        auto origin = kmsScreen->geometry().topLeft();
+        auto localPos = pos - origin;
+        auto adjustedPos = localPos - m_cursorImage.hotspot();
 
-        int ret = drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, adjustedPos.x(), adjustedPos.y());
+        auto ret = drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, adjustedPos.x(), adjustedPos.y());
         if (ret == 0)
             m_pos = pos;
         else
@@ -188,7 +188,7 @@ void QEglFSKmsCursor::setPos(const QPoint &pos)
 
 void QEglFSKmsCursor::initCursorAtlas()
 {
-    static QByteArray json = qgetenv("QT_QPA_EGLFS_CURSOR");
+    static auto json = qgetenv("QT_QPA_EGLFS_CURSOR");
     if (json.isEmpty())
         json = ":/cursor.json";
 
@@ -197,7 +197,7 @@ void QEglFSKmsCursor::initCursorAtlas()
     QFile file(QString::fromUtf8(json));
     if (!file.open(QFile::ReadOnly)) {
         Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
-            QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
+            auto kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
             drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0, 0);
             drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0);
         }
@@ -205,24 +205,24 @@ void QEglFSKmsCursor::initCursorAtlas()
         return;
     }
 
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    QJsonObject object = doc.object();
+    auto doc = QJsonDocument::fromJson(file.readAll());
+    auto object = doc.object();
 
-    QString atlas = object.value(QLatin1String("image")).toString();
+    auto atlas = object.value(QLatin1String("image")).toString();
     Q_ASSERT(!atlas.isEmpty());
 
     const int cursorsPerRow = object.value(QLatin1String("cursorsPerRow")).toDouble();
     Q_ASSERT(cursorsPerRow);
     m_cursorAtlas.cursorsPerRow = cursorsPerRow;
 
-    const QJsonArray hotSpots = object.value(QLatin1String("hotSpots")).toArray();
+    const auto hotSpots = object.value(QLatin1String("hotSpots")).toArray();
     Q_ASSERT(hotSpots.count() == Qt::LastCursor + 1);
-    for (int i = 0; i < hotSpots.count(); i++) {
+    for (auto i = 0; i < hotSpots.count(); i++) {
         QPoint hotSpot(hotSpots[i].toArray()[0].toDouble(), hotSpots[i].toArray()[1].toDouble());
         m_cursorAtlas.hotSpots << hotSpot;
     }
 
-    QImage image = QImage(atlas).convertToFormat(QImage::Format_ARGB32);
+    auto image = QImage(atlas).convertToFormat(QImage::Format_ARGB32);
     m_cursorAtlas.cursorWidth = image.width() / m_cursorAtlas.cursorsPerRow;
     m_cursorAtlas.cursorHeight = image.height() / ((Qt::LastCursor + cursorsPerRow) / cursorsPerRow);
     m_cursorAtlas.width = image.width();

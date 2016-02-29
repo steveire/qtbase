@@ -134,11 +134,11 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 
     // Parse arguments
     const char *displayName = 0;
-    bool noGrabArg = false;
-    bool doGrabArg = false;
+    auto noGrabArg = false;
+    auto doGrabArg = false;
     if (argc) {
-        int j = 1;
-        for (int i = 1; i < argc; i++) {
+        auto j = 1;
+        for (auto i = 1; i < argc; i++) {
             QByteArray arg(argv[i]);
             if (arg.startsWith("--"))
                 arg.remove(0, 1);
@@ -151,7 +151,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
             else if (arg == "-dograb")
                 doGrabArg = true;
             else if (arg == "-visual" && i < argc - 1) {
-                bool ok = false;
+                auto ok = false;
                 m_defaultVisualId = QByteArray(argv[++i]).toUInt(&ok, 0);
                 if (!ok)
                     m_defaultVisualId = UINT_MAX;
@@ -162,7 +162,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
         argc = j;
     } // argc
 
-    bool underDebugger = runningUnderDebugger();
+    auto underDebugger = runningUnderDebugger();
     if (noGrabArg && doGrabArg && underDebugger) {
         qWarning() << "Both -nograb and -dograb command line arguments specified. Please pick one. -nograb takes prcedence";
         doGrabArg = false;
@@ -176,15 +176,15 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 #endif
     m_canGrab = (!underDebugger && !noGrabArg) || (underDebugger && doGrabArg);
 
-    static bool canNotGrabEnv = qEnvironmentVariableIsSet("QT_XCB_NO_GRAB_SERVER");
+    static auto canNotGrabEnv = qEnvironmentVariableIsSet("QT_XCB_NO_GRAB_SERVER");
     if (canNotGrabEnv)
         m_canGrab = false;
 
-    const int numParameters = parameters.size();
+    const auto numParameters = parameters.size();
     m_connections.reserve(1 + numParameters / 2);
     m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, displayName);
 
-    for (int i = 0; i < numParameters - 1; i += 2) {
+    for (auto i = 0; i < numParameters - 1; i += 2) {
         qCDebug(lcQpaScreen) << "connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
         QString display = parameters.at(i) + QLatin1Char(':') + parameters.at(i+1);
         m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, display.toLatin1().constData());
@@ -201,11 +201,11 @@ QXcbIntegration::~QXcbIntegration()
 
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
-    QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
-    QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
+    auto screen = static_cast<QXcbScreen *>(window->screen()->handle());
+    auto glIntegration = screen->connection()->glIntegration();
     if (window->type() != Qt::Desktop) {
         if (glIntegration) {
-            QXcbWindow *xcbWindow = glIntegration->createWindow(window);
+            auto xcbWindow = glIntegration->createWindow(window);
             xcbWindow->create();
             return xcbWindow;
         }
@@ -213,7 +213,7 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 
     Q_ASSERT(window->type() == Qt::Desktop || !window->supportsOpenGL()
              || (!glIntegration && window->surfaceType() == QSurface::RasterGLSurface)); // for VNC
-    QXcbWindow *xcbWindow = new QXcbWindow(window);
+    auto xcbWindow = new QXcbWindow(window);
     xcbWindow->create();
     return xcbWindow;
 }
@@ -221,8 +221,8 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
-    QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
+    auto screen = static_cast<QXcbScreen *>(context->screen()->handle());
+    auto glIntegration = screen->connection()->glIntegration();
     if (!glIntegration) {
         qWarning("QXcbIntegration: Cannot create platform OpenGL context, neither GLX nor EGL are enabled");
         return Q_NULLPTR;
@@ -238,8 +238,8 @@ QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *wind
 
 QPlatformOffscreenSurface *QXcbIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    QXcbScreen *screen = static_cast<QXcbScreen *>(surface->screen()->handle());
-    QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
+    auto screen = static_cast<QXcbScreen *>(surface->screen()->handle());
+    auto glIntegration = screen->connection()->glIntegration();
     if (!glIntegration) {
         qWarning("QXcbIntegration: Cannot create platform offscreen surface, neither GLX nor EGL are enabled");
         return Q_NULLPTR;
@@ -267,8 +267,8 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 
 QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
-    QAbstractEventDispatcher *dispatcher = createUnixEventDispatcher();
-    for (int i = 0; i < m_connections.size(); i++)
+    auto dispatcher = createUnixEventDispatcher();
+    for (auto i = 0; i < m_connections.size(); i++)
         m_connections[i]->eventReader()->registerEventDispatcher(dispatcher);
     return dispatcher;
 }
@@ -277,7 +277,7 @@ void QXcbIntegration::initialize()
 {
     // Perform everything that may potentially need the event dispatcher (timers, socket
     // notifiers) here instead of the constructor.
-    QString icStr = QPlatformInputContextFactory::requested();
+    auto icStr = QPlatformInputContextFactory::requested();
     if (icStr.isNull())
         icStr = QLatin1String("compose");
     m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
@@ -340,8 +340,8 @@ QPlatformServices *QXcbIntegration::services() const
 
 Qt::KeyboardModifiers QXcbIntegration::queryKeyboardModifiers() const
 {
-    int keybMask = 0;
-    QXcbConnection *conn = m_connections.at(0);
+    auto keybMask = 0;
+    auto conn = m_connections.at(0);
     QXcbCursor::queryPointer(conn, 0, 0, &keybMask);
     return conn->keyboard()->translateModifiers(keybMask);
 }
@@ -381,8 +381,8 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
     case QPlatformIntegration::StartDragDistance: {
         // The default (in QPlatformTheme::defaultThemeHint) is 10 pixels, but
         // on a high-resolution screen it makes sense to increase it.
-        qreal dpi = 100.0;
-        if (const QXcbScreen *screen = defaultConnection()->primaryScreen()) {
+        auto dpi = 100.0;
+        if (auto screen = defaultConnection()->primaryScreen()) {
             if (screen->logicalDpi().first > dpi)
                 dpi = screen->logicalDpi().first;
             if (screen->logicalDpi().second > dpi)
@@ -405,10 +405,10 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 static QString argv0BaseName()
 {
     QString result;
-    const QStringList arguments = QCoreApplication::arguments();
+    const auto arguments = QCoreApplication::arguments();
     if (!arguments.isEmpty() && !arguments.front().isEmpty()) {
         result = arguments.front();
-        const int lastSlashPos = result.lastIndexOf(QLatin1Char('/'));
+        const auto lastSlashPos = result.lastIndexOf(QLatin1Char('/'));
         if (lastSlashPos != -1)
             result.remove(0, lastSlashPos + 1);
     }
@@ -431,7 +431,7 @@ QByteArray QXcbIntegration::wmClass() const
 
         // Note: QCoreApplication::applicationName() cannot be called from the QGuiApplication constructor,
         // hence this delayed initialization.
-        QString className = QCoreApplication::applicationName();
+        auto className = QCoreApplication::applicationName();
         if (className.isEmpty()) {
             className = argv0BaseName();
             if (!className.isEmpty() && className.at(0).isLower())
@@ -457,7 +457,7 @@ QPlatformSessionManager *QXcbIntegration::createPlatformSessionManager(const QSt
 
 void QXcbIntegration::sync()
 {
-    for (int i = 0; i < m_connections.size(); i++) {
+    for (auto i = 0; i < m_connections.size(); i++) {
         m_connections.at(i)->sync();
     }
 }
@@ -465,13 +465,13 @@ void QXcbIntegration::sync()
 // For QApplication::beep()
 void QXcbIntegration::beep() const
 {
-    QScreen *priScreen = QGuiApplication::primaryScreen();
+    auto priScreen = QGuiApplication::primaryScreen();
     if (!priScreen)
         return;
-    QPlatformScreen *screen = priScreen->handle();
+    auto screen = priScreen->handle();
     if (!screen)
         return;
-    xcb_connection_t *connection = static_cast<QXcbScreen *>(screen)->xcb_connection();
+    auto connection = static_cast<QXcbScreen *>(screen)->xcb_connection();
     xcb_bell(connection, 0);
 }
 

@@ -78,8 +78,8 @@ QOffscreenX11Connection::QOffscreenX11Connection()
 {
     XInitThreads();
 
-    QByteArray displayName = qgetenv("DISPLAY");
-    Display *display = XOpenDisplay(displayName.constData());
+    auto displayName = qgetenv("DISPLAY");
+    auto display = XOpenDisplay(displayName.constData());
     m_display = display;
     m_screenNumber = DefaultScreen(display);
 }
@@ -132,13 +132,13 @@ public:
 
 static Window createDummyWindow(QOffscreenX11Info *x11, XVisualInfo *visualInfo)
 {
-    Colormap cmap = XCreateColormap(x11->display(), x11->root(), visualInfo->visual, AllocNone);
+    auto cmap = XCreateColormap(x11->display(), x11->root(), visualInfo->visual, AllocNone);
     XSetWindowAttributes a;
     a.background_pixel = WhitePixel(x11->display(), x11->screenNumber());
     a.border_pixel = BlackPixel(x11->display(), x11->screenNumber());
     a.colormap = cmap;
 
-    Window window = XCreateWindow(x11->display(), x11->root(),
+    auto window = XCreateWindow(x11->display(), x11->root(),
                                   0, 0, 100, 100,
                                   0, visualInfo->depth, InputOutput, visualInfo->visual,
                                   CWBackPixel|CWBorderPixel|CWColormap, &a);
@@ -148,10 +148,10 @@ static Window createDummyWindow(QOffscreenX11Info *x11, XVisualInfo *visualInfo)
 
 static Window createDummyWindow(QOffscreenX11Info *x11, GLXFBConfig config)
 {
-    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(x11->display(), config);
+    auto visualInfo = glXGetVisualFromFBConfig(x11->display(), config);
     if (Q_UNLIKELY(!visualInfo))
         qFatal("Could not initialize GLX");
-    Window window = createDummyWindow(x11, visualInfo);
+    auto window = createDummyWindow(x11, visualInfo);
     XFree(visualInfo);
     return window;
 }
@@ -166,7 +166,7 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
     if (context->shareHandle())
         d->shareContext = static_cast<QOffscreenX11GLXContext *>(context->shareHandle())->d->context;
 
-    GLXFBConfig config = qglx_findConfig(x11->display(), x11->screenNumber(), d->format);
+    auto config = qglx_findConfig(x11->display(), x11->screenNumber(), d->format);
     if (config) {
         d->context = glXCreateNewContext(x11->display(), config, GLX_RGBA_TYPE, d->shareContext, true);
         if (!d->context && d->shareContext) {
@@ -182,7 +182,7 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
         // Create a temporary window so that we can make the new context current
         d->window = createDummyWindow(x11, config);
     } else {
-        XVisualInfo *visualInfo = qglx_findVisualInfo(x11->display(), 0, &d->format);
+        auto visualInfo = qglx_findVisualInfo(x11->display(), 0, &d->format);
         if (Q_UNLIKELY(!visualInfo))
             qFatal("Could not initialize GLX");
         d->context = glXCreateContext(x11->display(), visualInfo, d->shareContext, true);
@@ -205,7 +205,7 @@ QOffscreenX11GLXContext::~QOffscreenX11GLXContext()
 
 bool QOffscreenX11GLXContext::makeCurrent(QPlatformSurface *surface)
 {
-    QSize size = surface->surface()->size();
+    auto size = surface->surface()->size();
 
     XResizeWindow(d->x11->display(), d->window, size.width(), size.height());
     XSync(d->x11->display(), true);

@@ -66,7 +66,7 @@ QEglFSCursor::QEglFSCursor(QPlatformScreen *screen)
       m_deviceListener(0),
       m_updateRequested(false)
 {
-    QByteArray hideCursorVal = qgetenv("QT_QPA_EGLFS_HIDECURSOR");
+    auto hideCursorVal = qgetenv("QT_QPA_EGLFS_HIDECURSOR");
     if (!hideCursorVal.isEmpty())
         m_visible = hideCursorVal.toInt() == 0;
     if (!m_visible)
@@ -167,7 +167,7 @@ void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
 
 void QEglFSCursor::initCursorAtlas()
 {
-    static QByteArray json = qgetenv("QT_QPA_EGLFS_CURSOR");
+    static auto json = qgetenv("QT_QPA_EGLFS_CURSOR");
     if (json.isEmpty())
         json = ":/cursor.json";
 
@@ -177,24 +177,24 @@ void QEglFSCursor::initCursorAtlas()
         return;
     }
 
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    QJsonObject object = doc.object();
+    auto doc = QJsonDocument::fromJson(file.readAll());
+    auto object = doc.object();
 
-    QString atlas = object.value(QLatin1String("image")).toString();
+    auto atlas = object.value(QLatin1String("image")).toString();
     Q_ASSERT(!atlas.isEmpty());
 
     const int cursorsPerRow = object.value(QLatin1String("cursorsPerRow")).toDouble();
     Q_ASSERT(cursorsPerRow);
     m_cursorAtlas.cursorsPerRow = cursorsPerRow;
 
-    const QJsonArray hotSpots = object.value(QLatin1String("hotSpots")).toArray();
+    const auto hotSpots = object.value(QLatin1String("hotSpots")).toArray();
     Q_ASSERT(hotSpots.count() == Qt::LastCursor + 1);
-    for (int i = 0; i < hotSpots.count(); i++) {
+    for (auto i = 0; i < hotSpots.count(); i++) {
         QPoint hotSpot(hotSpots[i].toArray()[0].toDouble(), hotSpots[i].toArray()[1].toDouble());
         m_cursorAtlas.hotSpots << hotSpot;
     }
 
-    QImage image = QImage(atlas).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    auto image = QImage(atlas).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     m_cursorAtlas.cursorWidth = image.width() / m_cursorAtlas.cursorsPerRow;
     m_cursorAtlas.cursorHeight = image.height() / ((Qt::LastCursor + cursorsPerRow) / cursorsPerRow);
     m_cursorAtlas.width = image.width();
@@ -206,7 +206,7 @@ void QEglFSCursor::initCursorAtlas()
 void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
     Q_UNUSED(window);
-    const QRect oldCursorRect = cursorRect();
+    const auto oldCursorRect = cursorRect();
     if (setCurrentCursor(cursor))
         update(oldCursorRect | cursorRect());
 }
@@ -216,7 +216,7 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
     if (!m_visible)
         return false;
 
-    const Qt::CursorShape newShape = cursor ? cursor->shape() : Qt::ArrowCursor;
+    const auto newShape = cursor ? cursor->shape() : Qt::ArrowCursor;
     if (m_cursor.shape == newShape && newShape != Qt::BitmapCursor)
         return false;
 
@@ -226,7 +226,7 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
     }
     m_cursor.shape = newShape;
     if (newShape != Qt::BitmapCursor) { // standard cursor
-        const float ws = (float)m_cursorAtlas.cursorWidth / m_cursorAtlas.width,
+        const auto ws = (float)m_cursorAtlas.cursorWidth / m_cursorAtlas.width,
                     hs = (float)m_cursorAtlas.cursorHeight / m_cursorAtlas.height;
         m_cursor.textureRect = QRectF(ws * (m_cursor.shape % m_cursorAtlas.cursorsPerRow),
                                       hs * (m_cursor.shape / m_cursorAtlas.cursorsPerRow),
@@ -235,7 +235,7 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
         m_cursor.texture = m_cursorAtlas.texture;
         m_cursor.size = QSize(m_cursorAtlas.cursorWidth, m_cursorAtlas.cursorHeight);
     } else {
-        QImage image = cursor->pixmap().toImage();
+        auto image = cursor->pixmap().toImage();
         m_cursor.textureRect = QRectF(0, 0, 1, 1);
         m_cursor.hotSpot = cursor->hotSpot();
         m_cursor.texture = 0; // will get updated in the next render()
@@ -267,7 +267,7 @@ private:
 bool QEglFSCursor::event(QEvent *e)
 {
     if (e->type() == QEvent::User + 1) {
-        CursorUpdateEvent *ev = static_cast<CursorUpdateEvent *>(e);
+        auto ev = static_cast<CursorUpdateEvent *>(e);
         m_updateRequested = false;
         QWindowSystemInterface::handleExposeEvent(m_screen->topLevelAt(ev->pos()), ev->region());
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
@@ -300,7 +300,7 @@ QPoint QEglFSCursor::pos() const
 void QEglFSCursor::setPos(const QPoint &pos)
 {
     QGuiApplicationPrivate::inputDeviceManager()->setCursorPos(pos);
-    const QRect oldCursorRect = cursorRect();
+    const auto oldCursorRect = cursorRect();
     m_cursor.pos = pos;
     update(oldCursorRect | cursorRect());
     m_screen->handleCursorMove(m_cursor.pos);
@@ -310,7 +310,7 @@ void QEglFSCursor::pointerEvent(const QMouseEvent &event)
 {
     if (event.type() != QEvent::MouseMove)
         return;
-    const QRect oldCursorRect = cursorRect();
+    const auto oldCursorRect = cursorRect();
     m_cursor.pos = event.screenPos().toPoint();
     update(oldCursorRect | cursorRect());
     m_screen->handleCursorMove(m_cursor.pos);
@@ -342,11 +342,11 @@ struct StateSaver
         f = QOpenGLContext::currentContext()->functions();
         vaoHelper = new QOpenGLVertexArrayObjectHelper(QOpenGLContext::currentContext());
 
-        static bool windowsChecked = false;
-        static bool shouldSave = true;
+        static auto windowsChecked = false;
+        static auto shouldSave = true;
         if (!windowsChecked) {
             windowsChecked = true;
-            QWindowList windows = QGuiApplication::allWindows();
+            auto windows = QGuiApplication::allWindows();
             if (!windows.isEmpty() && windows[0]->inherits("QQuickWindow"))
                 shouldSave = false;
         }
@@ -368,7 +368,7 @@ struct StateSaver
         f->glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &arrayBuf);
         if (vaoHelper->isValid())
             f->glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &vao);
-        for (int i = 0; i < 2; ++i) {
+        for (auto i = 0; i < 2; ++i) {
             f->glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &va[i].enabled);
             f->glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_SIZE, &va[i].size);
             f->glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_TYPE, &va[i].type);
@@ -400,7 +400,7 @@ struct StateSaver
             f->glBindBuffer(GL_ARRAY_BUFFER, arrayBuf);
             if (vaoHelper->isValid())
                 vaoHelper->glBindVertexArray(vao);
-            for (int i = 0; i < 2; ++i) {
+            for (auto i = 0; i < 2; ++i) {
                 if (va[i].enabled)
                     f->glEnableVertexAttribArray(i);
                 else

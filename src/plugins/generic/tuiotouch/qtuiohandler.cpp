@@ -58,18 +58,18 @@ Q_LOGGING_CATEGORY(lcTuioSet, "qt.qpa.tuio.set")
 QTuioHandler::QTuioHandler(const QString &specification)
     : m_device(new QTouchDevice) // not leaked, QTouchDevice cleans up registered devices itself
 {
-    QStringList args = specification.split(':');
-    int portNumber = 3333;
-    int rotationAngle = 0;
-    bool invertx = false;
-    bool inverty = false;
+    auto args = specification.split(':');
+    auto portNumber = 3333;
+    auto rotationAngle = 0;
+    auto invertx = false;
+    auto inverty = false;
 
-    for (int i = 0; i < args.count(); ++i) {
+    for (auto i = 0; i < args.count(); ++i) {
         if (args.at(i).startsWith("udp=")) {
-            QString portString = args.at(i).section('=', 1, 1);
+            auto portString = args.at(i).section('=', 1, 1);
             portNumber = portString.toInt();
         } else if (args.at(i).startsWith("tcp=")) {
-            QString portString = args.at(i).section('=', 1, 1);
+            auto portString = args.at(i).section('=', 1, 1);
             portNumber = portString.toInt();
             qWarning() << "TCP is not yet supported. Falling back to UDP on " << portNumber;
         } else if (args.at(i) == "invertx") {
@@ -77,8 +77,8 @@ QTuioHandler::QTuioHandler(const QString &specification)
         } else if (args.at(i) == "inverty") {
             inverty = true;
         } else if (args.at(i).startsWith("rotate=")) {
-            QString rotateArg = args.at(i).section('=', 1, 1);
-            int argValue = rotateArg.toInt();
+            auto rotateArg = args.at(i).section('=', 1, 1);
+            auto argValue = rotateArg.toInt();
             switch (argValue) {
             case 90:
             case 180:
@@ -127,7 +127,7 @@ void QTuioHandler::processPackets()
         QHostAddress sender;
         quint16 senderPort;
 
-        qint64 size = m_socket.readDatagram(datagram.data(), datagram.size(),
+        auto size = m_socket.readDatagram(datagram.data(), datagram.size(),
                                              &sender, &senderPort);
 
         if (size == -1)
@@ -163,13 +163,13 @@ void QTuioHandler::processPackets()
                 continue;
             }
 
-            QList<QVariant> arguments = message.arguments();
+            auto arguments = message.arguments();
             if (arguments.count() == 0) {
                 qWarning() << "Ignoring TUIO message with no arguments";
                 continue;
             }
 
-            QByteArray messageType = arguments.at(0).toByteArray();
+            auto messageType = arguments.at(0).toByteArray();
             if (messageType == "source") {
                 process2DCurSource(message);
             } else if (messageType == "alive") {
@@ -188,7 +188,7 @@ void QTuioHandler::processPackets()
 
 void QTuioHandler::process2DCurSource(const QOscMessage &message)
 {
-    QList<QVariant> arguments = message.arguments();
+    auto arguments = message.arguments();
     if (arguments.count() != 2) {
         qWarning() << "Ignoring malformed TUIO source message: " << arguments.count();
         return;
@@ -204,7 +204,7 @@ void QTuioHandler::process2DCurSource(const QOscMessage &message)
 
 void QTuioHandler::process2DCurAlive(const QOscMessage &message)
 {
-    QList<QVariant> arguments = message.arguments();
+    auto arguments = message.arguments();
 
     // delta the notified cursors that are active, against the ones we already
     // know of.
@@ -212,16 +212,16 @@ void QTuioHandler::process2DCurAlive(const QOscMessage &message)
     // TBD: right now we're assuming one 2Dcur alive message corresponds to a
     // new data source from the input. is this correct, or do we need to store
     // changes and only process the deltas on fseq?
-    QMap<int, QTuioCursor> oldActiveCursors = m_activeCursors;
+    auto oldActiveCursors = m_activeCursors;
     QMap<int, QTuioCursor> newActiveCursors;
 
-    for (int i = 1; i < arguments.count(); ++i) {
+    for (auto i = 1; i < arguments.count(); ++i) {
         if (QMetaType::Type(arguments.at(i).type()) != QMetaType::Int) {
             qWarning() << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ')';
             return;
         }
 
-        int cursorId = arguments.at(i).toInt();
+        auto cursorId = arguments.at(i).toInt();
         if (!oldActiveCursors.contains(cursorId)) {
             // newly active
             QTuioCursor cursor(cursorId);
@@ -229,7 +229,7 @@ void QTuioHandler::process2DCurAlive(const QOscMessage &message)
             newActiveCursors.insert(cursorId, cursor);
         } else {
             // we already know about it, remove it so it isn't marked as released
-            QTuioCursor cursor = oldActiveCursors.value(cursorId);
+            auto cursor = oldActiveCursors.value(cursorId);
             cursor.setState(Qt::TouchPointStationary); // position change in SET will update if needed
             newActiveCursors.insert(cursorId, cursor);
             oldActiveCursors.remove(cursorId);
@@ -237,7 +237,7 @@ void QTuioHandler::process2DCurAlive(const QOscMessage &message)
     }
 
     // anything left is dead now
-    QMap<int, QTuioCursor>::ConstIterator it = oldActiveCursors.constBegin();
+    auto it = oldActiveCursors.constBegin();
 
     // deadCursors should be cleared from the last FSEQ now
     m_deadCursors.reserve(oldActiveCursors.size());
@@ -255,7 +255,7 @@ void QTuioHandler::process2DCurAlive(const QOscMessage &message)
 
 void QTuioHandler::process2DCurSet(const QOscMessage &message)
 {
-    QList<QVariant> arguments = message.arguments();
+    auto arguments = message.arguments();
     if (arguments.count() < 7) {
         qWarning() << "Ignoring malformed TUIO set message with too few arguments: " << arguments.count();
         return;
@@ -272,14 +272,14 @@ void QTuioHandler::process2DCurSet(const QOscMessage &message)
         return;
     }
 
-    int cursorId = arguments.at(1).toInt();
-    float x = arguments.at(2).toFloat();
-    float y = arguments.at(3).toFloat();
-    float vx = arguments.at(4).toFloat();
-    float vy = arguments.at(5).toFloat();
-    float acceleration = arguments.at(6).toFloat();
+    auto cursorId = arguments.at(1).toInt();
+    auto x = arguments.at(2).toFloat();
+    auto y = arguments.at(3).toFloat();
+    auto vx = arguments.at(4).toFloat();
+    auto vy = arguments.at(5).toFloat();
+    auto acceleration = arguments.at(6).toFloat();
 
-    QMap<int, QTuioCursor>::Iterator it = m_activeCursors.find(cursorId);
+    auto it = m_activeCursors.find(cursorId);
     if (it == m_activeCursors.end()) {
         qWarning() << "Ignoring malformed TUIO set for nonexistent cursor " << cursorId;
         return;
@@ -315,8 +315,8 @@ QWindowSystemInterface::TouchPoint QTuioHandler::cursorToTouchPoint(const QTuioC
     //
     // in the future, it might make sense to make this choice optional,
     // dependent on the spec.
-    QPointF relPos = QPointF(win->size().width() * tp.normalPosition.x(), win->size().height() * tp.normalPosition.y());
-    QPointF delta = relPos - relPos.toPoint();
+    auto relPos = QPointF(win->size().width() * tp.normalPosition.x(), win->size().height() * tp.normalPosition.y());
+    auto delta = relPos - relPos.toPoint();
     tp.area.moveCenter(win->mapToGlobal(relPos.toPoint()) + delta);
     tp.velocity = QVector2D(win->size().width() * tc.vx(), win->size().height() * tc.vy());
     return tp;
@@ -327,12 +327,12 @@ void QTuioHandler::process2DCurFseq(const QOscMessage &message)
 {
     Q_UNUSED(message); // TODO: do we need to do anything with the frame id?
 
-    QWindow *win = QGuiApplication::focusWindow();
+    auto win = QGuiApplication::focusWindow();
     // With TUIO the first application takes exclusive ownership of the "device"
     // we cannot attach more than one application to the same port anyway.
     // Forcing delivery makes it easy to use simulators in the same machine
     // and forget about headaches about unfocused TUIO windows.
-    static bool forceDelivery = qEnvironmentVariableIsSet("QT_TUIOTOUCH_DELIVER_WITHOUT_FOCUS");
+    static auto forceDelivery = qEnvironmentVariableIsSet("QT_TUIOTOUCH_DELIVER_WITHOUT_FOCUS");
     if (!win && QGuiApplication::topLevelWindows().length() > 0 && forceDelivery)
           win = QGuiApplication::topLevelWindows().at(0);
 
@@ -343,12 +343,12 @@ void QTuioHandler::process2DCurFseq(const QOscMessage &message)
     tpl.reserve(m_activeCursors.size() + m_deadCursors.size());
 
     foreach (const QTuioCursor &tc, m_activeCursors) {
-        QWindowSystemInterface::TouchPoint tp = cursorToTouchPoint(tc, win);
+        auto tp = cursorToTouchPoint(tc, win);
         tpl.append(tp);
     }
 
     foreach (const QTuioCursor &tc, m_deadCursors) {
-        QWindowSystemInterface::TouchPoint tp = cursorToTouchPoint(tc, win);
+        auto tp = cursorToTouchPoint(tc, win);
         tp.state = Qt::TouchPointReleased;
         tpl.append(tp);
     }

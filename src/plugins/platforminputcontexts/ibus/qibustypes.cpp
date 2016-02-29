@@ -113,7 +113,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttribute &attribu
 
     argument << static_cast<const QIBusSerializable &>(attribute);
 
-    quint32 t = (quint32) attribute.type;
+    auto t = (quint32) attribute.type;
     argument << t;
     argument << attribute.value;
     argument << attribute.start;
@@ -149,7 +149,7 @@ QTextCharFormat QIBusAttribute::format() const
     case Invalid:
         break;
     case Underline: {
-        QTextCharFormat::UnderlineStyle style = QTextCharFormat::NoUnderline;
+        auto style = QTextCharFormat::NoUnderline;
 
         switch (value) {
         case UnderlineNone:
@@ -198,7 +198,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttributeList &att
     argument << static_cast<const QIBusSerializable &>(attrList);
 
     argument.beginArray(qMetaTypeId<QDBusVariant>());
-    for (int i = 0; i < attrList.attributes.size(); ++i) {
+    for (auto i = 0; i < attrList.attributes.size(); ++i) {
         QVariant variant;
         variant.setValue(attrList.attributes.at(i));
         argument << QDBusVariant (variant);
@@ -234,10 +234,10 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, QIBusAttributeList &at
 QList<QInputMethodEvent::Attribute> QIBusAttributeList::imAttributes() const
 {
     QHash<QPair<int, int>, QTextCharFormat> rangeAttrs;
-    const int numAttributes = attributes.size();
+    const auto numAttributes = attributes.size();
 
     // Merge text fomats for identical ranges into a single QTextFormat.
-    for (int i = 0; i < numAttributes; ++i) {
+    for (auto i = 0; i < numAttributes; ++i) {
         const QIBusAttribute &attr = attributes.at(i);
         const QTextCharFormat &format = attr.format();
 
@@ -251,7 +251,7 @@ QList<QInputMethodEvent::Attribute> QIBusAttributeList::imAttributes() const
     QList<QInputMethodEvent::Attribute> imAttrs;
     imAttrs.reserve(numAttributes);
 
-    for (int i = 0; i < numAttributes; ++i) {
+    for (auto i = 0; i < numAttributes; ++i) {
         const QIBusAttribute &attr = attributes.at(i);
         const QTextFormat &format = attr.format();
 

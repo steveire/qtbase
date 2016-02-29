@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 QMinimalEglWindow::QMinimalEglWindow(QWindow *w)
     : QPlatformWindow(w)
 {
-    static int serialNo = 0;
+    static auto serialNo = 0;
     m_winid  = ++serialNo;
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_winid));

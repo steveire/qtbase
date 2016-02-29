@@ -62,7 +62,7 @@ QSQLiteDriverPlugin::QSQLiteDriverPlugin()
 QSqlDriver* QSQLiteDriverPlugin::create(const QString &name)
 {
     if (name == QLatin1String("QSQLITE")) {
-        QSQLiteDriver* driver = new QSQLiteDriver();
+        auto driver = new QSQLiteDriver();
         return driver;
     }
     return 0;

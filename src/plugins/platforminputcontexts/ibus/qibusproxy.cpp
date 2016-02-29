@@ -37,13 +37,13 @@ QIBusEngineDesc QIBusProxy::getGlobalEngine()
 {
     QIBusEngineDesc desc;
     QDBusReply<QDBusVariant> reply = GetGlobalEngine();
-    QVariant variant = reply.value().variant();
+    auto variant = reply.value().variant();
     if (!variant.isValid())
         return desc;
-    QVariant child = variant.value<QDBusVariant>().variant();
+    auto child = variant.value<QDBusVariant>().variant();
     if (!child.isValid())
         return desc;
-    const QDBusArgument argument = child.value<QDBusArgument>();
+    const auto argument = child.value<QDBusArgument>();
     argument >> desc;
     return desc;
 }

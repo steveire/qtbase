@@ -134,9 +134,9 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
 {
     Q_XCB_NOOP(connection());
 
-    const xcb_setup_t *setup = xcb_get_setup(xcb_connection());
-    xcb_format_t *fmt = xcb_setup_pixmap_formats(setup);
-    xcb_format_t *fmtend = fmt + xcb_setup_pixmap_formats_length(setup);
+    auto setup = xcb_get_setup(xcb_connection());
+    auto fmt = xcb_setup_pixmap_formats(setup);
+    auto fmtend = fmt + xcb_setup_pixmap_formats_length(setup);
     for (; fmt != fmtend; ++fmt)
         if (fmt->depth == depth)
             break;
@@ -155,7 +155,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     if (!segmentSize)
         return;
 
-    int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
+    auto id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
     if (id == -1)
         qWarning("QXcbShmImage: shmget() failed (%d: %s) for size %d (%dx%d)",
                  errno, strerror(errno), segmentSize, size.width(), size.height());
@@ -164,8 +164,8 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat (m_shm_info.shmid, 0, 0);
     m_shm_info.shmseg = xcb_generate_id(xcb_connection());
 
-    const xcb_query_extension_reply_t *shm_reply = xcb_get_extension_data(xcb_connection(), &xcb_shm_id);
-    bool shm_present = shm_reply != NULL && shm_reply->present;
+    auto shm_reply = xcb_get_extension_data(xcb_connection(), &xcb_shm_id);
+    auto shm_present = shm_reply != NULL && shm_reply->present;
     xcb_generic_error_t *error = NULL;
     if (shm_present)
         error = xcb_request_check(xcb_connection(), xcb_shm_attach_checked(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false));
@@ -246,16 +246,16 @@ void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &s
         // larger than the server's maximum request size and stuff breaks.
         // To work around that, we upload the image in chunks where each chunk
         // is small enough for a single request.
-        int src_x = source.x();
-        int src_y = source.y();
-        int target_x = target.x();
-        int target_y = target.y();
-        int width = source.width();
-        int height = source.height();
+        auto src_x = source.x();
+        auto src_y = source.y();
+        auto target_x = target.x();
+        auto target_y = target.y();
+        auto width = source.width();
+        auto height = source.height();
 
         // We must make sure that each request is not larger than max_req_size.
         // Each request takes req_size + m_xcb_image->stride * height bytes.
-        uint32_t max_req_size = xcb_get_maximum_request_length(xcb_connection());
+        auto max_req_size = xcb_get_maximum_request_length(xcb_connection());
         uint32_t req_size = sizeof(xcb_put_image_request_t);
         int rows_per_put = (max_req_size - req_size) / m_xcb_image->stride;
 
@@ -265,12 +265,12 @@ void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &s
         Q_ASSERT(rows_per_put > 0);
 
         // Convert the image to the native byte order.
-        xcb_image_t *converted_image = xcb_image_native(xcb_connection(), m_xcb_image, 1);
+        auto converted_image = xcb_image_native(xcb_connection(), m_xcb_image, 1);
 
         while (height > 0) {
-            int rows = std::min(height, rows_per_put);
+            auto rows = std::min(height, rows_per_put);
 
-            xcb_image_t *subimage = xcb_image_subimage(converted_image, src_x, src_y, width, rows,
+            auto subimage = xcb_image_subimage(converted_image, src_x, src_y, width, rows,
                                                        0, 0, 0);
             xcb_image_put(xcb_connection(),
                           window,
@@ -308,7 +308,7 @@ QXcbBackingStore::QXcbBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
     , m_image(0)
 {
-    QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
+    auto screen = static_cast<QXcbScreen *>(window->screen()->handle());
     setConnection(screen->connection());
 }
 
@@ -335,9 +335,9 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
     if (m_image->hasAlpha()) {
         QPainter p(paintDevice());
         p.setCompositionMode(QPainter::CompositionMode_Source);
-        const QVector<QRect> rects = m_paintRegion.rects();
+        const auto rects = m_paintRegion.rects();
         const QColor blank = Qt::transparent;
-        for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+        for (auto it = rects.begin(); it != rects.end(); ++it) {
             p.fillRect(*it, blank);
         }
     }
@@ -345,18 +345,18 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
 
 void QXcbBackingStore::endPaint()
 {
-    QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window()->handle());
+    auto platformWindow = static_cast<QXcbWindow *>(window()->handle());
     if (!platformWindow || !platformWindow->imageNeedsRgbSwap())
         return;
 
     // Slow path: the paint device was m_rgbImage. Now copy with swapping red
     // and blue into m_image.
-    const QVector<QRect> rects = m_paintRegion.rects();
+    const auto rects = m_paintRegion.rects();
     if (rects.isEmpty())
         return;
     QPainter p(m_image->image());
-    for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
-        const QRect rect = *it;
+    for (auto it = rects.begin(); it != rects.end(); ++it) {
+        const auto rect = *it;
         p.drawImage(rect.topLeft(), m_rgbImage.copy(rect).rgbSwapped());
     }
 }
@@ -378,28 +378,28 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     if (!m_image || m_image->size().isEmpty())
         return;
 
-    QSize imageSize = m_image->size();
+    auto imageSize = m_image->size();
 
-    QRegion clipped = region;
+    auto clipped = region;
     clipped &= QRect(QPoint(), QHighDpi::toNativePixels(window->size(), window));
     clipped &= QRect(0, 0, imageSize.width(), imageSize.height()).translated(-offset);
 
-    QRect bounds = clipped.boundingRect();
+    auto bounds = clipped.boundingRect();
 
     if (bounds.isNull())
         return;
 
     Q_XCB_NOOP(connection());
 
-    QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
+    auto platformWindow = static_cast<QXcbWindow *>(window->handle());
     if (!platformWindow) {
         qWarning("QXcbBackingStore::flush: QWindow has no platform window (QTBUG-32681)");
         return;
     }
 
-    QVector<QRect> rects = clipped.rects();
-    for (int i = 0; i < rects.size(); ++i) {
-        QRect rect = QRect(rects.at(i).topLeft(), rects.at(i).size());
+    auto rects = clipped.rects();
+    for (auto i = 0; i < rects.size(); ++i) {
+        auto rect = QRect(rects.at(i).topLeft(), rects.at(i).size());
         m_image->put(platformWindow->xcb_window(), rect.topLeft(), rect.translated(offset));
     }
 
@@ -420,7 +420,7 @@ void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, c
 
     Q_XCB_NOOP(connection());
 
-    QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
+    auto platformWindow = static_cast<QXcbWindow *>(window->handle());
     if (platformWindow->needsSync()) {
         platformWindow->updateSyncRequestCounter();
     } else {
@@ -435,13 +435,13 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
         return;
     Q_XCB_NOOP(connection());
 
-    QXcbScreen *screen = static_cast<QXcbScreen *>(window()->screen()->handle());
-    QPlatformWindow *pw = window()->handle();
+    auto screen = static_cast<QXcbScreen *>(window()->screen()->handle());
+    auto pw = window()->handle();
     if (!pw) {
         window()->create();
         pw = window()->handle();
     }
-    QXcbWindow* win = static_cast<QXcbWindow *>(pw);
+    auto win = static_cast<QXcbWindow *>(pw);
 
     delete m_image;
     m_image = new QXcbShmImage(screen, size, win->depth(), win->imageFormat());
@@ -463,8 +463,8 @@ bool QXcbBackingStore::scroll(const QRegion &area, int dx, int dy)
     m_image->preparePaint(area);
 
     QPoint delta(dx, dy);
-    const QVector<QRect> rects = area.rects();
-    for (int i = 0; i < rects.size(); ++i)
+    const auto rects = area.rects();
+    for (auto i = 0; i < rects.size(); ++i)
         qt_scrollRectInImage(*m_image->image(), rects.at(i), delta);
     return true;
 }

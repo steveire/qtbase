@@ -60,7 +60,7 @@ void QXcbGlxWindow::resolveFormat()
 
 void *QXcbGlxWindow::createVisual()
 {
-    QXcbScreen *scr = xcbScreen();
+    auto scr = xcbScreen();
     if (!scr)
         return Q_NULLPTR;
     return qglx_findVisualInfo(DISPLAY_FROM_XCB(scr), scr->screenNumber(), &m_format);

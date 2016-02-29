@@ -59,7 +59,7 @@ public:
     void setPos(const QPoint &pos) Q_DECL_OVERRIDE
     {
         m_pos = pos;
-        QWindowList wl = QGuiApplication::topLevelWindows();
+        auto wl = QGuiApplication::topLevelWindows();
         QWindow *containing = 0;
         foreach (QWindow *w, wl) {
             if (w->type() != Qt::Desktop && w->isExposed() && w->geometry().contains(pos)) {
@@ -68,11 +68,11 @@ public:
             }
         }
 
-        QPoint local = pos;
+        auto local = pos;
         if (containing)
             local -= containing->position();
 
-        QWindow *previous = QOffscreenScreen::windowContainingCursor ? QOffscreenScreen::windowContainingCursor->window() : 0;
+        auto previous = QOffscreenScreen::windowContainingCursor ? QOffscreenScreen::windowContainingCursor->window() : 0;
 
         if (containing != previous)
             QWindowSystemInterface::handleEnterLeaveEvent(containing, previous, local, pos);
@@ -102,9 +102,9 @@ QPixmap QOffscreenScreen::grabWindow(WId id, int x, int y, int width, int height
 {
     QRect rect(x, y, width, height);
 
-    QOffscreenWindow *window = QOffscreenWindow::windowForWinId(id);
+    auto window = QOffscreenWindow::windowForWinId(id);
     if (!window || window->window()->type() == Qt::Desktop) {
-        QWindowList wl = QGuiApplication::topLevelWindows();
+        auto wl = QGuiApplication::topLevelWindows();
         QWindow *containing = 0;
         foreach (QWindow *w, wl) {
             if (w->type() != Qt::Desktop && w->isExposed() && w->geometry().contains(rect)) {
@@ -120,7 +120,7 @@ QPixmap QOffscreenScreen::grabWindow(WId id, int x, int y, int width, int height
         rect = rect.translated(-containing->geometry().topLeft());
     }
 
-    QOffscreenBackingStore *store = QOffscreenBackingStore::backingStoreForWinId(id);
+    auto store = QOffscreenBackingStore::backingStoreForWinId(id);
     if (store)
         return store->grabWindow(id, rect);
     return QPixmap();
@@ -148,17 +148,17 @@ void QOffscreenBackingStore::flush(QWindow *window, const QRegion &region, const
     if (m_image.size().isEmpty())
         return;
 
-    QSize imageSize = m_image.size();
+    auto imageSize = m_image.size();
 
     QRegion clipped = QRect(0, 0, window->width(), window->height());
     clipped &= QRect(0, 0, imageSize.width(), imageSize.height()).translated(-offset);
 
-    QRect bounds = clipped.boundingRect().translated(offset);
+    auto bounds = clipped.boundingRect().translated(offset);
 
     if (bounds.isNull())
         return;
 
-    WId id = window->winId();
+    auto id = window->winId();
 
     m_windowAreaHash[id] = bounds;
     m_backingStoreForWinIdHash[id] = this;
@@ -166,7 +166,7 @@ void QOffscreenBackingStore::flush(QWindow *window, const QRegion &region, const
 
 void QOffscreenBackingStore::resize(const QSize &size, const QRegion &)
 {
-    QImage::Format format = QGuiApplication::primaryScreen()->handle()->format();
+    auto format = QGuiApplication::primaryScreen()->handle()->format();
     if (m_image.size() != size)
         m_image = QImage(size, format);
     clearHash();
@@ -179,8 +179,8 @@ bool QOffscreenBackingStore::scroll(const QRegion &area, int dx, int dy)
     if (m_image.isNull())
         return false;
 
-    const QVector<QRect> rects = area.rects();
-    for (int i = 0; i < rects.size(); ++i)
+    const auto rects = area.rects();
+    for (auto i = 0; i < rects.size(); ++i)
         qt_scrollRectInImage(m_image, rects.at(i), QPoint(dx, dy));
 
     return true;
@@ -188,11 +188,11 @@ bool QOffscreenBackingStore::scroll(const QRegion &area, int dx, int dy)
 
 QPixmap QOffscreenBackingStore::grabWindow(WId window, const QRect &rect) const
 {
-    QRect area = m_windowAreaHash.value(window, QRect());
+    auto area = m_windowAreaHash.value(window, QRect());
     if (area.isNull())
         return QPixmap();
 
-    QRect adjusted = rect;
+    auto adjusted = rect;
     if (adjusted.width() <= 0)
         adjusted.setWidth(area.width());
     if (adjusted.height() <= 0)
@@ -213,9 +213,9 @@ QOffscreenBackingStore *QOffscreenBackingStore::backingStoreForWinId(WId id)
 
 void QOffscreenBackingStore::clearHash()
 {
-    QList<WId> ids = m_windowAreaHash.keys();
+    auto ids = m_windowAreaHash.keys();
     foreach (WId id, ids) {
-        QHash<WId, QOffscreenBackingStore *>::iterator it = m_backingStoreForWinIdHash.find(id);
+        auto it = m_backingStoreForWinIdHash.find(id);
         if (it.value() == this)
             m_backingStoreForWinIdHash.remove(id);
     }

@@ -120,8 +120,8 @@ void QEglFSScreen::setPrimarySurface(EGLSurface surface)
 
 void QEglFSScreen::handleCursorMove(const QPoint &pos)
 {
-    const QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
-    const QList<QOpenGLCompositorWindow *> windows = compositor->windows();
+    auto compositor = QOpenGLCompositor::instance();
+    const auto windows = compositor->windows();
 
     // Generate enter and leave events like a real windowing system would do.
     if (windows.isEmpty())
@@ -129,7 +129,7 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
 
     // First window is always fullscreen.
     if (windows.count() == 1) {
-        QWindow *window = windows[0]->sourceWindow();
+        auto window = windows[0]->sourceWindow();
         if (m_pointerWindow != window) {
             m_pointerWindow = window;
             QWindowSystemInterface::handleEnterEvent(window, window->mapFromGlobal(pos), pos);
@@ -138,9 +138,9 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
     }
 
     QWindow *enter = 0, *leave = 0;
-    for (int i = windows.count() - 1; i >= 0; --i) {
-        QWindow *window = windows[i]->sourceWindow();
-        const QRect geom = window->geometry();
+    for (auto i = windows.count() - 1; i >= 0; --i) {
+        auto window = windows[i]->sourceWindow();
+        const auto geom = window->geometry();
         if (geom.contains(pos)) {
             if (m_pointerWindow != window) {
                 leave = m_pointerWindow;
@@ -157,8 +157,8 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
 
 QPixmap QEglFSScreen::grabWindow(WId wid, int x, int y, int width, int height) const
 {
-    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
-    const QList<QOpenGLCompositorWindow *> windows = compositor->windows();
+    auto compositor = QOpenGLCompositor::instance();
+    const auto windows = compositor->windows();
     Q_ASSERT(!windows.isEmpty());
 
     QImage img;
@@ -178,7 +178,7 @@ QPixmap QEglFSScreen::grabWindow(WId wid, int x, int y, int width, int height) c
     }
 
     if (!wid) {
-        const QSize screenSize = geometry().size();
+        const auto screenSize = geometry().size();
         if (width < 0)
             width = screenSize.width() - x;
         if (height < 0)
@@ -187,9 +187,9 @@ QPixmap QEglFSScreen::grabWindow(WId wid, int x, int y, int width, int height) c
     }
 
     foreach (QOpenGLCompositorWindow *w, windows) {
-        const QWindow *window = w->sourceWindow();
+        auto window = w->sourceWindow();
         if (window->winId() == wid) {
-            const QRect geom = window->geometry();
+            const auto geom = window->geometry();
             if (width < 0)
                 width = geom.width() - x;
             if (height < 0)

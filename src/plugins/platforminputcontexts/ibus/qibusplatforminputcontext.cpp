@@ -98,7 +98,7 @@ public:
 QIBusPlatformInputContext::QIBusPlatformInputContext ()
     : d(new QIBusPlatformInputContextPrivate())
 {
-    QString socketPath = QIBusPlatformInputContextPrivate::getSocketPath();
+    auto socketPath = QIBusPlatformInputContextPrivate::getSocketPath();
     QFile file(socketPath);
     if (file.open(QFile::ReadOnly)) {
         // If KDE session save is used or restart ibus-daemon,
@@ -113,12 +113,12 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
 
     connectToContextSignals();
 
-    QInputMethod *p = qApp->inputMethod();
+    auto p = qApp->inputMethod();
     connect(p, SIGNAL(cursorRectangleChanged()), this, SLOT(cursorRectChanged()));
     m_eventFilterUseSynchronousMode = false;
     if (qEnvironmentVariableIsSet("IBUS_ENABLE_SYNC_MODE")) {
         bool ok;
-        int enableSync = qEnvironmentVariableIntValue("IBUS_ENABLE_SYNC_MODE", &ok);
+        auto enableSync = qEnvironmentVariableIntValue("IBUS_ENABLE_SYNC_MODE", &ok);
         if (ok && enableSync == 1)
             m_eventFilterUseSynchronousMode = true;
     }
@@ -161,7 +161,7 @@ void QIBusPlatformInputContext::commit()
     if (!d->busConnected)
         return;
 
-    QObject *input = qApp->focusObject();
+    auto input = qApp->focusObject();
     if (!input) {
         d->predit = QString();
         return;
@@ -180,7 +180,7 @@ void QIBusPlatformInputContext::commit()
 
 void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
 {
-    QObject *input = qApp->focusObject();
+    auto input = qApp->focusObject();
 
     if (d->needsSurroundingText && input
             && (q.testFlag(Qt::ImSurroundingText)
@@ -194,9 +194,9 @@ void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
         QCoreApplication::sendEvent(input, &cursorPosQuery);
         QCoreApplication::sendEvent(input, &anchorPosQuery);
 
-        QString surroundingText = srrndTextQuery.value(Qt::ImSurroundingText).toString();
-        uint cursorPosition = cursorPosQuery.value(Qt::ImCursorPosition).toUInt();
-        uint anchorPosition = anchorPosQuery.value(Qt::ImAnchorPosition).toUInt();
+        auto surroundingText = srrndTextQuery.value(Qt::ImSurroundingText).toString();
+        auto cursorPosition = cursorPosQuery.value(Qt::ImCursorPosition).toUInt();
+        auto anchorPosition = anchorPosQuery.value(Qt::ImAnchorPosition).toUInt();
 
         QIBusText text;
         text.text = surroundingText;
@@ -215,11 +215,11 @@ void QIBusPlatformInputContext::cursorRectChanged()
     if (!d->busConnected)
         return;
 
-    QRect r = qApp->inputMethod()->cursorRectangle().toRect();
+    auto r = qApp->inputMethod()->cursorRectangle().toRect();
     if(!r.isValid())
         return;
 
-    QWindow *inputWindow = qApp->focusWindow();
+    auto inputWindow = qApp->focusWindow();
     if (!inputWindow)
         return;
     r.moveTopLeft(inputWindow->mapToGlobal(r.topLeft()));
@@ -243,11 +243,11 @@ void QIBusPlatformInputContext::setFocusObject(QObject *object)
 
 void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
 {
-    QObject *input = qApp->focusObject();
+    auto input = qApp->focusObject();
     if (!input)
         return;
 
-    const QDBusArgument arg = text.variant().value<QDBusArgument>();
+    const auto arg = text.variant().value<QDBusArgument>();
 
     QIBusText t;
     if (debug)
@@ -265,18 +265,18 @@ void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
 
 void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint cursorPos, bool visible)
 {
-    QObject *input = qApp->focusObject();
+    auto input = qApp->focusObject();
     if (!input)
         return;
 
-    const QDBusArgument arg = text.variant().value<QDBusArgument>();
+    const auto arg = text.variant().value<QDBusArgument>();
 
     QIBusText t;
     arg >> t;
     if (debug)
         qDebug() << "preedit text:" << t.text;
 
-    QList<QInputMethodEvent::Attribute> attributes = t.attributes.imAttributes();
+    auto attributes = t.attributes.imAttributes();
     if (!t.text.isEmpty())
         attributes += QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursorPos, visible ? 1 : 0);
 
@@ -296,7 +296,7 @@ void QIBusPlatformInputContext::surroundingTextRequired()
 
 void QIBusPlatformInputContext::deleteSurroundingText(int offset, uint n_chars)
 {
-    QObject *input = qApp->focusObject();
+    auto input = qApp->focusObject();
     if (!input)
         return;
 
@@ -316,25 +316,25 @@ bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
     if (!inputMethodAccepted())
         return false;
 
-    const QKeyEvent *keyEvent = static_cast<const QKeyEvent *>(event);
-    quint32 sym = keyEvent->nativeVirtualKey();
-    quint32 code = keyEvent->nativeScanCode();
-    quint32 state = keyEvent->nativeModifiers();
-    quint32 ibusState = state;
+    auto keyEvent = static_cast<const QKeyEvent *>(event);
+    auto sym = keyEvent->nativeVirtualKey();
+    auto code = keyEvent->nativeScanCode();
+    auto state = keyEvent->nativeModifiers();
+    auto ibusState = state;
 
     if (keyEvent->type() != QEvent::KeyPress)
         ibusState |= IBUS_RELEASE_MASK;
 
-    QDBusPendingReply<bool> reply = d->context->ProcessKeyEvent(sym, code - 8, ibusState);
+    auto reply = d->context->ProcessKeyEvent(sym, code - 8, ibusState);
 
     if (m_eventFilterUseSynchronousMode || reply.isFinished()) {
-        bool retval = reply.value();
+        auto retval = reply.value();
         qCDebug(qtQpaInputMethods) << "filterEvent return" << code << sym << state << retval;
         return retval;
     }
 
-    Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
-    const int qtcode = keyEvent->key();
+    auto modifiers = keyEvent->modifiers();
+    const auto qtcode = keyEvent->key();
 
     // From QKeyEvent::modifiers()
     switch (qtcode) {
@@ -363,7 +363,7 @@ bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
     args << QVariant::fromValue(keyEvent->text());
     args << QVariant::fromValue(keyEvent->isAutoRepeat());
 
-    QIBusFilterEventWatcher *watcher = new QIBusFilterEventWatcher(reply, this, QGuiApplication::focusWindow(), modifiers, args);
+    auto watcher = new QIBusFilterEventWatcher(reply, this, QGuiApplication::focusWindow(), modifiers, args);
     QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this, &QIBusPlatformInputContext::filterEventFinished);
 
     return true;
@@ -371,7 +371,7 @@ bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
 
 void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *call)
 {
-    QIBusFilterEventWatcher *watcher = (QIBusFilterEventWatcher *) call;
+    auto watcher = (QIBusFilterEventWatcher *) call;
     QDBusPendingReply<bool> reply = *call;
 
     if (reply.isError()) {
@@ -381,33 +381,33 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
 
     // Use watcher's window instead of the current focused window
     // since there is a time lag until filterEventFinished() returns.
-    QWindow *window = watcher->window();
+    auto window = watcher->window();
 
     if (!window) {
         call->deleteLater();
         return;
     }
 
-    Qt::KeyboardModifiers modifiers = watcher->modifiers();
-    QVariantList args = watcher->arguments();
-    const ulong time = static_cast<const ulong>(args.at(0).toUInt());
-    const QEvent::Type type = static_cast<const QEvent::Type>(args.at(1).toUInt());
-    const int qtcode = args.at(2).toInt();
-    const quint32 code = args.at(3).toUInt();
-    const quint32 sym = args.at(4).toUInt();
-    const quint32 state = args.at(5).toUInt();
-    const QString string = args.at(6).toString();
-    const bool isAutoRepeat = args.at(7).toBool();
+    auto modifiers = watcher->modifiers();
+    auto args = watcher->arguments();
+    const auto time = static_cast<const ulong>(args.at(0).toUInt());
+    const auto type = static_cast<const QEvent::Type>(args.at(1).toUInt());
+    const auto qtcode = args.at(2).toInt();
+    const auto code = args.at(3).toUInt();
+    const auto sym = args.at(4).toUInt();
+    const auto state = args.at(5).toUInt();
+    const auto string = args.at(6).toString();
+    const auto isAutoRepeat = args.at(7).toBool();
 
     // copied from QXcbKeyboard::handleKeyEvent()
-    bool retval = reply.value();
+    auto retval = reply.value();
     qCDebug(qtQpaInputMethods) << "filterEventFinished return" << code << sym << state << retval;
     if (!retval) {
 #ifndef QT_NO_CONTEXTMENU
         if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu
             && window != NULL) {
-            const QPoint globalPos = window->screen()->handle()->cursor()->pos();
-            const QPoint pos = window->mapFromGlobal(globalPos);
+            const auto globalPos = window->screen()->handle()->cursor()->pos();
+            const auto pos = window->mapFromGlobal(globalPos);
             QWindowSystemInterface::handleContextMenuEvent(window, false, pos,
                                                            globalPos, modifiers);
         }
@@ -458,7 +458,7 @@ void QIBusPlatformInputContext::globalEngineChanged(const QString &engine_name)
     if (!d->bus || !d->bus->isValid())
         return;
 
-    QIBusEngineDesc desc = d->bus->getGlobalEngine();
+    auto desc = d->bus->getGlobalEngine();
     Q_ASSERT(engine_name == desc.engine_name);
     QLocale locale(desc.language);
     if (d->locale != locale) {
@@ -495,7 +495,7 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
     initBus();
 
     if (bus && bus->isValid()) {
-        QIBusEngineDesc desc = bus->getGlobalEngine();
+        auto desc = bus->getGlobalEngine();
         locale = QLocale(desc.language);
     }
 }
@@ -554,11 +554,11 @@ QString QIBusPlatformInputContextPrivate::getSocketPath()
     QByteArray host = "unix";
     QByteArray displayNumber = "0";
 
-    int pos = display.indexOf(':');
+    auto pos = display.indexOf(':');
     if (pos > 0)
         host = display.left(pos);
     ++pos;
-    int pos2 = display.indexOf('.', pos);
+    auto pos2 = display.indexOf('.', pos);
     if (pos2 > 0)
         displayNumber = display.mid(pos, pos2 - pos);
     else
@@ -579,10 +579,10 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
         return 0;
 
     QByteArray address;
-    int pid = -1;
+    auto pid = -1;
 
     while (!file.atEnd()) {
-        QByteArray line = file.readLine().trimmed();
+        auto line = file.readLine().trimmed();
         if (line.startsWith('#'))
             continue;
 

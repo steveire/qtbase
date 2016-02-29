@@ -52,10 +52,10 @@ QT_BEGIN_NAMESPACE
 
 static QBearerEngineImpl *getEngineFromId(const QString &id)
 {
-    QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
+    auto priv = qNetworkConfigurationManagerPrivate();
 
     foreach (QBearerEngine *engine, priv->engines()) {
-        QBearerEngineImpl *engineImpl = qobject_cast<QBearerEngineImpl *>(engine);
+        auto engineImpl = qobject_cast<QBearerEngineImpl *>(engine);
         if (engineImpl && engineImpl->hasIdentifier(id))
             return engineImpl;
     }
@@ -206,7 +206,7 @@ QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
     if (!engine || state != QNetworkSession::Connected || !publicConfig.isValid())
         return QNetworkInterface();
 
-    QString interface = engine->getInterfaceFromId(activeConfig.identifier());
+    auto interface = engine->getInterfaceFromId(activeConfig.identifier());
     if (interface.isEmpty())
         return QNetworkInterface();
     return QNetworkInterface::interfaceFromName(interface);
@@ -230,7 +230,7 @@ void QNetworkSessionPrivateImpl::setSessionProperty(const QString &key, const QV
     if (key == QLatin1String("AutoCloseSessionTimeout")) {
         if (engine && engine->requiresPolling() &&
             !(engine->capabilities() & QNetworkConfigurationManager::CanStartAndStopInterfaces)) {
-            int timeout = value.toInt();
+            auto timeout = value.toInt();
             if (timeout >= 0) {
                 connect(engine, SIGNAL(updateCompleted()),
                         this, SLOT(decrementTimeout()), Qt::UniqueConnection);
@@ -304,7 +304,7 @@ void QNetworkSessionPrivateImpl::setUsagePolicies(QNetworkSession::UsagePolicies
 
 void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
 {
-    QNetworkSession::State oldState = state;
+    auto oldState = state;
 
     foreach (const QNetworkConfiguration &config, serviceConfig.children()) {
         if ((config.state() & QNetworkConfiguration::Active) != QNetworkConfiguration::Active)
@@ -348,10 +348,10 @@ void QNetworkSessionPrivateImpl::updateStateFromActiveConfig()
     if (!engine)
         return;
 
-    QNetworkSession::State oldState = state;
+    auto oldState = state;
     state = engine->sessionStateForId(activeConfig.identifier());
 
-    bool oldActive = isOpen;
+    auto oldActive = isOpen;
     isOpen = (state == QNetworkSession::Connected) ? opened : false;
 
     if (!oldActive && isOpen)

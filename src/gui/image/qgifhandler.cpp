@@ -186,10 +186,10 @@ void QGIFFormat::disposePrevious(QImage *image)
 
     if (disposed) return;
 
-    int l = qMin(swidth-1,left);
-    int r = qMin(swidth-1,right);
-    int t = qMin(sheight-1,top);
-    int b = qMin(sheight-1,bottom);
+    auto l = qMin(swidth-1,left);
+    auto r = qMin(swidth-1,right);
+    auto t = qMin(sheight-1,top);
+    auto b = qMin(sheight-1,bottom);
 
     switch (disposal) {
       case NoDisposal:
@@ -205,14 +205,14 @@ void QGIFFormat::disposePrevious(QImage *image)
             fillRect(image, l, t, r-l+1, b-t+1, color(bgcol));
         } else {
             // Impossible:  We don't know of a bgcol - use pixel 0
-            const QRgb *bits = reinterpret_cast<const QRgb *>(image->constBits());
+            auto bits = reinterpret_cast<const QRgb *>(image->constBits());
             fillRect(image, l, t, r-l+1, b-t+1, bits[0]);
         }
         // ### Changed: QRect(l, t, r-l+1, b-t+1)
         break;
       case RestoreImage: {
         if (frame >= 0) {
-            for (int ln=t; ln<=b; ln++) {
+            for (auto ln=t; ln<=b; ln++) {
                 memcpy(image->scanLine(ln)+l,
                     backingstore.constScanLine(ln-t),
                     (r-l+1)*sizeof(QRgb));
@@ -246,15 +246,15 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
     }
 
     image->detach();
-    int bpl = image->bytesPerLine();
-    unsigned char *bits = image->bits();
+    auto bpl = image->bytesPerLine();
+    auto bits = image->bits();
 
 #define LM(l, m) (((m)<<8)|l)
     digress = false;
-    const int initial = length;
+    const auto initial = length;
     while (!digress && length) {
         length--;
-        unsigned char ch=*buffer++;
+        auto ch=*buffer++;
         switch (state) {
           case Header:
             hold[count++]=ch;
@@ -294,7 +294,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
           case GlobalColorMap: case LocalColorMap:
             hold[count++]=ch;
             if (count==3) {
-                QRgb rgb = qRgb(hold[0], hold[1], hold[2]);
+                auto rgb = qRgb(hold[0], hold[1], hold[2]);
                 if (state == LocalColorMap) {
                     if (ccount < lncols)
                         localcmap[ccount] =  rgb;
@@ -332,10 +332,10 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
           case ImageDescriptor:
             hold[count++]=ch;
             if (count==10) {
-                int newleft=LM(hold[1], hold[2]);
-                int newtop=LM(hold[3], hold[4]);
-                int newwidth=LM(hold[5], hold[6]);
-                int newheight=LM(hold[7], hold[8]);
+                auto newleft=LM(hold[1], hold[2]);
+                auto newtop=LM(hold[3], hold[4]);
+                auto newwidth=LM(hold[5], hold[6]);
+                auto newheight=LM(hold[7], hold[8]);
 
                 // disbelieve ridiculous logical screen sizes,
                 // unless the image frames are also large.
@@ -349,7 +349,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                 if (sheight <= 0)
                     sheight = newtop + newheight;
 
-                QImage::Format format = trans_index >= 0 ? QImage::Format_ARGB32 : QImage::Format_RGB32;
+                auto format = trans_index >= 0 ? QImage::Format_ARGB32 : QImage::Format_RGB32;
                 if (image->isNull()) {
                     (*image) = QImage(swidth, sheight, format);
                     bpl = image->bytesPerLine();
@@ -402,12 +402,12 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                 }
 
                 if (disposal == RestoreImage) {
-                    int l = qMin(swidth-1,left);
-                    int r = qMin(swidth-1,right);
-                    int t = qMin(sheight-1,top);
-                    int b = qMin(sheight-1,bottom);
-                    int w = r-l+1;
-                    int h = b-t+1;
+                    auto l = qMin(swidth-1,left);
+                    auto r = qMin(swidth-1,right);
+                    auto t = qMin(sheight-1,top);
+                    auto b = qMin(sheight-1,bottom);
+                    auto w = r-l+1;
+                    auto h = b-t+1;
 
                     if (backingstore.width() < w
                         || backingstore.height() < h) {
@@ -417,9 +417,9 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                                               QImage::Format_RGB32);
                         memset(bits, 0, image->byteCount());
                     }
-                    const int dest_bpl = backingstore.bytesPerLine();
-                    unsigned char *dest_data = backingstore.bits();
-                    for (int ln=0; ln<h; ln++) {
+                    const auto dest_bpl = backingstore.bytesPerLine();
+                    auto dest_data = backingstore.bits();
+                    for (auto ln=0; ln<h; ln++) {
                         memcpy(FAST_SCAN_LINE(dest_data, dest_bpl, ln),
                                FAST_SCAN_LINE(bits, bpl, t+ln) + l, w*sizeof(QRgb));
                     }
@@ -476,7 +476,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
             accum|=(ch<<bitcount);
             bitcount+=8;
             while (bitcount>=code_size && state==ImageDataBlock) {
-                int code=accum&((1<<code_size)-1);
+                auto code=accum&((1<<code_size)-1);
                 bitcount-=code_size;
                 accum>>=code_size;
 
@@ -544,7 +544,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                             }
                         }
                         oldcode=incode;
-                        const int h = image->height();
+                        const auto h = image->height();
                         QRgb *line = 0;
                         if (!out_of_bounds && h > y)
                             line = (QRgb*)FAST_SCAN_LINE(bits, bpl, y);
@@ -626,7 +626,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                 disposePrevious(image);
                 disposal=Disposal((hold[1]>>2)&0x7);
                 //UNUSED: waitforuser=!!((hold[1]>>1)&0x1);
-                int delay=count>3 ? LM(hold[2], hold[3]) : 1;
+                auto delay=count>3 ? LM(hold[2], hold[3]) : 1;
                 // IE and mozilla use a minimum delay of 10. With the minimum delay of 10
                 // we are compatible to them and avoid huge loads on the app and xserver.
                 *nextFrameDelay = (delay < 2 ? 10 : delay) * 10;
@@ -671,25 +671,25 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCo
     if (!device)
         return;
 
-    qint64 oldPos = device->pos();
+    auto oldPos = device->pos();
     if (device->isSequential() || !device->seek(0))
         return;
 
-    int colorCount = 0;
-    int localColorCount = 0;
-    int globalColorCount = 0;
-    int colorReadCount = 0;
-    bool localColormap = false;
-    bool globalColormap = false;
-    int count = 0;
-    int blockSize = 0;
-    int imageWidth = 0;
-    int imageHeight = 0;
-    bool done = false;
+    auto colorCount = 0;
+    auto localColorCount = 0;
+    auto globalColorCount = 0;
+    auto colorReadCount = 0;
+    auto localColormap = false;
+    auto globalColormap = false;
+    auto count = 0;
+    auto blockSize = 0;
+    auto imageWidth = 0;
+    auto imageHeight = 0;
+    auto done = false;
     uchar hold[16];
-    State state = Header;
+    auto state = Header;
 
-    const int readBufferSize = 40960; // 40k read buffer
+    const auto readBufferSize = 40960; // 40k read buffer
     QByteArray readBuffer(device->read(readBufferSize));
 
     if (readBuffer.isEmpty()) {
@@ -703,11 +703,11 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCo
     // Global/LocalColorMaps.
 
     while (!readBuffer.isEmpty()) {
-        int length = readBuffer.size();
-        const uchar *buffer = (const uchar *) readBuffer.constData();
+        auto length = readBuffer.size();
+        auto buffer = (const uchar *) readBuffer.constData();
         while (!done && length) {
             length--;
-            uchar ch = *buffer++;
+            auto ch = *buffer++;
             switch (state) {
             case Header:
                 hold[count++] = ch;
@@ -726,7 +726,7 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCo
                     count = 0;
                     colorCount = globalColorCount;
                     if (globalColormap) {
-                        int colorTableSize = 3 * globalColorCount;
+                        auto colorTableSize = 3 * globalColorCount;
                         if (length >= colorTableSize) {
                             // skip the global color table in one go
                             length -= colorTableSize;
@@ -774,10 +774,10 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCo
             case ImageDescriptor:
                 hold[count++] = ch;
                 if (count == 10) {
-                    int newLeft = LM(hold[1], hold[2]);
-                    int newTop = LM(hold[3], hold[4]);
-                    int newWidth = LM(hold[5], hold[6]);
-                    int newHeight = LM(hold[7], hold[8]);
+                    auto newLeft = LM(hold[1], hold[2]);
+                    auto newTop = LM(hold[3], hold[4]);
+                    auto newWidth = LM(hold[5], hold[6]);
+                    auto newHeight = LM(hold[7], hold[8]);
 
                     if (imageWidth/10 > qMax(newWidth,200))
                         imageWidth = -1;
@@ -800,7 +800,7 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCo
 
                     count = 0;
                     if (localColormap) {
-                        int colorTableSize = 3 * localColorCount;
+                        auto colorTableSize = 3 * localColorCount;
                         if (length >= colorTableSize) {
                             // skip the local color table in one go
                             length -= colorTableSize;
@@ -932,9 +932,9 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCo
 void QGIFFormat::fillRect(QImage *image, int col, int row, int w, int h, QRgb color)
 {
     if (w>0) {
-        for (int j=0; j<h; j++) {
-            QRgb *line = (QRgb*)image->scanLine(j+row);
-            for (int i=0; i<w; i++)
+        for (auto j=0; j<h; j++) {
+            auto line = (QRgb*)image->scanLine(j+row);
+            for (auto i=0; i<w; i++)
                 *(line+col+i) = color;
         }
     }
@@ -1037,8 +1037,8 @@ inline QRgb QGIFFormat::color(uchar index) const
     if (index > ncols)
         return Q_TRANSPARENT;
 
-    QRgb *map = lcmap ? localcmap : globalcmap;
-    QRgb col = map ? map[index] : 0;
+    auto map = lcmap ? localcmap : globalcmap;
+    auto col = map ? map[index] : 0;
     return index == trans_index ? col & Q_TRANSPARENT : col;
 }
 
@@ -1064,7 +1064,7 @@ QGifHandler::~QGifHandler()
 
 bool QGifHandler::imageIsComing() const
 {
-    const int GifChunkSize = 4096;
+    const auto GifChunkSize = 4096;
 
     while (!gifFormat->partialNewFrame) {
         if (buffer.isEmpty()) {
@@ -1073,7 +1073,7 @@ bool QGifHandler::imageIsComing() const
                 break;
         }
 
-        int decoded = gifFormat->decode(&lastImage, (const uchar *)buffer.constData(), buffer.size(),
+        auto decoded = gifFormat->decode(&lastImage, (const uchar *)buffer.constData(), buffer.size(),
                                         &nextDelay, &loopCnt);
         if (decoded == -1)
             break;
@@ -1108,7 +1108,7 @@ bool QGifHandler::canRead(QIODevice *device)
 
 bool QGifHandler::read(QImage *image)
 {
-    const int GifChunkSize = 4096;
+    const auto GifChunkSize = 4096;
 
     while (!gifFormat->newFrame) {
         if (buffer.isEmpty()) {
@@ -1117,7 +1117,7 @@ bool QGifHandler::read(QImage *image)
                 break;
         }
 
-        int decoded = gifFormat->decode(&lastImage, (const uchar *)buffer.constData(), buffer.size(),
+        auto decoded = gifFormat->decode(&lastImage, (const uchar *)buffer.constData(), buffer.size(),
                                         &nextDelay, &loopCnt);
         if (decoded == -1)
             break;

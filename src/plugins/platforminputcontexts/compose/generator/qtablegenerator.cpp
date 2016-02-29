@@ -115,7 +115,7 @@ static QComposeCacheFileHeader readFileMetadata(const QString &path)
     QComposeCacheFileHeader info;
     info.reserved = 0;
     info.fileSize = 0;
-    const QByteArray pathBytes = QFile::encodeName(path);
+    const auto pathBytes = QFile::encodeName(path);
     QT_STATBUF st;
     if (QT_STAT(pathBytes.data(), &st) != 0)
         return info;
@@ -134,7 +134,7 @@ static const QString getCacheFilePath()
     }
     if (machineId.isEmpty())
         machineId = localHostName();
-    const QString dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
+    const auto dirPath = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
 
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
         return dirPath + QLatin1String("/qt_compose_cache_big_endian_") + machineId;
@@ -145,14 +145,14 @@ static const QString getCacheFilePath()
 static QVector<QComposeTableElement> loadCache(const QComposeCacheFileHeader &composeInfo)
 {
     QVector<QComposeTableElement> vec;
-    const QString cacheFilePath = getCacheFilePath();
+    const auto cacheFilePath = getCacheFilePath();
     QFile inputFile(cacheFilePath);
 
     if (!inputFile.open(QIODevice::ReadOnly))
         return vec;
     QComposeCacheFileHeader cacheInfo;
     // use a "buffer" variable to make the line after this one more readable.
-    char *buffer = reinterpret_cast<char*>(&cacheInfo);
+    auto buffer = reinterpret_cast<char*>(&cacheInfo);
 
     if (inputFile.read(buffer, sizeof cacheInfo) != sizeof cacheInfo)
         return vec;
@@ -163,27 +163,27 @@ static QVector<QComposeTableElement> loadCache(const QComposeCacheFileHeader &co
         return vec;
     if (cacheInfo.cacheVersion != SupportedCacheVersion)
         return vec;
-    const QByteArray pathBytes = QFile::encodeName(cacheFilePath);
+    const auto pathBytes = QFile::encodeName(cacheFilePath);
     QT_STATBUF st;
     if (QT_STAT(pathBytes.data(), &st) != 0)
         return vec;
-    const off_t fileSize = st.st_size;
+    const auto fileSize = st.st_size;
     if (fileSize > 1024 * 1024 * 5) {
         // The cache file size is usually about 150KB, so if its size is over
         // say 5MB then somebody inflated the file, abort.
         return vec;
     }
     const off_t bufferSize = fileSize - (sizeof cacheInfo);
-    const size_t elemSize = sizeof (struct QComposeTableElement);
+    const auto elemSize = sizeof (struct QComposeTableElement);
     const int elemCount = bufferSize / elemSize;
-    const QByteArray ba = inputFile.read(bufferSize);
-    const char *data = ba.data();
+    const auto ba = inputFile.read(bufferSize);
+    auto data = ba.data();
     // Since we know the number of the (many) elements and their size in
     // advance calling vector.reserve(..) seems reasonable.
     vec.reserve(elemCount);
 
-    for (int i = 0; i < elemCount; i++) {
-        const QComposeTableElement *elem =
+    for (auto i = 0; i < elemCount; i++) {
+        auto elem =
             reinterpret_cast<const QComposeTableElement*>(data + (i * elemSize));
         vec.push_back(*elem);
     }
@@ -193,12 +193,12 @@ static QVector<QComposeTableElement> loadCache(const QComposeCacheFileHeader &co
 // Returns true on success, false otherwise.
 static bool saveCache(const QComposeCacheFileHeader &info, const QVector<QComposeTableElement> &vec)
 {
-    const QString filePath = getCacheFilePath();
+    const auto filePath = getCacheFilePath();
     QSaveFile outputFile(filePath);
 
     if (!outputFile.open(QIODevice::WriteOnly))
         return false;
-    const char *data = reinterpret_cast<const char*>(&info);
+    auto data = reinterpret_cast<const char*>(&info);
 
     if (outputFile.write(data, sizeof info) != sizeof info)
         return false;
@@ -214,13 +214,13 @@ TableGenerator::TableGenerator() : m_state(NoErrors),
     m_systemComposeDir(QString())
 {
     initPossibleLocations();
-    QString composeFilePath = findComposeFile();
+    auto composeFilePath = findComposeFile();
 #ifdef DEBUG_GENERATOR
 // don't use cache when in debug mode.
     if (!composeFilePath.isEmpty())
         qDebug() << "Using Compose file from: " << composeFilePath;
 #else
-    QComposeCacheFileHeader fileInfo = readFileMetadata(composeFilePath);
+    auto fileInfo = readFileMetadata(composeFilePath);
     if (fileInfo.fileSize != 0)
         m_composeTable = loadCache(fileInfo);
 #endif
@@ -269,7 +269,7 @@ QString TableGenerator::findComposeFile()
 {
     // check if XCOMPOSEFILE points to a Compose file
     if (qEnvironmentVariableIsSet("XCOMPOSEFILE")) {
-        const QString path = QFile::decodeName(qgetenv("XCOMPOSEFILE"));
+        const auto path = QFile::decodeName(qgetenv("XCOMPOSEFILE"));
         if (QFile::exists(path))
             return path;
         else
@@ -278,20 +278,20 @@ QString TableGenerator::findComposeFile()
 
     // check if user’s home directory has a file named .XCompose
     if (cleanState()) {
-        QString path = qgetenv("HOME") + QStringLiteral("/.XCompose");
+        auto path = qgetenv("HOME") + QStringLiteral("/.XCompose");
         if (QFile::exists(path))
             return path;
     }
 
     // check for the system provided compose files
     if (cleanState()) {
-        QString table = composeTableForLocale();
+        auto table = composeTableForLocale();
         if (cleanState()) {
             if (table.isEmpty())
                 // no table mappings for the system's locale in the compose.dir
                 m_state = UnsupportedLocale;
             else {
-                QString path = QDir(systemComposeDir()).filePath(table);
+                auto path = QDir(systemComposeDir()).filePath(table);
                 if (QFile::exists(path))
                     return path;
             }
@@ -302,8 +302,8 @@ QString TableGenerator::findComposeFile()
 
 QString TableGenerator::composeTableForLocale()
 {
-    QByteArray loc = locale().toUpper().toUtf8();
-    QString table = readLocaleMappings(loc);
+    auto loc = locale().toUpper().toUtf8();
+    auto table = readLocaleMappings(loc);
     if (table.isEmpty())
         table = readLocaleMappings(readLocaleAliases(loc));
     return table;
@@ -311,9 +311,9 @@ QString TableGenerator::composeTableForLocale()
 
 bool TableGenerator::findSystemComposeDir()
 {
-    bool found = false;
-    for (int i = 0; i < m_possibleLocations.size(); ++i) {
-        QString path = m_possibleLocations.at(i);
+    auto found = false;
+    for (auto i = 0; i < m_possibleLocations.size(); ++i) {
+        auto path = m_possibleLocations.at(i);
         if (QFile::exists(path + QLatin1String("/compose.dir"))) {
             m_systemComposeDir = path;
             found = true;
@@ -343,7 +343,7 @@ QString TableGenerator::systemComposeDir()
 
 QString TableGenerator::locale() const
 {
-    char *name = setlocale(LC_CTYPE, (char *)0);
+    auto name = setlocale(LC_CTYPE, (char *)0);
     return QLatin1String(name);
 }
 
@@ -355,8 +355,8 @@ QString TableGenerator::readLocaleMappings(const QByteArray &locale)
 
     QFile mappings(systemComposeDir() + QLatin1String("/compose.dir"));
     if (mappings.open(QIODevice::ReadOnly)) {
-        const int localeNameLength = locale.size();
-        const char * const localeData = locale.constData();
+        const auto localeNameLength = locale.size();
+        const auto localeData = locale.constData();
 
         char l[1024];
         // formating of compose.dir has some inconsistencies
@@ -372,14 +372,14 @@ QString TableGenerator::readLocaleMappings(const QByteArray &locale)
                     ++line;
                 if (!*line)
                     continue;
-                const char * const composeFileNameEnd = line;
+                const auto composeFileNameEnd = line;
                 *line = '\0';
                 ++line;
 
                 // locale name
                 while (*line && (*line == ' ' || *line == '\t'))
                     ++line;
-                const char * const lc = line;
+                const auto lc = line;
                 while (*line && *line != ' ' && *line != '\t' && *line != '\n')
                     ++line;
                 *line = '\0';
@@ -405,7 +405,7 @@ QByteArray TableGenerator::readLocaleAliases(const QByteArray &locale)
             char *line = l;
             if (read && ((*line >= 'a' && *line <= 'z') ||
                          (*line >= 'A' && *line <= 'Z'))) {
-                const char *alias = line;
+                auto alias = line;
                 while (*line && *line != ':' && *line != ' ' && *line != '\t')
                     ++line;
                 if (!*line)
@@ -417,7 +417,7 @@ QByteArray TableGenerator::readLocaleAliases(const QByteArray &locale)
                     ++line;
                     while (*line && (*line == ' ' || *line == '\t'))
                         ++line;
-                    const char *fullName = line;
+                    auto fullName = line;
                     while (*line && *line != ' ' && *line != '\t' && *line != '\n')
                         ++line;
                     *line = 0;
@@ -477,7 +477,7 @@ void TableGenerator::parseIncludeInstruction(QString line)
 {
     // Parse something that looks like:
     // include "/usr/share/X11/locale/en_US.UTF-8/Compose"
-    QString quote = QStringLiteral("\"");
+    auto quote = QStringLiteral("\"");
     line.remove(0, line.indexOf(quote) + 1);
     line.chop(line.length() - line.indexOf(quote));
 
@@ -510,7 +510,7 @@ ushort TableGenerator::keysymToUtf8(quint32 sym)
 
 static inline int fromBase8(const char *s, const char *end)
 {
-    int result = 0;
+    auto result = 0;
     while (*s && s != end) {
         if (*s <= '0' && *s >= '7')
             return 0;
@@ -523,7 +523,7 @@ static inline int fromBase8(const char *s, const char *end)
 
 static inline int fromBase16(const char *s, const char *end)
 {
-    int result = 0;
+    auto result = 0;
     while (*s && s != end) {
         result *= 16;
         if (*s >= '0' && *s <= '9')
@@ -543,7 +543,7 @@ void TableGenerator::parseKeySequence(char *line)
 {
     // we are interested in the lines with the following format:
     // <Multi_key> <numbersign> <S> : "♬"   U266c # BEAMED SIXTEENTH NOTE
-    char *keysEnd = strchr(line, ':');
+    auto keysEnd = strchr(line, ':');
     if (!keysEnd)
         return;
 
@@ -551,12 +551,12 @@ void TableGenerator::parseKeySequence(char *line)
     // find the composed value - strings may be direct text encoded in the locale
     // for which the compose file is to be used, or an escaped octal or hexadecimal
     // character code. Octal codes are specified as "\123" and hexadecimal codes as "\0x123a".
-    char *composeValue = strchr(keysEnd, '"');
+    auto composeValue = strchr(keysEnd, '"');
     if (!composeValue)
         return;
     ++composeValue;
 
-    char *composeValueEnd = strchr(composeValue, '"');
+    auto composeValueEnd = strchr(composeValue, '"');
     if (!composeValueEnd)
         return;
 
@@ -566,7 +566,7 @@ void TableGenerator::parseKeySequence(char *line)
 
     if (*composeValue == '\\' && composeValue[1] >= '0' && composeValue[1] <= '9') {
         // handle octal and hex code values
-        char detectBase = composeValue[2];
+        auto detectBase = composeValue[2];
         if (detectBase == 'x') {
             // hexadecimal character code
             elem.value = keysymToUtf8(fromBase16(composeValue + 3, composeValueEnd));
@@ -588,14 +588,14 @@ void TableGenerator::parseKeySequence(char *line)
 #endif
 
     // find the key sequence and convert to X11 keysym
-    char *k = line;
-    const char *kend = keysEnd;
+    auto k = line;
+    auto kend = keysEnd;
 
-    for (int i = 0; i < QT_KEYSEQUENCE_MAX_LEN; i++) {
+    for (auto i = 0; i < QT_KEYSEQUENCE_MAX_LEN; i++) {
         // find the next pair of angle brackets and get the contents within
         while (k < kend && *k != '<')
             ++k;
-        char *sym = ++k;
+        auto sym = ++k;
         while (k < kend && *k != '>')
             ++k;
         *k = '\0';

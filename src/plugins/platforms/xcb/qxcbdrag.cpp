@@ -93,9 +93,9 @@ static xcb_window_t xdndProxy(QXcbConnection *c, xcb_window_t w)
 {
     xcb_window_t proxy = XCB_NONE;
 
-    xcb_get_property_cookie_t cookie = Q_XCB_CALL2(xcb_get_property(c->xcb_connection(), false, w, c->atom(QXcbAtom::XdndProxy),
+    auto cookie = Q_XCB_CALL2(xcb_get_property(c->xcb_connection(), false, w, c->atom(QXcbAtom::XdndProxy),
                                                         XCB_ATOM_WINDOW, 0, 1), c);
-    xcb_get_property_reply_t *reply = xcb_get_property_reply(c->xcb_connection(), cookie, 0);
+    auto reply = xcb_get_property_reply(c->xcb_connection(), cookie, 0);
 
     if (reply && reply->type == XCB_ATOM_WINDOW)
         proxy = *((xcb_window_t *)xcb_get_property_value(reply));
@@ -110,7 +110,7 @@ static xcb_window_t xdndProxy(QXcbConnection *c, xcb_window_t w)
     reply = xcb_get_property_reply(c->xcb_connection(), cookie, 0);
 
     if (reply && reply->type == XCB_ATOM_WINDOW) {
-        xcb_window_t p = *((xcb_window_t *)xcb_get_property_value(reply));
+        auto p = *((xcb_window_t *)xcb_get_property_value(reply));
         if (proxy != p)
             proxy = 0;
     } else {
@@ -185,10 +185,10 @@ void QXcbDrag::startDrag()
     xcb_set_selection_owner(xcb_connection(), connection()->clipboard()->owner(),
                             atom(QXcbAtom::XdndSelection), connection()->time());
 
-    QStringList fmts = QXcbMime::formatsHelper(drag()->mimeData());
-    for (int i = 0; i < fmts.size(); ++i) {
-        QVector<xcb_atom_t> atoms = QXcbMime::mimeAtomsForFormat(connection(), fmts.at(i));
-        for (int j = 0; j < atoms.size(); ++j) {
+    auto fmts = QXcbMime::formatsHelper(drag()->mimeData());
+    for (auto i = 0; i < fmts.size(); ++i) {
+        auto atoms = QXcbMime::mimeAtomsForFormat(connection(), fmts.at(i));
+        for (auto j = 0; j < atoms.size(); ++j) {
             if (!drag_types.contains(atoms.at(j)))
                 drag_types.append(atoms.at(j));
         }
@@ -213,7 +213,7 @@ void QXcbDrag::endDrag()
 static xcb_translate_coordinates_reply_t *
 translateCoordinates(QXcbConnection *c, xcb_window_t from, xcb_window_t to, int x, int y)
 {
-    xcb_translate_coordinates_cookie_t cookie =
+    auto cookie =
             xcb_translate_coordinates(c->xcb_connection(), from, to, x, y);
     return xcb_translate_coordinates_reply(c->xcb_connection(), cookie, 0);
 }
@@ -221,13 +221,13 @@ translateCoordinates(QXcbConnection *c, xcb_window_t from, xcb_window_t to, int 
 static
 bool windowInteractsWithPosition(xcb_connection_t *connection, const QPoint & pos, xcb_window_t w, xcb_shape_sk_t shapeType)
 {
-    bool interacts = false;
-    xcb_shape_get_rectangles_reply_t *reply = xcb_shape_get_rectangles_reply(connection, xcb_shape_get_rectangles(connection, w, shapeType), NULL);
+    auto interacts = false;
+    auto reply = xcb_shape_get_rectangles_reply(connection, xcb_shape_get_rectangles(connection, w, shapeType), NULL);
     if (reply) {
-        xcb_rectangle_t *rectangles = xcb_shape_get_rectangles_rectangles(reply);
+        auto rectangles = xcb_shape_get_rectangles_rectangles(reply);
         if (rectangles) {
-            const int nRectangles = xcb_shape_get_rectangles_rectangles_length(reply);
-            for (int i = 0; !interacts && i < nRectangles; ++i) {
+            const auto nRectangles = xcb_shape_get_rectangles_rectangles_length(reply);
+            for (auto i = 0; !interacts && i < nRectangles; ++i) {
                 interacts = QRect(rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height).contains(pos);
             }
         }
@@ -243,8 +243,8 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
         return 0;
 
     if (md) {
-        xcb_get_window_attributes_cookie_t cookie = xcb_get_window_attributes(xcb_connection(), w);
-        xcb_get_window_attributes_reply_t *reply = xcb_get_window_attributes_reply(xcb_connection(), cookie, 0);
+        auto cookie = xcb_get_window_attributes(xcb_connection(), w);
+        auto reply = xcb_get_window_attributes_reply(xcb_connection(), cookie, 0);
         if (!reply)
             return 0;
 
@@ -253,25 +253,25 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
 
         free(reply);
 
-        xcb_get_geometry_cookie_t gcookie = xcb_get_geometry(xcb_connection(), w);
-        xcb_get_geometry_reply_t *greply = xcb_get_geometry_reply(xcb_connection(), gcookie, 0);
+        auto gcookie = xcb_get_geometry(xcb_connection(), w);
+        auto greply = xcb_get_geometry_reply(xcb_connection(), gcookie, 0);
         if (!greply)
             return 0;
 
         QRect windowRect(greply->x, greply->y, greply->width, greply->height);
         free(greply);
         if (windowRect.contains(pos)) {
-            bool windowContainsMouse = !ignoreNonXdndAwareWindows;
+            auto windowContainsMouse = !ignoreNonXdndAwareWindows;
             {
-                xcb_get_property_cookie_t cookie =
+                auto cookie =
                         Q_XCB_CALL(xcb_get_property(xcb_connection(), false, w, connection()->atom(QXcbAtom::XdndAware),
                                                     XCB_GET_PROPERTY_TYPE_ANY, 0, 0));
-                xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
+                auto reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
 
-                bool isAware = reply && reply->type != XCB_NONE;
+                auto isAware = reply && reply->type != XCB_NONE;
                 free(reply);
                 if (isAware) {
-                    const QPoint relPos = pos - windowRect.topLeft();
+                    const auto relPos = pos - windowRect.topLeft();
                     // When ShapeInput and ShapeBounding are not set they return a single rectangle with the geometry of the window, this is why we
                     // need to check both here so that in the case one is set and the other is not we still get the correct result.
                     if (connection()->hasInputShape())
@@ -285,13 +285,13 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
                 }
             }
 
-            xcb_query_tree_cookie_t cookie = xcb_query_tree (xcb_connection(), w);
-            xcb_query_tree_reply_t *reply = xcb_query_tree_reply(xcb_connection(), cookie, 0);
+            auto cookie = xcb_query_tree (xcb_connection(), w);
+            auto reply = xcb_query_tree_reply(xcb_connection(), cookie, 0);
 
             if (!reply)
                 return 0;
-            int nc = xcb_query_tree_children_length(reply);
-            xcb_window_t *c = xcb_query_tree_children(reply);
+            auto nc = xcb_query_tree_children_length(reply);
+            auto c = xcb_query_tree_children(reply);
 
             xcb_window_t r = 0;
             for (uint i = nc; !r && i--;)
@@ -323,8 +323,8 @@ void QXcbDrag::move(const QPoint &globalPos)
     QXcbVirtualDesktop *virtualDesktop = Q_NULLPTR;
     QPoint cursorPos;
     QXcbCursor::queryPointer(connection(), &virtualDesktop, &cursorPos);
-    QXcbScreen *screen = virtualDesktop->screenAt(cursorPos);
-    QPoint deviceIndependentPos = QHighDpiScaling::mapPositionFromNative(globalPos, screen);
+    auto screen = virtualDesktop->screenAt(cursorPos);
+    auto deviceIndependentPos = QHighDpiScaling::mapPositionFromNative(globalPos, screen);
 
     if (virtualDesktop != current_virtual_desktop) {
         setUseCompositing(virtualDesktop->compositingActive());
@@ -337,19 +337,19 @@ void QXcbDrag::move(const QPoint &globalPos)
         QBasicDrag::moveShapedPixmapWindow(deviceIndependentPos);
     }
 
-    xcb_window_t rootwin = current_virtual_desktop->root();
-    xcb_translate_coordinates_reply_t *translate =
+    auto rootwin = current_virtual_desktop->root();
+    auto translate =
             ::translateCoordinates(connection(), rootwin, rootwin, globalPos.x(), globalPos.y());
     if (!translate)
         return;
 
-    xcb_window_t target = translate->child;
+    auto target = translate->child;
     int lx = translate->dst_x;
     int ly = translate->dst_y;
     free (translate);
 
     if (target && target != rootwin) {
-        xcb_window_t src = rootwin;
+        auto src = rootwin;
         while (target != 0) {
             DNDDEBUG << "checking target for XdndAware" << target << lx << ly;
 
@@ -362,14 +362,14 @@ void QXcbDrag::move(const QPoint &globalPos)
             lx = translate->dst_x;
             ly = translate->dst_y;
             src = target;
-            xcb_window_t child = translate->child;
+            auto child = translate->child;
             free(translate);
 
             // check if it has XdndAware
-            xcb_get_property_cookie_t cookie = Q_XCB_CALL(xcb_get_property(xcb_connection(), false, target,
+            auto cookie = Q_XCB_CALL(xcb_get_property(xcb_connection(), false, target,
                                                           atom(QXcbAtom::XdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 0));
-            xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
-            bool aware = reply && reply->type != XCB_NONE;
+            auto reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
+            auto aware = reply && reply->type != XCB_NONE;
             free(reply);
             if (aware) {
                 DNDDEBUG << "Found XdndAware on " << target;
@@ -398,15 +398,15 @@ void QXcbDrag::move(const QPoint &globalPos)
         target = rootwin;
     }
 
-    xcb_window_t proxy_target = xdndProxy(connection(), target);
+    auto proxy_target = xdndProxy(connection(), target);
     if (!proxy_target)
         proxy_target = target;
-    int target_version = 1;
+    auto target_version = 1;
 
     if (proxy_target) {
-        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, proxy_target,
+        auto cookie = xcb_get_property(xcb_connection(), false, proxy_target,
                                                             atom(QXcbAtom::XdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 1);
-        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
+        auto reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
         if (!reply || reply->type == XCB_NONE)
             target = 0;
 
@@ -423,7 +423,7 @@ void QXcbDrag::move(const QPoint &globalPos)
         current_target = target;
         current_proxy_target = proxy_target;
         if (target) {
-            int flags = target_version << 24;
+            auto flags = target_version << 24;
             if (drag_types.size() > 3)
                 flags |= 0x0001;
 
@@ -495,7 +495,7 @@ void QXcbDrag::drop(const QPoint &globalPos)
     drop.data.data32[3] = 0;
     drop.data.data32[4] = currentDrag()->supportedActions();
 
-    QXcbWindow *w = connection()->platformWindowFromId(current_proxy_target);
+    auto w = connection()->platformWindowFromId(current_proxy_target);
 
     if (w && (w->window()->type() == Qt::Desktop) /*&& !w->acceptDrops()*/)
         w = 0;
@@ -558,8 +558,8 @@ xcb_atom_t QXcbDrag::toXdndAction(Qt::DropAction a) const
 
 int QXcbDrag::findTransactionByWindow(xcb_window_t window)
 {
-    int at = -1;
-    for (int i = 0; i < transactions.count(); ++i) {
+    auto at = -1;
+    for (auto i = 0; i < transactions.count(); ++i) {
         const Transaction &t = transactions.at(i);
         if (t.target == window || t.proxy_target == window) {
             at = i;
@@ -571,8 +571,8 @@ int QXcbDrag::findTransactionByWindow(xcb_window_t window)
 
 int QXcbDrag::findTransactionByTime(xcb_timestamp_t timestamp)
 {
-    int at = -1;
-    for (int i = 0; i < transactions.count(); ++i) {
+    auto at = -1;
+    for (auto i = 0; i < transactions.count(); ++i) {
         const Transaction &t = transactions.at(i);
         if (t.timestamp == timestamp) {
             at = i;
@@ -670,7 +670,7 @@ void QXcbDrag::handleEnter(QPlatformWindow *window, const xcb_client_message_eve
 
     xdnd_types.clear();
 
-    int version = (int)(event->data.data32[1] >> 24);
+    auto version = (int)(event->data.data32[1] >> 24);
     if (version > xdnd_version)
         return;
 
@@ -681,29 +681,29 @@ void QXcbDrag::handleEnter(QPlatformWindow *window, const xcb_client_message_eve
 
     if (event->data.data32[1] & 1) {
         // get the types from XdndTypeList
-        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, xdnd_dragsource,
+        auto cookie = xcb_get_property(xcb_connection(), false, xdnd_dragsource,
                                                             atom(QXcbAtom::XdndTypelist), XCB_ATOM_ATOM,
                                                             0, xdnd_max_type);
-        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
+        auto reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
         if (reply && reply->type != XCB_NONE && reply->format == 32) {
-            int length = xcb_get_property_value_length(reply) / 4;
+            auto length = xcb_get_property_value_length(reply) / 4;
             if (length > xdnd_max_type)
                 length = xdnd_max_type;
 
-            xcb_atom_t *atoms = (xcb_atom_t *)xcb_get_property_value(reply);
+            auto atoms = (xcb_atom_t *)xcb_get_property_value(reply);
             xdnd_types.reserve(length);
-            for (int i = 0; i < length; ++i)
+            for (auto i = 0; i < length; ++i)
                 xdnd_types.append(atoms[i]);
         }
         free(reply);
     } else {
         // get the types from the message
-        for(int i = 2; i < 5; i++) {
+        for(auto i = 2; i < 5; i++) {
             if (event->data.data32[i])
                 xdnd_types.append(event->data.data32[i]);
         }
     }
-    for(int i = 0; i < xdnd_types.length(); ++i)
+    for(auto i = 0; i < xdnd_types.length(); ++i)
         DEBUG() << "    " << connection()->atomName(xdnd_types.at(i));
 }
 
@@ -711,7 +711,7 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
 {
     QPoint p((e->data.data32[2] & 0xffff0000) >> 16, e->data.data32[2] & 0x0000ffff);
     Q_ASSERT(w);
-    QRect geometry = w->geometry();
+    auto geometry = w->geometry();
     p -= geometry.topLeft();
 
     if (!w || !w->window() || (w->window()->type() == Qt::Desktop))
@@ -740,7 +740,7 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
         supported_actions = Qt::DropActions(toDropAction(e->data.data32[4]));
     }
 
-    QPlatformDragQtResponse qt_response = QWindowSystemInterface::handleDrag(w->window(),dropData,p,supported_actions);
+    auto qt_response = QWindowSystemInterface::handleDrag(w->window(),dropData,p,supported_actions);
     QRect answerRect(p + geometry.topLeft(), QSize(1,1));
     answerRect = qt_response.answerRect().translated(geometry.topLeft()).intersected(geometry);
 
@@ -798,7 +798,7 @@ namespace
 
 void QXcbDrag::handlePosition(QPlatformWindow * w, const xcb_client_message_event_t *event)
 {
-    xcb_client_message_event_t *lastEvent = const_cast<xcb_client_message_event_t *>(event);
+    auto lastEvent = const_cast<xcb_client_message_event_t *>(event);
     xcb_generic_event_t *nextEvent;
     ClientMessageScanner scanner(atom(QXcbAtom::XdndPosition));
     while ((nextEvent = connection()->checkEvent(scanner))) {
@@ -844,7 +844,7 @@ void QXcbDrag::handleStatus(const xcb_client_message_event_t *event)
     if (event->window != connection()->clipboard()->owner() || !drag())
         return;
 
-    xcb_client_message_event_t *lastEvent = const_cast<xcb_client_message_event_t *>(event);
+    auto lastEvent = const_cast<xcb_client_message_event_t *>(event);
     xcb_generic_event_t *nextEvent;
     ClientMessageScanner scanner(atom(QXcbAtom::XdndStatus));
     while ((nextEvent = connection()->checkEvent(scanner))) {
@@ -901,7 +901,7 @@ void QXcbDrag::send_leave()
     leave.data.data32[3] = 0; // w, h
     leave.data.data32[4] = 0; // just null
 
-    QXcbWindow *w = connection()->platformWindowFromId(current_proxy_target);
+    auto w = connection()->platformWindowFromId(current_proxy_target);
 
     if (w && (w->window()->type() == Qt::Desktop) /*&& !w->acceptDrops()*/)
         w = 0;
@@ -957,7 +957,7 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
     //            dropData = QDragManager::dragPrivate(X11->dndDropTransactions.at(at).object)->data;
     // if we can't find it, then use the data in the drag manager
 
-    QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(currentWindow.data(),dropData,currentPosition,supported_drop_actions);
+    auto response = QWindowSystemInterface::handleDrop(currentWindow.data(),dropData,currentPosition,supported_drop_actions);
     setExecutedDropAction(response.acceptedAction());
 
     xcb_client_message_event_t finished;
@@ -986,17 +986,17 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event)
     if (event->window != connection()->clipboard()->owner())
         return;
 
-    const unsigned long *l = (const unsigned long *)event->data.data32;
+    auto l = (const unsigned long *)event->data.data32;
 
     DNDDEBUG << "xdndHandleFinished, l[0]" << l[0]
              << "current_target" << current_target
              << "qt_xdnd_current_proxy_targe" << current_proxy_target;
 
     if (l[0]) {
-        int at = findTransactionByWindow(l[0]);
+        auto at = findTransactionByWindow(l[0]);
         if (at != -1) {
 
-            Transaction t = transactions.takeAt(at);
+            auto t = transactions.takeAt(at);
             if (t.drag)
                 t.drag->deleteLater();
 //            QDragManager *manager = QDragManager::self();
@@ -1032,16 +1032,16 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event)
 void QXcbDrag::timerEvent(QTimerEvent* e)
 {
     if (e->timerId() == cleanup_timer) {
-        bool stopTimer = true;
-        for (int i = 0; i < transactions.count(); ++i) {
+        auto stopTimer = true;
+        for (auto i = 0; i < transactions.count(); ++i) {
             const Transaction &t = transactions.at(i);
             if (t.targetWindow) {
                 // dnd within the same process, don't delete, these are taken care of
                 // in handleFinished()
                 continue;
             }
-            QTime currentTime = QTime::currentTime();
-            int delta = t.time.msecsTo(currentTime);
+            auto currentTime = QTime::currentTime();
+            auto delta = t.time.msecsTo(currentTime);
             if (delta > XdndDropTransactionTimeout) {
                 /* delete transactions which are older than XdndDropTransactionTimeout. It could mean
                  one of these:
@@ -1084,7 +1084,7 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
     notify.time = event->time;
 
     // which transaction do we use? (note: -2 means use current currentDrag())
-    int at = -1;
+    auto at = -1;
 
     // figure out which data the requestor is really interested in
     if (currentDrag() && event->time == source_time) {
@@ -1120,12 +1120,12 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
     }
 
     if (transactionDrag) {
-        xcb_atom_t atomFormat = event->target;
-        int dataFormat = 0;
+        auto atomFormat = event->target;
+        auto dataFormat = 0;
         QByteArray data;
         if (QXcbMime::mimeDataForAtom(connection(), event->target, transactionDrag->mimeData(),
                                      &data, &atomFormat, &dataFormat)) {
-            int dataSize = data.size() / (dataFormat / 8);
+            auto dataSize = data.size() / (dataFormat / 8);
             xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, event->requestor, event->property,
                                 atomFormat, dataFormat, dataSize, (const void *)data.constData());
             notify.property = event->property;
@@ -1133,7 +1133,7 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
         }
     }
 
-    xcb_window_t proxy_target = xdndProxy(connection(), event->requestor);
+    auto proxy_target = xdndProxy(connection(), event->requestor);
     if (!proxy_target)
         proxy_target = event->requestor;
 
@@ -1153,13 +1153,13 @@ bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
             QXcbConnectionGrabber grabber(connection());
 
             // As per Xdnd4, use XdndProxy
-            xcb_window_t proxy_id = xdndProxy(connection(), w->xcb_window());
+            auto proxy_id = xdndProxy(connection(), w->xcb_window());
 
             if (!proxy_id) {
                 desktop_proxy = new QWindow;
                 xdnd_widget = static_cast<QXcbWindow *>(desktop_proxy->handle());
                 proxy_id = xdnd_widget->xcb_window();
-                xcb_atom_t xdnd_proxy = atom(QXcbAtom::XdndProxy);
+                auto xdnd_proxy = atom(QXcbAtom::XdndProxy);
                 xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, w->xcb_window(), xdnd_proxy,
                                     XCB_ATOM_WINDOW, 32, 1, &proxy_id);
                 xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, proxy_id, xdnd_proxy,
@@ -1207,8 +1207,8 @@ QXcbDropData::~QXcbDropData()
 
 QVariant QXcbDropData::retrieveData_sys(const QString &mimetype, QVariant::Type requestedType) const
 {
-    QByteArray mime = mimetype.toLatin1();
-    QVariant data = xdndObtainData(mime, requestedType);
+    auto mime = mimetype.toLatin1();
+    auto data = xdndObtainData(mime, requestedType);
     return data;
 }
 
@@ -1216,25 +1216,25 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QVariant::Type r
 {
     QByteArray result;
 
-    QXcbConnection *c = drag->connection();
-    QXcbWindow *xcb_window = c->platformWindowFromId(drag->xdnd_dragsource);
+    auto c = drag->connection();
+    auto xcb_window = c->platformWindowFromId(drag->xdnd_dragsource);
     if (xcb_window && drag->currentDrag() && xcb_window->window()->type() != Qt::Desktop) {
-        QMimeData *data = drag->currentDrag()->mimeData();
+        auto data = drag->currentDrag()->mimeData();
         if (data->hasFormat(QLatin1String(format)))
             result = data->data(QLatin1String(format));
         return result;
     }
 
-    QVector<xcb_atom_t> atoms = drag->xdnd_types;
+    auto atoms = drag->xdnd_types;
     QByteArray encoding;
-    xcb_atom_t a = mimeAtomForFormat(c, QLatin1String(format), requestedType, atoms, &encoding);
+    auto a = mimeAtomForFormat(c, QLatin1String(format), requestedType, atoms, &encoding);
     if (a == XCB_NONE)
         return result;
 
     if (c->clipboard()->getSelectionOwner(drag->atom(QXcbAtom::XdndSelection)) == XCB_NONE)
         return result; // should never happen?
 
-    xcb_atom_t xdnd_selection = c->atom(QXcbAtom::XdndSelection);
+    auto xdnd_selection = c->atom(QXcbAtom::XdndSelection);
     result = c->clipboard()->getSelection(xdnd_selection, a, xdnd_selection, drag->targetTime());
 
     return mimeConvertToFormat(c, a, result, QLatin1String(format), requestedType, encoding);
@@ -1249,8 +1249,8 @@ bool QXcbDropData::hasFormat_sys(const QString &format) const
 QStringList QXcbDropData::formats_sys() const
 {
     QStringList formats;
-    for (int i = 0; i < drag->xdnd_types.size(); ++i) {
-        QString f = mimeAtomToString(drag->connection(), drag->xdnd_types.at(i));
+    for (auto i = 0; i < drag->xdnd_types.size(); ++i) {
+        auto f = mimeAtomToString(drag->connection(), drag->xdnd_types.at(i));
         if (!formats.contains(f))
             formats.append(f);
     }

@@ -68,17 +68,17 @@ Q_GLOBAL_STATIC(DeviceIntegration, deviceIntegration)
 
 DeviceIntegration::DeviceIntegration()
 {
-    QStringList pluginKeys = QEGLDeviceIntegrationFactory::keys();
+    auto pluginKeys = QEGLDeviceIntegrationFactory::keys();
     if (!pluginKeys.isEmpty()) {
         // Some built-in logic: Prioritize either X11 or KMS/DRM.
         if (qEnvironmentVariableIsSet("DISPLAY")) {
-            const QString x11key = QStringLiteral("eglfs_x11");
+            const auto x11key = QStringLiteral("eglfs_x11");
             if (pluginKeys.contains(x11key)) {
                 pluginKeys.removeOne(x11key);
                 pluginKeys.prepend(x11key);
             }
         } else {
-            const QString kmskey = QStringLiteral("eglfs_kms");
+            const auto kmskey = QStringLiteral("eglfs_kms");
             if (pluginKeys.contains(kmskey)) {
                 pluginKeys.removeOne(kmskey);
                 pluginKeys.prepend(kmskey);
@@ -105,13 +105,13 @@ DeviceIntegration::DeviceIntegration()
         // functional with the default, non-specialized integration.
         if (requested != QByteArrayLiteral("none")) {
             if (!requested.isEmpty()) {
-                QString reqStr = QString::fromLocal8Bit(requested);
+                auto reqStr = QString::fromLocal8Bit(requested);
                 pluginKeys.removeOne(reqStr);
                 pluginKeys.prepend(reqStr);
             }
             qCDebug(qLcEglDevDebug) << "EGL device integration plugin keys (sorted):" << pluginKeys;
             while (!m_integration && !pluginKeys.isEmpty()) {
-                QString key = pluginKeys.takeFirst();
+                auto key = pluginKeys.takeFirst();
                 qCDebug(qLcEglDevDebug) << "Trying to load device EGL integration" << key;
                 m_integration = QEGLDeviceIntegrationFactory::create(key);
             }

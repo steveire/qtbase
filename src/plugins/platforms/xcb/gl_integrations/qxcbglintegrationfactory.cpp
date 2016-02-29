@@ -66,8 +66,8 @@ QStringList QXcbGlIntegrationFactory::keys(const QString &pluginPath)
             const QString postFix = QStringLiteral(" (from ")
                                     + QDir::toNativeSeparators(pluginPath)
                                     + QLatin1Char(')');
-            const QStringList::iterator end = list.end();
-            for (QStringList::iterator it = list.begin(); it != end; ++it)
+            const auto end = list.end();
+            for (auto it = list.begin(); it != end; ++it)
                 (*it).append(postFix);
         }
     }
@@ -84,7 +84,7 @@ QXcbGlIntegration *QXcbGlIntegrationFactory::create(const QString &platform, con
     // Try loading the plugin from pluginPath first:
     if (!pluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(pluginPath);
-        if (QXcbGlIntegration *ret = qLoadPlugin<QXcbGlIntegration, QXcbGlIntegrationPlugin>(directLoader(), platform))
+        if (auto ret = qLoadPlugin<QXcbGlIntegration, QXcbGlIntegrationPlugin>(directLoader(), platform))
             return ret;
     }
 #else
