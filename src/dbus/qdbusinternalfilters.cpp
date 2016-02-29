@@ -111,10 +111,10 @@ static QString generateSubObjectXml(QObject *object)
 {
     QString retval;
     const QObjectList &objs = object->children();
-    QObjectList::ConstIterator it = objs.constBegin();
-    QObjectList::ConstIterator end = objs.constEnd();
+    auto it = objs.constBegin();
+    auto end = objs.constEnd();
     for ( ; it != end; ++it) {
-        QString name = (*it)->objectName();
+        auto name = (*it)->objectName();
         if (!name.isEmpty() && QDBusUtil::isValidPartOfObjectPath(name))
             retval += QString::fromLatin1("  <node name=\"%1\"/>\n")
                       .arg(name);
@@ -139,7 +139,7 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
         if (node.flags & (QDBusConnection::ExportScriptableContents
                            | QDBusConnection::ExportNonScriptableContents)) {
             // create XML for the object itself
-            const QMetaObject *mo = node.obj->metaObject();
+            auto mo = node.obj->metaObject();
             for ( ; mo != &QObject::staticMetaObject; mo = mo->superClass())
                 xml_data += qDBusGenerateMetaObjectXml(node.interfaceName, mo, mo->superClass(),
                                                        node.flags);
@@ -151,11 +151,11 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
             (connector = qDBusFindAdaptorConnector(node.obj))) {
 
             // trasverse every adaptor in this object
-            QDBusAdaptorConnector::AdaptorMap::ConstIterator it = connector->adaptors.constBegin();
-            QDBusAdaptorConnector::AdaptorMap::ConstIterator end = connector->adaptors.constEnd();
+            auto it = connector->adaptors.constBegin();
+            auto end = connector->adaptors.constEnd();
             for ( ; it != end; ++it) {
                 // add the interface:
-                QString ifaceXml = QDBusAbstractAdaptorPrivate::retrieveIntrospectionXml(it->adaptor);
+                auto ifaceXml = QDBusAbstractAdaptorPrivate::retrieveIntrospectionXml(it->adaptor);
                 if (ifaceXml.isEmpty()) {
                     // add the interface's contents:
                     ifaceXml += qDBusGenerateMetaObjectXml(QString::fromLatin1(it->interface),
@@ -186,9 +186,9 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
         xml_data += generateSubObjectXml(node.obj);
     } else {
         // generate from the object tree
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it =
+        auto it =
             node.children.constBegin();
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator end =
+        auto end =
             node.children.constEnd();
         for ( ; it != end; ++it)
             if (it->obj || !it->children.isEmpty())
@@ -229,22 +229,22 @@ QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node
                "QDBusConnection: internal threading error",
                "function called for an object that is in another thread!!");
 
-    QString interface_name = msg.arguments().at(0).toString();
-    QByteArray property_name = msg.arguments().at(1).toString().toUtf8();
+    auto interface_name = msg.arguments().at(0).toString();
+    auto property_name = msg.arguments().at(1).toString().toUtf8();
 
     QDBusAdaptorConnector *connector;
     QVariant value;
-    bool interfaceFound = false;
+    auto interfaceFound = false;
     if (node.flags & QDBusConnection::ExportAdaptors &&
         (connector = qDBusFindAdaptorConnector(node.obj))) {
 
         // find the class that implements interface_name or try until we've found the property
         // in case of an empty interface
         if (interface_name.isEmpty()) {
-            for (QDBusAdaptorConnector::AdaptorMap::ConstIterator it = connector->adaptors.constBegin(),
+            for (auto it = connector->adaptors.constBegin(),
                  end = connector->adaptors.constEnd(); it != end; ++it) {
-                const QMetaObject *mo = it->adaptor->metaObject();
-                int pidx = mo->indexOfProperty(property_name);
+                auto mo = it->adaptor->metaObject();
+                auto pidx = mo->indexOfProperty(property_name);
                 if (pidx != -1) {
                     value = mo->property(pidx).read(it->adaptor);
                     break;
@@ -269,9 +269,9 @@ QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node
             interfaceFound = qDBusInterfaceInObject(node.obj, interface_name);
 
         if (interfaceFound) {
-            int pidx = node.obj->metaObject()->indexOfProperty(property_name);
+            auto pidx = node.obj->metaObject()->indexOfProperty(property_name);
             if (pidx != -1) {
-                QMetaProperty mp = node.obj->metaObject()->property(pidx);
+                auto mp = node.obj->metaObject()->property(pidx);
                 if ((mp.isScriptable() && (node.flags & QDBusConnection::ExportScriptableProperties)) ||
                     (!mp.isScriptable() && (node.flags & QDBusConnection::ExportNonScriptableProperties)))
                     value = mp.read(node.obj);
@@ -329,21 +329,21 @@ static QDBusMessage propertyWriteReply(const QDBusMessage &msg, const QString &i
 static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant value,
                          int propFlags = QDBusConnection::ExportAllProperties)
 {
-    const QMetaObject *mo = obj->metaObject();
-    int pidx = mo->indexOfProperty(property_name);
+    auto mo = obj->metaObject();
+    auto pidx = mo->indexOfProperty(property_name);
     if (pidx == -1) {
         // this object has no property by that name
         return PropertyNotFound;
     }
 
-    QMetaProperty mp = mo->property(pidx);
+    auto mp = mo->property(pidx);
 
     // check if this property is writable
     if (!mp.isWritable())
         return PropertyReadOnly;
 
     // check if this property is exported
-    bool isScriptable = mp.isScriptable();
+    auto isScriptable = mp.isScriptable();
     if (!(propFlags & QDBusConnection::ExportScriptableProperties) && isScriptable)
         return PropertyNotFound;
     if (!(propFlags & QDBusConnection::ExportNonScriptableProperties) && !isScriptable)
@@ -351,7 +351,7 @@ static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant
 
     // we found our property
     // do we have the right type?
-    int id = mp.userType();
+    auto id = mp.userType();
     if (!id){
         // type not registered or invalid / void?
         qWarning("QDBusConnection: Unable to handle unregistered datatype '%s' for property '%s::%s'",
@@ -388,9 +388,9 @@ QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node
                "QDBusConnection: internal threading error",
                "function called for an object that is in another thread!!");
 
-    QString interface_name = msg.arguments().at(0).toString();
-    QByteArray property_name = msg.arguments().at(1).toString().toUtf8();
-    QVariant value = qvariant_cast<QDBusVariant>(msg.arguments().at(2)).variant();
+    auto interface_name = msg.arguments().at(0).toString();
+    auto property_name = msg.arguments().at(1).toString().toUtf8();
+    auto value = qvariant_cast<QDBusVariant>(msg.arguments().at(2)).variant();
 
     QDBusAdaptorConnector *connector;
     if (node.flags & QDBusConnection::ExportAdaptors &&
@@ -399,9 +399,9 @@ QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node
         // find the class that implements interface_name or try until we've found the property
         // in case of an empty interface
         if (interface_name.isEmpty()) {
-            for (QDBusAdaptorConnector::AdaptorMap::ConstIterator it = connector->adaptors.constBegin(),
+            for (auto it = connector->adaptors.constBegin(),
                  end = connector->adaptors.constEnd(); it != end; ++it) {
-                int status = writeProperty(it->adaptor, property_name, value);
+                auto status = writeProperty(it->adaptor, property_name, value);
                 if (status == PropertyNotFound)
                     continue;
                 return propertyWriteReply(msg, interface_name, property_name, status);
@@ -420,7 +420,7 @@ QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node
     if (node.flags & (QDBusConnection::ExportScriptableProperties |
                       QDBusConnection::ExportNonScriptableProperties)) {
         // try the object itself
-        bool interfaceFound = true;
+        auto interfaceFound = true;
         if (!interface_name.isEmpty())
             interfaceFound = qDBusInterfaceInObject(node.obj, interface_name);
 
@@ -439,7 +439,7 @@ QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node
 // unite two QVariantMaps, but don't generate duplicate keys
 static QVariantMap &operator+=(QVariantMap &lhs, const QVariantMap &rhs)
 {
-    QVariantMap::ConstIterator it = rhs.constBegin(),
+    auto it = rhs.constBegin(),
                               end = rhs.constEnd();
     for ( ; it != end; ++it)
         lhs.insert(it.key(), it.value());
@@ -449,21 +449,21 @@ static QVariantMap &operator+=(QVariantMap &lhs, const QVariantMap &rhs)
 static QVariantMap readAllProperties(QObject *object, int flags)
 {
     QVariantMap result;
-    const QMetaObject *mo = object->metaObject();
+    auto mo = object->metaObject();
 
     // QObject has properties, so don't start from 0
-    for (int i = QObject::staticMetaObject.propertyCount(); i < mo->propertyCount(); ++i) {
-        QMetaProperty mp = mo->property(i);
+    for (auto i = QObject::staticMetaObject.propertyCount(); i < mo->propertyCount(); ++i) {
+        auto mp = mo->property(i);
 
         // is it readable?
         if (!mp.isReadable())
             continue;
 
         // is it a registered property?
-        int typeId = mp.userType();
+        auto typeId = mp.userType();
         if (!typeId)
             continue;
-        const char *signature = QDBusMetaType::typeToSignature(typeId);
+        auto signature = QDBusMetaType::typeToSignature(typeId);
         if (!signature)
             continue;
 
@@ -471,7 +471,7 @@ static QVariantMap readAllProperties(QObject *object, int flags)
         if ((mp.isScriptable() && flags & QDBusConnection::ExportScriptableProperties) ||
             (!mp.isScriptable() && flags & QDBusConnection::ExportNonScriptableProperties)) {
             // yes, it's visible
-            QVariant value = mp.read(object);
+            auto value = mp.read(object);
             if (value.isValid())
                 result.insert(QString::fromLatin1(mp.name()), value);
         }
@@ -488,9 +488,9 @@ QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &n
                "QDBusConnection: internal threading error",
                "function called for an object that is in another thread!!");
 
-    QString interface_name = msg.arguments().at(0).toString();
+    auto interface_name = msg.arguments().at(0).toString();
 
-    bool interfaceFound = false;
+    auto interfaceFound = false;
     QVariantMap result;
 
     QDBusAdaptorConnector *connector;
@@ -499,7 +499,7 @@ QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &n
 
         if (interface_name.isEmpty()) {
             // iterate over all interfaces
-            for (QDBusAdaptorConnector::AdaptorMap::ConstIterator it = connector->adaptors.constBegin(),
+            for (auto it = connector->adaptors.constBegin(),
                  end = connector->adaptors.constEnd(); it != end; ++it) {
                 result += readAllProperties(it->adaptor, QDBusConnection::ExportAllProperties);
             }

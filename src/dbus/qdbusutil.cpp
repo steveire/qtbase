@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 static inline bool isValidCharacterNoDash(QChar c)
 {
-    ushort u = c.unicode();
+    auto u = c.unicode();
     return (u >= 'a' && u <= 'z')
             || (u >= 'A' && u <= 'Z')
             || (u >= '0' && u <= '9')
@@ -61,7 +61,7 @@ static inline bool isValidCharacterNoDash(QChar c)
 
 static inline bool isValidCharacter(QChar c)
 {
-    ushort u = c.unicode();
+    auto u = c.unicode();
     return (u >= 'a' && u <= 'z')
             || (u >= 'A' && u <= 'Z')
             || (u >= '0' && u <= '9')
@@ -70,7 +70,7 @@ static inline bool isValidCharacter(QChar c)
 
 static inline bool isValidNumber(QChar c)
 {
-    ushort u = c.unicode();
+    auto u = c.unicode();
     return (u >= '0' && u <= '9');
 }
 
@@ -79,11 +79,11 @@ static bool argToString(const QDBusArgument &arg, QString &out);
 
 static bool variantToString(const QVariant &arg, QString &out)
 {
-    int argType = arg.userType();
+    auto argType = arg.userType();
 
     if (argType == QVariant::StringList) {
         out += QLatin1Char('{');
-        const QStringList list = arg.toStringList();
+        const auto list = arg.toStringList();
         for (const QString &item : list)
             out += QLatin1Char('\"') + item + QLatin1String("\", ");
         if (!list.isEmpty())
@@ -91,8 +91,8 @@ static bool variantToString(const QVariant &arg, QString &out)
         out += QLatin1Char('}');
     } else if (argType == QVariant::ByteArray) {
         out += QLatin1Char('{');
-        QByteArray list = arg.toByteArray();
-        for (int i = 0; i < list.count(); ++i) {
+        auto list = arg.toByteArray();
+        for (auto i = 0; i < list.count(); ++i) {
             out += QString::number(list.at(i));
             out += QLatin1String(", ");
         }
@@ -101,7 +101,7 @@ static bool variantToString(const QVariant &arg, QString &out)
         out += QLatin1Char('}');
     } else if (argType == QVariant::List) {
         out += QLatin1Char('{');
-        const QList<QVariant> list = arg.toList();
+        const auto list = arg.toList();
         for (const QVariant &item : list) {
             if (!variantToString(item, out))
                 return false;
@@ -123,7 +123,7 @@ static bool variantToString(const QVariant &arg, QString &out)
     } else if (argType == qMetaTypeId<QDBusArgument>()) {
         argToString(qvariant_cast<QDBusArgument>(arg), out);
     } else if (argType == qMetaTypeId<QDBusObjectPath>()) {
-        const QString path = qvariant_cast<QDBusObjectPath>(arg).path();
+        const auto path = qvariant_cast<QDBusObjectPath>(arg).path();
         out += QLatin1String("[ObjectPath: ");
         out += path;
         out += QLatin1Char(']');
@@ -135,9 +135,9 @@ static bool variantToString(const QVariant &arg, QString &out)
         out += QLatin1String(qvariant_cast<QDBusUnixFileDescriptor>(arg).isValid() ? "valid" : "not valid");
         out += QLatin1Char(']');
     } else if (argType == qMetaTypeId<QDBusVariant>()) {
-        const QVariant v = qvariant_cast<QDBusVariant>(arg).variant();
+        const auto v = qvariant_cast<QDBusVariant>(arg).variant();
         out += QLatin1String("[Variant");
-        int vUserType = v.userType();
+        auto vUserType = v.userType();
         if (vUserType != qMetaTypeId<QDBusVariant>()
                 && vUserType != qMetaTypeId<QDBusSignature>()
                 && vUserType != qMetaTypeId<QDBusObjectPath>()
@@ -160,9 +160,9 @@ static bool variantToString(const QVariant &arg, QString &out)
 
 bool argToString(const QDBusArgument &busArg, QString &out)
 {
-    QString busSig = busArg.currentSignature();
-    bool doIterate = false;
-    QDBusArgument::ElementType elementType = busArg.currentType();
+    auto busSig = busArg.currentSignature();
+    auto doIterate = false;
+    auto elementType = busArg.currentType();
 
     if (elementType != QDBusArgument::BasicType && elementType != QDBusArgument::VariantType
             && elementType != QDBusArgument::MapEntryType)
@@ -257,7 +257,7 @@ static bool isFixedType(int c)
 // returns NULL if it isn't valid.
 static const char *validateSingleType(const char *signature)
 {
-    char c = *signature;
+    auto c = *signature;
     if (c == DBUS_TYPE_INVALID)
         return 0;
 
@@ -338,8 +338,8 @@ namespace QDBusUtil
         if (part.isEmpty())
             return false;       // can't be valid if it's empty
 
-        const QChar *c = part.unicode();
-        for (int i = 0; i < part.length(); ++i)
+        auto c = part.unicode();
+        for (auto i = 0; i < part.length(); ++i)
             if (!isValidCharacterNoDash(c[i]))
                 return false;
 
@@ -364,11 +364,11 @@ namespace QDBusUtil
         if (ifaceName.isEmpty() || ifaceName.length() > DBUS_MAXIMUM_NAME_LENGTH)
             return false;
 
-        QStringList parts = ifaceName.split(QLatin1Char('.'));
+        auto parts = ifaceName.split(QLatin1Char('.'));
         if (parts.count() < 2)
             return false;           // at least two parts
 
-        for (int i = 0; i < parts.count(); ++i)
+        for (auto i = 0; i < parts.count(); ++i)
             if (!isValidMemberName(parts.at(i)))
                 return false;
 
@@ -388,17 +388,17 @@ namespace QDBusUtil
             !connName.startsWith(QLatin1Char(':')))
             return false;
 
-        QStringList parts = connName.mid(1).split(QLatin1Char('.'));
+        auto parts = connName.mid(1).split(QLatin1Char('.'));
         if (parts.count() < 1)
             return false;
 
-        for (int i = 0; i < parts.count(); ++i) {
+        for (auto i = 0; i < parts.count(); ++i) {
             const QString &part = parts.at(i);
             if (part.isEmpty())
                  return false;
 
-            const QChar* c = part.unicode();
-            for (int j = 0; j < part.length(); ++j)
+            auto c = part.unicode();
+            for (auto j = 0; j < part.length(); ++j)
                 if (!isValidCharacter(c[j]))
                     return false;
         }
@@ -429,19 +429,19 @@ namespace QDBusUtil
         if (busName.startsWith(QLatin1Char(':')))
             return isValidUniqueConnectionName(busName);
 
-        QStringList parts = busName.split(QLatin1Char('.'));
+        auto parts = busName.split(QLatin1Char('.'));
         if (parts.count() < 1)
             return false;
 
-        for (int i = 0; i < parts.count(); ++i) {
+        for (auto i = 0; i < parts.count(); ++i) {
             const QString &part = parts.at(i);
             if (part.isEmpty())
                 return false;
 
-            const QChar *c = part.unicode();
+            auto c = part.unicode();
             if (isValidNumber(c[0]))
                 return false;
-            for (int j = 0; j < part.length(); ++j)
+            for (auto j = 0; j < part.length(); ++j)
                 if (!isValidCharacter(c[j]))
                     return false;
         }
@@ -460,10 +460,10 @@ namespace QDBusUtil
         if (memberName.isEmpty() || memberName.length() > DBUS_MAXIMUM_NAME_LENGTH)
             return false;
 
-        const QChar* c = memberName.unicode();
+        auto c = memberName.unicode();
         if (isValidNumber(c[0]))
             return false;
-        for (int j = 0; j < memberName.length(); ++j)
+        for (auto j = 0; j < memberName.length(); ++j)
             if (!isValidCharacterNoDash(c[j]))
                 return false;
         return true;
@@ -501,11 +501,11 @@ namespace QDBusUtil
             path.endsWith(QLatin1Char('/')))
             return false;
 
-        QStringList parts = path.split(QLatin1Char('/'));
+        auto parts = path.split(QLatin1Char('/'));
         Q_ASSERT(parts.count() >= 1);
         parts.removeFirst();    // it starts with /, so we get an empty first part
 
-        for (int i = 0; i < parts.count(); ++i)
+        for (auto i = 0; i < parts.count(); ++i)
             if (!isValidPartOfObjectPath(parts.at(i)))
                 return false;
 
@@ -541,8 +541,8 @@ namespace QDBusUtil
     */
     bool isValidSignature(const QString &signature)
     {
-        QByteArray ba = signature.toLatin1();
-        const char *data = ba.constData();
+        auto ba = signature.toLatin1();
+        auto data = ba.constData();
         while (true) {
             data = validateSingleType(data);
             if (!data)
@@ -560,8 +560,8 @@ namespace QDBusUtil
     */
     bool isValidSingleSignature(const QString &signature)
     {
-        QByteArray ba = signature.toLatin1();
-        const char *data = validateSingleType(ba.constData());
+        auto ba = signature.toLatin1();
+        auto data = validateSingleType(ba.constData());
         return data && *data == '\0';
     }
 

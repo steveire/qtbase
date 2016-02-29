@@ -116,7 +116,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
     }
 
     DBusMessage *msg = 0;
-    const QDBusMessagePrivate *d_ptr = message.d_ptr;
+    auto d_ptr = message.d_ptr;
 
     switch (d_ptr->type) {
     case QDBusMessage::InvalidMessage:
@@ -184,8 +184,8 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
     d_ptr->parametersValidated = true;
 
     QDBusMarshaller marshaller(capabilities);
-    QVariantList::ConstIterator it =  d_ptr->arguments.constBegin();
-    QVariantList::ConstIterator cend = d_ptr->arguments.constEnd();
+    auto it =  d_ptr->arguments.constBegin();
+    auto cend = d_ptr->arguments.constEnd();
     q_dbus_message_iter_init_append(msg, &marshaller.iterator);
     if (!d_ptr->message.isEmpty())
         // prepend the error message
@@ -267,18 +267,18 @@ QDBusMessage QDBusMessagePrivate::makeLocal(const QDBusConnectionPrivate &conn,
 
     // determine if we are carrying any complex types
     QString computedSignature;
-    QVariantList::ConstIterator it = asSent.d_ptr->arguments.constBegin();
-    QVariantList::ConstIterator end = asSent.d_ptr->arguments.constEnd();
+    auto it = asSent.d_ptr->arguments.constBegin();
+    auto end = asSent.d_ptr->arguments.constEnd();
     for ( ; it != end; ++it) {
-        int id = it->userType();
-        const char *signature = QDBusMetaType::typeToSignature(id);
+        auto id = it->userType();
+        auto signature = QDBusMetaType::typeToSignature(id);
         if ((id != QVariant::StringList && id != QVariant::ByteArray &&
              qstrlen(signature) != 1) || id == qMetaTypeId<QDBusVariant>()) {
             // yes, we are
             // we must marshall and demarshall again so as to create QDBusArgument
             // entries for the complex types
             QDBusError error;
-            DBusMessage *message = toDBusMessage(asSent, conn.capabilities, &error);
+            auto message = toDBusMessage(asSent, conn.capabilities, &error);
             if (!message) {
                 // failed to marshall, so it's a call error
                 return QDBusMessage::createError(error);
@@ -286,7 +286,7 @@ QDBusMessage QDBusMessagePrivate::makeLocal(const QDBusConnectionPrivate &conn,
 
             q_dbus_message_set_sender(message, conn.baseService.toUtf8());
 
-            QDBusMessage retval = fromDBusMessage(message, conn.capabilities);
+            auto retval = fromDBusMessage(message, conn.capabilities);
             retval.d_ptr->localMessage = true;
             q_dbus_message_unref(message);
             if (retval.d_ptr->service.isEmpty())
@@ -300,7 +300,7 @@ QDBusMessage QDBusMessagePrivate::makeLocal(const QDBusConnectionPrivate &conn,
     // no complex types seen
     // optimize by using the variant list itself
     QDBusMessage retval;
-    QDBusMessagePrivate *d = retval.d_ptr;
+    auto d = retval.d_ptr;
     d->arguments = asSent.d_ptr->arguments;
     d->path = asSent.d_ptr->path;
     d->interface = asSent.d_ptr->interface;
@@ -498,7 +498,7 @@ QDBusMessage QDBusMessage::createErrorReply(const QString &name, const QString &
 QDBusMessage QDBusMessage::createErrorReply(const QString name, const QString &msg) const
 #endif
 {
-    QDBusMessage reply = QDBusMessage::createError(name, msg);
+    auto reply = QDBusMessage::createError(name, msg);
     if (d_ptr->msg)
         reply.d_ptr->reply = q_dbus_message_ref(d_ptr->msg);
     if (d_ptr->localMessage) {
@@ -533,7 +533,7 @@ QDBusMessage QDBusMessage::createErrorReply(const QString name, const QString &m
 */
 QDBusMessage QDBusMessage::createErrorReply(QDBusError::ErrorType atype, const QString &amsg) const
 {
-    QDBusMessage msg = createErrorReply(QDBusError::errorString(atype), amsg);
+    auto msg = createErrorReply(QDBusError::errorString(atype), amsg);
     msg.d_ptr->parametersValidated = true;
     return msg;
 }
@@ -807,9 +807,9 @@ static QDebug operator<<(QDebug dbg, QDBusMessage::MessageType t)
 
 static void debugVariantList(QDebug dbg, const QVariantList &list)
 {
-    bool first = true;
-    QVariantList::ConstIterator it = list.constBegin();
-    QVariantList::ConstIterator end = list.constEnd();
+    auto first = true;
+    auto it = list.constBegin();
+    auto end = list.constEnd();
     for ( ; it != end; ++it) {
         if (!first)
             dbg.nospace() << ", ";

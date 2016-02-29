@@ -278,7 +278,7 @@ QDBusConnectionInterface::registerService(const QString &serviceName,
         break;
     }
 
-    QDBusMessage reply = call(QLatin1String("RequestName"), serviceName, flags);
+    auto reply = call(QLatin1String("RequestName"), serviceName, flags);
 //    qDebug() << "QDBusConnectionInterface::registerService" << serviceName << "Reply:" << reply;
 
     // convert the low-level flags to something that we can use
@@ -316,9 +316,9 @@ QDBusConnectionInterface::registerService(const QString &serviceName,
 QDBusReply<bool>
 QDBusConnectionInterface::unregisterService(const QString &serviceName)
 {
-    QDBusMessage reply = call(QLatin1String("ReleaseName"), serviceName);
+    auto reply = call(QLatin1String("ReleaseName"), serviceName);
     if (reply.type() == QDBusMessage::ReplyMessage) {
-        bool success = reply.arguments().at(0).toUInt() == DBUS_RELEASE_NAME_REPLY_RELEASED;
+        auto success = reply.arguments().at(0).toUInt() == DBUS_RELEASE_NAME_REPLY_RELEASED;
         reply.setArguments(QVariantList() << success);
     }
     return reply;
@@ -331,12 +331,12 @@ void QDBusConnectionInterface::connectNotify(const QMetaMethod &signal)
 {
     // translate the signal names to what we really want
     // this avoids setting hooks for signals that don't exist on the bus
-    static const QMetaMethod serviceRegisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceRegistered);
-    static const QMetaMethod serviceUnregisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceUnregistered);
-    static const QMetaMethod serviceOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceOwnerChanged);
-    static const QMetaMethod NameAcquiredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameAcquired);
-    static const QMetaMethod NameLostSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameLost);
-    static const QMetaMethod NameOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameOwnerChanged);
+    static const auto serviceRegisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceRegistered);
+    static const auto serviceUnregisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceUnregistered);
+    static const auto serviceOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceOwnerChanged);
+    static const auto NameAcquiredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameAcquired);
+    static const auto NameLostSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameLost);
+    static const auto NameOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameOwnerChanged);
     if (signal == serviceRegisteredSignal)
         QDBusAbstractInterface::connectNotify(NameAcquiredSignal);
 
@@ -344,7 +344,7 @@ void QDBusConnectionInterface::connectNotify(const QMetaMethod &signal)
         QDBusAbstractInterface::connectNotify(NameLostSignal);
 
     else if (signal == serviceOwnerChangedSignal) {
-        static bool warningPrinted = false;
+        static auto warningPrinted = false;
         if (!warningPrinted) {
             qWarning("Connecting to deprecated signal QDBusConnectionInterface::serviceOwnerChanged(QString,QString,QString)");
             warningPrinted = true;
@@ -360,12 +360,12 @@ void QDBusConnectionInterface::disconnectNotify(const QMetaMethod &signal)
 {
     // translate the signal names to what we really want
     // this avoids setting hooks for signals that don't exist on the bus
-    static const QMetaMethod serviceRegisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceRegistered);
-    static const QMetaMethod serviceUnregisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceUnregistered);
-    static const QMetaMethod serviceOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceOwnerChanged);
-    static const QMetaMethod NameAcquiredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameAcquired);
-    static const QMetaMethod NameLostSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameLost);
-    static const QMetaMethod NameOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameOwnerChanged);
+    static const auto serviceRegisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceRegistered);
+    static const auto serviceUnregisteredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceUnregistered);
+    static const auto serviceOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::serviceOwnerChanged);
+    static const auto NameAcquiredSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameAcquired);
+    static const auto NameLostSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameLost);
+    static const auto NameOwnerChangedSignal = QMetaMethod::fromSignal(&QDBusConnectionInterface::NameOwnerChanged);
     if (signal == serviceRegisteredSignal)
         QDBusAbstractInterface::disconnectNotify(NameAcquiredSignal);
 

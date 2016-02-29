@@ -70,7 +70,7 @@ QByteArray QDBusArgumentPrivate::createSignature(int id)
         return "";
 
     QByteArray signature;
-    QDBusMarshaller *marshaller = new QDBusMarshaller(0);
+    auto marshaller = new QDBusMarshaller(0);
     marshaller->ba = &signature;
 
     // run it
@@ -81,7 +81,7 @@ QByteArray QDBusArgumentPrivate::createSignature(int id)
     arg.d = 0;
 
     // delete it
-    bool ok = marshaller->ok;
+    auto ok = marshaller->ok;
     delete marshaller;
 
     if (signature.isEmpty() || !ok || !QDBusUtil::isValidSingleSignature(QString::fromLatin1(signature))) {
@@ -112,7 +112,7 @@ bool QDBusArgumentPrivate::checkWrite(QDBusArgumentPrivate *&d)
             return false;
 
         if (d->message && d->ref.load() != 1) {
-            QDBusMarshaller *dd = new QDBusMarshaller(d->capabilities);
+            auto dd = new QDBusMarshaller(d->capabilities);
             dd->message = q_dbus_message_copy(d->message);
             q_dbus_message_iter_init_append(dd->message, &dd->iterator);
 
@@ -155,7 +155,7 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
     if (d->ref.load() == 1)
         return true;            // no need to detach
 
-    QDBusDemarshaller *dd = new QDBusDemarshaller(d->capabilities);
+    auto dd = new QDBusDemarshaller(d->capabilities);
     dd->message = q_dbus_message_ref(d->message);
     dd->iterator = static_cast<QDBusDemarshaller*>(d)->iterator;
 
@@ -294,7 +294,7 @@ QDBusArgument::QDBusArgument()
         return;
     }
 
-    QDBusMarshaller *dd = new QDBusMarshaller(0);
+    auto dd = new QDBusMarshaller(0);
     d = dd;
 
     // create a new message with any type, we won't sent it anyways

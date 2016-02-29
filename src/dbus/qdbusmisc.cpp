@@ -61,7 +61,7 @@ bool qDBusCheckAsyncTag(const char *tag)
     if (!tag || !*tag)
         return false;
 
-    const char *p = strstr(tag, noReplyTag);
+    auto p = strstr(tag, noReplyTag);
     if (p != NULL &&
         (p == tag || *(p-1) == ' ') &&
         (p[sizeof noReplyTag - 1] == '\0' || p[sizeof noReplyTag - 1] == ' '))
@@ -76,7 +76,7 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
 {
     QString interface;
 
-    int idx = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
+    auto idx = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
     if (idx >= mo->classInfoOffset()) {
         interface = QLatin1String(mo->classInfo(idx).value());
     } else {
@@ -94,13 +94,13 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
             interface.prepend(QLatin1String("local."));
          } else {
             interface.prepend(QLatin1Char('.')).prepend(QCoreApplication::instance()->applicationName());
-            QStringList domainName =
+            auto domainName =
                 QCoreApplication::instance()->organizationDomain().split(QLatin1Char('.'),
                                                                          QString::SkipEmptyParts);
             if (domainName.isEmpty())
                  interface.prepend(QLatin1String("local."));
             else
-                for (int i = 0; i < domainName.count(); ++i)
+                for (auto i = 0; i < domainName.count(); ++i)
                     interface.prepend(QLatin1Char('.')).prepend(domainName.at(i));
          }
      }
@@ -110,7 +110,7 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
 
 bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name)
 {
-    const QMetaObject *mo = obj->metaObject();
+    auto mo = obj->metaObject();
     for ( ; mo != &QObject::staticMetaObject; mo = mo->superClass())
         if (interface_name == qDBusInterfaceFromMetaObject(mo))
             return true;
@@ -142,10 +142,10 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
     metaTypes.clear();
 
     metaTypes.append(0);        // return type
-    int inputCount = 0;
-    bool seenMessage = false;
-    QList<QByteArray>::ConstIterator it = parameterTypes.constBegin();
-    QList<QByteArray>::ConstIterator end = parameterTypes.constEnd();
+    auto inputCount = 0;
+    auto seenMessage = false;
+    auto it = parameterTypes.constBegin();
+    auto end = parameterTypes.constEnd();
     for ( ; it != end; ++it) {
         const QByteArray &type = *it;
         if (type.endsWith('*')) {
@@ -154,10 +154,10 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
         }
 
         if (type.endsWith('&')) {
-            QByteArray basictype = type;
+            auto basictype = type;
             basictype.truncate(type.length() - 1);
 
-            int id = QMetaType::type(basictype);
+            auto id = QMetaType::type(basictype);
             if (id == 0) {
                 errorMsg = QLatin1String("Unregistered output type in parameter list: ") + QLatin1String(type);
                 return -1;
@@ -174,7 +174,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
             return -1;          // not allowed
         }
 
-        int id = QMetaType::type(type);
+        auto id = QMetaType::type(type);
         if (id == QMetaType::UnknownType) {
             errorMsg = QLatin1String("Unregistered input type in parameter list: ") + QLatin1String(type);
             return -1;

@@ -283,7 +283,7 @@ void QDBusUnixFileDescriptor::giveFileDescriptor(int fileDescriptor)
     else
         d = new QDBusUnixFileDescriptorPrivate;
 
-    const int fdl = d->fd.load();
+    const auto fdl = d->fd.load();
     if (fdl != -1)
         qt_safe_close(fdl);
 
@@ -309,7 +309,7 @@ int QDBusUnixFileDescriptor::takeFileDescriptor()
 
 QDBusUnixFileDescriptorPrivate::~QDBusUnixFileDescriptorPrivate()
 {
-    const int fdl = fd.load();
+    const auto fdl = fd.load();
     if (fdl != -1)
         qt_safe_close(fdl);
 }

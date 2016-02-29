@@ -83,7 +83,7 @@ QDBusServer::QDBusServer(QObject *parent)
 {
 #ifdef Q_OS_UNIX
     // Use Unix sockets on Unix systems only
-    const QString address = QStringLiteral("unix:tmpdir=/tmp");
+    const auto address = QStringLiteral("unix:tmpdir=/tmp");
 #else
     const QString address = QStringLiteral("tcp:");
 #endif
@@ -140,7 +140,7 @@ QString QDBusServer::address() const
 {
     QString addr;
     if (d && d->server) {
-        char *c = q_dbus_server_get_address(d->server);
+        auto c = q_dbus_server_get_address(d->server);
         addr = QString::fromUtf8(c);
         q_dbus_free(c);
     }

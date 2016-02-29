@@ -337,7 +337,7 @@ QDBusIntrospection::Interface
 QDBusIntrospection::parseInterface(const QString &xml)
 {
     // be lazy
-    Interfaces ifs = parseInterfaces(xml);
+    auto ifs = parseInterfaces(xml);
     if (ifs.isEmpty())
         return Interface();
 
@@ -374,7 +374,7 @@ QDBusIntrospection::Object
 QDBusIntrospection::parseObject(const QString &xml, const QString &service, const QString &path)
 {
     QDBusXmlParser parser(service, path, xml);
-    QSharedDataPointer<QDBusIntrospection::Object> retval = parser.object();
+    auto retval = parser.object();
     if (!retval)
         return QDBusIntrospection::Object();
     return *retval;

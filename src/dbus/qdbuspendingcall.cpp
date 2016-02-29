@@ -159,7 +159,7 @@ bool QDBusPendingCallPrivate::setReplyCallback(QObject *target, const char *memb
 
     methodIdx = QDBusConnectionPrivate::findSlot(target, member + 1, metaTypes);
     if (methodIdx == -1) {
-        QByteArray normalizedName = QMetaObject::normalizedSignature(member + 1);
+        auto normalizedName = QMetaObject::normalizedSignature(member + 1);
         methodIdx = QDBusConnectionPrivate::findSlot(target, normalizedName, metaTypes);
     }
     if (methodIdx == -1) {
@@ -172,7 +172,7 @@ bool QDBusPendingCallPrivate::setReplyCallback(QObject *target, const char *memb
 
     // success
     // construct the expected signature
-    int count = metaTypes.count() - 1;
+    auto count = metaTypes.count() - 1;
     if (count == 1 && metaTypes.at(1) == QDBusMetaTypeId::message()) {
         // wildcard slot, can receive anything, so don't set the signature
         return true;
@@ -194,8 +194,8 @@ void QDBusPendingCallPrivate::setMetaTypes(int count, const int *types)
 
     QByteArray sig;
     sig.reserve(count + count / 2);
-    for (int i = 0; i < count; ++i) {
-        const char *typeSig = QDBusMetaType::typeToSignature(types[i]);
+    for (auto i = 0; i < count; ++i) {
+        auto typeSig = QDBusMetaType::typeToSignature(types[i]);
         if (Q_UNLIKELY(!typeSig)) {
             qFatal("QDBusPendingReply: type %s is not registered with QtDBus",
                    QMetaType::typeName(types[i]));
@@ -256,7 +256,7 @@ QDBusPendingCall::QDBusPendingCall(QDBusPendingCallPrivate *dd)
     : d(dd)
 {
     if (dd) {
-        bool r = dd->ref.deref();
+        auto r = dd->ref.deref();
         Q_ASSERT(r);
         Q_UNUSED(r);
     }
@@ -389,7 +389,7 @@ QDBusError QDBusPendingCall::error() const
     }
 
     // not connected, return an error
-    QDBusError err = QDBusError(QDBusError::Disconnected,
+    auto err = QDBusError(QDBusError::Disconnected,
                                 QDBusUtil::disconnectedErrorMessage());
     return err;
 }

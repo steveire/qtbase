@@ -128,7 +128,7 @@ static void copyArgument(void *to, int id, const QVariant &arg)
     }
 
     // is this type registered?
-    const char *userSignature = QDBusMetaType::typeToSignature(id);
+    auto userSignature = QDBusMetaType::typeToSignature(id);
     if (!userSignature || !*userSignature) {
         // type not registered
         //qWarning?
@@ -136,7 +136,7 @@ static void copyArgument(void *to, int id, const QVariant &arg)
     }
 
     // is it the same signature?
-    QDBusArgument dbarg = arg.value<QDBusArgument>();
+    auto dbarg = arg.value<QDBusArgument>();
     if (dbarg.currentSignature() != QLatin1String(userSignature)) {
         // not the same signature, another mismatch
         //qWarning?
@@ -268,8 +268,8 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
     Q_Q(QDBusInterface);
 
     if (c == QMetaObject::InvokeMetaMethod) {
-        int offset = metaObject->methodOffset();
-        QMetaMethod mm = metaObject->method(id + offset);
+        auto offset = metaObject->methodOffset();
+        auto mm = metaObject->method(id + offset);
 
         if (mm.methodType() == QMetaMethod::Signal) {
             // signal relay from D-Bus world to Qt world
@@ -278,26 +278,26 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
         } else if (mm.methodType() == QMetaMethod::Slot || mm.methodType() == QMetaMethod::Method) {
             // method call relay from Qt world to D-Bus world
             // get D-Bus equivalent signature
-            QString methodName = QString::fromLatin1(mm.name());
-            const int *inputTypes = metaObject->inputTypesForMethod(id);
-            int inputTypesCount = *inputTypes;
+            auto methodName = QString::fromLatin1(mm.name());
+            auto inputTypes = metaObject->inputTypesForMethod(id);
+            auto inputTypesCount = *inputTypes;
 
             // we will assume that the input arguments were passed correctly
             QVariantList args;
             args.reserve(inputTypesCount);
-            int i = 1;
+            auto i = 1;
             for ( ; i <= inputTypesCount; ++i)
                 args << QVariant(inputTypes[i], argv[i]);
 
             // make the call
-            QDBusMessage reply = q->callWithArgumentList(QDBus::Block, methodName, args);
+            auto reply = q->callWithArgumentList(QDBus::Block, methodName, args);
 
             if (reply.type() == QDBusMessage::ReplyMessage) {
                 // attempt to demarshall the return values
                 args = reply.arguments();
-                QVariantList::ConstIterator it = args.constBegin();
-                const int *outputTypes = metaObject->outputTypesForMethod(id);
-                int outputTypesCount = *outputTypes++;
+                auto it = args.constBegin();
+                auto outputTypes = metaObject->outputTypesForMethod(id);
+                auto outputTypesCount = *outputTypes++;
 
                 if (mm.returnType() != QMetaType::UnknownType && mm.returnType() != QMetaType::Void) {
                     // this method has a return type
@@ -309,7 +309,7 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
                     ++it;
                 }
 
-                for (int j = 0; j < outputTypesCount && it != args.constEnd(); ++i, ++j, ++it) {
+                for (auto j = 0; j < outputTypesCount && it != args.constEnd(); ++i, ++j, ++it) {
                     copyArgument(argv[i], outputTypes[j], *it);
                 }
             }

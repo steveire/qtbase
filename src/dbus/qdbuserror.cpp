@@ -144,7 +144,7 @@ static const int errorMessages_count = sizeof errorMessages_indices /
 
 static inline const char *get(QDBusError::ErrorType code)
 {
-    int intcode = qBound(0, int(code) - int(QDBusError::Other), errorMessages_count);
+    auto intcode = qBound(0, int(code) - int(QDBusError::Other), errorMessages_count);
     return errorMessages_string + errorMessages_indices[intcode];
 }
 
@@ -153,7 +153,7 @@ static inline QDBusError::ErrorType get(const char *name)
 {
     if (!name || !*name)
         return QDBusError::NoError;
-    for (int i = 0; i < errorMessages_count; ++i)
+    for (auto i = 0; i < errorMessages_count; ++i)
         if (strcmp(name, errorMessages_string + errorMessages_indices[i]) == 0)
             return QDBusError::ErrorType(i + int(QDBusError::Other));
     return QDBusError::Other;

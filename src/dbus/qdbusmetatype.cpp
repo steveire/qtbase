@@ -209,7 +209,7 @@ void QDBusMetaType::registerMarshallOperators(int id, MarshallFunction mf,
                                               DemarshallFunction df)
 {
     QByteArray var;
-    QVector<QDBusCustomTypeInfo> *ct = customTypes();
+    auto ct = customTypes();
     if (id < 0 || !mf || !df || !ct)
         return;                 // error!
 
@@ -234,7 +234,7 @@ bool QDBusMetaType::marshall(QDBusArgument &arg, int id, const void *data)
     MarshallFunction mf;
     {
         QReadLocker locker(customTypesLock());
-        QVector<QDBusCustomTypeInfo> *ct = customTypes();
+        auto ct = customTypes();
         if (id >= ct->size())
             return false;       // non-existent
 
@@ -263,7 +263,7 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
     DemarshallFunction df;
     {
         QReadLocker locker(customTypesLock());
-        QVector<QDBusCustomTypeInfo> *ct = customTypes();
+        auto ct = customTypes();
         if (id >= ct->size())
             return false;       // non-existent
 
@@ -275,7 +275,7 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
             df = info.demarshall;
     }
 #ifndef QT_BOOTSTRAPPED
-    QDBusArgument copy = arg;
+    auto copy = arg;
     df(copy, data);
 #else
     Q_UNUSED(arg);
@@ -437,7 +437,7 @@ const char *QDBusMetaType::typeToSignature(int type)
         return DBUS_TYPE_UNIX_FD_AS_STRING;
 
     // try the database
-    QVector<QDBusCustomTypeInfo> *ct = customTypes();
+    auto ct = customTypes();
     {
         QReadLocker locker(customTypesLock());
         if (type >= ct->size())
@@ -457,7 +457,7 @@ const char *QDBusMetaType::typeToSignature(int type)
     {
         // createSignature will never return a null QByteArray
         // if there was an error, it'll return ""
-        QByteArray signature = QDBusArgumentPrivate::createSignature(type);
+        auto signature = QDBusArgumentPrivate::createSignature(type);
 
         // re-acquire lock
         QWriteLocker locker(customTypesLock());

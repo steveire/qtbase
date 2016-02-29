@@ -101,14 +101,14 @@ void QDBusServiceWatcherPrivate::setConnection(const QStringList &s, const QDBus
 
 void QDBusServiceWatcherPrivate::addService(const QString &service)
 {
-    QDBusConnectionPrivate *d = QDBusConnectionPrivate::d(connection);
+    auto d = QDBusConnectionPrivate::d(connection);
     if (d && d->shouldWatchService(service))
         d->watchService(service, watchMode, q_func(), SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
 
 void QDBusServiceWatcherPrivate::removeService(const QString &service)
 {
-    QDBusConnectionPrivate *d = QDBusConnectionPrivate::d(connection);
+    auto d = QDBusConnectionPrivate::d(connection);
     if (d && d->shouldWatchService(service))
         d->unwatchService(service, watchMode, q_func(), SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }

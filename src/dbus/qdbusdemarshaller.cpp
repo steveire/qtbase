@@ -76,8 +76,8 @@ QDBusDemarshaller::~QDBusDemarshaller()
 
 inline QString QDBusDemarshaller::currentSignature()
 {
-    char *sig = q_dbus_message_iter_get_signature(&iterator);
-    QString retval = QString::fromUtf8(sig);
+    auto sig = q_dbus_message_iter_get_signature(&iterator);
+    auto retval = QString::fromUtf8(sig);
     q_dbus_free(sig);
 
     return retval;
@@ -303,7 +303,7 @@ QVariant QDBusDemarshaller::toVariantInternal()
 
 bool QDBusDemarshaller::isCurrentTypeStringLike()
 {
-    const int type = q_dbus_message_iter_get_arg_type(&iterator);
+    const auto type = q_dbus_message_iter_get_arg_type(&iterator);
     switch (type) {
     case DBUS_TYPE_STRING:  //FALLTHROUGH
     case DBUS_TYPE_OBJECT_PATH:  //FALLTHROUGH
@@ -384,7 +384,7 @@ inline QDBusDemarshaller *QDBusDemarshaller::beginMapEntry()
 
 QDBusDemarshaller *QDBusDemarshaller::beginCommon()
 {
-    QDBusDemarshaller *d = new QDBusDemarshaller(capabilities);
+    auto d = new QDBusDemarshaller(capabilities);
     d->parent = this;
     d->message = q_dbus_message_ref(message);
 
@@ -416,14 +416,14 @@ inline QDBusDemarshaller *QDBusDemarshaller::endMapEntry()
 
 QDBusDemarshaller *QDBusDemarshaller::endCommon()
 {
-    QDBusDemarshaller *retval = parent;
+    auto retval = parent;
     delete this;
     return retval;
 }
 
 QDBusArgument QDBusDemarshaller::duplicate()
 {
-    QDBusDemarshaller *d = new QDBusDemarshaller(capabilities);
+    auto d = new QDBusDemarshaller(capabilities);
     d->iterator = iterator;
     d->message = q_dbus_message_ref(message);
 

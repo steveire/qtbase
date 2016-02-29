@@ -74,10 +74,10 @@ QDBusAdaptorConnector *qDBusFindAdaptorConnector(QObject *obj)
     if (!obj)
         return 0;
     const QObjectList &children = obj->children();
-    QObjectList::ConstIterator it = children.constBegin();
-    QObjectList::ConstIterator end = children.constEnd();
+    auto it = children.constBegin();
+    auto end = children.constEnd();
     for ( ; it != end; ++it) {
-        QDBusAdaptorConnector *connector = qobject_cast<QDBusAdaptorConnector *>(*it);
+        auto connector = qobject_cast<QDBusAdaptorConnector *>(*it);
         if (connector) {
             connector->polish();
             return connector;
@@ -93,7 +93,7 @@ QDBusAdaptorConnector *qDBusFindAdaptorConnector(QDBusAbstractAdaptor *adaptor)
 
 QDBusAdaptorConnector *qDBusCreateAdaptorConnector(QObject *obj)
 {
-    QDBusAdaptorConnector *connector = qDBusFindAdaptorConnector(obj);
+    auto connector = qDBusFindAdaptorConnector(obj);
     if (connector)
         return connector;
     return new QDBusAdaptorConnector(obj);
@@ -146,7 +146,7 @@ void QDBusAbstractAdaptorPrivate::saveIntrospectionXml(QDBusAbstractAdaptor *ada
 QDBusAbstractAdaptor::QDBusAbstractAdaptor(QObject* obj)
     : QObject(*new QDBusAbstractAdaptorPrivate, obj)
 {
-    QDBusAdaptorConnector *connector = qDBusCreateAdaptorConnector(obj);
+    auto connector = qDBusCreateAdaptorConnector(obj);
 
     connector->waitingForPolish = true;
     QMetaObject::invokeMethod(connector, "polish", Qt::QueuedConnection);
@@ -172,17 +172,17 @@ QDBusAbstractAdaptor::~QDBusAbstractAdaptor()
 */
 void QDBusAbstractAdaptor::setAutoRelaySignals(bool enable)
 {
-    const QMetaObject *us = metaObject();
-    const QMetaObject *them = parent()->metaObject();
-    bool connected = false;
-    for (int idx = staticMetaObject.methodCount(); idx < us->methodCount(); ++idx) {
-        QMetaMethod mm = us->method(idx);
+    auto us = metaObject();
+    auto them = parent()->metaObject();
+    auto connected = false;
+    for (auto idx = staticMetaObject.methodCount(); idx < us->methodCount(); ++idx) {
+        auto mm = us->method(idx);
 
         if (mm.methodType() != QMetaMethod::Signal)
             continue;
 
         // try to connect/disconnect to a signal on the parent that has the same method signature
-        QByteArray sig = QMetaObject::normalizedSignature(mm.methodSignature().constData());
+        auto sig = QMetaObject::normalizedSignature(mm.methodSignature().constData());
         if (them->indexOfSignal(sig) == -1)
             continue;
         sig.prepend(QSIGNAL_CODE + '0');
@@ -216,14 +216,14 @@ QDBusAdaptorConnector::~QDBusAdaptorConnector()
 void QDBusAdaptorConnector::addAdaptor(QDBusAbstractAdaptor *adaptor)
 {
     // find the interface name
-    const QMetaObject *mo = adaptor->metaObject();
-    int ciid = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
+    auto mo = adaptor->metaObject();
+    auto ciid = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
     if (ciid != -1) {
-        QMetaClassInfo mci = mo->classInfo(ciid);
+        auto mci = mo->classInfo(ciid);
         if (*mci.value()) {
             // find out if this interface exists first
-            const char *interface = mci.value();
-            AdaptorMap::Iterator it = std::lower_bound(adaptors.begin(), adaptors.end(),
+            auto interface = mci.value();
+            auto it = std::lower_bound(adaptors.begin(), adaptors.end(),
                                                        QByteArray(interface));
             if (it != adaptors.end() && qstrcmp(interface, it->interface) == 0) {
                 // exists. Replace it (though it's probably the same)
@@ -264,10 +264,10 @@ void QDBusAdaptorConnector::polish()
 
     waitingForPolish = false;
     const QObjectList &objs = parent()->children();
-    QObjectList::ConstIterator it = objs.constBegin();
-    QObjectList::ConstIterator end = objs.constEnd();
+    auto it = objs.constBegin();
+    auto end = objs.constEnd();
     for ( ; it != end; ++it) {
-        QDBusAbstractAdaptor *adaptor = qobject_cast<QDBusAbstractAdaptor *>(*it);
+        auto adaptor = qobject_cast<QDBusAbstractAdaptor *>(*it);
         if (adaptor)
             addAdaptor(adaptor);
     }
@@ -278,7 +278,7 @@ void QDBusAdaptorConnector::polish()
 
 void QDBusAdaptorConnector::relaySlot(void **argv)
 {
-    QObject *sndr = sender();
+    auto sndr = sender();
     if (Q_LIKELY(sndr)) {
         relay(sndr, senderSignalIndex(), argv);
     } else {
@@ -296,10 +296,10 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
         // QObject signal (destroyed(QObject *)) -- ignore
         return;
 
-    const QMetaObject *senderMetaObject = senderObj->metaObject();
-    QMetaMethod mm = senderMetaObject->method(lastSignalIdx);
+    auto senderMetaObject = senderObj->metaObject();
+    auto mm = senderMetaObject->method(lastSignalIdx);
 
-    QObject *realObject = senderObj;
+    auto realObject = senderObj;
     if (qobject_cast<QDBusAbstractAdaptor *>(senderObj))
         // it's an adaptor, so the real object is in fact its parent
         realObject = realObject->parent();
@@ -307,7 +307,7 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
     // break down the parameter list
     QVector<int> types;
     QString errorMsg;
-    int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
+    auto inputCount = qDBusParametersForMethod(mm, types, errorMsg);
     if (inputCount == -1) {
         // invalid signal signature
         qWarning("QDBusAbstractAdaptor: Cannot relay signal %s::%s: %s",
@@ -324,9 +324,9 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
     }
 
     QVariantList args;
-    const int numTypes = types.count();
+    const auto numTypes = types.count();
     args.reserve(numTypes - 1);
-    for (int i = 1; i < numTypes; ++i)
+    for (auto i = 1; i < numTypes; ++i)
         args << QVariant(types.at(i), argv[i]);
 
     // now emit the signal with all the information
@@ -399,7 +399,7 @@ void QDBusAdaptorConnector::qt_static_metacall(QObject *_o, QMetaObject::Call _c
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
         Q_ASSERT(staticMetaObject.cast(_o));
-        QDBusAdaptorConnector *_t = static_cast<QDBusAdaptorConnector *>(_o);
+        auto _t = static_cast<QDBusAdaptorConnector *>(_o);
         switch (_id) {
         case 0: _t->relaySignal((*reinterpret_cast< QObject*(*)>(_a[1])),(*reinterpret_cast< const QMetaObject*(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3])),(*reinterpret_cast< const QVariantList(*)>(_a[4]))); break;
         case 1: _t->relaySlot(_a); break; // HAND EDIT: add the _a parameter

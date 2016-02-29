@@ -62,7 +62,7 @@ static inline QString typeNameToXml(const char *typeName)
     QString plain = QLatin1String(typeName);
     QString rich;
     rich.reserve(int(plain.length() * 1.1));
-    for (int i = 0; i < plain.length(); ++i) {
+    for (auto i = 0; i < plain.length(); ++i) {
         if (plain.at(i) == QLatin1Char('<'))
             rich += QLatin1String("&lt;");
         else if (plain.at(i) == QLatin1Char('>'))
@@ -93,18 +93,18 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
     // start with properties:
     if (flags & (QDBusConnection::ExportScriptableProperties |
                  QDBusConnection::ExportNonScriptableProperties)) {
-        for (int i = propOffset; i < mo->propertyCount(); ++i) {
+        for (auto i = propOffset; i < mo->propertyCount(); ++i) {
 
-            QMetaProperty mp = mo->property(i);
+            auto mp = mo->property(i);
 
             if (!((mp.isScriptable() && (flags & QDBusConnection::ExportScriptableProperties)) ||
                   (!mp.isScriptable() && (flags & QDBusConnection::ExportNonScriptableProperties))))
                 continue;
 
-            int typeId = mp.userType();
+            auto typeId = mp.userType();
             if (!typeId)
                 continue;
-            const char *signature = QDBusMetaType::typeToSignature(typeId);
+            auto signature = QDBusMetaType::typeToSignature(typeId);
             if (!signature)
                 continue;
 
@@ -114,7 +114,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                            accessAsString(mp.isReadable(), mp.isWritable()));
 
             if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
-                const char *typeName = QMetaType::typeName(typeId);
+                auto typeName = QMetaType::typeName(typeId);
                 retval += QString::fromLatin1(">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
                           .arg(typeNameToXml(typeName));
             } else {
@@ -124,8 +124,8 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
     }
 
     // now add methods:
-    for (int i = methodOffset; i < mo->methodCount(); ++i) {
-        QMetaMethod mm = mo->method(i);
+    for (auto i = methodOffset; i < mo->methodCount(); ++i) {
+        auto mm = mo->method(i);
 
         bool isSignal;
         if (mm.methodType() == QMetaMethod::Signal)
@@ -149,14 +149,14 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
         if (!isScriptable && !(flags & (isSignal ? QDBusConnection::ExportNonScriptableSignals : QDBusConnection::ExportNonScriptableInvokables | QDBusConnection::ExportNonScriptableSlots)))
             continue;
 
-        QString xml = QString::fromLatin1("    <%1 name=\"%2\">\n")
+        auto xml = QString::fromLatin1("    <%1 name=\"%2\">\n")
                       .arg(isSignal ? QLatin1String("signal") : QLatin1String("method"))
                       .arg(QString::fromLatin1(mm.name()));
 
         // check the return type first
-        int typeId = mm.returnType();
+        auto typeId = mm.returnType();
         if (typeId != QMetaType::UnknownType && typeId != QMetaType::Void) {
-            const char *typeName = QDBusMetaType::typeToSignature(typeId);
+            auto typeName = QDBusMetaType::typeToSignature(typeId);
             if (typeName) {
                 xml += QString::fromLatin1("      <arg type=\"%1\" direction=\"out\"/>\n")
                        .arg(typeNameToXml(typeName));
@@ -175,10 +175,10 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
             continue;           // wasn't a valid type
         }
 
-        QList<QByteArray> names = mm.parameterNames();
+        auto names = mm.parameterNames();
         QVector<int> types;
         QString errorMsg;
-        int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
+        auto inputCount = qDBusParametersForMethod(mm, types, errorMsg);
         if (inputCount == -1) {
             qWarning() << "Skipped method" << mm.name() << ":" << qPrintable(errorMsg);
             continue;           // invalid form
@@ -202,9 +202,9 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
             if (!names.at(j - 1).isEmpty())
                 name = QString::fromLatin1("name=\"%1\" ").arg(QLatin1String(names.at(j - 1)));
 
-            bool isOutput = isSignal || j > inputCount;
+            auto isOutput = isSignal || j > inputCount;
 
-            const char *signature = QDBusMetaType::typeToSignature(types.at(j));
+            auto signature = QDBusMetaType::typeToSignature(types.at(j));
             xml += QString::fromLatin1("      <arg %1type=\"%2\" direction=\"%3\"/>\n")
                    .arg(name)
                    .arg(QLatin1String(signature))
@@ -212,7 +212,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
 
             // do we need to describe this argument?
             if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
-                const char *typeName = QMetaType::typeName(types.at(j));
+                auto typeName = QMetaType::typeName(types.at(j));
                 xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
                        .arg(isOutput ? QLatin1String("Out") : QLatin1String("In"))
                        .arg(isOutput && !isSignal ? j - inputCount : j - 1)
@@ -251,7 +251,7 @@ QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo,
         interface = qDBusInterfaceFromMetaObject(mo);
 
     QString xml;
-    int idx = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTROSPECTION);
+    auto idx = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTROSPECTION);
     if (idx >= mo->classInfoOffset())
         return QString::fromUtf8(mo->classInfo(idx).value());
     else

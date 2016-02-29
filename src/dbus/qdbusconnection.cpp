@@ -117,13 +117,13 @@ QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::B
 
     // we'll start in suspended delivery mode if we're in the main thread
     // (the event loop will resume delivery)
-    bool suspendedDelivery = qApp && qApp->thread() == QThread::currentThread();
+    auto suspendedDelivery = qApp && qApp->thread() == QThread::currentThread();
 
     QMutexLocker lock(&defaultBusMutex);
     if (defaultBuses[type])
         return defaultBuses[type];
 
-    QString name = QStringLiteral("qt_default_session_bus");
+    auto name = QStringLiteral("qt_default_session_bus");
     if (type == QDBusConnection::SystemBus)
         name = QStringLiteral("qt_default_system_bus");
     return defaultBuses[type] = connectToBus(type, name, suspendedDelivery);
@@ -188,9 +188,9 @@ void QDBusConnectionManager::run()
 
     // cleanup:
     QMutexLocker locker(&mutex);
-    for (QHash<QString, QDBusConnectionPrivate *>::const_iterator it = connectionHash.constBegin();
+    for (auto it = connectionHash.constBegin();
          it != connectionHash.constEnd(); ++it) {
-        QDBusConnectionPrivate *d = it.value();
+        auto d = it.value();
         if (!d->ref.deref()) {
             delete d;
         } else {
@@ -216,7 +216,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(QDBusConnection::Bu
     emit connectionRequested(&data);
     if (suspendedDelivery) {
         data.result->ref.ref();
-        QDBusConnectionDispatchEnabler *o = new QDBusConnectionDispatchEnabler(data.result);
+        auto o = new QDBusConnectionDispatchEnabler(data.result);
         QTimer::singleShot(0, o, SLOT(execute()));
         o->moveToThread(qApp->thread());    // qApp was checked in the caller
     }
@@ -305,7 +305,7 @@ void QDBusConnectionManager::executeConnectionRequest(QDBusConnectionManager::Co
 void QDBusConnectionManager::createServer(const QString &address, void *server)
 {
     QDBusErrorInternal error;
-    QDBusConnectionPrivate *d = new QDBusConnectionPrivate;
+    auto d = new QDBusConnectionPrivate;
     d->setServer(static_cast<QDBusServer *>(server),
                  q_dbus_server_listen(address.toUtf8().constData(), error), error);
 }
@@ -547,7 +547,7 @@ void QDBusConnection::disconnectFromBus(const QString &name)
 {
     if (_q_manager()) {
         QMutexLocker locker(&_q_manager()->mutex);
-        QDBusConnectionPrivate *d = _q_manager()->connection(name);
+        auto d = _q_manager()->connection(name);
         if (d && d->mode != QDBusConnectionPrivate::ClientMode)
             return;
         _q_manager()->removeConnection(name);
@@ -568,7 +568,7 @@ void QDBusConnection::disconnectFromPeer(const QString &name)
 {
     if (_q_manager()) {
         QMutexLocker locker(&_q_manager()->mutex);
-        QDBusConnectionPrivate *d = _q_manager()->connection(name);
+        auto d = _q_manager()->connection(name);
         if (d && d->mode != QDBusConnectionPrivate::PeerMode)
             return;
         _q_manager()->removeConnection(name);
@@ -585,7 +585,7 @@ void QDBusConnection::disconnectFromPeer(const QString &name)
 bool QDBusConnection::send(const QDBusMessage &message) const
 {
     if (!d || !d->connection) {
-        QDBusError err = QDBusError(QDBusError::Disconnected,
+        auto err = QDBusError(QDBusError::Disconnected,
                                     QDBusUtil::disconnectedErrorMessage());
         if (d)
             d->lastError = err;
@@ -618,7 +618,7 @@ bool QDBusConnection::callWithCallback(const QDBusMessage &message, QObject *rec
                                        int timeout) const
 {
     if (!d || !d->connection) {
-        QDBusError err = QDBusError(QDBusError::Disconnected,
+        auto err = QDBusError(QDBusError::Disconnected,
                                     QDBusUtil::disconnectedErrorMessage());
         if (d)
             d->lastError = err;
@@ -676,7 +676,7 @@ bool QDBusConnection::callWithCallback(const QDBusMessage &message, QObject *rec
 QDBusMessage QDBusConnection::call(const QDBusMessage &message, QDBus::CallMode mode, int timeout) const
 {
     if (!d || !d->connection) {
-        QDBusError err = QDBusError(QDBusError::Disconnected,
+        auto err = QDBusError(QDBusError::Disconnected,
                                     QDBusUtil::disconnectedErrorMessage());
         if (d)
             d->lastError = err;
@@ -716,7 +716,7 @@ QDBusPendingCall QDBusConnection::asyncCall(const QDBusMessage &message, int tim
         return QDBusPendingCall(0); // null pointer -> disconnected
     }
 
-    QDBusPendingCallPrivate *priv = d->sendWithReplyAsync(message, 0, 0, 0, timeout);
+    auto priv = d->sendWithReplyAsync(message, 0, 0, 0, timeout);
     return QDBusPendingCall(priv);
 }
 
@@ -909,14 +909,14 @@ bool QDBusConnection::registerObject(const QString &path, const QString &interfa
     if (!d || !d->connection || !object || !options || !QDBusUtil::isValidObjectPath(path))
         return false;
 
-    QStringList pathComponents = path.split(QLatin1Char('/'));
+    auto pathComponents = path.split(QLatin1Char('/'));
     if (pathComponents.last().isEmpty())
         pathComponents.removeLast();
     QDBusWriteLocker locker(RegisterObjectAction, d);
 
     // lower-bound search for where this object should enter in the tree
-    QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator node = &d->rootNode;
-    int i = 1;
+    auto node = &d->rootNode;
+    auto i = 1;
     while (node) {
         if (pathComponents.count() == i) {
             // this node exists
@@ -950,7 +950,7 @@ bool QDBusConnection::registerObject(const QString &path, const QString &interfa
         }
 
         // find the position where we'd insert the node
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it =
+        auto it =
             std::lower_bound(node->children.begin(), node->children.end(), pathComponents.at(i));
         if (it != node->children.end() && it->name == pathComponents.at(i)) {
             // match: this node exists
@@ -1017,7 +1017,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
     if (!d || !d->connection || !QDBusUtil::isValidObjectPath(path))
         return 0;
 
-    QStringList pathComponents = path.split(QLatin1Char('/'));
+    auto pathComponents = path.split(QLatin1Char('/'));
     if (pathComponents.last().isEmpty())
         pathComponents.removeLast();
 
@@ -1025,7 +1025,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
     QDBusReadLocker lock(ObjectRegisteredAtAction, d);
     auto node = static_cast<QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator>(&d->rootNode);
 
-    int i = 1;
+    auto i = 1;
     while (node) {
         if (pathComponents.count() == i)
             return node->obj;
@@ -1244,7 +1244,7 @@ void QDBusConnectionPrivate::createBusService()
 */
 QByteArray QDBusConnection::localMachineId()
 {
-    char *dbus_machine_id = q_dbus_get_local_machine_id();
+    auto dbus_machine_id = q_dbus_get_local_machine_id();
     QByteArray result = dbus_machine_id;
     q_dbus_free(dbus_machine_id);
     return result;

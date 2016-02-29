@@ -75,7 +75,7 @@ public:
 
     void placeMetaCall(QObject *object) Q_DECL_OVERRIDE
     {
-        QDBusAbstractInterface *iface = static_cast<QDBusAbstractInterface *>(object);
+        auto iface = static_cast<QDBusAbstractInterface *>(object);
         QDBusAbstractInterfacePrivate::finishDisconnectNotify(iface, signalId());
     }
 };
@@ -154,7 +154,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     if (!isValid || !canMakeCalls())   // can't make calls
         return false;
 
-    const int type = mp.userType();
+    const auto type = mp.userType();
     // is this metatype registered?
     const char *expectedSignature = "";
     if (int(mp.type()) != QMetaType::QVariant) {
@@ -171,12 +171,12 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     }
 
     // try to read this property
-    QDBusMessage msg = QDBusMessage::createMethodCall(service, path,
+    auto msg = QDBusMessage::createMethodCall(service, path,
                                                       QDBusUtil::dbusInterfaceProperties(),
                                                       QStringLiteral("Get"));
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << interface << QString::fromUtf8(mp.name());
-    QDBusMessage reply = connection.call(msg, QDBus::Block, timeout);
+    auto reply = connection.call(msg, QDBus::Block, timeout);
 
     if (reply.type() != QDBusMessage::ReplyMessage) {
         lastError = QDBusError(reply);
@@ -191,7 +191,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
 
     QByteArray foundSignature;
     const char *foundType = 0;
-    QVariant value = qvariant_cast<QDBusVariant>(reply.arguments().at(0)).variant();
+    auto value = qvariant_cast<QDBusVariant>(reply.arguments().at(0)).variant();
 
     if (value.userType() == type || type == QMetaType::QVariant
         || (expectedSignature[0] == 'v' && expectedSignature[1] == '\0')) {
@@ -206,7 +206,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     }
 
     if (value.userType() == qMetaTypeId<QDBusArgument>()) {
-        QDBusArgument arg = qvariant_cast<QDBusArgument>(value);
+        auto arg = qvariant_cast<QDBusArgument>(value);
 
         foundType = "user type";
         foundSignature = arg.currentSignature().toLatin1();
@@ -238,12 +238,12 @@ bool QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const Q
         return false;
 
     // send the value
-    QDBusMessage msg = QDBusMessage::createMethodCall(service, path,
+    auto msg = QDBusMessage::createMethodCall(service, path,
                                                       QDBusUtil::dbusInterfaceProperties(),
                                                       QStringLiteral("Set"));
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << interface << QString::fromUtf8(mp.name()) << QVariant::fromValue(QDBusVariant(value));
-    QDBusMessage reply = connection.call(msg, QDBus::Block, timeout);
+    auto reply = connection.call(msg, QDBus::Block, timeout);
 
     if (reply.type() != QDBusMessage::ReplyMessage) {
         lastError = QDBusError(reply);
@@ -270,13 +270,13 @@ QDBusAbstractInterfaceBase::QDBusAbstractInterfaceBase(QDBusAbstractInterfacePri
 
 int QDBusAbstractInterfaceBase::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    int saved_id = _id;
+    auto saved_id = _id;
     _id = QObject::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
 
     if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty) {
-        QMetaProperty mp = metaObject()->property(saved_id);
+        auto mp = metaObject()->property(saved_id);
         int &status = *reinterpret_cast<int *>(_a[2]);
 
         if (_c == QMetaObject::WriteProperty) {
@@ -287,7 +287,7 @@ int QDBusAbstractInterfaceBase::qt_metacall(QMetaObject::Call _c, int _id, void 
                 value = QVariant(mp.userType(), _a[0]);
             status = d_func()->setProperty(mp, value) ? 1 : 0;
         } else {
-            bool readStatus = d_func()->property(mp, _a[0]);
+            auto readStatus = d_func()->property(mp, _a[0]);
             // Caller supports QVariant returns? Then we can also report errors
             // by storing an invalid variant.
             if (!readStatus && _a[1]) {
@@ -458,26 +458,26 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
     if (!d->isValid || !d->canMakeCalls())
         return QDBusMessage::createError(d->lastError);
 
-    QString m = method;
+    auto m = method;
     // split out the signature from the method
-    int pos = method.indexOf(QLatin1Char('.'));
+    auto pos = method.indexOf(QLatin1Char('.'));
     if (pos != -1)
         m.truncate(pos);
 
     if (mode == QDBus::AutoDetect) {
         // determine if this a sync or async call
         mode = QDBus::Block;
-        const QMetaObject *mo = metaObject();
-        QByteArray match = m.toLatin1();
+        auto mo = metaObject();
+        auto match = m.toLatin1();
 
-        for (int i = staticMetaObject.methodCount(); i < mo->methodCount(); ++i) {
-            QMetaMethod mm = mo->method(i);
+        for (auto i = staticMetaObject.methodCount(); i < mo->methodCount(); ++i) {
+            auto mm = mo->method(i);
             if (mm.name() == match) {
                 // found a method with the same name as what we're looking for
                 // hopefully, nobody is overloading asynchronous and synchronous methods with
                 // the same name
 
-                QList<QByteArray> tags = QByteArray(mm.tag()).split(' ');
+                auto tags = QByteArray(mm.tag()).split(' ');
                 if (tags.contains("Q_NOREPLY"))
                     mode = QDBus::NoBlock;
 
@@ -487,11 +487,11 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
     }
 
 //    qDebug() << "QDBusAbstractInterface" << "Service" << service() << "Path:" << path();
-    QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(), interface(), m);
+    auto msg = QDBusMessage::createMethodCall(service(), path(), interface(), m);
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
 
-    QDBusMessage reply = d->connection.call(msg, mode, d->timeout);
+    auto reply = d->connection.call(msg, mode, d->timeout);
     if (thread() == QThread::currentThread())
         d->lastError = QDBusError(reply);       // will clear if reply isn't an error
 
@@ -521,7 +521,7 @@ QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString
     if (!d->isValid || !d->canMakeCalls())
         return QDBusPendingCall::fromError(d->lastError);
 
-    QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(), interface(), method);
+    auto msg = QDBusMessage::createMethodCall(service(), path(), interface(), method);
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
     return d->connection.asyncCall(msg, d->timeout);
@@ -559,7 +559,7 @@ bool QDBusAbstractInterface::callWithCallback(const QString &method,
     if (!d->isValid || !d->canMakeCalls())
         return false;
 
-    QDBusMessage msg = QDBusMessage::createMethodCall(service(),
+    auto msg = QDBusMessage::createMethodCall(service(),
                                                       path(),
                                                       interface(),
                                                       method);
@@ -612,11 +612,11 @@ void QDBusAbstractInterface::connectNotify(const QMetaMethod &signal)
         return;
 
     // we end up recursing here, so optimize away
-    static const QMetaMethod destroyedSignal = QMetaMethod::fromSignal(&QDBusAbstractInterface::destroyed);
+    static const auto destroyedSignal = QMetaMethod::fromSignal(&QDBusAbstractInterface::destroyed);
     if (signal == destroyedSignal)
         return;
 
-    QDBusConnectionPrivate *conn = d->connectionPrivate();
+    auto conn = d->connectionPrivate();
     if (conn) {
         conn->connectRelay(d->service, d->path, d->interface,
                            this, signal);
@@ -645,13 +645,13 @@ void QDBusAbstractInterface::disconnectNotify(const QMetaMethod &signal)
 */
 void QDBusAbstractInterfacePrivate::finishDisconnectNotify(QDBusAbstractInterface *ptr, int signalId)
 {
-    QDBusAbstractInterfacePrivate *d = ptr->d_func();
-    QDBusConnectionPrivate *conn = d->connectionPrivate();
+    auto d = ptr->d_func();
+    auto conn = d->connectionPrivate();
     if (!conn)
         return;
 
-    const QMetaObject *mo = ptr->metaObject();
-    QMetaMethod signal = signalId >= 0 ? mo->method(signalId) : QMetaMethod();
+    auto mo = ptr->metaObject();
+    auto signal = signalId >= 0 ? mo->method(signalId) : QMetaMethod();
     if (signal.isValid()) {
         if (!ptr->isSignalConnected(signal))
             return conn->disconnectRelay(d->service, d->path, d->interface,
@@ -659,10 +659,10 @@ void QDBusAbstractInterfacePrivate::finishDisconnectNotify(QDBusAbstractInterfac
     } else {
         // wildcard disconnecting, we need to figure out which of our signals are
         // no longer connected to anything
-        int midx = QObject::staticMetaObject.methodCount();
-        const int end = mo->methodCount();
+        auto midx = QObject::staticMetaObject.methodCount();
+        const auto end = mo->methodCount();
         for ( ; midx < end; ++midx) {
-            QMetaMethod mm = mo->method(midx);
+            auto mm = mo->method(midx);
             if (mm.methodType() == QMetaMethod::Signal && !ptr->isSignalConnected(mm))
                 conn->disconnectRelay(d->service, d->path, d->interface, ptr, mm);
         }
@@ -755,7 +755,7 @@ QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &m
                                           const QVariant &arg8)
 {
     QList<QVariant> argList;
-    int count = 0 + arg1.isValid() + arg2.isValid() + arg3.isValid() + arg4.isValid() +
+    auto count = 0 + arg1.isValid() + arg2.isValid() + arg3.isValid() + arg4.isValid() +
                 arg5.isValid() + arg6.isValid() + arg7.isValid() + arg8.isValid();
 
     switch (count) {
@@ -813,7 +813,7 @@ QDBusPendingCall QDBusAbstractInterface::asyncCall(const QString &method, const 
                                                    const QVariant &arg8)
 {
     QList<QVariant> argList;
-    int count = 0 + arg1.isValid() + arg2.isValid() + arg3.isValid() + arg4.isValid() +
+    auto count = 0 + arg1.isValid() + arg2.isValid() + arg3.isValid() + arg4.isValid() +
                 arg5.isValid() + arg6.isValid() + arg7.isValid() + arg8.isValid();
 
     switch (count) {
