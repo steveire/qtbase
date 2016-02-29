@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
 */
 static void qt_split_namespace(QString& prefix, QString& name, const QString& qName, bool hasURI)
 {
-    int i = qName.indexOf(QLatin1Char(':'));
+    auto i = qName.indexOf(QLatin1Char(':'));
     if (i == -1) {
         if (hasURI)
             prefix = QLatin1String("");
@@ -171,13 +171,13 @@ public:
     bool isDocumentType() const             { return nodeType() == QDomNode::DocumentTypeNode; }
     bool isElement() const                  { return nodeType() == QDomNode::ElementNode; }
     bool isEntityReference() const          { return nodeType() == QDomNode::EntityReferenceNode; }
-    bool isText() const                     { const QDomNode::NodeType nt = nodeType();
+    bool isText() const                     { const auto nt = nodeType();
                                               return (nt == QDomNode::TextNode)
                                                   || (nt == QDomNode::CDATASectionNode); }
     bool isEntity() const                   { return nodeType() == QDomNode::EntityNode; }
     bool isNotation() const                 { return nodeType() == QDomNode::NotationNode; }
     bool isProcessingInstruction() const    { return nodeType() == QDomNode::ProcessingInstructionNode; }
-    bool isCharacterData() const            { const QDomNode::NodeType nt = nodeType();
+    bool isCharacterData() const            { const auto nt = nodeType();
                                               return (nt == QDomNode::CharacterDataNode)
                                                   || (nt == QDomNode::TextNode)
                                                   || (nt == QDomNode::CommentNode); }
@@ -646,9 +646,9 @@ static QString fixedXmlName(const QString &_name, bool *ok, bool namespaces = fa
     }
 
     QString result;
-    bool firstChar = true;
-    for (int i = 0; i < name.size(); ++i) {
-        QChar c = name.at(i);
+    auto firstChar = true;
+    for (auto i = 0; i < name.size(); ++i) {
+        auto c = name.at(i);
         if (firstChar) {
             if (QXmlUtils::isLetter(c) || c.unicode() == '_' || c.unicode() == ':') {
                 result.append(c);
@@ -689,8 +689,8 @@ static QString fixedCharData(const QString &data, bool *ok)
     }
 
     QString result;
-    for (int i = 0; i < data.size(); ++i) {
-        QChar c = data.at(i);
+    for (auto i = 0; i < data.size(); ++i) {
+        auto c = data.at(i);
         if (QXmlUtils::isChar(c)) {
             result.append(c);
         } else if (QDomImplementationPrivate::invalidDataPolicy == QDomImplementation::ReturnNullNode) {
@@ -713,12 +713,12 @@ static QString fixedComment(const QString &data, bool *ok)
         return data;
     }
 
-    QString fixedData = fixedCharData(data, ok);
+    auto fixedData = fixedCharData(data, ok);
     if (!*ok)
         return QString();
 
     for (;;) {
-        int idx = fixedData.indexOf(QLatin1String("--"));
+        auto idx = fixedData.indexOf(QLatin1String("--"));
         if (idx == -1)
             break;
         if (QDomImplementationPrivate::invalidDataPolicy == QDomImplementation::ReturnNullNode) {
@@ -742,12 +742,12 @@ static QString fixedCDataSection(const QString &data, bool *ok)
         return data;
     }
 
-    QString fixedData = fixedCharData(data, ok);
+    auto fixedData = fixedCharData(data, ok);
     if (!*ok)
         return QString();
 
     for (;;) {
-        int idx = fixedData.indexOf(QLatin1String("]]>"));
+        auto idx = fixedData.indexOf(QLatin1String("]]>"));
         if (idx == -1)
             break;
         if (QDomImplementationPrivate::invalidDataPolicy == QDomImplementation::ReturnNullNode) {
@@ -770,12 +770,12 @@ static QString fixedPIData(const QString &data, bool *ok)
         return data;
     }
 
-    QString fixedData = fixedCharData(data, ok);
+    auto fixedData = fixedCharData(data, ok);
     if (!*ok)
         return QString();
 
     for (;;) {
-        int idx = fixedData.indexOf(QLatin1String("?>"));
+        auto idx = fixedData.indexOf(QLatin1String("?>"));
         if (idx == -1)
             break;
         if (QDomImplementationPrivate::invalidDataPolicy == QDomImplementation::ReturnNullNode) {
@@ -832,7 +832,7 @@ static QString fixedSystemLiteral(const QString &data, bool *ok)
         return data;
     }
 
-    QString result = data;
+    auto result = data;
 
     if (result.indexOf(QLatin1Char('\'')) != -1
         && result.indexOf(QLatin1Char('"')) != -1) {
@@ -1020,19 +1020,19 @@ bool QDomImplementation::hasFeature(const QString& feature, const QString& versi
 QDomDocumentType QDomImplementation::createDocumentType(const QString& qName, const QString& publicId, const QString& systemId)
 {
     bool ok;
-    QString fixedName = fixedXmlName(qName, &ok, true);
+    auto fixedName = fixedXmlName(qName, &ok, true);
     if (!ok)
         return QDomDocumentType();
 
-    QString fixedPublicId = fixedPubidLiteral(publicId, &ok);
+    auto fixedPublicId = fixedPubidLiteral(publicId, &ok);
     if (!ok)
         return QDomDocumentType();
 
-    QString fixedSystemId = fixedSystemLiteral(systemId, &ok);
+    auto fixedSystemId = fixedSystemLiteral(systemId, &ok);
     if (!ok)
         return QDomDocumentType();
 
-    QDomDocumentTypePrivate *dt = new QDomDocumentTypePrivate(0);
+    auto dt = new QDomDocumentTypePrivate(0);
     dt->name = fixedName;
     if (systemId.isNull()) {
         dt->publicId.clear();
@@ -1053,7 +1053,7 @@ QDomDocumentType QDomImplementation::createDocumentType(const QString& qName, co
 QDomDocument QDomImplementation::createDocument(const QString& nsURI, const QString& qName, const QDomDocumentType& doctype)
 {
     QDomDocument doc(doctype);
-    QDomElement root = doc.createElementNS(nsURI, qName);
+    auto root = doc.createElementNS(nsURI, qName);
     if (root.isNull())
         return QDomDocument();
     doc.appendChild(root);
@@ -1188,11 +1188,11 @@ void QDomNodeListPrivate::createList()
     if (!node_impl)
         return;
 
-    const QDomDocumentPrivate *const doc = node_impl->ownerDocument();
+    const auto doc = node_impl->ownerDocument();
     if (doc && timestamp != doc->nodeListTime)
         timestamp = doc->nodeListTime;
 
-    QDomNodePrivate* p = node_impl->first;
+    auto p = node_impl->first;
 
     list.clear();
     if (tagname.isNull()) {
@@ -1242,7 +1242,7 @@ QDomNodePrivate* QDomNodeListPrivate::item(int index)
     if (!node_impl)
         return 0;
 
-    const QDomDocumentPrivate *const doc = node_impl->ownerDocument();
+    const auto doc = node_impl->ownerDocument();
     if (!doc || timestamp != doc->nodeListTime)
         createList();
 
@@ -1257,9 +1257,9 @@ int QDomNodeListPrivate::length() const
     if (!node_impl)
         return 0;
 
-    const QDomDocumentPrivate *const doc = node_impl->ownerDocument();
+    const auto doc = node_impl->ownerDocument();
     if (!doc || timestamp != doc->nodeListTime) {
-        QDomNodeListPrivate *that = const_cast<QDomNodeListPrivate *>(this);
+        auto that = const_cast<QDomNodeListPrivate *>(this);
         that->createList();
     }
 
@@ -1467,13 +1467,13 @@ QDomNodePrivate::QDomNodePrivate(QDomNodePrivate *n, bool deep) : ref(1)
     if (!deep)
         return;
 
-    for (QDomNodePrivate* x = n->first; x; x = x->next)
+    for (auto x = n->first; x; x = x->next)
         appendChild(x->cloneNode(true));
 }
 
 QDomNodePrivate::~QDomNodePrivate()
 {
-    QDomNodePrivate* p = first;
+    auto p = first;
     QDomNodePrivate* n;
 
     while (p) {
@@ -1490,7 +1490,7 @@ QDomNodePrivate::~QDomNodePrivate()
 
 void QDomNodePrivate::clear()
 {
-    QDomNodePrivate* p = first;
+    auto p = first;
     QDomNodePrivate* n;
 
     while (p) {
@@ -1505,7 +1505,7 @@ void QDomNodePrivate::clear()
 
 QDomNodePrivate* QDomNodePrivate::namedItem(const QString &n)
 {
-    QDomNodePrivate* p = first;
+    auto p = first;
     while (p) {
         if (p->nodeName() == n)
             return p;
@@ -1530,7 +1530,7 @@ QDomNodePrivate* QDomNodePrivate::insertBefore(QDomNodePrivate* newChild, QDomNo
         return 0;
 
     // "mark lists as dirty"
-    QDomDocumentPrivate *const doc = ownerDocument();
+    const auto doc = ownerDocument();
     if(doc)
         doc->nodeListTime++;
 
@@ -1542,7 +1542,7 @@ QDomNodePrivate* QDomNodePrivate::insertBefore(QDomNodePrivate* newChild, QDomNo
             return newChild;
 
         // New parent
-        QDomNodePrivate* n = newChild->first;
+        auto n = newChild->first;
         while (n)  {
             n->setParent(this);
             n = n->next;
@@ -1625,7 +1625,7 @@ QDomNodePrivate* QDomNodePrivate::insertAfter(QDomNodePrivate* newChild, QDomNod
         return 0;
 
     // "mark lists as dirty"
-    QDomDocumentPrivate *const doc = ownerDocument();
+    const auto doc = ownerDocument();
     if(doc)
         doc->nodeListTime++;
 
@@ -1637,7 +1637,7 @@ QDomNodePrivate* QDomNodePrivate::insertAfter(QDomNodePrivate* newChild, QDomNod
             return newChild;
 
         // New parent
-        QDomNodePrivate* n = newChild->first;
+        auto n = newChild->first;
         while (n) {
             n->setParent(this);
             n = n->next;
@@ -1716,7 +1716,7 @@ QDomNodePrivate* QDomNodePrivate::replaceChild(QDomNodePrivate* newChild, QDomNo
         return 0;
 
     // mark lists as dirty
-    QDomDocumentPrivate *const doc = ownerDocument();
+    const auto doc = ownerDocument();
     if(doc)
         doc->nodeListTime++;
 
@@ -1728,7 +1728,7 @@ QDomNodePrivate* QDomNodePrivate::replaceChild(QDomNodePrivate* newChild, QDomNo
             return newChild;
 
         // New parent
-        QDomNodePrivate* n = newChild->first;
+        auto n = newChild->first;
         while (n) {
             n->setParent(this);
             n = n->next;
@@ -1807,7 +1807,7 @@ QDomNodePrivate* QDomNodePrivate::removeChild(QDomNodePrivate* oldChild)
         return 0;
 
     // "mark lists as dirty"
-    QDomDocumentPrivate *const doc = ownerDocument();
+    const auto doc = ownerDocument();
     if(doc)
         doc->nodeListTime++;
 
@@ -1844,7 +1844,7 @@ QDomNodePrivate* QDomNodePrivate::appendChild(QDomNodePrivate* newChild)
 
 QDomDocumentPrivate* QDomNodePrivate::ownerDocument()
 {
-    QDomNodePrivate* p = this;
+    auto p = this;
     while (p && !p->isDocument()) {
         if (!p->hasParent)
             return (QDomDocumentPrivate*)p->ownerNode;
@@ -1856,7 +1856,7 @@ QDomDocumentPrivate* QDomNodePrivate::ownerDocument()
 
 QDomNodePrivate* QDomNodePrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomNodePrivate(this, deep);
+    auto p = new QDomNodePrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -1864,13 +1864,13 @@ QDomNodePrivate* QDomNodePrivate::cloneNode(bool deep)
 
 static void qNormalizeNode(QDomNodePrivate* n)
 {
-    QDomNodePrivate* p = n->first;
+    auto p = n->first;
     QDomTextPrivate* t = 0;
 
     while (p) {
         if (p->isText()) {
             if (t) {
-                QDomNodePrivate* tmp = p->next;
+                auto tmp = p->next;
                 t->appendData(p->nodeValue());
                 n->removeChild(p);
                 p = tmp;
@@ -1896,7 +1896,7 @@ void QDomNodePrivate::normalize()
  */
 void QDomNodePrivate::save(QTextStream& s, int depth, int indent) const
 {
-    const QDomNodePrivate* n = first;
+    auto n = first;
     while (n) {
         n->save(s, depth, indent);
         n = n->next;
@@ -2925,9 +2925,9 @@ bool QDomNode::isComment() const
 
 QDomElement QDomNode::firstChildElement(const QString &tagName) const
 {
-    for (QDomNode child = firstChild(); !child.isNull(); child = child.nextSibling()) {
+    for (auto child = firstChild(); !child.isNull(); child = child.nextSibling()) {
         if (child.isElement()) {
-            QDomElement elt = child.toElement();
+            auto elt = child.toElement();
             if (tagName.isEmpty() || elt.tagName() == tagName)
                 return elt;
         }
@@ -2945,9 +2945,9 @@ QDomElement QDomNode::firstChildElement(const QString &tagName) const
 
 QDomElement QDomNode::lastChildElement(const QString &tagName) const
 {
-    for (QDomNode child = lastChild(); !child.isNull(); child = child.previousSibling()) {
+    for (auto child = lastChild(); !child.isNull(); child = child.previousSibling()) {
         if (child.isElement()) {
-            QDomElement elt = child.toElement();
+            auto elt = child.toElement();
             if (tagName.isEmpty() || elt.tagName() == tagName)
                 return elt;
         }
@@ -2965,9 +2965,9 @@ QDomElement QDomNode::lastChildElement(const QString &tagName) const
 
 QDomElement QDomNode::nextSiblingElement(const QString &tagName) const
 {
-    for (QDomNode sib = nextSibling(); !sib.isNull(); sib = sib.nextSibling()) {
+    for (auto sib = nextSibling(); !sib.isNull(); sib = sib.nextSibling()) {
         if (sib.isElement()) {
-            QDomElement elt = sib.toElement();
+            auto elt = sib.toElement();
             if (tagName.isEmpty() || elt.tagName() == tagName)
                 return elt;
         }
@@ -2985,9 +2985,9 @@ QDomElement QDomNode::nextSiblingElement(const QString &tagName) const
 
 QDomElement QDomNode::previousSiblingElement(const QString &tagName) const
 {
-    for (QDomNode sib = previousSibling(); !sib.isNull(); sib = sib.previousSibling()) {
+    for (auto sib = previousSibling(); !sib.isNull(); sib = sib.previousSibling()) {
         if (sib.isElement()) {
-            QDomElement elt = sib.toElement();
+            auto elt = sib.toElement();
             if (tagName.isEmpty() || elt.tagName() == tagName)
                 return elt;
         }
@@ -3048,9 +3048,9 @@ QDomNamedNodeMapPrivate* QDomNamedNodeMapPrivate::clone(QDomNodePrivate* p)
     m->readonly = readonly;
     m->appendToParent = appendToParent;
 
-    QHash<QString, QDomNodePrivate*>::const_iterator it = map.constBegin();
+    auto it = map.constBegin();
     for (; it != map.constEnd(); ++it) {
-        QDomNodePrivate *new_node = (*it)->cloneNode();
+        auto new_node = (*it)->cloneNode();
         new_node->setParent(p);
         m->setNamedItem(new_node);
     }
@@ -3064,7 +3064,7 @@ void QDomNamedNodeMapPrivate::clearMap()
 {
     // Dereference all of our children if we took references
     if (!appendToParent) {
-        QHash<QString, QDomNodePrivate *>::const_iterator it = map.constBegin();
+        auto it = map.constBegin();
         for (; it != map.constEnd(); ++it)
             if (!(*it)->ref.deref())
                 delete *it;
@@ -3074,13 +3074,13 @@ void QDomNamedNodeMapPrivate::clearMap()
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::namedItem(const QString& name) const
 {
-    QDomNodePrivate* p = map[name];
+    auto p = map[name];
     return p;
 }
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::namedItemNS(const QString& nsURI, const QString& localName) const
 {
-    QHash<QString, QDomNodePrivate *>::const_iterator it = map.constBegin();
+    auto it = map.constBegin();
     QDomNodePrivate *n;
     for (; it != map.constEnd(); ++it) {
         n = *it;
@@ -3101,7 +3101,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::setNamedItem(QDomNodePrivate* arg)
     if (appendToParent)
         return parent->appendChild(arg);
 
-    QDomNodePrivate *n = map.value(arg->nodeName());
+    auto n = map.value(arg->nodeName());
     // We take a reference
     arg->ref.ref();
     map.insertMulti(arg->nodeName(), arg);
@@ -3118,7 +3118,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::setNamedItemNS(QDomNodePrivate* arg)
 
     if (!arg->prefix.isNull()) {
         // node has a namespace
-        QDomNodePrivate *n = namedItemNS(arg->namespaceURI, arg->name);
+        auto n = namedItemNS(arg->namespaceURI, arg->name);
         // We take a reference
         arg->ref.ref();
         map.insertMulti(arg->nodeName(), arg);
@@ -3134,7 +3134,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::removeNamedItem(const QString& name)
     if (readonly)
         return 0;
 
-    QDomNodePrivate* p = namedItem(name);
+    auto p = namedItem(name);
     if (p == 0)
         return 0;
     if (appendToParent)
@@ -3389,7 +3389,7 @@ QDomNode QDomNamedNodeMap::removeNamedItemNS(const QString& nsURI, const QString
 {
     if (!impl)
         return QDomNode();
-    QDomNodePrivate *n = IMPL->namedItemNS(nsURI, localName);
+    auto n = IMPL->namedItemNS(nsURI, localName);
     if (!n)
         return QDomNode();
     return QDomNode(IMPL->removeNamedItem(n->name));
@@ -3460,7 +3460,7 @@ QDomDocumentTypePrivate::QDomDocumentTypePrivate(QDomDocumentTypePrivate* n, boo
 {
     init();
     // Refill the maps with our new children
-    QDomNodePrivate* p = first;
+    auto p = first;
     while (p) {
         if (p->isEntity())
             // Don't use normal insert function since we would create infinite recursion
@@ -3499,7 +3499,7 @@ void QDomDocumentTypePrivate::init()
 
 QDomNodePrivate* QDomDocumentTypePrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomDocumentTypePrivate(this, deep);
+    auto p = new QDomDocumentTypePrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -3508,7 +3508,7 @@ QDomNodePrivate* QDomDocumentTypePrivate::cloneNode(bool deep)
 QDomNodePrivate* QDomDocumentTypePrivate::insertBefore(QDomNodePrivate* newChild, QDomNodePrivate* refChild)
 {
     // Call the origianl implementation
-    QDomNodePrivate* p = QDomNodePrivate::insertBefore(newChild, refChild);
+    auto p = QDomNodePrivate::insertBefore(newChild, refChild);
     // Update the maps
     if (p && p->isEntity())
         entities->map.insertMulti(p->nodeName(), p);
@@ -3521,7 +3521,7 @@ QDomNodePrivate* QDomDocumentTypePrivate::insertBefore(QDomNodePrivate* newChild
 QDomNodePrivate* QDomDocumentTypePrivate::insertAfter(QDomNodePrivate* newChild, QDomNodePrivate* refChild)
 {
     // Call the origianl implementation
-    QDomNodePrivate* p = QDomNodePrivate::insertAfter(newChild, refChild);
+    auto p = QDomNodePrivate::insertAfter(newChild, refChild);
     // Update the maps
     if (p && p->isEntity())
         entities->map.insertMulti(p->nodeName(), p);
@@ -3534,7 +3534,7 @@ QDomNodePrivate* QDomDocumentTypePrivate::insertAfter(QDomNodePrivate* newChild,
 QDomNodePrivate* QDomDocumentTypePrivate::replaceChild(QDomNodePrivate* newChild, QDomNodePrivate* oldChild)
 {
     // Call the origianl implementation
-    QDomNodePrivate* p = QDomNodePrivate::replaceChild(newChild, oldChild);
+    auto p = QDomNodePrivate::replaceChild(newChild, oldChild);
     // Update the maps
     if (p) {
         if (oldChild && oldChild->isEntity())
@@ -3554,7 +3554,7 @@ QDomNodePrivate* QDomDocumentTypePrivate::replaceChild(QDomNodePrivate* newChild
 QDomNodePrivate* QDomDocumentTypePrivate::removeChild(QDomNodePrivate* oldChild)
 {
     // Call the origianl implementation
-    QDomNodePrivate* p = QDomNodePrivate::removeChild( oldChild);
+    auto p = QDomNodePrivate::removeChild( oldChild);
     // Update the maps
     if (p && p->isEntity())
         entities->map.remove(p->nodeName());
@@ -3596,11 +3596,11 @@ void QDomDocumentTypePrivate::save(QTextStream& s, int, int indent) const
     if (entities->length()>0 || notations->length()>0) {
         s << " [" << endl;
 
-        QHash<QString, QDomNodePrivate *>::const_iterator it2 = notations->map.constBegin();
+        auto it2 = notations->map.constBegin();
         for (; it2 != notations->map.constEnd(); ++it2)
             (*it2)->save(s, 0, indent);
 
-        QHash<QString, QDomNodePrivate *>::const_iterator it = entities->map.constBegin();
+        auto it = entities->map.constBegin();
         for (; it != entities->map.constEnd(); ++it)
             (*it)->save(s, 0, indent);
 
@@ -3780,7 +3780,7 @@ QDomDocumentFragmentPrivate::QDomDocumentFragmentPrivate(QDomNodePrivate* n, boo
 
 QDomNodePrivate* QDomDocumentFragmentPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomDocumentFragmentPrivate(this, deep);
+    auto p = new QDomDocumentFragmentPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -3882,7 +3882,7 @@ QDomCharacterDataPrivate::QDomCharacterDataPrivate(QDomCharacterDataPrivate* n, 
 
 QDomNodePrivate* QDomCharacterDataPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomCharacterDataPrivate(this, deep);
+    auto p = new QDomCharacterDataPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -4111,7 +4111,7 @@ QDomAttrPrivate::QDomAttrPrivate(QDomAttrPrivate* n, bool deep)
 void QDomAttrPrivate::setNodeValue(const QString& v)
 {
     value = v;
-    QDomTextPrivate *t = new QDomTextPrivate(0, this, v);
+    auto t = new QDomTextPrivate(0, this, v);
     // keep the refcount balanced: appendChild() does a ref anyway.
     t->ref.deref();
     if (first) {
@@ -4122,7 +4122,7 @@ void QDomAttrPrivate::setNodeValue(const QString& v)
 
 QDomNodePrivate* QDomAttrPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomAttrPrivate(this, deep);
+    auto p = new QDomAttrPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -4152,12 +4152,12 @@ static QString encodeText(const QString &str,
 #ifdef QT_NO_TEXTCODEC
     Q_UNUSED(s);
 #else
-    const QTextCodec *const codec = s.codec();
+    const auto codec = s.codec();
     Q_ASSERT(codec);
 #endif
     QString retval(str);
-    int len = retval.length();
-    int i = 0;
+    auto len = retval.length();
+    auto i = 0;
 
     while (i < len) {
         const QChar ati(retval.at(i));
@@ -4423,7 +4423,7 @@ QDomElementPrivate::~QDomElementPrivate()
 
 QDomNodePrivate* QDomElementPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomElementPrivate(this, deep);
+    auto p = new QDomElementPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -4431,7 +4431,7 @@ QDomNodePrivate* QDomElementPrivate::cloneNode(bool deep)
 
 QString QDomElementPrivate::attribute(const QString& name_, const QString& defValue) const
 {
-    QDomNodePrivate* n = m_attr->namedItem(name_);
+    auto n = m_attr->namedItem(name_);
     if (!n)
         return defValue;
 
@@ -4440,7 +4440,7 @@ QString QDomElementPrivate::attribute(const QString& name_, const QString& defVa
 
 QString QDomElementPrivate::attributeNS(const QString& nsURI, const QString& localName, const QString& defValue) const
 {
-    QDomNodePrivate* n = m_attr->namedItemNS(nsURI, localName);
+    auto n = m_attr->namedItemNS(nsURI, localName);
     if (!n)
         return defValue;
 
@@ -4449,7 +4449,7 @@ QString QDomElementPrivate::attributeNS(const QString& nsURI, const QString& loc
 
 void QDomElementPrivate::setAttribute(const QString& aname, const QString& newValue)
 {
-    QDomNodePrivate* n = m_attr->namedItem(aname);
+    auto n = m_attr->namedItem(aname);
     if (!n) {
         n = new QDomAttrPrivate(ownerDocument(), this, aname);
         n->setNodeValue(newValue);
@@ -4467,7 +4467,7 @@ void QDomElementPrivate::setAttributeNS(const QString& nsURI, const QString& qNa
 {
     QString prefix, localName;
     qt_split_namespace(prefix, localName, qName, true);
-    QDomNodePrivate* n = m_attr->namedItemNS(nsURI, localName);
+    auto n = m_attr->namedItemNS(nsURI, localName);
     if (!n) {
         n = new QDomAttrPrivate(ownerDocument(), this, nsURI, qName);
         n->setNodeValue(newValue);
@@ -4484,7 +4484,7 @@ void QDomElementPrivate::setAttributeNS(const QString& nsURI, const QString& qNa
 
 void QDomElementPrivate::removeAttribute(const QString& aname)
 {
-    QDomNodePrivate* p = m_attr->removeNamedItem(aname);
+    auto p = m_attr->removeNamedItem(aname);
     if (p && p->ref.load() == 0)
         delete p;
 }
@@ -4501,7 +4501,7 @@ QDomAttrPrivate* QDomElementPrivate::attributeNodeNS(const QString& nsURI, const
 
 QDomAttrPrivate* QDomElementPrivate::setAttributeNode(QDomAttrPrivate* newAttr)
 {
-    QDomNodePrivate* n = m_attr->namedItem(newAttr->nodeName());
+    auto n = m_attr->namedItem(newAttr->nodeName());
 
     // Referencing is done by the maps
     m_attr->setNamedItem(newAttr);
@@ -4542,7 +4542,7 @@ QString QDomElementPrivate::text()
 {
     QString t(QLatin1String(""));
 
-    QDomNodePrivate* p = first;
+    auto p = first;
     while (p) {
         if (p->isText() || p->isCDATASection())
             t += p->nodeValue();
@@ -4586,7 +4586,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
 
     /* Write out attributes. */
     if (!m_attr->map.isEmpty()) {
-        QHash<QString, QDomNodePrivate *>::const_iterator it = m_attr->map.constBegin();
+        auto it = m_attr->map.constBegin();
         for (; it != m_attr->map.constEnd(); ++it) {
             s << ' ';
             if (it.value()->namespaceURI.isNull()) {
@@ -4877,7 +4877,7 @@ void QDomElement::setAttribute(const QString& name, double value)
         return;
     QString x;
     char buf[256];
-    int count = qsnprintf(buf, sizeof(buf), "%.16g", value);
+    auto count = qsnprintf(buf, sizeof(buf), "%.16g", value);
     if (count > 0)
         x = QString::fromLatin1(buf, count);
     else
@@ -5064,7 +5064,7 @@ void QDomElement::removeAttributeNS(const QString& nsURI, const QString& localNa
 {
     if (!impl)
         return;
-    QDomNodePrivate *n = IMPL->attributeNodeNS(nsURI, localName);
+    auto n = IMPL->attributeNodeNS(nsURI, localName);
     if (!n)
         return;
     IMPL->removeAttribute(n->nodeName());
@@ -5170,7 +5170,7 @@ QDomTextPrivate::QDomTextPrivate(QDomTextPrivate* n, bool deep)
 
 QDomNodePrivate* QDomTextPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomTextPrivate(this, deep);
+    auto p = new QDomTextPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -5183,7 +5183,7 @@ QDomTextPrivate* QDomTextPrivate::splitText(int offset)
         return 0;
     }
 
-    QDomTextPrivate* t = new QDomTextPrivate(ownerDocument(), 0, value.mid(offset));
+    auto t = new QDomTextPrivate(ownerDocument(), 0, value.mid(offset));
     value.truncate(offset);
 
     parent()->insertAfter(t, this);
@@ -5193,7 +5193,7 @@ QDomTextPrivate* QDomTextPrivate::splitText(int offset)
 
 void QDomTextPrivate::save(QTextStream& s, int, int) const
 {
-    QDomTextPrivate *that = const_cast<QDomTextPrivate*>(this);
+    auto that = const_cast<QDomTextPrivate*>(this);
     s << encodeText(value, s, !(that->parent() && that->parent()->isElement()), false, true);
 }
 
@@ -5307,7 +5307,7 @@ QDomCommentPrivate::QDomCommentPrivate(QDomCommentPrivate* n, bool deep)
 
 QDomNodePrivate* QDomCommentPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomCommentPrivate(this, deep);
+    auto p = new QDomCommentPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -5419,7 +5419,7 @@ QDomCDATASectionPrivate::QDomCDATASectionPrivate(QDomCDATASectionPrivate* n, boo
 
 QDomNodePrivate* QDomCDATASectionPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomCDATASectionPrivate(this, deep);
+    auto p = new QDomCDATASectionPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -5532,7 +5532,7 @@ QDomNotationPrivate::QDomNotationPrivate(QDomNotationPrivate* n, bool deep)
 
 QDomNodePrivate* QDomNotationPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomNotationPrivate(this, deep);
+    auto p = new QDomNotationPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -5680,7 +5680,7 @@ QDomEntityPrivate::QDomEntityPrivate(QDomEntityPrivate* n, bool deep)
 
 QDomNodePrivate* QDomEntityPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomEntityPrivate(this, deep);
+    auto p = new QDomEntityPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -5692,9 +5692,9 @@ QDomNodePrivate* QDomEntityPrivate::cloneNode(bool deep)
 static QByteArray encodeEntity(const QByteArray& str)
 {
     QByteArray tmp(str);
-    int len = tmp.size();
-    int i = 0;
-    const char* d = tmp.constData();
+    auto len = tmp.size();
+    auto i = 0;
+    auto d = tmp.constData();
     while (i < len) {
         if (d[i] == '%'){
             tmp.replace(i, 1, "&#60;");
@@ -5724,7 +5724,7 @@ static QByteArray encodeEntity(const QByteArray& str)
 
 void QDomEntityPrivate::save(QTextStream& s, int, int) const
 {
-    QString _name = name;
+    auto _name = name;
     if (_name.startsWith(QLatin1Char('%')))
         _name = QLatin1String("% ") + _name.mid(1);
 
@@ -5883,7 +5883,7 @@ QDomEntityReferencePrivate::QDomEntityReferencePrivate(QDomNodePrivate* n, bool 
 
 QDomNodePrivate* QDomEntityReferencePrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomEntityReferencePrivate(this, deep);
+    auto p = new QDomEntityReferencePrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -6002,7 +6002,7 @@ QDomProcessingInstructionPrivate::QDomProcessingInstructionPrivate(QDomProcessin
 
 QDomNodePrivate* QDomProcessingInstructionPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate* p = new QDomProcessingInstructionPrivate(this, deep);
+    auto p = new QDomProcessingInstructionPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -6218,7 +6218,7 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader
     type = new QDomDocumentTypePrivate(this, this);
     type->ref.deref();
 
-    bool namespaceProcessing = reader->feature(QLatin1String("http://xml.org/sax/features/namespaces"))
+    auto namespaceProcessing = reader->feature(QLatin1String("http://xml.org/sax/features/namespaces"))
         && !reader->feature(QLatin1String("http://xml.org/sax/features/namespace-prefixes"));
 
     QDomHandler hnd(this, simpleReader, namespaceProcessing);
@@ -6243,7 +6243,7 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader
 
 QDomNodePrivate* QDomDocumentPrivate::cloneNode(bool deep)
 {
-    QDomNodePrivate *p = new QDomDocumentPrivate(this, deep);
+    auto p = new QDomDocumentPrivate(this, deep);
     // We are not interested in this node
     p->ref.deref();
     return p;
@@ -6251,7 +6251,7 @@ QDomNodePrivate* QDomDocumentPrivate::cloneNode(bool deep)
 
 QDomElementPrivate* QDomDocumentPrivate::documentElement()
 {
-    QDomNodePrivate *p = first;
+    auto p = first;
     while (p && !p->isElement())
         p = p->next;
 
@@ -6261,11 +6261,11 @@ QDomElementPrivate* QDomDocumentPrivate::documentElement()
 QDomElementPrivate* QDomDocumentPrivate::createElement(const QString &tagName)
 {
     bool ok;
-    QString fixedName = fixedXmlName(tagName, &ok);
+    auto fixedName = fixedXmlName(tagName, &ok);
     if (!ok)
         return 0;
 
-    QDomElementPrivate *e = new QDomElementPrivate(this, 0, fixedName);
+    auto e = new QDomElementPrivate(this, 0, fixedName);
     e->ref.deref();
     return e;
 }
@@ -6273,18 +6273,18 @@ QDomElementPrivate* QDomDocumentPrivate::createElement(const QString &tagName)
 QDomElementPrivate* QDomDocumentPrivate::createElementNS(const QString &nsURI, const QString &qName)
 {
     bool ok;
-    QString fixedName = fixedXmlName(qName, &ok, true);
+    auto fixedName = fixedXmlName(qName, &ok, true);
     if (!ok)
         return 0;
 
-    QDomElementPrivate *e = new QDomElementPrivate(this, 0, nsURI, fixedName);
+    auto e = new QDomElementPrivate(this, 0, nsURI, fixedName);
     e->ref.deref();
     return e;
 }
 
 QDomDocumentFragmentPrivate* QDomDocumentPrivate::createDocumentFragment()
 {
-    QDomDocumentFragmentPrivate *f = new QDomDocumentFragmentPrivate(this, (QDomNodePrivate*)0);
+    auto f = new QDomDocumentFragmentPrivate(this, (QDomNodePrivate*)0);
     f->ref.deref();
     return f;
 }
@@ -6292,11 +6292,11 @@ QDomDocumentFragmentPrivate* QDomDocumentPrivate::createDocumentFragment()
 QDomTextPrivate* QDomDocumentPrivate::createTextNode(const QString &data)
 {
     bool ok;
-    QString fixedData = fixedCharData(data, &ok);
+    auto fixedData = fixedCharData(data, &ok);
     if (!ok)
         return 0;
 
-    QDomTextPrivate *t = new QDomTextPrivate(this, 0, fixedData);
+    auto t = new QDomTextPrivate(this, 0, fixedData);
     t->ref.deref();
     return t;
 }
@@ -6304,11 +6304,11 @@ QDomTextPrivate* QDomDocumentPrivate::createTextNode(const QString &data)
 QDomCommentPrivate* QDomDocumentPrivate::createComment(const QString &data)
 {
     bool ok;
-    QString fixedData = fixedComment(data, &ok);
+    auto fixedData = fixedComment(data, &ok);
     if (!ok)
         return 0;
 
-    QDomCommentPrivate *c = new QDomCommentPrivate(this, 0, fixedData);
+    auto c = new QDomCommentPrivate(this, 0, fixedData);
     c->ref.deref();
     return c;
 }
@@ -6316,11 +6316,11 @@ QDomCommentPrivate* QDomDocumentPrivate::createComment(const QString &data)
 QDomCDATASectionPrivate* QDomDocumentPrivate::createCDATASection(const QString &data)
 {
     bool ok;
-    QString fixedData = fixedCDataSection(data, &ok);
+    auto fixedData = fixedCDataSection(data, &ok);
     if (!ok)
         return 0;
 
-    QDomCDATASectionPrivate *c = new QDomCDATASectionPrivate(this, 0, fixedData);
+    auto c = new QDomCDATASectionPrivate(this, 0, fixedData);
     c->ref.deref();
     return c;
 }
@@ -6329,26 +6329,26 @@ QDomProcessingInstructionPrivate* QDomDocumentPrivate::createProcessingInstructi
                                                                                    const QString &data)
 {
     bool ok;
-    QString fixedData = fixedPIData(data, &ok);
+    auto fixedData = fixedPIData(data, &ok);
     if (!ok)
         return 0;
     // [17] PITarget ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
-    QString fixedTarget = fixedXmlName(target, &ok);
+    auto fixedTarget = fixedXmlName(target, &ok);
     if (!ok)
         return 0;
 
-    QDomProcessingInstructionPrivate *p = new QDomProcessingInstructionPrivate(this, 0, fixedTarget, fixedData);
+    auto p = new QDomProcessingInstructionPrivate(this, 0, fixedTarget, fixedData);
     p->ref.deref();
     return p;
 }
 QDomAttrPrivate* QDomDocumentPrivate::createAttribute(const QString &aname)
 {
     bool ok;
-    QString fixedName = fixedXmlName(aname, &ok);
+    auto fixedName = fixedXmlName(aname, &ok);
     if (!ok)
         return 0;
 
-    QDomAttrPrivate *a = new QDomAttrPrivate(this, 0, fixedName);
+    auto a = new QDomAttrPrivate(this, 0, fixedName);
     a->ref.deref();
     return a;
 }
@@ -6356,11 +6356,11 @@ QDomAttrPrivate* QDomDocumentPrivate::createAttribute(const QString &aname)
 QDomAttrPrivate* QDomDocumentPrivate::createAttributeNS(const QString &nsURI, const QString &qName)
 {
     bool ok;
-    QString fixedName = fixedXmlName(qName, &ok, true);
+    auto fixedName = fixedXmlName(qName, &ok, true);
     if (!ok)
         return 0;
 
-    QDomAttrPrivate *a = new QDomAttrPrivate(this, 0, nsURI, fixedName);
+    auto a = new QDomAttrPrivate(this, 0, nsURI, fixedName);
     a->ref.deref();
     return a;
 }
@@ -6368,11 +6368,11 @@ QDomAttrPrivate* QDomDocumentPrivate::createAttributeNS(const QString &nsURI, co
 QDomEntityReferencePrivate* QDomDocumentPrivate::createEntityReference(const QString &aname)
 {
     bool ok;
-    QString fixedName = fixedXmlName(aname, &ok);
+    auto fixedName = fixedXmlName(aname, &ok);
     if (!ok)
         return 0;
 
-    QDomEntityReferencePrivate *e = new QDomEntityReferencePrivate(this, 0, fixedName);
+    auto e = new QDomEntityReferencePrivate(this, 0, fixedName);
     e->ref.deref();
     return e;
 }
@@ -6425,20 +6425,20 @@ QDomNodePrivate* QDomDocumentPrivate::importNode(QDomNodePrivate *importedNode, 
 
 void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNode::EncodingPolicy encUsed) const
 {
-    const QDomNodePrivate* n = first;
+    auto n = first;
 
     if(encUsed == QDomNode::EncodingFromDocument) {
 #ifndef QT_NO_TEXTCODEC
-        const QDomNodePrivate* n = first;
+        auto n = first;
 
         QTextCodec *codec = 0;
 
         if (n && n->isProcessingInstruction() && n->nodeName() == QLatin1String("xml")) {
             // we have an XML declaration
-            QString data = n->nodeValue();
+            auto data = n->nodeValue();
             QRegExp encoding(QString::fromLatin1("encoding\\s*=\\s*((\"([^\"]*)\")|('([^']*)'))"));
             encoding.indexIn(data);
-            QString enc = encoding.cap(3);
+            auto enc = encoding.cap(3);
             if (enc.isEmpty())
                 enc = encoding.cap(5);
             if (!enc.isEmpty())
@@ -6449,7 +6449,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
         if (codec)
             s.setCodec(codec);
 #endif
-        bool doc = false;
+        auto doc = false;
 
         while (n) {
             if (!doc && !(n->isProcessingInstruction() && n->nodeName() == QLatin1String("xml"))) {
@@ -6467,9 +6467,9 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
 #ifdef QT_NO_TEXTCODEC
         const QLatin1String codecName("iso-8859-1");
 #else
-        const QTextCodec *const codec = s.codec();
+        const auto codec = s.codec();
         Q_ASSERT_X(codec, "QDomNode::save()", "A codec must be specified in the text stream.");
-        const QByteArray codecName = codec->name();
+        const auto codecName = codec->name();
 #endif
 
         s << "<?xml version=\"1.0\" encoding=\""
@@ -6477,7 +6477,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
           << "\"?>\n";
 
         //  Skip the first processing instruction by name "xml", if any such exists.
-        const QDomNodePrivate* startNode = n;
+        auto startNode = n;
 
         // First, we try to find the PI and sets the startNode to the one appearing after it.
         while (n) {
@@ -7410,7 +7410,7 @@ bool QDomHandler::startElement(const QString& nsURI, const QString&, const QStri
     node = n;
 
     // attributes
-    for (int i=0; i<atts.length(); i++)
+    for (auto i=0; i<atts.length(); i++)
     {
         if (nsProcessing) {
             ((QDomElementPrivate*)node)->setAttributeNS(atts.uri(i), atts.qName(i), atts.value(i));
@@ -7477,7 +7477,7 @@ bool QDomHandler::skippedEntity(const QString& name)
     if (reader && !reader->d_ptr->skipped_entity_in_content)
         return true;
 
-    QDomNodePrivate *n = doc->createEntityReference(name);
+    auto n = doc->createEntityReference(name);
     n->setLocation(locator->lineNumber(), locator->columnNumber());
     node->appendChild(n);
     return true;
@@ -7526,7 +7526,7 @@ bool QDomHandler::comment(const QString& ch)
 
 bool QDomHandler::unparsedEntityDecl(const QString &name, const QString &publicId, const QString &systemId, const QString &notationName)
 {
-    QDomEntityPrivate* e = new QDomEntityPrivate(doc, 0, name,
+    auto e = new QDomEntityPrivate(doc, 0, name,
             publicId, systemId, notationName);
     // keep the refcount balanced: appendChild() does a ref anyway.
     e->ref.deref();
@@ -7541,7 +7541,7 @@ bool QDomHandler::externalEntityDecl(const QString &name, const QString &publicI
 
 bool QDomHandler::notationDecl(const QString & name, const QString & publicId, const QString & systemId)
 {
-    QDomNotationPrivate* n = new QDomNotationPrivate(doc, 0, name, publicId, systemId);
+    auto n = new QDomNotationPrivate(doc, 0, name, publicId, systemId);
     // keep the refcount balanced: appendChild() does a ref anyway.
     n->ref.deref();
     doc->doctype()->appendChild(n);

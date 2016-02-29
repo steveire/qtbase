@@ -200,7 +200,7 @@ static bool stripTextDecl(QString& str)
             "(encoding\\s*=\\s*((['\"])[A-Za-z][-a-zA-Z0-9_.]*\\6))?"
             "\\s*\\?>"
        ));
-        QString strTmp = str.replace(textDecl, QLatin1String(""));
+        auto strTmp = str.replace(textDecl, QLatin1String(""));
         if (strTmp.length() != str.length())
             return false; // external entity has wrong TextDecl
         str = strTmp;
@@ -584,7 +584,7 @@ QString QXmlNamespaceSupport::uri(const QString& prefix) const
 void QXmlNamespaceSupport::splitName(const QString& qname, QString& prefix,
                                      QString& localname) const
 {
-    int pos = qname.indexOf(QLatin1Char(':'));
+    auto pos = qname.indexOf(QLatin1Char(':'));
     if (pos == -1)
         pos = qname.size();
 
@@ -613,9 +613,9 @@ void QXmlNamespaceSupport::processName(const QString& qname,
         bool isAttribute,
         QString& nsuri, QString& localname) const
 {
-    int len = qname.size();
-    const QChar *data = qname.constData();
-    for (int pos = 0; pos < len; ++pos) {
+    auto len = qname.size();
+    auto data = qname.constData();
+    for (auto pos = 0; pos < len; ++pos) {
         if (data[pos] == QLatin1Char(':')) {
             nsuri = uri(qname.left(pos));
             localname = qname.mid(pos + 1);
@@ -632,7 +632,7 @@ void QXmlNamespaceSupport::processName(const QString& qname,
             we use the fact that "" compares less than any other
             string, so it's either first in the map or not there.
         */
-        NamespaceMap::const_iterator first = d->ns.constBegin();
+        auto first = d->ns.constBegin();
         if (first.key().isEmpty())
             nsuri = first.value(); // get default namespace
     }
@@ -722,7 +722,7 @@ void QXmlNamespaceSupport::popContext()
 */
 void QXmlNamespaceSupport::reset()
 {
-    QXmlNamespaceSupportPrivate *newD = new QXmlNamespaceSupportPrivate;
+    auto newD = new QXmlNamespaceSupportPrivate;
     delete d;
     d = newD;
 }
@@ -786,7 +786,7 @@ QXmlAttributes::~QXmlAttributes()
 */
 int QXmlAttributes::index(const QString& qName) const
 {
-    for (int i = 0; i < attList.size(); ++i) {
+    for (auto i = 0; i < attList.size(); ++i) {
         if (attList.at(i).qname == qName)
             return i;
     }
@@ -797,7 +797,7 @@ int QXmlAttributes::index(const QString& qName) const
   */
 int QXmlAttributes::index(QLatin1String qName) const
 {
-    for (int i = 0; i < attList.size(); ++i) {
+    for (auto i = 0; i < attList.size(); ++i) {
         if (attList.at(i).qname == qName)
             return i;
     }
@@ -819,7 +819,7 @@ int QXmlAttributes::index(QLatin1String qName) const
 */
 int QXmlAttributes::index(const QString& uri, const QString& localPart) const
 {
-    for (int i = 0; i < attList.size(); ++i) {
+    for (auto i = 0; i < attList.size(); ++i) {
         const Attribute &att = attList.at(i);
         if (att.uri == uri && att.localname == localPart)
             return i;
@@ -938,7 +938,7 @@ QString QXmlAttributes::value(int index) const
 */
 QString QXmlAttributes::value(const QString& qName) const
 {
-    int i = index(qName);
+    auto i = index(qName);
     if (i == -1)
         return QString();
     return attList.at(i).value;
@@ -954,7 +954,7 @@ QString QXmlAttributes::value(const QString& qName) const
 */
 QString QXmlAttributes::value(QLatin1String qName) const
 {
-    int i = index(qName);
+    auto i = index(qName);
     if (i == -1)
         return QString();
     return attList.at(i).value;
@@ -971,7 +971,7 @@ QString QXmlAttributes::value(QLatin1String qName) const
 */
 QString QXmlAttributes::value(const QString& uri, const QString& localName) const
 {
-    int i = index(uri, localName);
+    auto i = index(uri, localName);
     if (i == -1)
         return QString();
     return attList.at(i).value;
@@ -1159,7 +1159,7 @@ QChar QXmlInputSource::next()
     // QXmlInputSource has no way to signal encoding errors. The best we can do
     // is return EndOfDocument. We do *not* return EndOfData, because the reader
     // will then just call this function again to get the next char.
-    QChar c = d->unicode[d->pos++];
+    auto c = d->unicode[d->pos++];
     if (c.unicode() == EndOfData)
         c = EndOfDocument;
     return c;
@@ -1191,7 +1191,7 @@ void QXmlInputSource::reset()
 QString QXmlInputSource::data() const
 {
     if (d->nextReturnedEndOfData) {
-        QXmlInputSource *that = const_cast<QXmlInputSource*>(this);
+        auto that = const_cast<QXmlInputSource*>(this);
         that->d->nextReturnedEndOfData = false;
         that->fetchData();
     }
@@ -1255,16 +1255,16 @@ void QXmlInputSource::fetchData()
     QByteArray rawData;
 
     if (d->inputDevice || d->inputStream) {
-        QIODevice *device = d->inputDevice ? d->inputDevice : d->inputStream->device();
+        auto device = d->inputDevice ? d->inputDevice : d->inputStream->device();
 
         if (!device) {
             if (d->inputStream && d->inputStream->string()) {
-                QString *s = d->inputStream->string();
+                auto s = d->inputStream->string();
                 rawData = QByteArray((const char *) s->constData(), s->size() * sizeof(QChar));
             }
         } else if (device->isOpen() || device->open(QIODevice::ReadOnly)) {
             rawData.resize(BufferSize);
-            qint64 size = device->read(rawData.data(), BufferSize);
+            auto size = device->read(rawData.data(), BufferSize);
 
             if (size != -1) {
                 // We don't want to give fromRawData() less than four bytes if we can avoid it.
@@ -1294,23 +1294,23 @@ static QString extractEncodingDecl(const QString &text, bool *needMoreText)
 {
     *needMoreText = false;
 
-    int l = text.length();
-    QString snip = QString::fromLatin1("<?xml").left(l);
+    auto l = text.length();
+    auto snip = QString::fromLatin1("<?xml").left(l);
     if (l > 0 && !text.startsWith(snip))
         return QString();
 
-    int endPos = text.indexOf(QLatin1Char('>'));
+    auto endPos = text.indexOf(QLatin1Char('>'));
     if (endPos == -1) {
         *needMoreText = l < 255; // we won't look forever
         return QString();
     }
 
-    int pos = text.indexOf(QLatin1String("encoding"));
+    auto pos = text.indexOf(QLatin1String("encoding"));
     if (pos == -1 || pos >= endPos)
         return QString();
 
     while (pos < endPos) {
-        ushort uc = text.at(pos).unicode();
+        auto uc = text.at(pos).unicode();
         if (uc == '\'' || uc == '"')
             break;
         ++pos;
@@ -1322,7 +1322,7 @@ static QString extractEncodingDecl(const QString &text, bool *needMoreText)
     QString encoding;
     ++pos;
     while (pos < endPos) {
-        ushort uc = text.at(pos).unicode();
+        auto uc = text.at(pos).unicode();
         if (uc == '\'' || uc == '"')
             break;
         encoding.append(uc);
@@ -1357,7 +1357,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
         d->encMapper = 0;
     }
 
-    int mib = 106; // UTF-8
+    auto mib = 106; // UTF-8
 
     // This is the initial UTF codec we will read the encoding declaration with
     if (d->encMapper == 0) {
@@ -1392,22 +1392,22 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
                 mib = 1013; // UTF-16BE
         }
 
-        QTextCodec *codec = QTextCodec::codecForMib(mib);
+        auto codec = QTextCodec::codecForMib(mib);
         Q_ASSERT(codec);
 
         d->encMapper = codec->makeDecoder();
     }
 
-    QString input = d->encMapper->toUnicode(data.constData(), data.size());
+    auto input = d->encMapper->toUnicode(data.constData(), data.size());
 
     if (d->lookingForEncodingDecl) {
         d->encodingDeclChars += input;
 
         bool needMoreText;
-        QString encoding = extractEncodingDecl(d->encodingDeclChars, &needMoreText);
+        auto encoding = extractEncodingDecl(d->encodingDeclChars, &needMoreText);
 
         if (!encoding.isEmpty()) {
-            if (QTextCodec *codec = QTextCodec::codecForName(encoding.toLatin1())) {
+            if (auto codec = QTextCodec::codecForName(encoding.toLatin1())) {
                 /* If the encoding is the same, we don't have to do toUnicode() all over again. */
                 if(codec->mibEnum() != mib) {
                     delete d->encMapper;
@@ -2845,7 +2845,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 
 static inline bool is_S(QChar ch)
 {
-    ushort uc = ch.unicode();
+    auto uc = ch.unicode();
     return (uc == ' ' || uc == '\t' || uc == '\n' || uc == '\r');
 }
 
@@ -2885,11 +2885,11 @@ static const char nameCharTable[128] =
 
 static inline NameChar fastDetermineNameChar(QChar ch)
 {
-    ushort uc = ch.unicode();
+    auto uc = ch.unicode();
     if (!(uc & ~0x7f)) // uc < 128
         return (NameChar)nameCharTable[uc];
 
-    QChar::Category cat = ch.category();
+    auto cat = ch.category();
     // ### some these categories might be slightly wrong
     if ((cat >= QChar::Letter_Uppercase && cat <= QChar::Letter_Other)
         || cat == QChar::Number_Letter)
@@ -2926,7 +2926,7 @@ QXmlSimpleReader::~QXmlSimpleReader()
 */
 bool QXmlSimpleReader::feature(const QString& name, bool *ok) const
 {
-    const QXmlSimpleReaderPrivate *d = d_func();
+    auto d = d_func();
 
     if (ok != 0)
         *ok = true;
@@ -3052,7 +3052,7 @@ void QXmlSimpleReader::setEntityResolver(QXmlEntityResolver* handler)
 */
 QXmlEntityResolver* QXmlSimpleReader::entityResolver() const
 {
-    const QXmlSimpleReaderPrivate *d = d_func();
+    auto d = d_func();
     return d->entityRes;
 }
 
@@ -3070,7 +3070,7 @@ void QXmlSimpleReader::setDTDHandler(QXmlDTDHandler* handler)
 */
 QXmlDTDHandler* QXmlSimpleReader::DTDHandler() const
 {
-    const QXmlSimpleReaderPrivate *d = d_func();
+    auto d = d_func();
     return d->dtdHnd;
 }
 
@@ -3088,7 +3088,7 @@ void QXmlSimpleReader::setContentHandler(QXmlContentHandler* handler)
 */
 QXmlContentHandler* QXmlSimpleReader::contentHandler() const
 {
-    const QXmlSimpleReaderPrivate *d = d_func();
+    auto d = d_func();
     return d->contentHnd;
 }
 
@@ -3106,7 +3106,7 @@ void QXmlSimpleReader::setErrorHandler(QXmlErrorHandler* handler)
 */
 QXmlErrorHandler* QXmlSimpleReader::errorHandler() const
 {
-    const QXmlSimpleReaderPrivate *d = d_func();
+    auto d = d_func();
     return d->errorHnd;
 }
 
@@ -3124,7 +3124,7 @@ void QXmlSimpleReader::setLexicalHandler(QXmlLexicalHandler* handler)
 */
 QXmlLexicalHandler* QXmlSimpleReader::lexicalHandler() const
 {
-    const QXmlSimpleReaderPrivate *d = d_func();
+    auto d = d_func();
     return d->lexicalHnd;
 }
 
@@ -3142,7 +3142,7 @@ void QXmlSimpleReader::setDeclHandler(QXmlDeclHandler* handler)
 */
 QXmlDeclHandler* QXmlSimpleReader::declHandler() const
 {
-    const QXmlSimpleReaderPrivate *d = d_func();
+    auto d = d_func();
     return d->declHnd;
 }
 
@@ -3250,7 +3250,7 @@ bool QXmlSimpleReader::parseContinue()
     if (d->parseStack == 0 || d->parseStack->isEmpty())
         return false;
     d->initData();
-    int state = d->parseStack->pop().state;
+    auto state = d->parseStack->pop().state;
     return d->parseBeginOrContinue(state, true);
 }
 
@@ -3259,7 +3259,7 @@ bool QXmlSimpleReader::parseContinue()
 */
 bool QXmlSimpleReaderPrivate::parseBeginOrContinue(int state, bool incremental)
 {
-    bool atEndOrig = atEnd();
+    auto atEndOrig = atEnd();
 
     if (state==0) {
         if (!parseProlog()) {
@@ -3446,7 +3446,7 @@ bool QXmlSimpleReaderPrivate::parseProlog()
         qDebug("QXmlSimpleReader: parseProlog (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -3589,25 +3589,25 @@ bool QXmlSimpleReaderPrivate::parseProlog()
 */
 bool QXmlSimpleReaderPrivate::parseElement()
 {
-    const int Init             =  0;
-    const int ReadName         =  1;
-    const int Ws1              =  2;
-    const int STagEnd          =  3;
-    const int STagEnd2         =  4;
-    const int ETagBegin        =  5;
-    const int ETagBegin2       =  6;
-    const int Ws2              =  7;
-    const int EmptyTag         =  8;
-    const int Attrib           =  9;
-    const int AttribPro        = 10; // like Attrib, but processAttribute was already called
-    const int Ws3              = 11;
-    const int Done             = 12;
+    const auto Init             =  0;
+    const auto ReadName         =  1;
+    const auto Ws1              =  2;
+    const auto STagEnd          =  3;
+    const auto STagEnd2         =  4;
+    const auto ETagBegin        =  5;
+    const auto ETagBegin2       =  6;
+    const auto Ws2              =  7;
+    const auto EmptyTag         =  8;
+    const auto Attrib           =  9;
+    const auto AttribPro        = 10; // like Attrib, but processAttribute was already called
+    const auto Ws3              = 11;
+    const auto Done             = 12;
 
-    const int InpWs            = 0; // whitespace
-    const int InpNameBe        = 1; // NameBeginning
-    const int InpGt            = 2; // >
-    const int InpSlash         = 3; // /
-    const int InpUnknown       = 4;
+    const auto InpWs            = 0; // whitespace
+    const auto InpNameBe        = 1; // NameBeginning
+    const auto InpGt            = 2; // >
+    const auto InpSlash         = 3; // /
+    const auto InpUnknown       = 4;
 
     static const int table[12][5] = {
      /*  InpWs      InpNameBe    InpGt        InpSlash     InpUnknown */
@@ -3635,7 +3635,7 @@ bool QXmlSimpleReaderPrivate::parseElement()
         qDebug("QXmlSimpleReader: parseElement (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -3786,7 +3786,7 @@ bool QXmlSimpleReaderPrivate::processElementEmptyTag()
                 return false;
             }
             // ... followed by endElement...
-            const bool endElementReturnedFalse = !contentHnd->endElement(uri, lname, tags.top());
+            const auto endElementReturnedFalse = !contentHnd->endElement(uri, lname, tags.top());
             tags.pop();
             if (endElementReturnedFalse) {
                 reportParseError(contentHnd->errorString());
@@ -3800,7 +3800,7 @@ bool QXmlSimpleReaderPrivate::processElementEmptyTag()
             namespaceSupport.popContext();
             // call the handler for prefix mapping
             prefixesAfter = namespaceSupport.prefixes();
-            for (QStringList::Iterator it = prefixesBefore.begin(); it != prefixesBefore.end(); ++it) {
+            for (auto it = prefixesBefore.begin(); it != prefixesBefore.end(); ++it) {
                 if (!prefixesAfter.contains(*it)) {
                     if (!contentHnd->endPrefixMapping(*it)) {
                         reportParseError(contentHnd->errorString());
@@ -3815,7 +3815,7 @@ bool QXmlSimpleReaderPrivate::processElementEmptyTag()
                 return false;
             }
             // ... followed by endElement
-            const bool endElementReturnedFalse = !contentHnd->endElement(QString(), QString(), tags.top());
+            const auto endElementReturnedFalse = !contentHnd->endElement(QString(), QString(), tags.top());
             tags.pop();
             if (endElementReturnedFalse) {
                 reportParseError(contentHnd->errorString());
@@ -3837,7 +3837,7 @@ bool QXmlSimpleReaderPrivate::processElementETagBegin2()
     const QString &name = QXmlSimpleReaderPrivate::name();
 
     // pop the stack and compare it with the name
-    const bool nameIsTagsTop = tags.top() == name;
+    const auto nameIsTagsTop = tags.top() == name;
     tags.pop();
     if (!nameIsTagsTop) {
         reportParseError(QLatin1String(XMLERR_TAGMISMATCH));
@@ -3864,7 +3864,7 @@ bool QXmlSimpleReaderPrivate::processElementETagBegin2()
         if (contentHnd) {
             prefixesAfter = namespaceSupport.d->ns;
             if (prefixesBefore.size() != prefixesAfter.size()) {
-                for (NamespaceMap::const_iterator it = prefixesBefore.constBegin(); it != prefixesBefore.constEnd(); ++it) {
+                for (auto it = prefixesBefore.constBegin(); it != prefixesBefore.constEnd(); ++it) {
                     if (!it.key().isEmpty() && !prefixesAfter.contains(it.key())) {
                         if (!contentHnd->endPrefixMapping(it.key())) {
                             reportParseError(contentHnd->errorString());
@@ -4005,7 +4005,7 @@ bool QXmlSimpleReaderPrivate::parseContent()
         qDebug("QXmlSimpleReader: parseContent (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -4249,7 +4249,7 @@ bool QXmlSimpleReaderPrivate::parseContent()
 
 bool QXmlSimpleReaderPrivate::reportEndEntities()
 {
-    int count = (int)xmlRefStack.count();
+    auto count = (int)xmlRefStack.count();
     while (count != 0 && xmlRefStack.top().isEmpty()) {
         if (contentHnd) {
             if (reportWhitespaceCharData || !string().simplified().isEmpty()) {
@@ -4307,7 +4307,7 @@ bool QXmlSimpleReaderPrivate::parseMisc()
         qDebug("QXmlSimpleReader: parseMisc (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -4462,7 +4462,7 @@ bool QXmlSimpleReaderPrivate::parsePI()
         qDebug("QXmlSimpleReader: parsePI (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -4692,7 +4692,7 @@ bool QXmlSimpleReaderPrivate::parseDoctype()
         qDebug("QXmlSimpleReader: parseDoctype (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -4902,7 +4902,7 @@ bool QXmlSimpleReaderPrivate::parseExternalID()
         qDebug("QXmlSimpleReader: parseExternalID (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -5064,7 +5064,7 @@ bool QXmlSimpleReaderPrivate::parseMarkupdecl()
         qDebug("QXmlSimpleReader: parseMarkupdecl (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -5222,7 +5222,7 @@ bool QXmlSimpleReaderPrivate::parsePEReference()
         qDebug("QXmlSimpleReader: parsePEReference (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -5240,7 +5240,7 @@ bool QXmlSimpleReaderPrivate::parsePEReference()
         switch (state) {
             case Name:
                 {
-                    bool skipIt = true;
+                    auto skipIt = true;
                     QString xmlRefString;
 
                     QMap<QString,QString>::Iterator it;
@@ -5259,7 +5259,7 @@ bool QXmlSimpleReaderPrivate::parsePEReference()
                                 return false;
                             }
                             if (ret) {
-                                QString buffer = ret->data();
+                                auto buffer = ret->data();
                                 while (!buffer.isEmpty()) {
                                     xmlRefString += buffer;
                                     ret->fetchData();
@@ -5400,7 +5400,7 @@ bool QXmlSimpleReaderPrivate::parseAttlistDecl()
         qDebug("QXmlSimpleReader: parseAttlistDecl (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -5616,7 +5616,7 @@ bool QXmlSimpleReaderPrivate::parseAttType()
         qDebug("QXmlSimpleReader: parseAttType (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -5837,7 +5837,7 @@ bool QXmlSimpleReaderPrivate::parseAttValue()
         qDebug("QXmlSimpleReader: parseAttValue (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -5979,7 +5979,7 @@ bool QXmlSimpleReaderPrivate::parseElementDecl()
         qDebug("QXmlSimpleReader: parseElementDecl (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -6188,7 +6188,7 @@ bool QXmlSimpleReaderPrivate::parseNotationDecl()
         qDebug("QXmlSimpleReader: parseNotationDecl (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -6332,7 +6332,7 @@ bool QXmlSimpleReaderPrivate::parseChoiceSeq()
         qDebug("QXmlSimpleReader: parseChoiceSeq (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -6426,7 +6426,7 @@ bool QXmlSimpleReaderPrivate::isExpandedEntityValueTooLarge(QString *errorMessag
     QString entityNameBuffer;
 
     // For every entity, check how many times all entity names were referenced in its value.
-    for (QMap<QString,QString>::const_iterator toSearchIt = entities.constBegin();
+    for (auto toSearchIt = entities.constBegin();
          toSearchIt != entities.constEnd();
          ++toSearchIt) {
         const QString &toSearch = toSearchIt.key();
@@ -6434,14 +6434,14 @@ bool QXmlSimpleReaderPrivate::isExpandedEntityValueTooLarge(QString *errorMessag
         // Don't check the same entities twice.
         if (!literalEntitySizes.contains(toSearch)) {
             // The amount of characters that weren't entity names, but literals, like 'X'.
-            QString leftOvers = entities.value(toSearch);
+            auto leftOvers = entities.value(toSearch);
             // How many times was entityName referenced by toSearch?
-            for (QMap<QString,QString>::const_iterator referencedIt = entities.constBegin();
+            for (auto referencedIt = entities.constBegin();
                  referencedIt != entities.constEnd();
                  ++referencedIt) {
                 const QString &entityName = referencedIt.key();
 
-                for (int i = 0; i < leftOvers.size() && i != -1; ) {
+                for (auto i = 0; i < leftOvers.size() && i != -1; ) {
                     entityNameBuffer = QLatin1Char('&') + entityName + QLatin1Char(';');
 
                     i = leftOvers.indexOf(entityNameBuffer, i);
@@ -6456,19 +6456,19 @@ bool QXmlSimpleReaderPrivate::isExpandedEntityValueTooLarge(QString *errorMessag
         }
     }
 
-    for (QHash<QString, QHash<QString, int> >::const_iterator entityIt = referencesToOtherEntities.constBegin();
+    for (auto entityIt = referencesToOtherEntities.constBegin();
          entityIt != referencesToOtherEntities.constEnd();
          ++entityIt) {
         const QString &entity = entityIt.key();
 
-        QHash<QString, int>::iterator expandedIt = expandedSizes.find(entity);
+        auto expandedIt = expandedSizes.find(entity);
         if (expandedIt == expandedSizes.end()) {
             expandedIt = expandedSizes.insert(entity, literalEntitySizes.value(entity));
-            for (QHash<QString, int>::const_iterator referenceIt = entityIt->constBegin();
+            for (auto referenceIt = entityIt->constBegin();
                  referenceIt != entityIt->constEnd();
                  ++referenceIt) {
                 const QString &referenceTo = referenceIt.key();
-                const int references = referencesToOtherEntities.value(entity).value(referenceTo);
+                const auto references = referencesToOtherEntities.value(entity).value(referenceTo);
                 // The total size of an entity's value is the expanded size of all of its referenced entities, plus its literal size.
                 *expandedIt += expandedSizes.value(referenceTo) * references + literalEntitySizes.value(referenceTo) * references;
             }
@@ -6561,7 +6561,7 @@ bool QXmlSimpleReaderPrivate::parseEntityDecl()
         qDebug("QXmlSimpleReader: parseEntityDecl (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -6836,7 +6836,7 @@ bool QXmlSimpleReaderPrivate::parseEntityValue()
         qDebug("QXmlSimpleReader: parseEntityValue (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -6955,7 +6955,7 @@ bool QXmlSimpleReaderPrivate::parseComment()
         qDebug("QXmlSimpleReader: parseComment (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -7037,17 +7037,17 @@ bool QXmlSimpleReaderPrivate::parseComment()
 */
 bool QXmlSimpleReaderPrivate::parseAttribute()
 {
-    const int Init             = 0;
-    const int PName            = 1; // parse name
-    const int Ws               = 2; // eat ws
-    const int Eq               = 3; // the '=' was read
-    const int Quotes           = 4; // " or ' were read
+    const auto Init             = 0;
+    const auto PName            = 1; // parse name
+    const auto Ws               = 2; // eat ws
+    const auto Eq               = 3; // the '=' was read
+    const auto Quotes           = 4; // " or ' were read
 
-    const int InpNameBe        = 0;
-    const int InpEq            = 1; // =
-    const int InpDq            = 2; // "
-    const int InpSq            = 3; // '
-    const int InpUnknown       = 4;
+    const auto InpNameBe        = 0;
+    const auto InpEq            = 1; // =
+    const auto InpDq            = 2; // "
+    const auto InpSq            = 3; // '
+    const auto InpUnknown       = 4;
 
     static const int table[4][5] = {
      /*  InpNameBe  InpEq  InpDq    InpSq    InpUnknown */
@@ -7067,7 +7067,7 @@ bool QXmlSimpleReaderPrivate::parseAttribute()
         qDebug("QXmlSimpleReader: parseAttribute (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -7145,10 +7145,10 @@ bool QXmlSimpleReaderPrivate::parseAttribute()
 */
 bool QXmlSimpleReaderPrivate::parseName()
 {
-    const int Init             = 0;
-    const int Name1            = 1; // parse first character of the name
-    const int Name             = 2; // parse name
-    const int Done             = 3;
+    const auto Init             = 0;
+    const auto Name1            = 1; // parse first character of the name
+    const auto Name             = 2; // parse name
+    const auto Done             = 3;
 
     static const int table[3][3] = {
      /*  InpNameBe  InpNameCh  InpUnknown */
@@ -7166,7 +7166,7 @@ bool QXmlSimpleReaderPrivate::parseName()
         qDebug("QXmlSimpleReader: parseName (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -7252,7 +7252,7 @@ bool QXmlSimpleReaderPrivate::parseNmtoken()
         qDebug("QXmlSimpleReader: parseNmtoken (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -7361,7 +7361,7 @@ bool QXmlSimpleReaderPrivate::parseReference()
         qDebug("QXmlSimpleReader: parseReference (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -7478,7 +7478,7 @@ bool QXmlSimpleReaderPrivate::parseReference()
 */
 bool QXmlSimpleReaderPrivate::processReference()
 {
-    QString reference = ref();
+    auto reference = ref();
     if (reference == QLatin1String("amp")) {
         if (parseReference_context == InEntityValue) {
             // Bypassed
@@ -7546,7 +7546,7 @@ bool QXmlSimpleReaderPrivate::processReference()
                     {
                         // Bypassed
                         stringAddC(QLatin1Char('&'));
-                        for (int i=0; i<(int)reference.length(); i++) {
+                        for (auto i=0; i<(int)reference.length(); i++) {
                             stringAddC(reference[i]);
                         }
                         stringAddC(QLatin1Char(';'));
@@ -7568,7 +7568,7 @@ bool QXmlSimpleReaderPrivate::processReference()
                 if (parseReference_context == InEntityValue) {
                     // Bypassed
                     stringAddC(QLatin1Char('&'));
-                    for (int i=0; i<(int)reference.length(); i++) {
+                    for (auto i=0; i<(int)reference.length(); i++) {
                         stringAddC(reference[i]);
                     }
                     stringAddC(QLatin1Char(';'));
@@ -7604,7 +7604,7 @@ bool QXmlSimpleReaderPrivate::processReference()
                     case InContent:
                         {
                             // Included if validating
-                            bool skipIt = true;
+                            auto skipIt = true;
                             if (entityRes) {
                                 QXmlInputSource *ret = 0;
                                 if (!entityRes->resolveEntity((*itExtern).publicId, (*itExtern).systemId, ret)) {
@@ -7614,7 +7614,7 @@ bool QXmlSimpleReaderPrivate::processReference()
                                 }
                                 if (ret) {
                                     QString xmlRefString;
-                                    QString buffer = ret->data();
+                                    auto buffer = ret->data();
                                     while (!buffer.isEmpty()) {
                                         xmlRefString += buffer;
                                         ret->fetchData();
@@ -7651,7 +7651,7 @@ bool QXmlSimpleReaderPrivate::processReference()
                         {
                             // Bypassed
                             stringAddC(QLatin1Char('&'));
-                            for (int i=0; i<(int)reference.length(); i++) {
+                            for (auto i=0; i<(int)reference.length(); i++) {
                                 stringAddC(reference[i]);
                             }
                             stringAddC(QLatin1Char(';'));
@@ -7701,7 +7701,7 @@ bool QXmlSimpleReaderPrivate::parseString()
         qDebug("QXmlSimpleReader: parseString (cont) in state %d", state);
 #endif
         if (!parseStack->isEmpty()) {
-            ParseFunction function = parseStack->top().function;
+            auto function = parseStack->top().function;
             if (function == &QXmlSimpleReaderPrivate::eat_ws) {
                 parseStack->pop();
 #if defined(QT_QXML_DEBUG)
@@ -7753,13 +7753,13 @@ bool QXmlSimpleReaderPrivate::parseString()
 bool QXmlSimpleReaderPrivate::insertXmlRef(const QString &data, const QString &name, bool inLiteral)
 {
     if (inLiteral) {
-        QString tmp = data;
+        auto tmp = data;
         xmlRefStack.push(XmlRef(name, tmp.replace(QLatin1Char('\"'),
                             QLatin1String("&quot;")).replace(QLatin1Char('\''), QLatin1String("&apos;"))));
     } else {
         xmlRefStack.push(XmlRef(name, data));
     }
-    int n = qMax(parameterEntities.count(), entities.count());
+    auto n = qMax(parameterEntities.count(), entities.count());
     if (xmlRefStack.count() > n+1) {
         // recursive entities
         reportParseError(QLatin1String(XMLERR_RECURSIVEENTITIES));
@@ -7779,7 +7779,7 @@ bool QXmlSimpleReaderPrivate::insertXmlRef(const QString &data, const QString &n
 */
 void QXmlSimpleReaderPrivate::next()
 {
-    int count = xmlRefStack.size();
+    auto count = xmlRefStack.size();
     while (count != 0) {
         if (xmlRefStack.top().isEmpty()) {
             xmlRefStack.pop_back();
@@ -7792,7 +7792,7 @@ void QXmlSimpleReaderPrivate::next()
 
     // the following could be written nicer, but since it is a time-critical
     // function, rather optimize for speed
-    ushort uc = c.unicode();
+    auto uc = c.unicode();
     c = inputSource->next();
     // If we are not incremental parsing, we just skip over EndOfData chars to give the
     // parser an uninterrupted stream of document chars.
