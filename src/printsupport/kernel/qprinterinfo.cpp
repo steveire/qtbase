@@ -153,7 +153,7 @@ QPrinterInfo &QPrinterInfo::operator=(const QPrinterInfo &other)
 */
 QString QPrinterInfo::printerName() const
 {
-    const Q_D(QPrinterInfo);
+    Q_D(const QPrinterInfo);
     return d->m_printDevice.id();
 }
 
@@ -165,7 +165,7 @@ QString QPrinterInfo::printerName() const
 */
 QString QPrinterInfo::description() const
 {
-    const Q_D(QPrinterInfo);
+    Q_D(const QPrinterInfo);
     return d->m_printDevice.name();
 }
 
@@ -176,7 +176,7 @@ QString QPrinterInfo::description() const
 */
 QString QPrinterInfo::location() const
 {
-    const Q_D(QPrinterInfo);
+    Q_D(const QPrinterInfo);
     return d->m_printDevice.location();
 }
 
@@ -187,7 +187,7 @@ QString QPrinterInfo::location() const
 */
 QString QPrinterInfo::makeAndModel() const
 {
-    const Q_D(QPrinterInfo);
+    Q_D(const QPrinterInfo);
     return d->m_printDevice.makeAndModel();
 }
 
