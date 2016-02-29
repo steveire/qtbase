@@ -198,7 +198,7 @@ QGLPixelBuffer::~QGLPixelBuffer()
     Q_D(QGLPixelBuffer);
 
     // defined in qpaintengine_opengl.cpp
-    QGLContext *current = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto current = const_cast<QGLContext *>(QGLContext::currentContext());
     if (current != d->qctx)
         makeCurrent();
     d->cleanup();
@@ -334,7 +334,7 @@ void QGLPixelBuffer::updateDynamicTexture(GLuint texture_id) const
     if (d->invalid || !d->fbo)
         return;
 
-    const QGLContext *ctx = QGLContext::currentContext();
+    auto ctx = QGLContext::currentContext();
     if (!ctx)
         return;
 
@@ -428,8 +428,8 @@ int QGLPixelBuffer::metric(PaintDeviceMetric metric) const
 
     float dpmx = qt_defaultDpiX()*100./2.54;
     float dpmy = qt_defaultDpiY()*100./2.54;
-    int w = d->req_size.width();
-    int h = d->req_size.height();
+    auto w = d->req_size.width();
+    auto h = d->req_size.height();
     switch (metric) {
     case PdmWidth:
         return w;
@@ -630,7 +630,7 @@ GLuint QGLPixelBuffer::generateDynamicTexture() const
     }
 
     GLuint texture;
-    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+    auto funcs = QOpenGLContext::currentContext()->functions();
 
     funcs->glGenTextures(1, &texture);
     funcs->glBindTexture(GL_TEXTURE_2D, texture);

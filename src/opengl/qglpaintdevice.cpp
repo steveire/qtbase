@@ -63,7 +63,7 @@ int QGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     case PdmHeight:
         return size().height();
     case PdmDepth: {
-        const QGLFormat f = format();
+        const auto f = format();
         return f.redBufferSize() + f.greenBufferSize() + f.blueBufferSize() + f.alphaBufferSize();
     }
     case PdmDevicePixelRatio:
@@ -79,7 +79,7 @@ int QGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
 void QGLPaintDevice::beginPaint()
 {
     // Make sure our context is the current one:
-    QGLContext *ctx = context();
+    auto ctx = context();
     ctx->makeCurrent();
 
     ctx->d_func()->refreshCurrentFbo();
@@ -108,7 +108,7 @@ void QGLPaintDevice::beginPaint()
 
 void QGLPaintDevice::ensureActiveTarget()
 {
-    QGLContext* ctx = context();
+    auto ctx = context();
     if (ctx != QGLContext::currentContext())
         ctx->makeCurrent();
 
@@ -125,7 +125,7 @@ void QGLPaintDevice::ensureActiveTarget()
 void QGLPaintDevice::endPaint()
 {
     // Make sure the FBO bound at beginPaint is re-bound again here:
-    QGLContext *ctx = context();
+    auto ctx = context();
 
     ctx->d_func()->refreshCurrentFbo();
 
@@ -171,7 +171,7 @@ void QGLWidgetGLPaintDevice::setWidget(QGLWidget* w)
 void QGLWidgetGLPaintDevice::beginPaint()
 {
     QGLPaintDevice::beginPaint();
-    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+    auto funcs = QOpenGLContext::currentContext()->functions();
     if (!glWidget->d_func()->disable_clear_on_painter_begin && glWidget->autoFillBackground()) {
         if (glWidget->testAttribute(Qt::WA_TranslucentBackground))
             funcs->glClearColor(0.0, 0.0, 0.0, 0.0);

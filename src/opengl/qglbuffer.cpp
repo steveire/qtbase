@@ -282,7 +282,7 @@ bool QGLBuffer::create()
     Q_D(QGLBuffer);
     if (d->guard && d->guard->id())
         return true;
-    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx) {
         delete d->funcs;
         d->funcs = new QOpenGLExtensions(ctx->contextHandle());
@@ -428,7 +428,7 @@ bool QGLBuffer::bind()
         qWarning("QGLBuffer::bind(): buffer not created");
 #endif
     Q_D(const QGLBuffer);
-    GLuint bufferId = d->guard ? d->guard->id() : 0;
+    auto bufferId = d->guard ? d->guard->id() : 0;
     if (bufferId) {
         if (d->guard->group() != QOpenGLContextGroup::currentContextGroup()) {
 #ifndef QT_NO_DEBUG
@@ -480,7 +480,7 @@ void QGLBuffer::release()
 */
 void QGLBuffer::release(QGLBuffer::Type type)
 {
-    if (QOpenGLContext *ctx = QOpenGLContext::currentContext())
+    if (auto ctx = QOpenGLContext::currentContext())
         ctx->functions()->glBindBuffer(GLenum(type), 0);
 }
 
@@ -516,7 +516,7 @@ int QGLBuffer::size() const
     Q_D(const QGLBuffer);
     if (!d->guard || !d->guard->id())
         return -1;
-    GLint value = -1;
+    auto value = -1;
     d->funcs->glGetBufferParameteriv(d->type, GL_BUFFER_SIZE, &value);
     return value;
 }

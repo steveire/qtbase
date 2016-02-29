@@ -236,7 +236,7 @@ QGLShaderPrivate::~QGLShaderPrivate()
 
 bool QGLShaderPrivate::create()
 {
-    QGLContext *context = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto context = const_cast<QGLContext *>(QGLContext::currentContext());
     if (!context)
         return false;
 
@@ -264,21 +264,21 @@ bool QGLShaderPrivate::create()
 
 bool QGLShaderPrivate::compile(QGLShader *q)
 {
-    GLuint shader = shaderGuard ? shaderGuard->id() : 0;
+    auto shader = shaderGuard ? shaderGuard->id() : 0;
     if (!shader)
         return false;
     glfuncs->glCompileShader(shader);
-    GLint value = 0;
+    auto value = 0;
     glfuncs->glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
     compiled = (value != 0);
     value = 0;
     glfuncs->glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &value);
     if (!compiled && value > 1) {
-        char *logbuf = new char [value];
+        auto logbuf = new char [value];
         GLint len;
         glfuncs->glGetShaderInfoLog(shader, value, &len, logbuf);
         log = QString::fromLatin1(logbuf);
-        QString name = q->objectName();
+        auto name = q->objectName();
 
         const char *types[] = {
             "Fragment",
@@ -287,7 +287,7 @@ bool QGLShaderPrivate::compile(QGLShader *q)
             ""
         };
 
-        const char *type = types[3];
+        auto type = types[3];
         if (shaderType == QGLShader::Fragment)
             type = types[0];
         else if (shaderType == QGLShader::Vertex)
@@ -408,7 +408,7 @@ bool QGLShader::compileSourceCode(const char *source)
     if (d->shaderGuard && d->shaderGuard->id()) {
         QVarLengthArray<const char *, 4> src;
         QVarLengthArray<GLint, 4> srclen;
-        int headerLen = 0;
+        auto headerLen = 0;
         while (source && source[headerLen] == '#') {
             // Skip #version and #extension directives at the start of
             // the shader code.  We need to insert the qualifierDefines
@@ -489,7 +489,7 @@ bool QGLShader::compileSourceFile(const QString& fileName)
         return false;
     }
 
-    QByteArray contents = file.readAll();
+    auto contents = file.readAll();
     return compileSourceCode(contents.constData());
 }
 
@@ -501,15 +501,15 @@ bool QGLShader::compileSourceFile(const QString& fileName)
 QByteArray QGLShader::sourceCode() const
 {
     Q_D(const QGLShader);
-    GLuint shader = d->shaderGuard ? d->shaderGuard->id() : 0;
+    auto shader = d->shaderGuard ? d->shaderGuard->id() : 0;
     if (!shader)
         return QByteArray();
-    GLint size = 0;
+    auto size = 0;
     d->glfuncs->glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &size);
     if (size <= 0)
         return QByteArray();
-    GLint len = 0;
-    char *source = new char [size];
+    auto len = 0;
+    auto source = new char [size];
     d->glfuncs->glGetShaderSource(shader, size, &len, source);
     QByteArray src(source);
     delete [] source;
@@ -564,7 +564,7 @@ public:
 
     void initializeGeometryShaderFunctions()
     {
-        QOpenGLContext *context = QOpenGLContext::currentContext();
+        auto context = QOpenGLContext::currentContext();
         if (!context->isOpenGLES()) {
             glProgramParameteri = (type_glProgramParameteri)
                 context->getProcAddress("glProgramParameteri");
@@ -632,7 +632,7 @@ QGLShaderProgramPrivate::~QGLShaderProgramPrivate()
 
 bool QGLShaderProgramPrivate::hasShader(QGLShader::ShaderType type) const
 {
-    for (QGLShader *shader : shaders) {
+    for (auto shader : shaders) {
         if (shader->shaderType() == type)
             return true;
     }
@@ -680,13 +680,13 @@ bool QGLShaderProgram::init()
     if ((d->programGuard && d->programGuard->id()) || d->inited)
         return true;
     d->inited = true;
-    QGLContext *context = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto context = const_cast<QGLContext *>(QGLContext::currentContext());
     if (!context)
         return false;
     d->glfuncs->initializeOpenGLFunctions();
     d->glfuncs->initializeGeometryShaderFunctions();
     if (d->glfuncs->hasOpenGLFeature(QOpenGLFunctions::Shaders)) {
-        GLuint program = d->glfuncs->glCreateProgram();
+        auto program = d->glfuncs->glCreateProgram();
         if (!program) {
             qWarning() << "QGLShaderProgram: could not create shader program";
             return false;
@@ -755,7 +755,7 @@ bool QGLShaderProgram::addShaderFromSourceCode(QGLShader::ShaderType type, const
     Q_D(QGLShaderProgram);
     if (!init())
         return false;
-    QGLShader *shader = new QGLShader(type, this);
+    auto shader = new QGLShader(type, this);
     if (!shader->compileSourceCode(source)) {
         d->log = shader->log();
         delete shader;
@@ -823,7 +823,7 @@ bool QGLShaderProgram::addShaderFromSourceFile
     Q_D(QGLShaderProgram);
     if (!init())
         return false;
-    QGLShader *shader = new QGLShader(type, this);
+    auto shader = new QGLShader(type, this);
     if (!shader->compileSourceFile(fileName)) {
         d->log = shader->log();
         delete shader;
@@ -882,7 +882,7 @@ void QGLShaderProgram::removeAllShaders()
     d->removingShaders = true;
     if (d->programGuard) {
         if (const auto programGuardId = d->programGuard->id()) {
-            for (QGLShader *shader : qAsConst(d->shaders)) {
+            for (auto shader : qAsConst(d->shaders)) {
                 if (shader && shader->d_func()->shaderGuard)
                     d->glfuncs->glDetachShader(programGuardId, shader->d_func()->shaderGuard->id());
             }
@@ -913,7 +913,7 @@ void QGLShaderProgram::removeAllShaders()
 bool QGLShaderProgram::link()
 {
     Q_D(QGLShaderProgram);
-    GLuint program = d->programGuard ? d->programGuard->id() : 0;
+    auto program = d->programGuard ? d->programGuard->id() : 0;
     if (!program)
         return false;
 
@@ -934,7 +934,7 @@ bool QGLShaderProgram::link()
     // Set up the geometry shader parameters
     if (!QOpenGLContext::currentContext()->isOpenGLES()
         && d->glfuncs->glProgramParameteri) {
-        for (QGLShader *shader : qAsConst(d->shaders)) {
+        for (auto shader : qAsConst(d->shaders)) {
             if (shader->shaderType() & QGLShader::Geometry) {
                 d->glfuncs->glProgramParameteri(program, GL_GEOMETRY_INPUT_TYPE_EXT,
                                        d->geometryInputType);
@@ -956,11 +956,11 @@ bool QGLShaderProgram::link()
     d->glfuncs->glGetProgramiv(program, GL_INFO_LOG_LENGTH, &value);
     d->log = QString();
     if (value > 1) {
-        char *logbuf = new char [value];
+        auto logbuf = new char [value];
         GLint len;
         d->glfuncs->glGetProgramInfoLog(program, value, &len, logbuf);
         d->log = QString::fromLatin1(logbuf);
-        QString name = objectName();
+        auto name = objectName();
         if (!d->linked) {
             if (name.isEmpty())
                 qWarning() << "QGLShader::link:" << d->log;
@@ -1008,7 +1008,7 @@ QString QGLShaderProgram::log() const
 bool QGLShaderProgram::bind()
 {
     Q_D(QGLShaderProgram);
-    GLuint program = d->programGuard ? d->programGuard->id() : 0;
+    auto program = d->programGuard ? d->programGuard->id() : 0;
     if (!program)
         return false;
     if (!d->linked && !link())
@@ -1050,7 +1050,7 @@ void QGLShaderProgram::release()
 GLuint QGLShaderProgram::programId() const
 {
     Q_D(const QGLShaderProgram);
-    GLuint id = d->programGuard ? d->programGuard->id() : 0;
+    auto id = d->programGuard ? d->programGuard->id() : 0;
     if (id)
         return id;
 
@@ -3068,7 +3068,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x4 *
 */
 int QGLShaderProgram::maxGeometryOutputVertices() const
 {
-    GLint n = 0;
+    auto n = 0;
 #if !defined(QT_OPENGL_ES_2)
     Q_D(const QGLShaderProgram);
     if (!QOpenGLContext::currentContext()->isOpenGLES())
@@ -3193,7 +3193,7 @@ bool QGLShaderProgram::hasOpenGLShaderPrograms(const QGLContext *context)
 void QGLShaderProgram::shaderDestroyed()
 {
     Q_D(QGLShaderProgram);
-    QGLShader *shader = qobject_cast<QGLShader *>(sender());
+    auto shader = qobject_cast<QGLShader *>(sender());
     if (shader && !d->removingShaders)
         removeShader(shader);
 }
@@ -3222,7 +3222,7 @@ bool QGLShader::hasOpenGLShaders(ShaderType type, const QGLContext *context)
         return false;
 
     QOpenGLFunctions functions(context->contextHandle());
-    bool resolved = functions.hasOpenGLFeature(QOpenGLFunctions::Shaders);
+    auto resolved = functions.hasOpenGLFeature(QOpenGLFunctions::Shaders);
     if (!resolved)
         return false;
 

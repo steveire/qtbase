@@ -152,7 +152,7 @@ QGLColormap & QGLColormap::operator=(const QGLColormap &map)
 
 void QGLColormap::detach_helper()
 {
-    QGLColormapData *x = new QGLColormapData;
+    auto x = new QGLColormapData;
     x->ref.store(1);
     x->cmapHandle = 0;
     x->cells = 0;
@@ -190,7 +190,7 @@ void QGLColormap::setEntries(int count, const QRgb *colors, int base)
 
     Q_ASSERT_X(colors && base >= 0 && (base + count) <= d->cells->size(), "QGLColormap::setEntries",
                "preconditions not met");
-    for (int i = 0; i < count; ++i)
+    for (auto i = 0; i < count; ++i)
         setEntry(base + i, colors[i]);
 }
 
@@ -270,17 +270,17 @@ int QGLColormap::find(QRgb color) const
 */
 int QGLColormap::findNearest(QRgb color) const
 {
-    int idx = find(color);
+    auto idx = find(color);
     if (idx >= 0)
         return idx;
-    int mapSize = size();
-    int mindist = 200000;
-    int r = qRed(color);
-    int g = qGreen(color);
-    int b = qBlue(color);
+    auto mapSize = size();
+    auto mindist = 200000;
+    auto r = qRed(color);
+    auto g = qGreen(color);
+    auto b = qBlue(color);
     int rx, gx, bx, dist;
-    for (int i = 0; i < mapSize; ++i) {
-        QRgb ci = d->cells->at(i);
+    for (auto i = 0; i < mapSize; ++i) {
+        auto ci = d->cells->at(i);
         rx = r - qRed(ci);
         gx = g - qGreen(ci);
         bx = b - qBlue(ci);

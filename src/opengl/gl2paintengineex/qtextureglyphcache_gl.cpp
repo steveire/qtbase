@@ -89,12 +89,12 @@ QGLTextureGlyphCache::~QGLTextureGlyphCache()
 
 void QGLTextureGlyphCache::createTextureData(int width, int height)
 {
-    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx == 0) {
         qWarning("QGLTextureGlyphCache::createTextureData: Called with no context");
         return;
     }
-    QOpenGLFunctions *funcs = ctx->contextHandle()->functions();
+    auto funcs = ctx->contextHandle()->functions();
 
     // create in QImageTextureGlyphCache baseclass is meant to be called
     // only to create the initial image and does not preserve the content,
@@ -124,12 +124,12 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
 
     if (m_format == QFontEngine::Format_A32) {
         QVarLengthArray<uchar> data(width * height * 4);
-        for (int i = 0; i < data.size(); ++i)
+        for (auto i = 0; i < data.size(); ++i)
             data[i] = 0;
         funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);
     } else {
         QVarLengthArray<uchar> data(width * height);
-        for (int i = 0; i < data.size(); ++i)
+        for (auto i = 0; i < data.size(); ++i)
             data[i] = 0;
         funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
     }
@@ -143,15 +143,15 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
 
 void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 {
-    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx == 0) {
         qWarning("QGLTextureGlyphCache::resizeTextureData: Called with no context");
         return;
     }
-    QOpenGLFunctions *funcs = ctx->contextHandle()->functions();
+    auto funcs = ctx->contextHandle()->functions();
 
-    int oldWidth = m_textureResource->m_width;
-    int oldHeight = m_textureResource->m_height;
+    auto oldWidth = m_textureResource->m_width;
+    auto oldHeight = m_textureResource->m_height;
 
     // Make the lower glyph texture size 16 x 16.
     if (width < 16)
@@ -159,7 +159,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     if (height < 16)
         height = 16;
 
-    GLuint oldTexture = m_textureResource->m_texture;
+    auto oldTexture = m_textureResource->m_texture;
     createTextureData(width, height);
 
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects() || ctx->d_ptr->workaround_brokenFBOReadBack) {
@@ -214,7 +214,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
                 source.append(QLatin1String(qglslMainWithTexCoordsVertexShader));
                 source.append(QLatin1String(qglslUntransformedPositionVertexShader));
 
-                QGLShader *vertexShader = new QGLShader(QGLShader::Vertex, m_blitProgram);
+                auto vertexShader = new QGLShader(QGLShader::Vertex, m_blitProgram);
                 vertexShader->compileSourceCode(source);
 
                 m_blitProgram->addShader(vertexShader);
@@ -225,7 +225,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
                 source.append(QLatin1String(qglslMainFragmentShader));
                 source.append(QLatin1String(qglslImageSrcFragmentShader));
 
-                QGLShader *fragmentShader = new QGLShader(QGLShader::Fragment, m_blitProgram);
+                auto fragmentShader = new QGLShader(QGLShader::Fragment, m_blitProgram);
                 fragmentShader->compileSourceCode(source);
 
                 m_blitProgram->addShader(fragmentShader);
@@ -278,47 +278,47 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
 void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition)
 {
-    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx == 0) {
         qWarning("QGLTextureGlyphCache::fillTexture: Called with no context");
         return;
     }
-    QOpenGLFunctions *funcs = ctx->contextHandle()->functions();
+    auto funcs = ctx->contextHandle()->functions();
 
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects() || ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::fillTexture(c, glyph, subPixelPosition);
 
         funcs->glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
         const QImage &texture = image();
-        const uchar *bits = texture.constBits();
+        auto bits = texture.constBits();
         bits += c.y * texture.bytesPerLine() + c.x;
-        for (int i=0; i<c.h; ++i) {
+        for (auto i=0; i<c.h; ++i) {
             funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, c.w, 1, GL_ALPHA, GL_UNSIGNED_BYTE, bits);
             bits += texture.bytesPerLine();
         }
         return;
     }
 
-    QImage mask = textureMapForGlyph(glyph, subPixelPosition);
-    const int maskWidth = mask.width();
-    const int maskHeight = mask.height();
+    auto mask = textureMapForGlyph(glyph, subPixelPosition);
+    const auto maskWidth = mask.width();
+    const auto maskHeight = mask.height();
 
     if (mask.format() == QImage::Format_Mono) {
         mask = mask.convertToFormat(QImage::Format_Indexed8);
-        for (int y = 0; y < maskHeight; ++y) {
-            uchar *src = (uchar *) mask.scanLine(y);
-            for (int x = 0; x < maskWidth; ++x)
+        for (auto y = 0; y < maskHeight; ++y) {
+            auto src = (uchar *) mask.scanLine(y);
+            for (auto x = 0; x < maskWidth; ++x)
                 src[x] = -src[x]; // convert 0 and 1 into 0 and 255
         }
     } else if (mask.depth() == 32) {
         // Make the alpha component equal to the average of the RGB values.
         // This is needed when drawing sub-pixel antialiased text on translucent targets.
-        for (int y = 0; y < maskHeight; ++y) {
-            quint32 *src = (quint32 *) mask.scanLine(y);
-            for (int x = 0; x < maskWidth; ++x) {
-                int r = qRed(src[x]);
-                int g = qGreen(src[x]);
-                int b = qBlue(src[x]);
+        for (auto y = 0; y < maskHeight; ++y) {
+            auto src = (quint32 *) mask.scanLine(y);
+            for (auto x = 0; x < maskWidth; ++x) {
+                auto r = qRed(src[x]);
+                auto g = qGreen(src[x]);
+                auto b = qBlue(src[x]);
                 int avg;
                 if (mask.format() == QImage::Format_RGB32)
                     avg = (r + g + b + 1) / 3; // "+1" for rounding.
@@ -360,7 +360,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
         }
 
         if (ctx->d_ptr->workaround_brokenAlphaTexSubImage) {
-            for (int i = 0; i < maskHeight; ++i)
+            for (auto i = 0; i < maskHeight; ++i)
                 funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
         } else {
             funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_ALPHA, GL_UNSIGNED_BYTE, mask.bits());
@@ -375,7 +375,7 @@ int QGLTextureGlyphCache::glyphPadding() const
 
 int QGLTextureGlyphCache::maxTextureWidth() const
 {
-    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx == 0)
         return QImageTextureGlyphCache::maxTextureWidth();
     else
@@ -384,7 +384,7 @@ int QGLTextureGlyphCache::maxTextureWidth() const
 
 int QGLTextureGlyphCache::maxTextureHeight() const
 {
-    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx == 0)
         return QImageTextureGlyphCache::maxTextureHeight();
 

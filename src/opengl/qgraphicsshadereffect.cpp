@@ -253,17 +253,17 @@ void QGraphicsShaderEffect::draw(QPainter *painter)
         d->customShaderStage = new QGLCustomShaderEffectStage
             (this, d->pixelShaderFragment);
     }
-    bool usingShader = d->customShaderStage->setOnPainter(painter);
+    auto usingShader = d->customShaderStage->setOnPainter(painter);
 
     QPoint offset;
     if (sourceIsPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset);
+        const auto pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset);
         painter->drawPixmap(offset, pixmap);
     } else {
         // Draw pixmap in device coordinates to avoid pixmap scaling.
-        const QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset);
-        QTransform restoreTransform = painter->worldTransform();
+        const auto pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset);
+        auto restoreTransform = painter->worldTransform();
         painter->setWorldTransform(QTransform());
         painter->drawPixmap(offset, pixmap);
         painter->setWorldTransform(restoreTransform);

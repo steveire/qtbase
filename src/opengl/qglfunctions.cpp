@@ -179,7 +179,7 @@ static QGLFunctionsPrivateEx *qt_gl_functions(const QGLContext *context = 0)
     if (!context)
         context = QGLContext::currentContext();
     Q_ASSERT(context);
-    QGLFunctionsPrivateEx *funcs =
+    auto funcs =
         reinterpret_cast<QGLFunctionsPrivateEx *>
             (qt_gl_functions_resource()->value<QGLFunctionsPrivateEx>(context->contextHandle()));
     return funcs;
@@ -220,7 +220,7 @@ QGLFunctions::QGLFunctions(const QGLContext *context)
 
 static int qt_gl_resolve_features()
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (ctx->isOpenGLES()) {
         // OpenGL ES 2
         int features = QGLFunctions::Multitexture |
@@ -243,8 +243,8 @@ static int qt_gl_resolve_features()
         return features;
     } else {
         // OpenGL
-        int features = 0;
-        QGLFormat::OpenGLVersionFlags versions = QGLFormat::openGLVersionFlags();
+        auto features = 0;
+        auto versions = QGLFormat::openGLVersionFlags();
         QOpenGLExtensionMatcher extensions;
 
         // Recognize features by extension name.
@@ -305,7 +305,7 @@ static int qt_gl_resolve_features()
 */
 QGLFunctions::OpenGLFeatures QGLFunctions::openGLFeatures() const
 {
-    QGLFunctionsPrivateEx *d = static_cast<QGLFunctionsPrivateEx *>(d_ptr);
+    auto d = static_cast<QGLFunctionsPrivateEx *>(d_ptr);
     if (!d)
         return 0;
     if (d->m_features == -1)
@@ -324,7 +324,7 @@ QGLFunctions::OpenGLFeatures QGLFunctions::openGLFeatures() const
 */
 bool QGLFunctions::hasOpenGLFeature(QGLFunctions::OpenGLFeature feature) const
 {
-    QGLFunctionsPrivateEx *d = static_cast<QGLFunctionsPrivateEx *>(d_ptr);
+    auto d = static_cast<QGLFunctionsPrivateEx *>(d_ptr);
     if (!d)
         return false;
     if (d->m_features == -1)

@@ -139,7 +139,7 @@ extern QImage qt_gl_read_frame_buffer(const QSize&, bool, bool);
 void QGLFramebufferObjectFormat::detach()
 {
     if (d->ref.load() != 1) {
-        QGLFramebufferObjectFormatPrivate *newd
+        auto newd
             = new QGLFramebufferObjectFormatPrivate(d);
         if (!d->ref.deref())
             delete d;
@@ -373,7 +373,7 @@ void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
         fboFormat.setStencil(false);
     }
 
-    GLenum format = f->format().internalTextureFormat();
+    auto format = f->format().internalTextureFormat();
     reqAlpha = (format != GL_RGB
 #ifdef GL_RGB5
                 && format != GL_RGB5
@@ -394,7 +394,7 @@ bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
     QGL_FUNCP_CONTEXT;
     if (!ctx)
         return false;   // Context no longer exists.
-    GLenum status = ctx->contextHandle()->functions()->glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    auto status = ctx->contextHandle()->functions()->glCheckFramebufferStatus(GL_FRAMEBUFFER);
     switch(status) {
     case GL_NO_ERROR:
     case GL_FRAMEBUFFER_COMPLETE:
@@ -471,7 +471,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
                                        GLenum texture_target, GLenum internal_format,
                                        GLint samples, bool mipmap)
 {
-    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto ctx = const_cast<QGLContext *>(QGLContext::currentContext());
 
     funcs.initializeOpenGLFunctions();
 
@@ -502,9 +502,9 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         funcs.glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
                            GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         if (mipmap) {
-            int width = size.width();
-            int height = size.height();
-            int level = 0;
+            auto width = size.width();
+            auto height = size.height();
+            auto level = 0;
             while (width > 1 || height > 1) {
                 width = qMax(1, width >> 1);
                 height = qMax(1, height >> 1);
@@ -1024,7 +1024,7 @@ bool QGLFramebufferObject::bind()
     QGL_FUNC_CONTEXT;
     if (!ctx)
         return false;   // Context no longer exists.
-    const QGLContext *current = QGLContext::currentContext();
+    auto current = QGLContext::currentContext();
 #ifdef QT_DEBUG
     if (!current ||
         QGLContextPrivate::contextGroup(current) != QGLContextPrivate::contextGroup(ctx))
@@ -1057,7 +1057,7 @@ bool QGLFramebufferObject::release()
     if (!ctx)
         return false;   // Context no longer exists.
 
-    const QGLContext *current = QGLContext::currentContext();
+    auto current = QGLContext::currentContext();
 
 #ifdef QT_DEBUG
     if (!current ||
@@ -1150,10 +1150,10 @@ QImage QGLFramebufferObject::toImage() const
         return temp.toImage();
     }
 
-    bool wasBound = isBound();
+    auto wasBound = isBound();
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->bind();
-    QImage image = qt_gl_read_frame_buffer(d->size, format().internalTextureFormat() != GL_RGB, true);
+    auto image = qt_gl_read_frame_buffer(d->size, format().internalTextureFormat() != GL_RGB, true);
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->release();
 
@@ -1169,7 +1169,7 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
     if (d->engine)
         return d->engine;
 
-    QPaintEngine *engine = qt_buffer_2_engine()->engine();
+    auto engine = qt_buffer_2_engine()->engine();
     if (engine->isActive() && engine->paintDevice() != this) {
         d->engine = new QGL2PaintEngineEx;
         return d->engine;
@@ -1188,7 +1188,7 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
 */
 bool QGLFramebufferObject::bindDefault()
 {
-    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    auto ctx = const_cast<QGLContext *>(QGLContext::currentContext());
 
     if (ctx) {
         QOpenGLFunctions functions(ctx->contextHandle());
@@ -1255,8 +1255,8 @@ int QGLFramebufferObject::metric(PaintDeviceMetric metric) const
 
     float dpmx = qt_defaultDpiX()*100./2.54;
     float dpmy = qt_defaultDpiY()*100./2.54;
-    int w = d->size.width();
-    int h = d->size.height();
+    auto w = d->size.width();
+    auto h = d->size.height();
     switch (metric) {
     case PdmWidth:
         return w;
@@ -1344,7 +1344,7 @@ QGLFramebufferObject::Attachment QGLFramebufferObject::attachment() const
 bool QGLFramebufferObject::isBound() const
 {
     Q_D(const QGLFramebufferObject);
-    const QGLContext *current = QGLContext::currentContext();
+    auto current = QGLContext::currentContext();
     if (current) {
         current->d_ptr->refreshCurrentFbo();
         return current->d_ptr->current_fbo == d->fbo();
@@ -1405,7 +1405,7 @@ void QGLFramebufferObject::blitFramebuffer(QGLFramebufferObject *target, const Q
                                            GLbitfield buffers,
                                            GLenum filter)
 {
-    const QGLContext *ctx = QGLContext::currentContext();
+    auto ctx = QGLContext::currentContext();
     if (!ctx || !ctx->contextHandle())
         return;
 
@@ -1413,22 +1413,22 @@ void QGLFramebufferObject::blitFramebuffer(QGLFramebufferObject *target, const Q
     if (!functions.hasOpenGLExtension(QOpenGLExtensions::FramebufferBlit))
         return;
 
-    QSurface *surface = ctx->contextHandle()->surface();
+    auto surface = ctx->contextHandle()->surface();
 
-    const int height = static_cast<QWindow *>(surface)->height();
+    const auto height = static_cast<QWindow *>(surface)->height();
 
-    const int sh = source ? source->height() : height;
-    const int th = target ? target->height() : height;
+    const auto sh = source ? source->height() : height;
+    const auto th = target ? target->height() : height;
 
-    const int sx0 = sourceRect.left();
-    const int sx1 = sourceRect.left() + sourceRect.width();
-    const int sy0 = sh - (sourceRect.top() + sourceRect.height());
-    const int sy1 = sh - sourceRect.top();
+    const auto sx0 = sourceRect.left();
+    const auto sx1 = sourceRect.left() + sourceRect.width();
+    const auto sy0 = sh - (sourceRect.top() + sourceRect.height());
+    const auto sy1 = sh - sourceRect.top();
 
-    const int tx0 = targetRect.left();
-    const int tx1 = targetRect.left() + targetRect.width();
-    const int ty0 = th - (targetRect.top() + targetRect.height());
-    const int ty1 = th - targetRect.top();
+    const auto tx0 = targetRect.left();
+    const auto tx1 = targetRect.left() + targetRect.width();
+    const auto ty0 = th - (targetRect.top() + targetRect.height());
+    const auto ty1 = th - targetRect.top();
 
     ctx->d_ptr->refreshCurrentFbo();
 
