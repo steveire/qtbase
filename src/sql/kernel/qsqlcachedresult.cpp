@@ -94,7 +94,7 @@ int QSqlCachedResultPrivate::nextIndex()
 {
     if (forwardOnly)
         return 0;
-    int newIdx = rowCacheEnd;
+    auto newIdx = rowCacheEnd;
     if (newIdx + colCount > cache.size())
         cache.resize(qMin(cache.size() * 2, cache.size() + 10000));
     rowCacheEnd += colCount;
@@ -213,7 +213,7 @@ bool QSqlCachedResult::fetchLast()
             return fetch(d->cacheCount() - 1);
     }
 
-    int i = at();
+    auto i = at();
     while (fetchNext())
         ++i; /* brute force */
     if (d->forwardOnly && at() == QSql::AfterLastRow) {
@@ -227,7 +227,7 @@ bool QSqlCachedResult::fetchLast()
 QVariant QSqlCachedResult::data(int i)
 {
     Q_D(const QSqlCachedResult);
-    int idx = d->forwardOnly ? i : at() * d->colCount + i;
+    auto idx = d->forwardOnly ? i : at() * d->colCount + i;
     if (i >= d->colCount || i < 0 || at() < 0 || idx >= d->rowCacheEnd)
         return QVariant();
 
@@ -237,7 +237,7 @@ QVariant QSqlCachedResult::data(int i)
 bool QSqlCachedResult::isNull(int i)
 {
     Q_D(const QSqlCachedResult);
-    int idx = d->forwardOnly ? i : at() * d->colCount + i;
+    auto idx = d->forwardOnly ? i : at() * d->colCount + i;
     if (i >= d->colCount || i < 0 || at() < 0 || idx >= d->rowCacheEnd)
         return true;
 

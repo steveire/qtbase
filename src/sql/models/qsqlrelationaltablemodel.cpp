@@ -202,7 +202,7 @@ void QRelation::populateDictionary()
     QSqlRecord record;
     QString indexColumn;
     QString displayColumn;
-    for (int i=0; i < model->rowCount(); ++i) {
+    for (auto i=0; i < model->rowCount(); ++i) {
         record = model->record(i);
 
         indexColumn = rel.indexColumn();
@@ -251,7 +251,7 @@ bool QRelatedTableModel::select()
         return QSqlTableModel::select();
     }
     relation->clearDictionary();
-    bool res = QSqlTableModel::select();
+    auto res = QSqlTableModel::select();
     if (res)
         relation->populateDictionary();
     return res;
@@ -281,7 +281,7 @@ public:
 
 void QSqlRelationalTableModelPrivate::clearChanges()
 {
-    for (int i = 0; i < relations.count(); ++i) {
+    for (auto i = 0; i < relations.count(); ++i) {
         QRelation &rel = relations[i];
         rel.clear();
     }
@@ -294,8 +294,8 @@ void QSqlRelationalTableModelPrivate::revertCachedRow(int row)
 
 int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
 {
-    const QString fieldname = strippedFieldName(name);
-    int idx = baseRec.indexOf(fieldname);
+    const auto fieldname = strippedFieldName(name);
+    auto idx = baseRec.indexOf(fieldname);
     if (idx == -1) {
         // If the name is an alias we can find it here.
         idx = QSqlTableModelPrivate::nameToIndex(name);
@@ -308,7 +308,7 @@ int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
 */
 void QSqlRelationalTableModelPrivate::clearCache()
 {
-    for (int i = 0; i < relations.count(); ++i)
+    for (auto i = 0; i < relations.count(); ++i)
         relations[i].clearDictionary();
 
     QSqlTableModelPrivate::clearCache();
@@ -437,10 +437,10 @@ QVariant QSqlRelationalTableModel::data(const QModelIndex &index, int role) cons
         //At an unmodified index, the underlying model will
         //already have the correct display value.
         if (d->strategy != OnFieldChange) {
-            const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
+            const auto row = d->cache.value(index.row());
             if (row.op() != QSqlTableModelPrivate::None && row.rec().isGenerated(index.column())) {
                 if (d->strategy == OnManualSubmit || row.op() != QSqlTableModelPrivate::Delete) {
-                    QVariant v = row.rec().value(index.column());
+                    auto v = row.rec().value(index.column());
                     if (v.isValid())
                         return relation.dictionary[v.toString()];
                 }
@@ -545,8 +545,8 @@ QString QSqlRelationalTableModel::selectStatement() const
     // Count how many times each field name occurs in the record
     QHash<QString, int> fieldNames;
     QStringList fieldList;
-    for (int i = 0; i < d->baseRec.count(); ++i) {
-        QSqlRelation relation = d->relations.value(i).rel;
+    for (auto i = 0; i < d->baseRec.count(); ++i) {
+        auto relation = d->relations.value(i).rel;
         QString name;
         if (relation.isValid()) {
             // Count the display column name, not the original foreign key
@@ -554,8 +554,8 @@ QString QSqlRelationalTableModel::selectStatement() const
             if (d->db.driver()->isIdentifierEscaped(name, QSqlDriver::FieldName))
                 name = d->db.driver()->stripDelimiters(name, QSqlDriver::FieldName);
 
-            const QSqlRecord rec = database().record(relation.tableName());
-            for (int i = 0; i < rec.count(); ++i) {
+            const auto rec = database().record(relation.tableName());
+            for (auto i = 0; i < rec.count(); ++i) {
                 if (name.compare(rec.fieldName(i), Qt::CaseInsensitive) == 0) {
                     name = rec.fieldName(i);
                     break;
@@ -571,23 +571,23 @@ QString QSqlRelationalTableModel::selectStatement() const
 
     QString fList;
     QString conditions;
-    QString from = Sql::from(tableName());
-    for (int i = 0; i < d->baseRec.count(); ++i) {
-        QSqlRelation relation = d->relations.value(i).rel;
-        const QString tableField = d->fullyQualifiedFieldName(tableName(), d->db.driver()->escapeIdentifier(d->baseRec.fieldName(i), QSqlDriver::FieldName));
+    auto from = Sql::from(tableName());
+    for (auto i = 0; i < d->baseRec.count(); ++i) {
+        auto relation = d->relations.value(i).rel;
+        const auto tableField = d->fullyQualifiedFieldName(tableName(), d->db.driver()->escapeIdentifier(d->baseRec.fieldName(i), QSqlDriver::FieldName));
         if (relation.isValid()) {
-            const QString relTableAlias = Sql::relTablePrefix(i);
-            QString displayTableField = d->fullyQualifiedFieldName(relTableAlias, relation.displayColumn());
+            const auto relTableAlias = Sql::relTablePrefix(i);
+            auto displayTableField = d->fullyQualifiedFieldName(relTableAlias, relation.displayColumn());
 
             // Duplicate field names must be aliased
             if (fieldNames.value(fieldList[i]) > 1) {
-                QString relTableName = relation.tableName().section(QChar::fromLatin1('.'), -1, -1);
+                auto relTableName = relation.tableName().section(QChar::fromLatin1('.'), -1, -1);
                 if (d->db.driver()->isIdentifierEscaped(relTableName, QSqlDriver::TableName))
                     relTableName = d->db.driver()->stripDelimiters(relTableName, QSqlDriver::TableName);
-                QString displayColumn = relation.displayColumn();
+                auto displayColumn = relation.displayColumn();
                 if (d->db.driver()->isIdentifierEscaped(displayColumn, QSqlDriver::FieldName))
                     displayColumn = d->db.driver()->stripDelimiters(displayColumn, QSqlDriver::FieldName);
-                const QString alias = QString::fromLatin1("%1_%2_%3").arg(relTableName).arg(displayColumn).arg(fieldNames.value(fieldList[i]));
+                const auto alias = QString::fromLatin1("%1_%2_%3").arg(relTableName).arg(displayColumn).arg(fieldNames.value(fieldList[i]));
                 displayTableField = Sql::as(displayTableField, alias);
                 --fieldNames[fieldList[i]];
             }
@@ -595,9 +595,9 @@ QString QSqlRelationalTableModel::selectStatement() const
             fList = Sql::comma(fList, displayTableField);
 
             // Join related table
-            const QString tblexpr = Sql::concat(relation.tableName(), relTableAlias);
-            const QString relTableField = d->fullyQualifiedFieldName(relTableAlias, relation.indexColumn());
-            const QString cond = Sql::eq(tableField, relTableField);
+            const auto tblexpr = Sql::concat(relation.tableName(), relTableAlias);
+            const auto relTableField = d->fullyQualifiedFieldName(relTableAlias, relation.indexColumn());
+            const auto cond = Sql::eq(tableField, relTableField);
             if (d->joinMode == QSqlRelationalTableModel::InnerJoin) {
                 // FIXME: InnerJoin code is known to be broken.
                 // Use LeftJoin mode if you want correct behavior.
@@ -615,8 +615,8 @@ QString QSqlRelationalTableModel::selectStatement() const
     if (fList.isEmpty())
         return QString();
 
-    const QString stmt = Sql::concat(Sql::select(fList), from);
-    const QString where = Sql::where(Sql::et(Sql::paren(conditions), Sql::paren(filter())));
+    const auto stmt = Sql::concat(Sql::select(fList), from);
+    const auto where = Sql::where(Sql::et(Sql::paren(conditions), Sql::paren(filter())));
     return Sql::concat(Sql::concat(stmt, where), orderByClause());
 }
 
@@ -713,10 +713,10 @@ void QSqlRelationalTableModel::setTable(const QString &table)
  */
 void QSqlRelationalTableModelPrivate::translateFieldNames(QSqlRecord &values) const
 {
-    for (int i = 0; i < values.count(); ++i) {
+    for (auto i = 0; i < values.count(); ++i) {
         if (relations.value(i).isValid()) {
-            QVariant v = values.value(i);
-            bool gen = values.isGenerated(i);
+            auto v = values.value(i);
+            auto gen = values.isGenerated(i);
             values.replace(i, baseRec.field(i));
             values.setValue(i, v);
             values.setGenerated(i, gen);
@@ -731,7 +731,7 @@ bool QSqlRelationalTableModel::updateRowInTable(int row, const QSqlRecord &value
 {
     Q_D(QSqlRelationalTableModel);
 
-    QSqlRecord rec = values;
+    auto rec = values;
     d->translateFieldNames(rec);
 
     return QSqlTableModel::updateRowInTable(row, rec);
@@ -744,7 +744,7 @@ bool QSqlRelationalTableModel::insertRowIntoTable(const QSqlRecord &values)
 {
     Q_D(QSqlRelationalTableModel);
 
-    QSqlRecord rec = values;
+    auto rec = values;
     d->translateFieldNames(rec);
 
     return QSqlTableModel::insertRowIntoTable(rec);
@@ -757,11 +757,11 @@ QString QSqlRelationalTableModel::orderByClause() const
 {
     Q_D(const QSqlRelationalTableModel);
 
-    const QSqlRelation rel = d->relations.value(d->sortColumn).rel;
+    const auto rel = d->relations.value(d->sortColumn).rel;
     if (!rel.isValid())
         return QSqlTableModel::orderByClause();
 
-    QString f = d->fullyQualifiedFieldName(Sql::relTablePrefix(d->sortColumn), rel.displayColumn());
+    auto f = d->fullyQualifiedFieldName(Sql::relTablePrefix(d->sortColumn), rel.displayColumn());
     f = d->sortOrder == Qt::AscendingOrder ? Sql::asc(f) : Sql::desc(f);
     return Sql::orderBy(f);
 }
@@ -776,7 +776,7 @@ bool QSqlRelationalTableModel::removeColumns(int column, int count, const QModel
     if (parent.isValid() || column < 0 || column + count > d->rec.count())
         return false;
 
-    for (int i = 0; i < count; ++i) {
+    for (auto i = 0; i < count; ++i) {
         d->baseRec.remove(column);
         if (d->relations.count() > column)
             d->relations.remove(column);

@@ -190,11 +190,11 @@ QSqlDatabasePrivate::~QSqlDatabasePrivate()
 
 void QSqlDatabasePrivate::cleanConnections()
 {
-    QConnectionDict *dict = dbDict();
+    auto dict = dbDict();
     Q_ASSERT(dict);
     QWriteLocker locker(&dict->lock);
 
-    QConnectionDict::iterator it = dict->begin();
+    auto it = dict->begin();
     while (it != dict->end()) {
         invalidateDb(it.value(), it.key(), false);
         ++it;
@@ -240,7 +240,7 @@ void QSqlDatabasePrivate::invalidateDb(const QSqlDatabase &db, const QString &na
 
 void QSqlDatabasePrivate::removeDatabase(const QString &name)
 {
-    QConnectionDict *dict = dbDict();
+    auto dict = dbDict();
     Q_ASSERT(dict);
     QWriteLocker locker(&dict->lock);
 
@@ -252,7 +252,7 @@ void QSqlDatabasePrivate::removeDatabase(const QString &name)
 
 void QSqlDatabasePrivate::addDatabase(const QSqlDatabase &db, const QString &name)
 {
-    QConnectionDict *dict = dbDict();
+    auto dict = dbDict();
     Q_ASSERT(dict);
     QWriteLocker locker(&dict->lock);
 
@@ -269,11 +269,11 @@ void QSqlDatabasePrivate::addDatabase(const QSqlDatabase &db, const QString &nam
 */
 QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
 {
-    const QConnectionDict *dict = dbDict();
+    auto dict = dbDict();
     Q_ASSERT(dict);
 
     dict->lock.lockForRead();
-    QSqlDatabase db = dict->value(name);
+    auto db = dict->value(name);
     dict->lock.unlock();
     if (db.isValid() && !db.isOpen() && open) {
         if (!db.open())
@@ -575,19 +575,19 @@ QStringList QSqlDatabase::drivers()
     list << QLatin1String("QIBASE");
 #endif
 
-    if (QFactoryLoader *fl = loader()) {
+    if (auto fl = loader()) {
         typedef QMultiMap<int, QString> PluginKeyMap;
         typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
-        const PluginKeyMap keyMap = fl->keyMap();
-        const PluginKeyMapConstIterator cend = keyMap.constEnd();
-        for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it)
+        const auto keyMap = fl->keyMap();
+        const auto cend = keyMap.constEnd();
+        for (auto it = keyMap.constBegin(); it != cend; ++it)
             if (!list.contains(it.value()))
                 list << it.value();
     }
 
-    DriverDict dict = QSqlDatabasePrivate::driverDict();
-    for (DriverDict::const_iterator i = dict.constBegin(); i != dict.constEnd(); ++i) {
+    auto dict = QSqlDatabasePrivate::driverDict();
+    for (auto i = dict.constBegin(); i != dict.constEnd(); ++i) {
         if (!list.contains(i.key()))
             list << i.key();
     }
@@ -765,8 +765,8 @@ void QSqlDatabasePrivate::init(const QString &type)
     }
 
     if (!driver) {
-        DriverDict dict = QSqlDatabasePrivate::driverDict();
-        for (DriverDict::const_iterator it = dict.constBegin();
+        auto dict = QSqlDatabasePrivate::driverDict();
+        for (auto it = dict.constBegin();
              it != dict.constEnd() && !driver; ++it) {
             if (type == it.key()) {
                 driver = ((QSqlDriverCreatorBase*)(*it))->createObject();

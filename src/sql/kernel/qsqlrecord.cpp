@@ -232,8 +232,8 @@ QString QSqlRecord::fieldName(int index) const
 
 int QSqlRecord::indexOf(const QString& name) const
 {
-    QString nm = name.toUpper();
-    for (int i = 0; i < count(); ++i) {
+    auto nm = name.toUpper();
+    for (auto i = 0; i < count(); ++i) {
         if (d->fields.at(i).name().toUpper() == nm) // TODO: case-insensitive comparison
             return i;
     }
@@ -359,8 +359,8 @@ bool QSqlRecord::contains(const QString& name) const
 void QSqlRecord::clearValues()
 {
     detach();
-    int count = d->fields.count();
-    for (int i = 0; i < count; ++i)
+    auto count = d->fields.count();
+    for (auto i = 0; i < count; ++i)
         d->fields[i].clear();
 }
 
@@ -517,9 +517,9 @@ QDebug operator<<(QDebug dbg, const QSqlRecord &r)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
-    const int count = r.count();
+    const auto count = r.count();
     dbg << "QSqlRecord(" << count << ')';
-    for (int i = 0; i < count; ++i) {
+    for (auto i = 0; i < count; ++i) {
         dbg.nospace();
         dbg << '\n' << qSetFieldWidth(2) << right << i << left << qSetFieldWidth(0) << ':';
         dbg.space();
@@ -538,7 +538,7 @@ QSqlRecord QSqlRecord::keyValues(const QSqlRecord &keyFields) const
 {
     QSqlRecord retValues(keyFields);
 
-    for (int i = retValues.count() - 1; i >= 0; --i)
+    for (auto i = retValues.count() - 1; i >= 0; --i)
         retValues.setValue(i, value(retValues.fieldName(i)));
 
     return retValues;

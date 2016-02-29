@@ -330,7 +330,7 @@ QString QSqlError::nativeErrorCode() const
 
 QString QSqlError::text() const
 {
-    QString result = d->databaseError;
+    auto result = d->databaseError;
     if (!d->databaseError.endsWith(QLatin1String("\n")))
         result += QLatin1Char(' ');
     result += d->driverError;

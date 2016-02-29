@@ -60,8 +60,8 @@ typedef QSqlTableModelSql Sql;
 */
 QSqlRecord QSqlTableModelPrivate::record(const QVector<QVariant> &values) const
 {
-    QSqlRecord r = rec;
-    for (int i = 0; i < r.count() && i < values.count(); ++i)
+    auto r = rec;
+    for (auto i = 0; i < r.count() && i < values.count(); ++i)
         r.setValue(i, values.at(i));
     return r;
 }
@@ -73,7 +73,7 @@ int QSqlTableModelPrivate::nameToIndex(const QString &name) const
 
 QString QSqlTableModelPrivate::strippedFieldName(const QString &name) const
 {
-    QString fieldname = name;
+    auto fieldname = name;
     if (db.driver()->isIdentifierEscaped(fieldname, QSqlDriver::FieldName))
         fieldname = db.driver()->stripDelimiters(fieldname, QSqlDriver::FieldName);
     return fieldname;
@@ -81,9 +81,9 @@ QString QSqlTableModelPrivate::strippedFieldName(const QString &name) const
 
 int QSqlTableModelPrivate::insertCount(int maxRow) const
 {
-    int cnt = 0;
-    CacheMap::ConstIterator i = cache.constBegin();
-    const CacheMap::ConstIterator e = cache.constEnd();
+    auto cnt = 0;
+    auto i = cache.constBegin();
+    const auto e = cache.constEnd();
     for ( ; i != e && (maxRow < 0 || i.key() <= maxRow); ++i)
         if (i.value().insert())
             ++cnt;
@@ -118,7 +118,7 @@ void QSqlTableModelPrivate::clearCache()
 void QSqlTableModelPrivate::revertCachedRow(int row)
 {
     Q_Q(QSqlTableModel);
-    ModifiedRow r = cache.value(row);
+    auto r = cache.value(row);
 
     switch (r.op()) {
     case QSqlTableModelPrivate::None:
@@ -133,14 +133,14 @@ void QSqlTableModelPrivate::revertCachedRow(int row)
         }
         break;
     case QSqlTableModelPrivate::Insert: {
-            QMap<int, QSqlTableModelPrivate::ModifiedRow>::Iterator it = cache.find(row);
+            auto it = cache.find(row);
             if (it == cache.end())
                 return;
             q->beginRemoveRows(QModelIndex(), row, row);
             it = cache.erase(it);
             while (it != cache.end()) {
-                int oldKey = it.key();
-                const QSqlTableModelPrivate::ModifiedRow oldValue = it.value();
+                auto oldKey = it.key();
+                const auto oldValue = it.value();
                 cache.erase(it);
                 it = cache.insert(oldKey - 1, oldValue);
                 ++it;
@@ -334,7 +334,7 @@ void QSqlTableModel::setTable(const QString &tableName)
     // Remember the auto index column if there is one now.
     // The record that will be obtained from the query after select lacks this feature.
     d->autoColumn.clear();
-    for (int c = 0; c < d->rec.count(); ++c) {
+    for (auto c = 0; c < d->rec.count(); ++c) {
         if (d->rec.field(c).isAutoValue()) {
             d->autoColumn = d->rec.fieldName(c);
             break;
@@ -363,7 +363,7 @@ QString QSqlTableModel::tableName() const
 bool QSqlTableModel::select()
 {
     Q_D(QSqlTableModel);
-    const QString query = selectStatement();
+    const auto query = selectStatement();
     if (query.isEmpty())
         return false;
 
@@ -402,9 +402,9 @@ bool QSqlTableModel::selectRow(int row)
     if (row < 0 || row >= rowCount())
         return false;
 
-    const int table_sort_col = d->sortColumn;
+    const auto table_sort_col = d->sortColumn;
     d->sortColumn = -1;
-    const QString table_filter = d->filter;
+    const auto table_filter = d->filter;
     d->filter = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement,
                                               d->tableName,
                                               primaryValues(row),
@@ -437,15 +437,15 @@ bool QSqlTableModel::selectRow(int row)
         newValues = q.record();
     }
 
-    bool needsAddingToCache = !exists || d->cache.contains(row);
+    auto needsAddingToCache = !exists || d->cache.contains(row);
 
     if (!needsAddingToCache) {
-        const QSqlRecord curValues = record(row);
+        const auto curValues = record(row);
         needsAddingToCache = curValues.count() != newValues.count();
         if (!needsAddingToCache) {
             // Look for changed values. Primary key fields are customarily first
             // and probably change less often than other fields, so start at the end.
-            for (int f = curValues.count() - 1; f >= 0; --f) {
+            for (auto f = curValues.count() - 1; f >= 0; --f) {
                 if (curValues.value(f) != newValues.value(f)) {
                     needsAddingToCache = true;
                     break;
@@ -472,7 +472,7 @@ QVariant QSqlTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::EditRole))
         return QVariant();
 
-    const QSqlTableModelPrivate::ModifiedRow mrow = d->cache.value(index.row());
+    const auto mrow = d->cache.value(index.row());
     if (mrow.op() != QSqlTableModelPrivate::None)
         return mrow.rec().value(index.column());
 
@@ -486,7 +486,7 @@ QVariant QSqlTableModel::headerData(int section, Qt::Orientation orientation, in
 {
     Q_D(const QSqlTableModel);
     if (orientation == Qt::Vertical && role == Qt::DisplayRole) {
-        const QSqlTableModelPrivate::Op op = d->cache.value(section).op();
+        const auto op = d->cache.value(section).op();
         if (op == QSqlTableModelPrivate::Insert)
             return QLatin1String("*");
         else if (op == QSqlTableModelPrivate::Delete)
@@ -505,8 +505,8 @@ QVariant QSqlTableModel::headerData(int section, Qt::Orientation orientation, in
 bool QSqlTableModel::isDirty() const
 {
     Q_D(const QSqlTableModel);
-    QSqlTableModelPrivate::CacheMap::ConstIterator i = d->cache.constBegin();
-    const QSqlTableModelPrivate::CacheMap::ConstIterator e = d->cache.constEnd();
+    auto i = d->cache.constBegin();
+    const auto e = d->cache.constEnd();
     for (; i != e; ++i) {
         if (!i.value().submitted())
             return true;
@@ -527,7 +527,7 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
     if (!index.isValid())
         return false;
 
-    const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
+    const auto row = d->cache.value(index.row());
     if (row.submitted())
         return false;
 
@@ -574,7 +574,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     if (!(flags(index) & Qt::ItemIsEditable))
         return false;
 
-    const QVariant oldValue = QSqlTableModel::data(index, role);
+    const auto oldValue = QSqlTableModel::data(index, role);
     if (value == oldValue
         && value.isNull() == oldValue.isNull()
         && d->cache.value(index.row()).op() != QSqlTableModelPrivate::Insert)
@@ -629,11 +629,11 @@ bool QSqlTableModel::updateRowInTable(int row, const QSqlRecord &values)
     QSqlRecord rec(values);
     emit beforeUpdate(row, rec);
 
-    const QSqlRecord whereValues = primaryValues(row);
-    const bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
-    const QString stmt = d->db.driver()->sqlStatement(QSqlDriver::UpdateStatement, d->tableName,
+    const auto whereValues = primaryValues(row);
+    const auto prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
+    const auto stmt = d->db.driver()->sqlStatement(QSqlDriver::UpdateStatement, d->tableName,
                                                      rec, prepStatement);
-    const QString where = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement, d->tableName,
+    const auto where = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement, d->tableName,
                                                        whereValues, prepStatement);
 
     if (stmt.isEmpty() || where.isEmpty() || row < 0 || row >= rowCount()) {
@@ -662,11 +662,11 @@ bool QSqlTableModel::updateRowInTable(int row, const QSqlRecord &values)
 bool QSqlTableModel::insertRowIntoTable(const QSqlRecord &values)
 {
     Q_D(QSqlTableModel);
-    QSqlRecord rec = values;
+    auto rec = values;
     emit beforeInsert(rec);
 
-    const bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
-    const QString stmt = d->db.driver()->sqlStatement(QSqlDriver::InsertStatement, d->tableName,
+    const auto prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
+    const auto stmt = d->db.driver()->sqlStatement(QSqlDriver::InsertStatement, d->tableName,
                                                       rec, prepStatement);
 
     if (stmt.isEmpty()) {
@@ -695,13 +695,13 @@ bool QSqlTableModel::deleteRowFromTable(int row)
     Q_D(QSqlTableModel);
     emit beforeDelete(row);
 
-    const QSqlRecord whereValues = primaryValues(row);
-    const bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
-    const QString stmt = d->db.driver()->sqlStatement(QSqlDriver::DeleteStatement,
+    const auto whereValues = primaryValues(row);
+    const auto prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
+    const auto stmt = d->db.driver()->sqlStatement(QSqlDriver::DeleteStatement,
                                                       d->tableName,
                                                       QSqlRecord(),
                                                       prepStatement);
-    const QString where = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement,
+    const auto where = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement,
                                                        d->tableName,
                                                        whereValues,
                                                        prepStatement);
@@ -734,12 +734,12 @@ bool QSqlTableModel::submitAll()
 {
     Q_D(QSqlTableModel);
 
-    bool success = true;
+    auto success = true;
 
     const auto cachedKeys = d->cache.keys();
-    for (int row : cachedKeys) {
+    for (auto row : cachedKeys) {
         // be sure cache *still* contains the row since overridden selectRow() could have called select()
-        QSqlTableModelPrivate::CacheMap::iterator it = d->cache.find(row);
+        auto it = d->cache.find(row);
         if (it == d->cache.end())
             continue;
 
@@ -764,7 +764,7 @@ bool QSqlTableModel::submitAll()
 
         if (success) {
             if (d->strategy != OnManualSubmit && mrow.op() == QSqlTableModelPrivate::Insert) {
-                int c = mrow.rec().indexOf(d->autoColumn);
+                auto c = mrow.rec().indexOf(d->autoColumn);
                 if (c != -1 && !mrow.rec().isGenerated(c))
                     mrow.setValue(c, d->editQuery.lastInsertId());
             }
@@ -885,7 +885,7 @@ void QSqlTableModel::revertAll()
     Q_D(QSqlTableModel);
 
     const QList<int> rows(d->cache.keys());
-    for (int i = rows.size() - 1; i >= 0; --i)
+    for (auto i = rows.size() - 1; i >= 0; --i)
         revertRow(rows.value(i));
 }
 
@@ -975,13 +975,13 @@ void QSqlTableModel::setSort(int column, Qt::SortOrder order)
 QString QSqlTableModel::orderByClause() const
 {
     Q_D(const QSqlTableModel);
-    QSqlField f = d->rec.field(d->sortColumn);
+    auto f = d->rec.field(d->sortColumn);
     if (!f.isValid())
         return QString();
 
     //we can safely escape the field because it would have been obtained from the database
     //and have the correct case
-    QString field = d->db.driver()->escapeIdentifier(f.name(), QSqlDriver::FieldName);
+    auto field = d->db.driver()->escapeIdentifier(f.name(), QSqlDriver::FieldName);
     field.prepend(QLatin1Char('.')).prepend(d->tableName);
     field = d->sortOrder == Qt::AscendingOrder ? Sql::asc(field) : Sql::desc(field);
     return Sql::orderBy(field);
@@ -1018,7 +1018,7 @@ QString QSqlTableModel::selectStatement() const
         return QString();
     }
 
-    const QString stmt = d->db.driver()->sqlStatement(QSqlDriver::SelectStatement,
+    const auto stmt = d->db.driver()->sqlStatement(QSqlDriver::SelectStatement,
                                                       d->tableName,
                                                       d->rec,
                                                       false);
@@ -1044,7 +1044,7 @@ bool QSqlTableModel::removeColumns(int column, int count, const QModelIndex &par
     Q_D(QSqlTableModel);
     if (parent.isValid() || column < 0 || column + count > d->rec.count())
         return false;
-    for (int i = 0; i < count; ++i)
+    for (auto i = 0; i < count; ++i)
         d->rec.remove(column);
     if (d->query.isActive())
         return select();
@@ -1096,7 +1096,7 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
 
     // Iterate backwards so we don't have to worry about removed rows causing
     // higher cache entries to shift downwards.
-    for (int idx = row + count - 1; idx >= row; --idx) {
+    for (auto idx = row + count - 1; idx >= row; --idx) {
         QSqlTableModelPrivate::ModifiedRow& mrow = d->cache[idx];
         if (mrow.op() == QSqlTableModelPrivate::Insert) {
             revertRow(idx);
@@ -1154,16 +1154,16 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
         d->cache.empty();
 
     if (!d->cache.isEmpty()) {
-        QMap<int, QSqlTableModelPrivate::ModifiedRow>::Iterator it = d->cache.end();
+        auto it = d->cache.end();
         while (it != d->cache.begin() && (--it).key() >= row) {
-            int oldKey = it.key();
-            const QSqlTableModelPrivate::ModifiedRow oldValue = it.value();
+            auto oldKey = it.key();
+            const auto oldValue = it.value();
             d->cache.erase(it);
             it = d->cache.insert(oldKey + count, oldValue);
         }
     }
 
-    for (int i = 0; i < count; ++i) {
+    for (auto i = 0; i < count; ++i) {
         d->cache[row + i] = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Insert,
                                                                d->rec);
         emit primeInsert(row + i, d->cache[row + i].recRef());
@@ -1229,7 +1229,7 @@ QModelIndex QSqlTableModel::indexInQuery(const QModelIndex &item) const
     if (d->cache.value(item.row()).insert())
         return QModelIndex();
 
-    const int rowOffset = d->insertCount(item.row());
+    const auto rowOffset = d->insertCount(item.row());
     return QSqlQueryModel::indexInQuery(createIndex(item.row() - rowOffset, item.column(), item.internalPointer()));
 }
 
@@ -1284,13 +1284,13 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
         || index.row() < 0)
         return 0;
 
-    bool editable = true;
+    auto editable = true;
 
     if (d->rec.field(index.column()).isReadOnly()) {
         editable = false;
     }
     else {
-        const QSqlTableModelPrivate::ModifiedRow mrow = d->cache.value(index.row());
+        const auto mrow = d->cache.value(index.row());
         if (mrow.op() == QSqlTableModelPrivate::Delete) {
             editable = false;
         }
@@ -1341,13 +1341,13 @@ QSqlRecord QSqlTableModel::record(int row) const
     Q_D(const QSqlTableModel);
 
     // the query gets the values from virtual data()
-    QSqlRecord rec = QSqlQueryModel::record(row);
+    auto rec = QSqlQueryModel::record(row);
 
     // get generated flags from the cache
-    const QSqlTableModelPrivate::ModifiedRow mrow = d->cache.value(row);
+    const auto mrow = d->cache.value(row);
     if (mrow.op() != QSqlTableModelPrivate::None) {
-        const QSqlRecord crec = mrow.rec();
-        for (int i = 0, cnt = rec.count(); i < cnt; ++i)
+        const auto crec = mrow.rec();
+        for (auto i = 0, cnt = rec.count(); i < cnt; ++i)
             rec.setGenerated(i, crec.isGenerated(i));
     }
 
@@ -1395,8 +1395,8 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
     // Check field names and remember mapping
     typedef QMap<int, int> Map;
     Map map;
-    for (int i = 0; i < values.count(); ++i) {
-        int idx = d->nameToIndex(values.fieldName(i));
+    for (auto i = 0; i < values.count(); ++i) {
+        auto idx = d->nameToIndex(values.fieldName(i));
         if (idx == -1)
             return false;
         map[i] = idx;
@@ -1407,13 +1407,13 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
         mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
                                                   QSqlQueryModel::record(row));
 
-    Map::const_iterator i = map.constBegin();
-    const Map::const_iterator e = map.constEnd();
+    auto i = map.constBegin();
+    const auto e = map.constEnd();
     for ( ; i != e; ++i) {
         // have to use virtual setData() here rather than mrow.setValue()
-        EditStrategy strategy = d->strategy;
+        auto strategy = d->strategy;
         d->strategy = OnManualSubmit;
-        QModelIndex cIndex = createIndex(row, i.value());
+        auto cIndex = createIndex(row, i.value());
         setData(cIndex, values.value(i.key()));
         d->strategy = strategy;
         // setData() sets generated to TRUE, but source record should prevail.
@@ -1440,7 +1440,7 @@ QSqlRecord QSqlTableModel::primaryValues(int row) const
 
     const QSqlRecord &pIndex = d->primaryIndex.isEmpty() ? d->rec : d->primaryIndex;
 
-    QSqlTableModelPrivate::ModifiedRow mr = d->cache.value(row);
+    auto mr = d->cache.value(row);
     if (mr.op() != QSqlTableModelPrivate::None)
         return mr.primaryValues(pIndex);
     else

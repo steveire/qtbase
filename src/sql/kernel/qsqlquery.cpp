@@ -71,7 +71,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QSqlNullResult, nullResult, (nullDriver()))
 
 QSqlQueryPrivate* QSqlQueryPrivate::shared_null()
 {
-    QSqlQueryPrivate *null = nullQueryPrivate();
+    auto null = nullQueryPrivate();
     null->ref.ref();
     return null;
 }
@@ -88,7 +88,7 @@ QSqlQueryPrivate::QSqlQueryPrivate(QSqlResult* result)
 
 QSqlQueryPrivate::~QSqlQueryPrivate()
 {
-    QSqlResult *nr = nullResult();
+    auto nr = nullResult();
     if (!nr || sqlResult == nr)
         return;
     delete sqlResult;
@@ -260,7 +260,7 @@ QSqlQuery::QSqlQuery(const QSqlQuery& other)
 */
 static void qInit(QSqlQuery *q, const QString& query, QSqlDatabase db)
 {
-    QSqlDatabase database = db;
+    auto database = db;
     if (!database.isValid())
         database = QSqlDatabase::database(QLatin1String(QSqlDatabase::defaultConnection), false);
     if (database.isValid()) {
@@ -336,7 +336,7 @@ bool QSqlQuery::isNull(int field) const
 
 bool QSqlQuery::isNull(const QString &name) const
 {
-    int index = d->sqlResult->record().indexOf(name);
+    auto index = d->sqlResult->record().indexOf(name);
     if (index > -1)
         return isNull(index);
     qWarning("QSqlQuery::isNull: unknown field name '%s'", qPrintable(name));
@@ -375,7 +375,7 @@ bool QSqlQuery::exec(const QString& query)
     t.start();
 #endif
     if (d->ref.load() != 1) {
-        bool fo = isForwardOnly();
+        auto fo = isForwardOnly();
         *this = QSqlQuery(driver()->createResult());
         d->sqlResult->setNumericalPrecisionPolicy(d->sqlResult->numericalPrecisionPolicy());
         setForwardOnly(fo);
@@ -396,7 +396,7 @@ bool QSqlQuery::exec(const QString& query)
         return false;
     }
 
-    bool retval = d->sqlResult->reset(query);
+    auto retval = d->sqlResult->reset(query);
 #ifdef QT_DEBUG_SQL
     qDebug().nospace() << "Executed query (" << t.elapsed() << "ms, " << d->sqlResult->size()
                        << " results, " << d->sqlResult->numRowsAffected()
@@ -443,7 +443,7 @@ QVariant QSqlQuery::value(int index) const
 
 QVariant QSqlQuery::value(const QString& name) const
 {
-    int index = d->sqlResult->record().indexOf(name);
+    auto index = d->sqlResult->record().indexOf(name);
     if (index > -1)
         return value(index);
     qWarning("QSqlQuery::value: unknown field name '%s'", qPrintable(name));
@@ -649,7 +649,7 @@ bool QSqlQuery::next()
 {
     if (!isSelect() || !isActive())
         return false;
-    bool b = false;
+    auto b = false;
     switch (at()) {
     case QSql::BeforeFirstRow:
         b = d->sqlResult->fetchFirst();
@@ -703,7 +703,7 @@ bool QSqlQuery::previous()
         return false;
     }
 
-    bool b = false;
+    auto b = false;
     switch (at()) {
     case QSql::BeforeFirstRow:
         return false;
@@ -737,7 +737,7 @@ bool QSqlQuery::first()
         qWarning("QSqlQuery::seek: cannot seek backwards in a forward only query");
         return false;
     }
-    bool b = false;
+    auto b = false;
     b = d->sqlResult->fetchFirst();
     return b;
 }
@@ -758,7 +758,7 @@ bool QSqlQuery::last()
 {
     if (!isSelect() || !isActive())
         return false;
-    bool b = false;
+    auto b = false;
     b = d->sqlResult->fetchLast();
     return b;
 }
@@ -912,10 +912,10 @@ void QSqlQuery::setForwardOnly(bool forward)
 */
 QSqlRecord QSqlQuery::record() const
 {
-    QSqlRecord rec = d->sqlResult->record();
+    auto rec = d->sqlResult->record();
 
     if (isValid()) {
-        for (int i = 0; i < rec.count(); ++i)
+        for (auto i = 0; i < rec.count(); ++i)
             rec.setValue(i, value(i));
     }
     return rec;
@@ -958,7 +958,7 @@ void QSqlQuery::clear()
 bool QSqlQuery::prepare(const QString& query)
 {
     if (d->ref.load() != 1) {
-        bool fo = isForwardOnly();
+        auto fo = isForwardOnly();
         *this = QSqlQuery(driver()->createResult());
         setForwardOnly(fo);
         d->sqlResult->setNumericalPrecisionPolicy(d->sqlResult->numericalPrecisionPolicy());
@@ -1006,7 +1006,7 @@ bool QSqlQuery::exec()
     if (d->sqlResult->lastError().isValid())
         d->sqlResult->setLastError(QSqlError());
 
-    bool retval = d->sqlResult->exec();
+    auto retval = d->sqlResult->exec();
 #ifdef QT_DEBUG_SQL
     qDebug().nospace() << "Executed prepared query (" << t.elapsed() << "ms, "
                        << d->sqlResult->size() << " results, " << d->sqlResult->numRowsAffected()
@@ -1156,7 +1156,7 @@ QMap<QString,QVariant> QSqlQuery::boundValues() const
     QMap<QString,QVariant> map;
 
     const QVector<QVariant> values(d->sqlResult->boundValues());
-    for (int i = 0; i < values.count(); ++i)
+    for (auto i = 0; i < values.count(); ++i)
         map[d->sqlResult->boundValueName(i)] = values.at(i);
     return map;
 }

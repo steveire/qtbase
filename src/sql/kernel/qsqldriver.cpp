@@ -52,7 +52,7 @@ static QString prepareIdentifier(const QString &identifier,
         QSqlDriver::IdentifierType type, const QSqlDriver *driver)
 {
     Q_ASSERT( driver != NULL );
-    QString ret = identifier;
+    auto ret = identifier;
     if (!driver->isIdentifierEscaped(identifier, type)) {
         ret = driver->escapeIdentifier(identifier, type);
     }
@@ -492,10 +492,10 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
         break;
     case WhereStatement:
     {
-        const QString tableNamePrefix = tableName.isEmpty()
+        const auto tableNamePrefix = tableName.isEmpty()
             ? QString()
             : prepareIdentifier(tableName, QSqlDriver::TableName, this) + QLatin1Char('.');
-        for (int i = 0; i < rec.count(); ++i) {
+        for (auto i = 0; i < rec.count(); ++i) {
             if (!rec.isGenerated(i))
                 continue;
             s.append(s.isEmpty() ? QLatin1String("WHERE ") : QLatin1String(" AND "));
@@ -631,9 +631,9 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QVariant::String:
         case QVariant::Char:
         {
-            QString result = field.value().toString();
+            auto result = field.value().toString();
             if (trimStrings) {
-                int end = result.length();
+                auto end = result.length();
                 while (end && result.at(end-1).isSpace()) /* skip white space from end */
                     end--;
                 result.truncate(end);
@@ -648,11 +648,11 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
             break;
         case QVariant::ByteArray : {
             if (hasFeature(BLOB)) {
-                QByteArray ba = field.value().toByteArray();
+                auto ba = field.value().toByteArray();
                 QString res;
                 static const char hexchars[] = "0123456789abcdef";
-                for (int i = 0; i < ba.size(); ++i) {
-                    uchar s = (uchar) ba[i];
+                for (auto i = 0; i < ba.size(); ++i) {
+                    auto s = (uchar) ba[i];
                     res += QLatin1Char(hexchars[s >> 4]);
                     res += QLatin1Char(hexchars[s & 0x0f]);
                 }

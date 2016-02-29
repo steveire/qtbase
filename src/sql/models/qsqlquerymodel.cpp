@@ -56,14 +56,14 @@ void QSqlQueryModelPrivate::prefetch(int limit)
         return;
 
     QModelIndex newBottom;
-    const int oldBottomRow = qMax(bottom.row(), 0);
+    const auto oldBottomRow = qMax(bottom.row(), 0);
 
     // try to seek directly
     if (query.seek(limit)) {
         newBottom = q->createIndex(limit, bottom.column());
     } else {
         // have to seek back to our old position for MS Access
-        int i = oldBottomRow;
+        auto i = oldBottomRow;
         if (query.seek(i)) {
             while (query.next())
                 ++i;
@@ -350,7 +350,7 @@ QVariant QSqlQueryModel::data(const QModelIndex &item, int role) const
 
     if (!d->rec.isGenerated(item.column()))
         return v;
-    QModelIndex dItem = indexInQuery(item);
+    auto dItem = indexInQuery(item);
     if (dItem.row() > d->bottom.row())
         const_cast<QSqlQueryModelPrivate *>(d)->prefetch(dItem.row());
 
@@ -370,7 +370,7 @@ QVariant QSqlQueryModel::headerData(int section, Qt::Orientation orientation, in
 {
     Q_D(const QSqlQueryModel);
     if (orientation == Qt::Horizontal) {
-        QVariant val = d->headers.value(section).value(role);
+        auto val = d->headers.value(section).value(role);
         if (role == Qt::DisplayRole && !val.isValid())
             val = d->headers.value(section).value(Qt::EditRole);
         if (val.isValid())
@@ -411,8 +411,8 @@ void QSqlQueryModel::setQuery(const QSqlQuery &query)
     Q_D(QSqlQueryModel);
     beginResetModel();
 
-    QSqlRecord newRec = query.record();
-    bool columnsChanged = (newRec != d->rec);
+    auto newRec = query.record();
+    auto columnsChanged = (newRec != d->rec);
 
     if (d->colOffsets.size() != newRec.count() || columnsChanged)
         d->initColOffsets(newRec.count());
@@ -567,8 +567,8 @@ QSqlRecord QSqlQueryModel::record(int row) const
     if (row < 0)
         return d->rec;
 
-    QSqlRecord rec = d->rec;
-    for (int i = 0; i < rec.count(); ++i)
+    auto rec = d->rec;
+    for (auto i = 0; i < rec.count(); ++i)
         rec.setValue(i, data(createIndex(row, i), Qt::EditRole));
     return rec;
 }
@@ -610,17 +610,17 @@ bool QSqlQueryModel::insertColumns(int column, int count, const QModelIndex &par
         return false;
 
     beginInsertColumns(parent, column, column + count - 1);
-    for (int c = 0; c < count; ++c) {
+    for (auto c = 0; c < count; ++c) {
         QSqlField field;
         field.setReadOnly(true);
         field.setGenerated(false);
         d->rec.insert(column, field);
         if (d->colOffsets.size() < d->rec.count()) {
-            int nVal = d->colOffsets.isEmpty() ? 0 : d->colOffsets[d->colOffsets.size() - 1];
+            auto nVal = d->colOffsets.isEmpty() ? 0 : d->colOffsets[d->colOffsets.size() - 1];
             d->colOffsets.append(nVal);
             Q_ASSERT(d->colOffsets.size() >= d->rec.count());
         }
-        for (int i = column + 1; i < d->colOffsets.count(); ++i)
+        for (auto i = column + 1; i < d->colOffsets.count(); ++i)
             ++d->colOffsets[i];
     }
     endInsertColumns();
@@ -671,7 +671,7 @@ bool QSqlQueryModel::removeColumns(int column, int count, const QModelIndex &par
 QModelIndex QSqlQueryModel::indexInQuery(const QModelIndex &item) const
 {
     Q_D(const QSqlQueryModel);
-    int modelColumn = d->columnInQuery(item.column());
+    auto modelColumn = d->columnInQuery(item.column());
     if (modelColumn < 0)
         return QModelIndex();
     return createIndex(item.row(), modelColumn, item.internalPointer());
