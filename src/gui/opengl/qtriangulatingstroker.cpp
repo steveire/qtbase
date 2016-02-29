@@ -59,13 +59,13 @@ void QTriangulatingStroker::endCapOrJoinClosed(const qreal *start, const qreal *
     } else {
         endCap(cur);
     }
-    int count = m_vertices.size();
+    auto count = m_vertices.size();
 
     // Copy the (x, y) values because QDataBuffer::add(const float& t)
     // may resize the buffer, which will leave t pointing at the
     // previous buffer's memory region if we don't copy first.
-    float x = m_vertices.at(count-2);
-    float y = m_vertices.at(count-1);
+    auto x = m_vertices.at(count-2);
+    auto y = m_vertices.at(count-1);
     m_vertices.add(x);
     m_vertices.add(y);
 }
@@ -81,9 +81,9 @@ static inline void skipDuplicatePoints(const qreal **pts, const qreal *endPts)
 
 void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, const QRectF &, QPainter::RenderHints hints)
 {
-    const qreal *pts = path.points();
-    const QPainterPath::ElementType *types = path.elements();
-    int count = path.elementCount();
+    auto pts = path.points();
+    auto types = path.elements();
+    auto count = path.elementCount();
     if (count < 2)
         return;
 
@@ -93,7 +93,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
 
     m_width = realWidth / 2;
 
-    bool cosmetic = qt_pen_is_cosmetic(pen, hints);
+    auto cosmetic = qt_pen_is_cosmetic(pen, hints);
     if (cosmetic) {
         m_width = m_width * m_inv_scale;
     }
@@ -149,10 +149,10 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
     m_sin_theta = qFastSin(Q_PI / m_roundness);
     m_cos_theta = qFastCos(Q_PI / m_roundness);
 
-    const qreal *endPts = pts + (count<<1);
+    auto endPts = pts + (count<<1);
     const qreal *startPts = 0;
 
-    Qt::PenCapStyle cap = m_cap_style;
+    auto cap = m_cap_style;
 
     if (!types) {
         skipDuplicatePoints(&pts, endPts);
@@ -161,7 +161,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
 
         startPts = pts;
 
-        bool endsAtStart = float(startPts[0]) == float(endPts[-2])
+        auto endsAtStart = float(startPts[0]) == float(endPts[-2])
                 && float(startPts[1]) == float(endPts[-1]);
 
         if (endsAtStart || path.hasImplicitClose())
@@ -182,9 +182,9 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
         endCapOrJoinClosed(startPts, pts-2, path.hasImplicitClose(), endsAtStart);
 
     } else {
-        bool endsAtStart = false;
-        QPainterPath::ElementType previousType = QPainterPath::MoveToElement;
-        const qreal *previousPts = pts;
+        auto endsAtStart = false;
+        auto previousType = QPainterPath::MoveToElement;
+        auto previousPts = pts;
         while (pts < endPts) {
             switch (*types) {
             case QPainterPath::MoveToElement: {
@@ -197,7 +197,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
                     return; // Nothing to see here...
 
                 int end = (endPts - pts) / 2;
-                int i = 2; // Start looking to ahead since we never have two moveto's in a row
+                auto i = 2; // Start looking to ahead since we never have two moveto's in a row
                 while (i<end && types[i] != QPainterPath::MoveToElement) {
                     ++i;
                 }
@@ -274,8 +274,8 @@ void QTriangulatingStroker::moveTo(const qreal *pts)
         }
         break;
     case Qt::SquareCap: {
-        float sx = m_cx - m_nvy;
-        float sy = m_cy + m_nvx;
+        auto sx = m_cx - m_nvy;
+        auto sy = m_cy + m_nvx;
         if (invisibleJump) {
             m_vertices.add(sx + m_nvx);
             m_vertices.add(sy + m_nvy);
@@ -286,9 +286,9 @@ void QTriangulatingStroker::moveTo(const qreal *pts)
         QVarLengthArray<float> points;
         arcPoints(m_cx, m_cy, m_cx + m_nvx, m_cy + m_nvy, m_cx - m_nvx, m_cy - m_nvy, points);
         m_vertices.resize(m_vertices.size() + points.size() + 2 * int(invisibleJump));
-        int count = m_vertices.size();
-        int front = 0;
-        int end = points.size() / 2;
+        auto count = m_vertices.size();
+        auto front = 0;
+        auto end = points.size() / 2;
         while (front != end) {
             m_vertices.at(--count) = points[2 * end - 1];
             m_vertices.at(--count) = points[2 * end - 2];
@@ -312,10 +312,10 @@ void QTriangulatingStroker::moveTo(const qreal *pts)
 
 void QTriangulatingStroker::cubicTo(const qreal *pts)
 {
-    const QPointF *p = (const QPointF *) pts;
-    QBezier bezier = QBezier::fromPoints(*(p - 1), p[0], p[1], p[2]);
+    auto p = (const QPointF *) pts;
+    auto bezier = QBezier::fromPoints(*(p - 1), p[0], p[1], p[2]);
 
-    QRectF bounds = bezier.bounds();
+    auto bounds = bezier.bounds();
     float rad = qMax(bounds.width(), bounds.height());
     int threshold = qMin<float>(64, (rad + m_curvyness_add) * m_curvyness_mul);
     if (threshold < 4)
@@ -323,12 +323,12 @@ void QTriangulatingStroker::cubicTo(const qreal *pts)
     qreal threshold_minus_1 = threshold - 1;
     float vx, vy;
 
-    float cx = m_cx, cy = m_cy;
+    auto cx = m_cx, cy = m_cy;
     float x, y;
 
-    for (int i=1; i<threshold; ++i) {
-        qreal t = qreal(i) / threshold_minus_1;
-        QPointF p = bezier.pointAt(t);
+    for (auto i=1; i<threshold; ++i) {
+        auto t = qreal(i) / threshold_minus_1;
+        auto p = bezier.pointAt(t);
         x = p.x();
         y = p.y();
 
@@ -358,10 +358,10 @@ void QTriangulatingStroker::join(const qreal *pts)
     case Qt::SvgMiterJoin:
     case Qt::MiterJoin: {
         // Find out on which side the join should be.
-        int count = m_vertices.size();
-        float prevNvx = m_vertices.at(count - 2) - m_cx;
-        float prevNvy = m_vertices.at(count - 1) - m_cy;
-        float xprod = prevNvx * m_nvy - prevNvy * m_nvx;
+        auto count = m_vertices.size();
+        auto prevNvx = m_vertices.at(count - 2) - m_cx;
+        auto prevNvy = m_vertices.at(count - 1) - m_cy;
+        auto xprod = prevNvx * m_nvy - prevNvy * m_nvx;
         float px, py, qx, qy;
 
         // If the segments are parallel, use bevel join.
@@ -382,10 +382,10 @@ void QTriangulatingStroker::join(const qreal *pts)
         }
 
         // Find intersection point.
-        float pu = px * prevNvx + py * prevNvy;
-        float qv = qx * m_nvx + qy * m_nvy;
-        float ix = (m_nvy * pu - prevNvy * qv) / xprod;
-        float iy = (prevNvx * qv - m_nvx * pu) / xprod;
+        auto pu = px * prevNvx + py * prevNvy;
+        auto qv = qx * m_nvx + qy * m_nvy;
+        auto ix = (m_nvy * pu - prevNvy * qv) / xprod;
+        auto iy = (prevNvx * qv - m_nvx * pu) / xprod;
 
         // Check that the distance to the intersection point is less than the miter limit.
         if ((ix - px) * (ix - px) + (iy - py) * (iy - py) <= m_miter_limit * m_miter_limit) {
@@ -403,16 +403,16 @@ void QTriangulatingStroker::join(const qreal *pts)
         break; }
     case Qt::RoundJoin: {
         QVarLengthArray<float> points;
-        int count = m_vertices.size();
-        float prevNvx = m_vertices.at(count - 2) - m_cx;
-        float prevNvy = m_vertices.at(count - 1) - m_cy;
+        auto count = m_vertices.size();
+        auto prevNvx = m_vertices.at(count - 2) - m_cx;
+        auto prevNvy = m_vertices.at(count - 1) - m_cy;
         if (m_nvx * prevNvy - m_nvy * prevNvx < 0) {
             arcPoints(0, 0, m_nvx, m_nvy, -prevNvx, -prevNvy, points);
-            for (int i = points.size() / 2; i > 0; --i)
+            for (auto i = points.size() / 2; i > 0; --i)
                 emitLineSegment(m_cx, m_cy, points[2 * i - 2], points[2 * i - 1]);
         } else {
             arcPoints(0, 0, -prevNvx, -prevNvy, m_nvx, m_nvy, points);
-            for (int i = 0; i < points.size() / 2; ++i)
+            for (auto i = 0; i < points.size() / 2; ++i)
                 emitLineSegment(m_cx, m_cy, points[2 * i + 0], points[2 * i + 1]);
         }
         break; }
@@ -432,10 +432,10 @@ void QTriangulatingStroker::endCap(const qreal *)
         break;
     case Qt::RoundCap: {
         QVarLengthArray<float> points;
-        int count = m_vertices.size();
+        auto count = m_vertices.size();
         arcPoints(m_cx, m_cy, m_vertices.at(count - 2), m_vertices.at(count - 1), m_vertices.at(count - 4), m_vertices.at(count - 3), points);
-        int front = 0;
-        int end = points.size() / 2;
+        auto front = 0;
+        auto end = points.size() / 2;
         while (front != end) {
             m_vertices.add(points[2 * end - 2]);
             m_vertices.add(points[2 * end - 1]);
@@ -453,10 +453,10 @@ void QTriangulatingStroker::endCap(const qreal *)
 
 void QTriangulatingStroker::arcPoints(float cx, float cy, float fromX, float fromY, float toX, float toY, QVarLengthArray<float> &points)
 {
-    float dx1 = fromX - cx;
-    float dy1 = fromY - cy;
-    float dx2 = toX - cx;
-    float dy2 = toY - cy;
+    auto dx1 = fromX - cx;
+    auto dy1 = fromY - cy;
+    auto dx2 = toX - cx;
+    auto dy2 = toY - cy;
 
     // while more than 180 degrees left:
     while (dx1 * dy2 - dx2 * dy1 < 0) {
@@ -520,18 +520,18 @@ QDashedStrokeProcessor::QDashedStrokeProcessor()
 void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, const QRectF &clip, QPainter::RenderHints hints)
 {
 
-    const qreal *pts = path.points();
-    const QPainterPath::ElementType *types = path.elements();
-    int count = path.elementCount();
+    auto pts = path.points();
+    auto types = path.elements();
+    auto count = path.elementCount();
 
-    bool cosmetic = qt_pen_is_cosmetic(pen, hints);
+    auto cosmetic = qt_pen_is_cosmetic(pen, hints);
 
     m_points.reset();
     m_types.reset();
     m_points.reserve(path.elementCount());
     m_types.reserve(path.elementCount());
 
-    qreal width = qpen_widthf(pen);
+    auto width = qpen_widthf(pen);
     if (width == 0)
         width = 1;
 
@@ -558,7 +558,7 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
     if (count < 2)
         return;
 
-    const qreal *endPts = pts + (count<<1);
+    auto endPts = pts + (count<<1);
 
     m_dash_stroker.begin(this);
 
@@ -583,19 +583,19 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
                 ++types;
                 break;
             case QPainterPath::CurveToElement: {
-                QBezier b = QBezier::fromPoints(*(((const QPointF *) pts) - 1),
+                auto b = QBezier::fromPoints(*(((const QPointF *) pts) - 1),
                                                 *(((const QPointF *) pts)),
                                                 *(((const QPointF *) pts) + 1),
                                                 *(((const QPointF *) pts) + 2));
-                QRectF bounds = b.bounds();
+                auto bounds = b.bounds();
                 float rad = qMax(bounds.width(), bounds.height());
                 int threshold = qMin<float>(64, (rad + curvynessAdd) * curvynessMul);
                 if (threshold < 4)
                     threshold = 4;
 
                 qreal threshold_minus_1 = threshold - 1;
-                for (int i=0; i<threshold; ++i) {
-                    QPointF pt = b.pointAt(i / threshold_minus_1);
+                for (auto i=0; i<threshold; ++i) {
+                    auto pt = b.pointAt(i / threshold_minus_1);
                     m_dash_stroker.lineTo(pt.x(), pt.y());
                 }
                 pts += 6;

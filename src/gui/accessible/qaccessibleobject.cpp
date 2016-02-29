@@ -122,8 +122,8 @@ void QAccessibleObject::setText(QAccessible::Text, const QString &)
 /*! \reimp */
 QAccessibleInterface *QAccessibleObject::childAt(int x, int y) const
 {
-    for (int i = 0; i < childCount(); ++i) {
-        QAccessibleInterface *childIface = child(i);
+    for (auto i = 0; i < childCount(); ++i) {
+        auto childIface = child(i);
         Q_ASSERT(childIface);
         if (childIface->rect().contains(x,y))
             return childIface;
@@ -160,10 +160,10 @@ static QObjectList topLevelObjects()
 {
     QObjectList list;
     const QWindowList tlw(QGuiApplication::topLevelWindows());
-    for (int i = 0; i < tlw.count(); ++i) {
-        QWindow *w = tlw.at(i);
+    for (auto i = 0; i < tlw.count(); ++i) {
+        auto w = tlw.at(i);
         if (w->type() != Qt::Popup && w->type() != Qt::Desktop) {
-            if (QAccessibleInterface *root = w->accessibleRoot()) {
+            if (auto root = w->accessibleRoot()) {
                 if (root->object())
                     list.append(root->object());
             }
@@ -205,7 +205,7 @@ QAccessibleInterface *QAccessibleApplication::child(int index) const
 /*! \reimp */
 QAccessibleInterface *QAccessibleApplication::focusChild() const
 {
-    if (QWindow *window = QGuiApplication::focusWindow())
+    if (auto window = QGuiApplication::focusWindow())
         return window->accessibleRoot();
     return 0;
 }

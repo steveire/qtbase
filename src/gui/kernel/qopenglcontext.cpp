@@ -342,7 +342,7 @@ QOpenGLContext *qt_gl_global_share_context()
 */
 QOpenGLContext *QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context)
 {
-    QGuiGLThreadContext *threadContext = qwindow_context_storage()->localData();
+    auto threadContext = qwindow_context_storage()->localData();
     if (!threadContext) {
         if (!QThread::currentThread()) {
             qWarning("No QTLS available. currentContext won't work");
@@ -351,7 +351,7 @@ QOpenGLContext *QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context
         threadContext = new QGuiGLThreadContext;
         qwindow_context_storage()->setLocalData(threadContext);
     }
-    QOpenGLContext *previous = threadContext->context;
+    auto previous = threadContext->context;
     threadContext->context = context;
     return previous;
 }
@@ -362,7 +362,7 @@ int QOpenGLContextPrivate::maxTextureSize()
         return max_texture_size;
 
     Q_Q(QOpenGLContext);
-    QOpenGLFunctions *funcs = q->functions();
+    auto funcs = q->functions();
     funcs->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
 #ifndef QT_OPENGL_ES
@@ -370,7 +370,7 @@ int QOpenGLContextPrivate::maxTextureSize()
         GLenum proxy = GL_PROXY_TEXTURE_2D;
 
         GLint size;
-        GLint next = 64;
+        auto next = 64;
         funcs->glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
         QOpenGLFunctions_1_0 *gl1funcs = 0;
@@ -418,7 +418,7 @@ int QOpenGLContextPrivate::maxTextureSize()
 */
 QOpenGLContext* QOpenGLContext::currentContext()
 {
-    QGuiGLThreadContext *threadContext = qwindow_context_storage()->localData();
+    auto threadContext = qwindow_context_storage()->localData();
     if (threadContext) {
         return threadContext->context;
     }
@@ -653,8 +653,8 @@ void QOpenGLContext::destroy()
     delete d->functions;
     d->functions = 0;
 
-    for (QAbstractOpenGLFunctions *func : qAsConst(d->externalVersionFunctions)) {
-        QAbstractOpenGLFunctionsPrivate *func_d = QAbstractOpenGLFunctionsPrivate::get(func);
+    for (auto func : qAsConst(d->externalVersionFunctions)) {
+        auto func_d = QAbstractOpenGLFunctionsPrivate::get(func);
         func_d->owningContext = 0;
         func_d->initialized = false;
     }
@@ -828,15 +828,15 @@ QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionP
 #endif // QT_OPENGL_ES_2
 
     Q_D(const QOpenGLContext);
-    const QSurfaceFormat f = format();
+    const auto f = format();
 
     // Ensure we have a valid version and profile. Default to context's if none specified
-    QOpenGLVersionProfile vp = versionProfile;
+    auto vp = versionProfile;
     if (!vp.isValid())
         vp = QOpenGLVersionProfile(f);
 
     // Check that context is compatible with requested version
-    const QPair<int, int> v = qMakePair(f.majorVersion(), f.minorVersion());
+    const auto v = qMakePair(f.majorVersion(), f.minorVersion());
     if (v < vp.version())
         return 0;
 
@@ -969,7 +969,7 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
         return false;
     }
 
-    QOpenGLContext *previous = QOpenGLContextPrivate::setCurrentContext(this);
+    auto previous = QOpenGLContextPrivate::setCurrentContext(this);
 
     if (d->platformGLContext->makeCurrent(surface->surfaceHandle())) {
         d->surface = surface;
@@ -1050,7 +1050,7 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         qWarning() << "QOpenGLContext::swapBuffers() called with non-exposed window, behavior is undefined";
     }
 
-    QPlatformSurface *surfaceHandle = surface->surfaceHandle();
+    auto surfaceHandle = surface->surfaceHandle();
     if (!surfaceHandle)
         return;
 
@@ -1397,7 +1397,7 @@ QList<QOpenGLContext *> QOpenGLContextGroup::shares() const
 */
 QOpenGLContextGroup *QOpenGLContextGroup::currentContextGroup()
 {
-    QOpenGLContext *current = QOpenGLContext::currentContext();
+    auto current = QOpenGLContext::currentContext();
     return current ? current->shareGroup() : 0;
 }
 
@@ -1412,7 +1412,7 @@ void QOpenGLContextGroupPrivate::removeContext(QOpenGLContext *ctx)
 {
     Q_Q(QOpenGLContextGroup);
 
-    bool deleteObject = false;
+    auto deleteObject = false;
 
     {
         QMutexLocker locker(&m_mutex);
@@ -1446,8 +1446,8 @@ void QOpenGLContextGroupPrivate::cleanup()
         m_resources.clear();
     }
 
-    QList<QOpenGLSharedResource *>::iterator it = m_sharedResources.begin();
-    QList<QOpenGLSharedResource *>::iterator end = m_sharedResources.end();
+    auto it = m_sharedResources.begin();
+    auto end = m_sharedResources.end();
 
     while (it != end) {
         (*it)->invalidateResource();
@@ -1465,11 +1465,11 @@ void QOpenGLContextGroupPrivate::deletePendingResources(QOpenGLContext *ctx)
 {
     QMutexLocker locker(&m_mutex);
 
-    const QList<QOpenGLSharedResource *> pending = m_pendingDeletion;
+    const auto pending = m_pendingDeletion;
     m_pendingDeletion.clear();
 
-    QList<QOpenGLSharedResource *>::const_iterator it = pending.begin();
-    QList<QOpenGLSharedResource *>::const_iterator end = pending.end();
+    auto it = pending.begin();
+    auto end = pending.end();
     while (it != end) {
         (*it)->freeResource(ctx);
         delete *it;
@@ -1525,7 +1525,7 @@ void QOpenGLSharedResource::free()
     m_group->d_func()->m_pendingDeletion << this;
 
     // can we delete right away?
-    QOpenGLContext *current = QOpenGLContext::currentContext();
+    auto current = QOpenGLContext::currentContext();
     if (current && current->shareGroup() == m_group) {
         m_group->d_func()->deletePendingResources(current);
     }
@@ -1581,10 +1581,10 @@ QOpenGLMultiGroupSharedResource::~QOpenGLMultiGroupSharedResource()
 #ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
     qDebug("Deleting context group resource %p. Group size: %d.", this, m_groups.size());
 #endif
-    for (int i = 0; i < m_groups.size(); ++i) {
+    for (auto i = 0; i < m_groups.size(); ++i) {
         if (!m_groups.at(i)->shares().isEmpty()) {
-            QOpenGLContext *context = m_groups.at(i)->shares().first();
-            QOpenGLSharedResource *resource = value(context);
+            auto context = m_groups.at(i)->shares().first();
+            auto resource = value(context);
             if (resource)
                 resource->free();
         }
@@ -1605,7 +1605,7 @@ void QOpenGLMultiGroupSharedResource::insert(QOpenGLContext *context, QOpenGLSha
 #ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
     qDebug("Inserting context group resource %p for context %p, managed by %p.", value, context, this);
 #endif
-    QOpenGLContextGroup *group = context->shareGroup();
+    auto group = context->shareGroup();
     Q_ASSERT(!group->d_func()->m_resources.contains(this));
     group->d_func()->m_resources.insert(this, value);
     m_groups.append(group);
@@ -1614,15 +1614,15 @@ void QOpenGLMultiGroupSharedResource::insert(QOpenGLContext *context, QOpenGLSha
 
 QOpenGLSharedResource *QOpenGLMultiGroupSharedResource::value(QOpenGLContext *context)
 {
-    QOpenGLContextGroup *group = context->shareGroup();
+    auto group = context->shareGroup();
     return group->d_func()->m_resources.value(this, 0);
 }
 
 QList<QOpenGLSharedResource *> QOpenGLMultiGroupSharedResource::resources() const
 {
     QList<QOpenGLSharedResource *> result;
-    for (QList<QOpenGLContextGroup *>::const_iterator it = m_groups.constBegin(); it != m_groups.constEnd(); ++it) {
-        QOpenGLSharedResource *resource = (*it)->d_func()->m_resources.value(const_cast<QOpenGLMultiGroupSharedResource *>(this), 0);
+    for (auto it = m_groups.constBegin(); it != m_groups.constEnd(); ++it) {
+        auto resource = (*it)->d_func()->m_resources.value(const_cast<QOpenGLMultiGroupSharedResource *>(this), 0);
         if (resource)
             result << resource;
     }

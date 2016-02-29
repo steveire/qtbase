@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
  */
 QPlatformPixmap *QPlatformPixmap::create(int w, int h, PixelType type)
 {
-    QPlatformPixmap *data = QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(static_cast<QPlatformPixmap::PixelType>(type));
+    auto data = QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(static_cast<QPlatformPixmap::PixelType>(type));
     data->resize(w, h);
     return data;
 }
@@ -94,19 +94,19 @@ QPlatformPixmap::~QPlatformPixmap()
 
 QPlatformPixmap *QPlatformPixmap::createCompatiblePlatformPixmap() const
 {
-    QPlatformPixmap *d = QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(pixelType());
+    auto d = QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(pixelType());
     return d;
 }
 
 static QImage makeBitmapCompliantIfNeeded(QPlatformPixmap *d, const QImage &image, Qt::ImageConversionFlags flags)
 {
     if (d->pixelType() == QPlatformPixmap::BitmapType) {
-        QImage img = image.convertToFormat(QImage::Format_MonoLSB, flags);
+        auto img = image.convertToFormat(QImage::Format_MonoLSB, flags);
 
         // make sure image.color(0) == Qt::color0 (white)
         // and image.color(1) == Qt::color1 (black)
-        const QRgb c0 = QColor(Qt::black).rgb();
-        const QRgb c1 = QColor(Qt::white).rgb();
+        const auto c0 = QColor(Qt::black).rgb();
+        const auto c1 = QColor(Qt::white).rgb();
         if (img.color(0) == c0 && img.color(1) == c1) {
             img.invertPixels();
             img.setColor(0, c1);
@@ -121,14 +121,14 @@ static QImage makeBitmapCompliantIfNeeded(QPlatformPixmap *d, const QImage &imag
 void QPlatformPixmap::fromImageReader(QImageReader *imageReader,
                                   Qt::ImageConversionFlags flags)
 {
-    const QImage image = imageReader->read();
+    const auto image = imageReader->read();
     fromImage(image, flags);
 }
 
 bool QPlatformPixmap::fromFile(const QString &fileName, const char *format,
                            Qt::ImageConversionFlags flags)
 {
-    QImage image = QImageReader(fileName, format).read();
+    auto image = QImageReader(fileName, format).read();
     if (image.isNull())
         return false;
     fromImage(makeBitmapCompliantIfNeeded(this, image, flags), flags);
@@ -137,10 +137,10 @@ bool QPlatformPixmap::fromFile(const QString &fileName, const char *format,
 
 bool QPlatformPixmap::fromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
 {
-    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buf), len);
+    auto a = QByteArray::fromRawData(reinterpret_cast<const char *>(buf), len);
     QBuffer b(&a);
     b.open(QIODevice::ReadOnly);
-    QImage image = QImageReader(&b, format).read();
+    auto image = QImageReader(&b, format).read();
     if (image.isNull())
         return false;
     fromImage(makeBitmapCompliantIfNeeded(this, image, flags), flags);

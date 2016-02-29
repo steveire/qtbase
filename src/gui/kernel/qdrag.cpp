@@ -266,7 +266,7 @@ Qt::DropAction QDrag::exec(Qt::DropActions supportedActions, Qt::DropAction defa
         qWarning("QDrag: No mimedata set before starting the drag");
         return d->executed_action;
     }
-    Qt::DropAction transformedDefaultDropAction = Qt::IgnoreAction;
+    auto transformedDefaultDropAction = Qt::IgnoreAction;
 
     if (defaultDropAction == Qt::IgnoreAction) {
         if (supportedActions & Qt::MoveAction) {
@@ -344,11 +344,11 @@ QPixmap QDrag::dragCursor(Qt::DropAction action) const
     typedef QMap<Qt::DropAction, QPixmap>::const_iterator Iterator;
 
     Q_D(const QDrag);
-    const Iterator it = d->customCursors.constFind(action);
+    const auto it = d->customCursors.constFind(action);
     if (it != d->customCursors.constEnd())
         return it.value();
 
-    Qt::CursorShape shape = Qt::ForbiddenCursor;
+    auto shape = Qt::ForbiddenCursor;
     switch (action) {
     case Qt::MoveAction:
         shape = Qt::DragMoveCursor;
@@ -398,7 +398,7 @@ Qt::DropAction QDrag::defaultAction() const
 */
 void QDrag::cancel()
 {
-    if (QPlatformDrag *platformDrag = QGuiApplicationPrivate::platformIntegration()->drag())
+    if (auto platformDrag = QGuiApplicationPrivate::platformIntegration()->drag())
         platformDrag->cancelDrag();
 }
 

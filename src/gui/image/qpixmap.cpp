@@ -76,7 +76,7 @@ static bool qt_pixmap_thread_test()
     }
 
     if (qApp->thread() != QThread::currentThread()) {
-        bool fail = false;
+        auto fail = false;
         if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps)) {
             printf("Lighthouse plugin does not support threaded pixmaps!\n");
             fail = true;
@@ -310,7 +310,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
     if (!rect.isEmpty())
         r = r.intersected(rect);
 
-    QPlatformPixmap *d = data->createCompatiblePlatformPixmap();
+    auto d = data->createCompatiblePlatformPixmap();
     d->copy(data.data(), r);
     return QPixmap(d);
 }
@@ -342,8 +342,8 @@ void QPixmap::scroll(int dx, int dy, const QRect &rect, QRegion *exposed)
 {
     if (isNull() || (dx == 0 && dy == 0))
         return;
-    QRect dest = rect & this->rect();
-    QRect src = dest.translated(-dx, -dy) & dest;
+    auto dest = rect & this->rect();
+    auto src = dest.translated(-dx, -dy) & dest;
     if (src.isEmpty()) {
         if (exposed)
             *exposed += dest;
@@ -354,7 +354,7 @@ void QPixmap::scroll(int dx, int dy, const QRect &rect, QRegion *exposed)
 
     if (!data->scroll(dx, dy, src)) {
         // Fallback
-        QPixmap pix = *this;
+        auto pix = *this;
         QPainter painter(&pix);
         painter.setCompositionMode(QPainter::CompositionMode_Source);
         painter.drawPixmap(src.translated(dx, dy), *this, src);
@@ -605,34 +605,34 @@ void QPixmap::setMask(const QBitmap &mask)
 
     detach();
 
-    QImage image = data->toImage();
+    auto image = data->toImage();
     if (mask.size().isEmpty()) {
         if (image.depth() != 1) { // hw: ????
             image = image.convertToFormat(QImage::Format_RGB32);
         }
     } else {
-        const int w = image.width();
-        const int h = image.height();
+        const auto w = image.width();
+        const auto h = image.height();
 
         switch (image.depth()) {
         case 1: {
-            const QImage imageMask = mask.toImage().convertToFormat(image.format());
-            for (int y = 0; y < h; ++y) {
-                const uchar *mscan = imageMask.scanLine(y);
-                uchar *tscan = image.scanLine(y);
-                int bytesPerLine = image.bytesPerLine();
-                for (int i = 0; i < bytesPerLine; ++i)
+            const auto imageMask = mask.toImage().convertToFormat(image.format());
+            for (auto y = 0; y < h; ++y) {
+                auto mscan = imageMask.scanLine(y);
+                auto tscan = image.scanLine(y);
+                auto bytesPerLine = image.bytesPerLine();
+                for (auto i = 0; i < bytesPerLine; ++i)
                     tscan[i] &= mscan[i];
             }
             break;
         }
         default: {
-            const QImage imageMask = mask.toImage().convertToFormat(QImage::Format_MonoLSB);
+            const auto imageMask = mask.toImage().convertToFormat(QImage::Format_MonoLSB);
             image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-            for (int y = 0; y < h; ++y) {
-                const uchar *mscan = imageMask.scanLine(y);
-                QRgb *tscan = (QRgb *)image.scanLine(y);
-                for (int x = 0; x < w; ++x) {
+            for (auto y = 0; y < h; ++y) {
+                auto mscan = imageMask.scanLine(y);
+                auto tscan = (QRgb *)image.scanLine(y);
+                for (auto x = 0; x < w; ++x) {
                     if (!(mscan[x>>3] & (1 << (x&7))))
                         tscan[x] = 0;
                 }
@@ -717,7 +717,7 @@ void QPixmap::setDevicePixelRatio(qreal scaleFactor)
 */
 QBitmap QPixmap::createHeuristicMask(bool clipTight) const
 {
-    QBitmap m = QBitmap::fromImage(toImage().createHeuristicMask(clipTight));
+    auto m = QBitmap::fromImage(toImage().createHeuristicMask(clipTight));
     return m;
 }
 #endif
@@ -735,7 +735,7 @@ QBitmap QPixmap::createHeuristicMask(bool clipTight) const
 */
 QBitmap QPixmap::createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode) const
 {
-    QImage image = toImage().convertToFormat(QImage::Format_ARGB32);
+    auto image = toImage().convertToFormat(QImage::Format_ARGB32);
     return QBitmap::fromImage(image.createMaskFromColor(maskColor.rgba(), mode));
 }
 
@@ -953,7 +953,7 @@ void QPixmap::fill(const QColor &color)
     } else {
         // Don't bother to make a copy of the data object, since
         // it will be filled with new pixel data anyway.
-        QPlatformPixmap *d = data->createCompatiblePlatformPixmap();
+        auto d = data->createCompatiblePlatformPixmap();
         d->resize(data->width(), data->height());
         data = d;
     }
@@ -1164,16 +1164,16 @@ QPixmap QPixmap::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Tran
     if (s.isEmpty())
         return QPixmap();
 
-    QSize newSize = size();
+    auto newSize = size();
     newSize.scale(s, aspectMode);
     newSize.rwidth() = qMax(newSize.width(), 1);
     newSize.rheight() = qMax(newSize.height(), 1);
     if (newSize == size())
         return *this;
 
-    QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(),
+    auto wm = QTransform::fromScale((qreal)newSize.width() / width(),
                                           (qreal)newSize.height() / height());
-    QPixmap pix = transformed(wm, mode);
+    auto pix = transformed(wm, mode);
     return pix;
 }
 
@@ -1200,8 +1200,8 @@ QPixmap QPixmap::scaledToWidth(int w, Qt::TransformationMode mode) const
     if (w <= 0)
         return QPixmap();
 
-    qreal factor = (qreal) w / width();
-    QTransform wm = QTransform::fromScale(factor, factor);
+    auto factor = (qreal) w / width();
+    auto wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -1228,8 +1228,8 @@ QPixmap QPixmap::scaledToHeight(int h, Qt::TransformationMode mode) const
     if (h <= 0)
         return QPixmap();
 
-    qreal factor = (qreal) h / height();
-    QTransform wm = QTransform::fromScale(factor, factor);
+    auto factor = (qreal) h / height();
+    auto wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -1511,11 +1511,11 @@ QBitmap QPixmap::mask() const
     if (!data || !hasAlphaChannel())
         return QBitmap();
 
-    const QImage img = toImage();
-    bool shouldConvert = (img.format() != QImage::Format_ARGB32 && img.format() != QImage::Format_ARGB32_Premultiplied);
-    const QImage image = (shouldConvert ? img.convertToFormat(QImage::Format_ARGB32_Premultiplied) : img);
-    const int w = image.width();
-    const int h = image.height();
+    const auto img = toImage();
+    auto shouldConvert = (img.format() != QImage::Format_ARGB32 && img.format() != QImage::Format_ARGB32_Premultiplied);
+    const auto image = (shouldConvert ? img.convertToFormat(QImage::Format_ARGB32_Premultiplied) : img);
+    const auto w = image.width();
+    const auto h = image.height();
 
     QImage mask(w, h, QImage::Format_MonoLSB);
     if (mask.isNull()) // allocation failed
@@ -1525,13 +1525,13 @@ QBitmap QPixmap::mask() const
     mask.setColor(0, QColor(Qt::color0).rgba());
     mask.setColor(1, QColor(Qt::color1).rgba());
 
-    const int bpl = mask.bytesPerLine();
+    const auto bpl = mask.bytesPerLine();
 
-    for (int y = 0; y < h; ++y) {
-        const QRgb *src = reinterpret_cast<const QRgb*>(image.scanLine(y));
-        uchar *dest = mask.scanLine(y);
+    for (auto y = 0; y < h; ++y) {
+        auto src = reinterpret_cast<const QRgb*>(image.scanLine(y));
+        auto dest = mask.scanLine(y);
         memset(dest, 0, bpl);
-        for (int x = 0; x < w; ++x) {
+        for (auto x = 0; x < w; ++x) {
             if (qAlpha(*src) > 0)
                 dest[x >> 3] |= (1 << (x & 7));
             ++src;
@@ -1578,10 +1578,10 @@ void QPixmap::detach()
 
     // QPixmap.data member may be QRuntimePlatformPixmap so use handle() function to get
     // the actual underlaying runtime pixmap data.
-    QPlatformPixmap *pd = handle();
-    QPlatformPixmap::ClassId id = pd->classId();
+    auto pd = handle();
+    auto id = pd->classId();
     if (id == QPlatformPixmap::RasterClass) {
-        QRasterPlatformPixmap *rasterData = static_cast<QRasterPlatformPixmap*>(pd);
+        auto rasterData = static_cast<QRasterPlatformPixmap*>(pd);
         rasterData->image.detach();
     }
 

@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 const uint *QT_FASTCALL convertRGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
                                                       const QPixelLayout *, const QRgb *)
 {
-    for (int i = 0; i < count; ++i)
+    for (auto i = 0; i < count; ++i)
         buffer[i] = 0xff000000 | qUnpremultiply_sse4(src[i]);
     return buffer;
 }
@@ -62,9 +62,9 @@ void convert_ARGB_to_ARGB_PM_sse4(QImageData *dest, const QImageData *src, Qt::I
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
-    const uint *src_data = (uint *) src->data;
-    uint *dest_data = (uint *) dest->data;
-    for (int i = 0; i < src->height; ++i) {
+    auto src_data = (uint *) src->data;
+    auto dest_data = (uint *) dest->data;
+    for (auto i = 0; i < src->height; ++i) {
         qt_convertARGB32ToARGB32PM(dest_data, src_data, src->width);
         src_data += src->bytes_per_line >> 2;
         dest_data += dest->bytes_per_line >> 2;

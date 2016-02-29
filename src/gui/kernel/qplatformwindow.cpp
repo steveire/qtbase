@@ -92,7 +92,7 @@ QPlatformWindow *QPlatformWindow::parent() const
 */
 QPlatformScreen *QPlatformWindow::screen() const
 {
-    QScreen *scr = window()->screen();
+    auto scr = window()->screen();
     return scr ? scr->handle() : Q_NULLPTR;
 }
 
@@ -213,8 +213,8 @@ bool QPlatformWindow::isEmbedded(const QPlatformWindow *parentWindow) const
 */
 QPoint QPlatformWindow::mapToGlobal(const QPoint &pos) const
 {
-    const QPlatformWindow *p = this;
-    QPoint result = pos;
+    auto p = this;
+    auto result = pos;
     while (p) {
         result += p->geometry().topLeft();
         p = p->parent();
@@ -231,8 +231,8 @@ QPoint QPlatformWindow::mapToGlobal(const QPoint &pos) const
 */
 QPoint QPlatformWindow::mapFromGlobal(const QPoint &pos) const
 {
-    const QPlatformWindow *p = this;
-    QPoint result = pos;
+    auto p = this;
+    auto result = pos;
     while (p) {
         result -= p->geometry().topLeft();
         p = p->parent();
@@ -462,7 +462,7 @@ bool QPlatformWindow::frameStrutEventsEnabled() const
 */
 QString QPlatformWindow::formatWindowTitle(const QString &title, const QString &separator)
 {
-    QString fullTitle = title;
+    auto fullTitle = title;
     if (QGuiApplicationPrivate::displayName && !title.endsWith(*QGuiApplicationPrivate::displayName)) {
         // Append display name, if set.
         if (!fullTitle.isEmpty())
@@ -488,16 +488,16 @@ QString QPlatformWindow::formatWindowTitle(const QString &title, const QString &
 */
 QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) const
 {
-    QPlatformScreen *currentScreen = screen();
-    QPlatformScreen *fallback = currentScreen;
+    auto currentScreen = screen();
+    auto fallback = currentScreen;
     // QRect::center can return a value outside the rectangle if it's empty.
     // Apply mapToGlobal() in case it is a foreign/embedded window.
-    const QPoint center =
+    const auto center =
         mapToGlobal(newGeometry.isEmpty() ? newGeometry.topLeft() : newGeometry.center());
 
     if (!parent() && currentScreen && !currentScreen->geometry().contains(center)) {
         const auto screens = currentScreen->virtualSiblings();
-        for (QPlatformScreen *screen : screens) {
+        for (auto screen : screens) {
             if (screen->geometry().contains(center))
                 return screen;
             if (screen->geometry().intersects(newGeometry))
@@ -549,14 +549,14 @@ static inline const QScreen *effectiveScreen(const QWindow *window)
 {
     if (!window)
         return QGuiApplication::primaryScreen();
-    const QScreen *screen = window->screen();
+    auto screen = window->screen();
     if (!screen)
         return QGuiApplication::primaryScreen();
 #ifndef QT_NO_CURSOR
-    const QList<QScreen *> siblings = screen->virtualSiblings();
+    const auto siblings = screen->virtualSiblings();
     if (siblings.size() > 1) {
-        const QPoint referencePoint = window->transientParent() ? window->transientParent()->geometry().center() : QCursor::pos();
-        for (const QScreen *sibling : siblings) {
+        const auto referencePoint = window->transientParent() ? window->transientParent()->geometry().center() : QCursor::pos();
+        for (auto sibling : siblings) {
             if (sibling->geometry().contains(referencePoint))
                 return sibling;
         }
@@ -591,25 +591,25 @@ void QPlatformWindow::invalidateSurface()
 QRect QPlatformWindow::initialGeometry(const QWindow *w,
     const QRect &initialGeometry, int defaultWidth, int defaultHeight)
 {
-    const QScreen *screen = effectiveScreen(w);
+    auto screen = effectiveScreen(w);
     if (!screen)
         return initialGeometry;
     QRect rect(QHighDpi::fromNativePixels(initialGeometry, w));
     if (rect.width() == 0) {
-        const int minWidth = w->minimumWidth();
+        const auto minWidth = w->minimumWidth();
         rect.setWidth(minWidth > 0 ? minWidth : defaultWidth);
     }
     if (rect.height() == 0) {
-        const int minHeight = w->minimumHeight();
+        const auto minHeight = w->minimumHeight();
         rect.setHeight(minHeight > 0 ? minHeight : defaultHeight);
     }
     if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic
             && w->type() != Qt::Popup) {
-        const QRect availableGeometry = screen->availableGeometry();
+        const auto availableGeometry = screen->availableGeometry();
         // Center unless the geometry ( + unknown window frame) is too large for the screen).
         if (rect.height() < (availableGeometry.height() * 8) / 9
                 && rect.width() < (availableGeometry.width() * 8) / 9) {
-            const QWindow *tp = w->transientParent();
+            auto tp = w->transientParent();
             if (tp) {
                 // A transient window should be centered w.r.t. its transient parent.
                 rect.moveCenter(tp->geometry().center());
@@ -639,16 +639,16 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
 */
 void QPlatformWindow::requestUpdate()
 {
-    static int timeout = -1;
+    static auto timeout = -1;
     if (timeout == -1) {
-        bool ok = false;
+        auto ok = false;
         timeout = qEnvironmentVariableIntValue("QT_QPA_UPDATE_IDLE_TIME", &ok);
         if (!ok)
             timeout = 5;
     }
 
-    QWindow *w = window();
-    QWindowPrivate *wp = (QWindowPrivate *) QObjectPrivate::get(w);
+    auto w = window();
+    auto wp = (QWindowPrivate *) QObjectPrivate::get(w);
     Q_ASSERT(wp->updateTimer == 0);
     wp->updateTimer = w->startTimer(timeout, Qt::PreciseTimer);
 }
@@ -682,7 +682,7 @@ QSize QPlatformWindow::windowBaseSize() const
 */
 QSize QPlatformWindow::windowSizeIncrement() const
 {
-    QSize increment = window()->sizeIncrement();
+    auto increment = window()->sizeIncrement();
     if (!QHighDpiScaling::isActive())
         return increment;
 
@@ -718,8 +718,8 @@ QRect QPlatformWindow::windowFrameGeometry() const
 
 QRectF QPlatformWindow::closestAcceptableGeometry(const QWindow *qWindow, const QRectF &nativeRect)
 {
-    const QRectF rectF = QHighDpi::fromNativePixels(nativeRect, qWindow);
-    const QRectF correctedGeometryF = qt_window_private(const_cast<QWindow *>(qWindow))->closestAcceptableGeometry(rectF);
+    const auto rectF = QHighDpi::fromNativePixels(nativeRect, qWindow);
+    const auto correctedGeometryF = qt_window_private(const_cast<QWindow *>(qWindow))->closestAcceptableGeometry(rectF);
     return !correctedGeometryF.isEmpty() && rectF != correctedGeometryF
         ? QHighDpi::toNativePixels(correctedGeometryF, qWindow) : nativeRect;
 }

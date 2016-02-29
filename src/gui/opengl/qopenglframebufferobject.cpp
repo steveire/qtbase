@@ -160,7 +160,7 @@ QT_BEGIN_NAMESPACE
 void QOpenGLFramebufferObjectFormat::detach()
 {
     if (d->ref.load() != 1) {
-        QOpenGLFramebufferObjectFormatPrivate *newd
+        auto newd
             = new QOpenGLFramebufferObjectFormatPrivate(d);
         if (!d->ref.deref())
             delete d;
@@ -374,7 +374,7 @@ bool QOpenGLFramebufferObjectPrivate::checkFramebufferStatus(QOpenGLContext *ctx
 {
     if (!ctx)
         return false;   // Context no longer exists.
-    GLenum status = ctx->functions()->glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    auto status = ctx->functions()->glCheckFramebufferStatus(GL_FRAMEBUFFER);
     switch(status) {
     case GL_NO_ERROR:
     case GL_FRAMEBUFFER_COMPLETE:
@@ -448,7 +448,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
                                            GLenum texture_target, GLenum internal_format,
                                            GLint samples, bool mipmap)
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
 
     funcs.initializeOpenGLFunctions();
 
@@ -507,7 +507,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
 
 void QOpenGLFramebufferObjectPrivate::initTexture(int idx)
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     GLuint texture = 0;
 
     funcs.glGenTextures(1, &texture);
@@ -527,9 +527,9 @@ void QOpenGLFramebufferObjectPrivate::initTexture(int idx)
     funcs.glTexImage2D(target, 0, color.internalFormat, color.size.width(), color.size.height(), 0,
                        GL_RGBA, pixelType, NULL);
     if (format.mipmap()) {
-        int width = color.size.width();
-        int height = color.size.height();
-        int level = 0;
+        auto width = color.size.width();
+        auto height = color.size.height();
+        auto level = 0;
         while (width > 1 || height > 1) {
             width = qMax(1, width >> 1);
             height = qMax(1, height >> 1);
@@ -553,12 +553,12 @@ void QOpenGLFramebufferObjectPrivate::initTexture(int idx)
 
 void QOpenGLFramebufferObjectPrivate::initColorBuffer(int idx, GLint *samples)
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     GLuint color_buffer = 0;
 
     ColorAttachment &color(colorAttachments[idx]);
 
-    GLenum storageFormat = color.internalFormat;
+    auto storageFormat = color.internalFormat;
     // ES requires a sized format. The older desktop extension does not. Correct the format on ES.
     if (ctx->isOpenGLES() && color.internalFormat == GL_RGBA) {
         if (funcs.hasOpenGLExtension(QOpenGLExtensions::Sized8Formats))
@@ -592,7 +592,7 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
     // Use the same sample count for all attachments. format.samples() already contains
     // the actual number of samples for the color attachment and is not suitable. Use
     // requestedSamples instead.
-    const int samples = requestedSamples;
+    const auto samples = requestedSamples;
 
     // free existing attachments
     if (depth_buffer_guard) {
@@ -997,12 +997,12 @@ void QOpenGLFramebufferObject::addColorAttachment(const QSize &size, GLenum inte
 
     QOpenGLFramebufferObjectPrivate::ColorAttachment color(size, effectiveInternalFormat(internalFormat));
     d->colorAttachments.append(color);
-    const int idx = d->colorAttachments.count() - 1;
+    const auto idx = d->colorAttachments.count() - 1;
 
     if (d->requestedSamples == 0) {
         d->initTexture(idx);
     } else {
-        GLint samples = d->requestedSamples;
+        auto samples = d->requestedSamples;
         d->initColorBuffer(idx, &samples);
     }
 }
@@ -1063,7 +1063,7 @@ bool QOpenGLFramebufferObject::bind()
     if (!isValid())
         return false;
     Q_D(QOpenGLFramebufferObject);
-    QOpenGLContext *current = QOpenGLContext::currentContext();
+    auto current = QOpenGLContext::currentContext();
     if (!current)
         return false;
 #ifdef QT_DEBUG
@@ -1077,7 +1077,7 @@ bool QOpenGLFramebufferObject::bind()
 
     if (d->format.samples() == 0) {
         // Create new textures to replace the ones stolen via takeTexture().
-        for (int i = 0; i < d->colorAttachments.count(); ++i) {
+        for (auto i = 0; i < d->colorAttachments.count(); ++i) {
             if (!d->colorAttachments[i].guard)
                 d->initTexture(i);
         }
@@ -1100,7 +1100,7 @@ bool QOpenGLFramebufferObject::release()
     if (!isValid())
         return false;
 
-    QOpenGLContext *current = QOpenGLContext::currentContext();
+    auto current = QOpenGLContext::currentContext();
     if (!current)
         return false;
 
@@ -1208,7 +1208,7 @@ GLuint QOpenGLFramebufferObject::takeTexture(int colorAttachmentIndex)
     Q_D(QOpenGLFramebufferObject);
     GLuint id = 0;
     if (isValid() && d->format.samples() == 0 && d->colorAttachments.count() > colorAttachmentIndex) {
-        QOpenGLContext *current = QOpenGLContext::currentContext();
+        auto current = QOpenGLContext::currentContext();
         if (current && current->shareGroup() == d->fbo_guard->group() && isBound())
             release();
         id = d->colorAttachments[colorAttachmentIndex].guard ? d->colorAttachments[colorAttachmentIndex].guard->id() : 0;
@@ -1268,10 +1268,10 @@ QOpenGLFramebufferObjectFormat QOpenGLFramebufferObject::format() const
 
 static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool include_alpha, QOpenGLContext *context)
 {
-    QOpenGLFunctions *funcs = context->functions();
-    const int w = size.width();
-    const int h = size.height();
-    bool isOpenGL12orBetter = !context->isOpenGLES() && (context->format().majorVersion() >= 2 || context->format().minorVersion() >= 2);
+    auto funcs = context->functions();
+    const auto w = size.width();
+    const auto h = size.height();
+    auto isOpenGL12orBetter = !context->isOpenGLES() && (context->format().majorVersion() >= 2 || context->format().minorVersion() >= 2);
     if (isOpenGL12orBetter) {
         QImage img(size, include_alpha ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
         funcs->glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, img.bits());
@@ -1280,18 +1280,18 @@ static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool includ
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     // Without GL_UNSIGNED_INT_8_8_8_8_REV, GL_BGRA only makes sense on little endian.
-    const bool has_bgra_ext = context->isOpenGLES()
+    const auto has_bgra_ext = context->isOpenGLES()
                               ? context->hasExtension(QByteArrayLiteral("GL_EXT_read_format_bgra"))
                               : context->hasExtension(QByteArrayLiteral("GL_EXT_bgra"));
 
-    const char *renderer = reinterpret_cast<const char *>(funcs->glGetString(GL_RENDERER));
-    const char *ver = reinterpret_cast<const char *>(funcs->glGetString(GL_VERSION));
+    auto renderer = reinterpret_cast<const char *>(funcs->glGetString(GL_RENDERER));
+    auto ver = reinterpret_cast<const char *>(funcs->glGetString(GL_VERSION));
 
     // Blacklist PowerVR Rogue G6200 as it has problems with its BGRA support.
-    const bool blackListed = (qstrcmp(renderer, "PowerVR Rogue G6200") == 0
+    const auto blackListed = (qstrcmp(renderer, "PowerVR Rogue G6200") == 0
                              && ::strstr(ver, "1.3") != 0);
 
-    const bool supports_bgra = has_bgra_ext && !blackListed;
+    const auto supports_bgra = has_bgra_ext && !blackListed;
 
     if (supports_bgra) {
         QImage img(size, include_alpha ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
@@ -1314,8 +1314,8 @@ static inline QImage qt_gl_read_framebuffer_rgb10a2(const QSize &size, bool incl
 
 static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, bool include_alpha, bool flip)
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    QOpenGLFunctions *funcs = ctx->functions();
+    auto ctx = QOpenGLContext::currentContext();
+    auto funcs = ctx->functions();
     while (funcs->glGetError());
 
     switch (internal_format) {
@@ -1416,7 +1416,7 @@ QImage QOpenGLFramebufferObject::toImage(bool flipped, int colorAttachmentIndex)
     if (!d->valid)
         return QImage();
 
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (!ctx) {
         qWarning("QOpenGLFramebufferObject::toImage() called without a current context");
         return QImage();
@@ -1434,7 +1434,7 @@ QImage QOpenGLFramebufferObject::toImage(bool flipped, int colorAttachmentIndex)
         const_cast<QOpenGLFramebufferObject *>(this)->bind();
 
     QImage image;
-    QOpenGLExtraFunctions *extraFuncs = ctx->extraFunctions();
+    auto extraFuncs = ctx->extraFunctions();
     // qt_gl_read_framebuffer doesn't work on a multisample FBO
     if (format().samples() != 0) {
         QRect rect(QPoint(0, 0), size());
@@ -1480,7 +1480,7 @@ QImage QOpenGLFramebufferObject::toImage(bool flipped, int colorAttachmentIndex)
 */
 bool QOpenGLFramebufferObject::bindDefault()
 {
-    QOpenGLContext *ctx = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
+    auto ctx = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
 
     if (ctx) {
         ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
@@ -1546,7 +1546,7 @@ void QOpenGLFramebufferObject::setAttachment(QOpenGLFramebufferObject::Attachmen
     Q_D(QOpenGLFramebufferObject);
     if (attachment == d->fbo_attachment || !isValid())
         return;
-    QOpenGLContext *current = QOpenGLContext::currentContext();
+    auto current = QOpenGLContext::currentContext();
     if (!current)
         return;
 #ifdef QT_DEBUG
@@ -1565,10 +1565,10 @@ void QOpenGLFramebufferObject::setAttachment(QOpenGLFramebufferObject::Attachmen
 bool QOpenGLFramebufferObject::isBound() const
 {
     Q_D(const QOpenGLFramebufferObject);
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (!ctx)
         return false;
-    GLint fbo = 0;
+    auto fbo = 0;
     ctx->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo);
     return GLuint(fbo) == d->fbo();
 }
@@ -1701,7 +1701,7 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
                                                int drawColorAttachmentIndex,
                                                QOpenGLFramebufferObject::FramebufferRestorePolicy restorePolicy)
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (!ctx)
         return;
 
@@ -1713,22 +1713,22 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     if (restorePolicy == RestoreFrameBufferBinding)
         ctx->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *) &prevFbo);
 
-    const int sx0 = sourceRect.left();
-    const int sx1 = sourceRect.left() + sourceRect.width();
-    const int sy0 = sourceRect.top();
-    const int sy1 = sourceRect.top() + sourceRect.height();
+    const auto sx0 = sourceRect.left();
+    const auto sx1 = sourceRect.left() + sourceRect.width();
+    const auto sy0 = sourceRect.top();
+    const auto sy1 = sourceRect.top() + sourceRect.height();
 
-    const int tx0 = targetRect.left();
-    const int tx1 = targetRect.left() + targetRect.width();
-    const int ty0 = targetRect.top();
-    const int ty1 = targetRect.top() + targetRect.height();
+    const auto tx0 = targetRect.left();
+    const auto tx1 = targetRect.left() + targetRect.width();
+    const auto ty0 = targetRect.top();
+    const auto ty1 = targetRect.top() + targetRect.height();
 
-    const GLuint defaultFboId = ctx->defaultFramebufferObject();
+    const auto defaultFboId = ctx->defaultFramebufferObject();
 
     extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, source ? source->handle() : defaultFboId);
     extensions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target ? target->handle() : defaultFboId);
 
-    const bool supportsMRT = extensions.hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets);
+    const auto supportsMRT = extensions.hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets);
     if (supportsMRT) {
         extensions.glReadBuffer(GL_COLOR_ATTACHMENT0 + readColorAttachmentIndex);
         if (target) {

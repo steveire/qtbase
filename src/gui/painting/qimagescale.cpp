@@ -112,7 +112,7 @@ const unsigned int** QImageScale::qimageCalcYPoints(const unsigned int *src,
                                                     int sw, int sh, int dh)
 {
     const unsigned int **p;
-    int j = 0, rv = 0;
+    auto j = 0, rv = 0;
     qint64 val, inc;
 
     if (dh < 0) {
@@ -124,13 +124,13 @@ const unsigned int** QImageScale::qimageCalcYPoints(const unsigned int *src,
     int up = qAbs(dh) >= sh;
     val = up ? 0x8000 * sh / dh - 0x8000 : 0;
     inc = (((qint64)sh) << 16) / dh;
-    for (int i = 0; i < dh; i++) {
+    for (auto i = 0; i < dh; i++) {
         p[j++] = src + qMax(0LL, val >> 16) * sw;
         val += inc;
     }
     if (rv) {
-        for (int i = dh / 2; --i >= 0; ) {
-            const unsigned int *tmp = p[i];
+        for (auto i = dh / 2; --i >= 0; ) {
+            auto tmp = p[i];
             p[i] = p[dh - i - 1];
             p[dh - i - 1] = tmp;
         }
@@ -152,14 +152,14 @@ int* QImageScale::qimageCalcXPoints(int sw, int dw)
     int up = qAbs(dw) >= sw;
     val = up ? 0x8000 * sw / dw - 0x8000 : 0;
     inc = (((qint64)sw) << 16) / dw;
-    for (int i = 0; i < dw; i++) {
+    for (auto i = 0; i < dw; i++) {
         p[j++] = qMax(0LL, val >> 16);
         val += inc;
     }
 
     if (rv) {
-        for (int i = dw / 2; --i >= 0; ) {
-            int tmp = p[i];
+        for (auto i = dw / 2; --i >= 0; ) {
+            auto tmp = p[i];
             p[i] = p[dw - i - 1];
             p[dw - i - 1] = tmp;
         }
@@ -180,8 +180,8 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
     if (up) {
         /* scaling up */
         qint64 val = 0x8000 * s / d - 0x8000;
-        qint64 inc = (((qint64)s) << 16) / d;
-        for (int i = 0; i < d; i++) {
+        auto inc = (((qint64)s) << 16) / d;
+        for (auto i = 0; i < d; i++) {
             int pos = val >> 16;
             if (pos < 0)
                 p[j++] = 0;
@@ -194,9 +194,9 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
     } else {
         /* scaling down */
         qint64 val = 0;
-        qint64 inc = (((qint64)s) << 16) / d;
-        int Cp = (((d << 14) + s - 1) / s);
-        for (int i = 0; i < d; i++) {
+        auto inc = (((qint64)s) << 16) / d;
+        auto Cp = (((d << 14) + s - 1) / s);
+        for (auto i = 0; i < d; i++) {
             int ap = ((0x10000 - (val & 0xffff)) * Cp) >> 16;
             p[j] = ap | (Cp << 16);
             j++;
@@ -205,7 +205,7 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
     }
     if (rv) {
         int tmp;
-        for (int i = d / 2; --i >= 0; ) {
+        for (auto i = d / 2; --i >= 0; ) {
             tmp = p[i];
             p[i] = p[d - i - 1];
             p[d - i - 1] = tmp;
@@ -298,21 +298,21 @@ void qt_qimageScaleAARGBA_down_xy_neon(QImageScaleInfo *isi, unsigned int *dest,
 static void qt_qimageScaleAARGBA_up_xy(QImageScaleInfo *isi, unsigned int *dest,
                                        int dw, int dh, int dow, int sow)
 {
-    const unsigned int **ypoints = isi->ypoints;
-    int *xpoints = isi->xpoints;
-    int *xapoints = isi->xapoints;
-    int *yapoints = isi->yapoints;
+    auto ypoints = isi->ypoints;
+    auto xpoints = isi->xpoints;
+    auto xapoints = isi->xapoints;
+    auto yapoints = isi->yapoints;
 
     /* go through every scanline in the output buffer */
-    for (int y = 0; y < dh; y++) {
+    for (auto y = 0; y < dh; y++) {
         /* calculate the source line we'll scan from */
-        const unsigned int *sptr = ypoints[y];
-        unsigned int *dptr = dest + (y * dow);
-        const int yap = yapoints[y];
+        auto sptr = ypoints[y];
+        auto dptr = dest + (y * dow);
+        const auto yap = yapoints[y];
         if (yap > 0) {
-            for (int x = 0; x < dw; x++) {
-                const unsigned int *pix = sptr + xpoints[x];
-                const int xap = xapoints[x];
+            for (auto x = 0; x < dw; x++) {
+                auto pix = sptr + xpoints[x];
+                const auto xap = xapoints[x];
                 if (xap > 0)
                     *dptr = interpolate_4_pixels(pix, pix + sow, xap, yap);
                 else
@@ -320,9 +320,9 @@ static void qt_qimageScaleAARGBA_up_xy(QImageScaleInfo *isi, unsigned int *dest,
                 dptr++;
             }
         } else {
-            for (int x = 0; x < dw; x++) {
-                const unsigned int *pix = sptr + xpoints[x];
-                const int xap = xapoints[x];
+            for (auto x = 0; x < dw; x++) {
+                auto pix = sptr + xpoints[x];
+                const auto xap = xapoints[x];
                 if (xap > 0)
                     *dptr = INTERPOLATE_PIXEL_256(pix[0], 256 - xap, pix[1], xap);
                 else
@@ -406,23 +406,23 @@ inline static void qt_qimageScaleAARGBA_helper(const unsigned int *pix, int xyap
 static void qt_qimageScaleAARGBA_up_x_down_y(QImageScaleInfo *isi, unsigned int *dest,
                                              int dw, int dh, int dow, int sow)
 {
-    const unsigned int **ypoints = isi->ypoints;
-    int *xpoints = isi->xpoints;
-    int *xapoints = isi->xapoints;
-    int *yapoints = isi->yapoints;
+    auto ypoints = isi->ypoints;
+    auto xpoints = isi->xpoints;
+    auto xapoints = isi->xapoints;
+    auto yapoints = isi->yapoints;
 
     /* go through every scanline in the output buffer */
-    for (int y = 0; y < dh; y++) {
-        int Cy = yapoints[y] >> 16;
-        int yap = yapoints[y] & 0xffff;
+    for (auto y = 0; y < dh; y++) {
+        auto Cy = yapoints[y] >> 16;
+        auto yap = yapoints[y] & 0xffff;
 
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
+        auto dptr = dest + (y * dow);
+        for (auto x = 0; x < dw; x++) {
+            auto sptr = ypoints[y] + xpoints[x];
             int r, g, b, a;
             qt_qimageScaleAARGBA_helper(sptr, yap, Cy, sow, r, g, b, a);
 
-            int xap = xapoints[x];
+            auto xap = xapoints[x];
             if (xap > 0) {
                 int rr, gg, bb, aa;
                 qt_qimageScaleAARGBA_helper(sptr + 1, yap, Cy, sow, rr, gg, bb, aa);
@@ -444,23 +444,23 @@ static void qt_qimageScaleAARGBA_up_x_down_y(QImageScaleInfo *isi, unsigned int 
 static void qt_qimageScaleAARGBA_down_x_up_y(QImageScaleInfo *isi, unsigned int *dest,
                                              int dw, int dh, int dow, int sow)
 {
-    const unsigned int **ypoints = isi->ypoints;
-    int *xpoints = isi->xpoints;
-    int *xapoints = isi->xapoints;
-    int *yapoints = isi->yapoints;
+    auto ypoints = isi->ypoints;
+    auto xpoints = isi->xpoints;
+    auto xapoints = isi->xapoints;
+    auto yapoints = isi->yapoints;
 
     /* go through every scanline in the output buffer */
-    for (int y = 0; y < dh; y++) {
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            int Cx = xapoints[x] >> 16;
-            int xap = xapoints[x] & 0xffff;
+    for (auto y = 0; y < dh; y++) {
+        auto dptr = dest + (y * dow);
+        for (auto x = 0; x < dw; x++) {
+            auto Cx = xapoints[x] >> 16;
+            auto xap = xapoints[x] & 0xffff;
 
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
+            auto sptr = ypoints[y] + xpoints[x];
             int r, g, b, a;
             qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, r, g, b, a);
 
-            int yap = yapoints[y];
+            auto yap = yapoints[y];
             if (yap > 0) {
                 int rr, gg, bb, aa;
                 qt_qimageScaleAARGBA_helper(sptr + sow, xap, Cx, 1, rr, gg, bb, aa);
@@ -483,28 +483,28 @@ static void qt_qimageScaleAARGBA_down_x_up_y(QImageScaleInfo *isi, unsigned int 
 static void qt_qimageScaleAARGBA_down_xy(QImageScaleInfo *isi, unsigned int *dest,
                                          int dw, int dh, int dow, int sow)
 {
-    const unsigned int **ypoints = isi->ypoints;
-    int *xpoints = isi->xpoints;
-    int *xapoints = isi->xapoints;
-    int *yapoints = isi->yapoints;
+    auto ypoints = isi->ypoints;
+    auto xpoints = isi->xpoints;
+    auto xapoints = isi->xapoints;
+    auto yapoints = isi->yapoints;
 
-    for (int y = 0; y < dh; y++) {
-        int Cy = (yapoints[y]) >> 16;
-        int yap = (yapoints[y]) & 0xffff;
+    for (auto y = 0; y < dh; y++) {
+        auto Cy = (yapoints[y]) >> 16;
+        auto yap = (yapoints[y]) & 0xffff;
 
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            int Cx = xapoints[x] >> 16;
-            int xap = xapoints[x] & 0xffff;
+        auto dptr = dest + (y * dow);
+        for (auto x = 0; x < dw; x++) {
+            auto Cx = xapoints[x] >> 16;
+            auto xap = xapoints[x] & 0xffff;
 
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
+            auto sptr = ypoints[y] + xpoints[x];
             int rx, gx, bx, ax;
             qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, rx, gx, bx, ax);
 
-            int r = ((rx>>4) * yap);
-            int g = ((gx>>4) * yap);
-            int b = ((bx>>4) * yap);
-            int a = ((ax>>4) * yap);
+            auto r = ((rx>>4) * yap);
+            auto g = ((gx>>4) * yap);
+            auto b = ((bx>>4) * yap);
+            auto a = ((ax>>4) * yap);
 
             int j;
             for (j = (1 << 14) - yap; j > Cy; j -= Cy) {
@@ -609,23 +609,23 @@ inline static void qt_qimageScaleAARGB_helper(const unsigned int *pix, int xyap,
 static void qt_qimageScaleAARGB_up_x_down_y(QImageScaleInfo *isi, unsigned int *dest,
                                             int dw, int dh, int dow, int sow)
 {
-    const unsigned int **ypoints = isi->ypoints;
-    int *xpoints = isi->xpoints;
-    int *xapoints = isi->xapoints;
-    int *yapoints = isi->yapoints;
+    auto ypoints = isi->ypoints;
+    auto xpoints = isi->xpoints;
+    auto xapoints = isi->xapoints;
+    auto yapoints = isi->yapoints;
 
     /* go through every scanline in the output buffer */
-    for (int y = 0; y < dh; y++) {
-        int Cy = yapoints[y] >> 16;
-        int yap = yapoints[y] & 0xffff;
+    for (auto y = 0; y < dh; y++) {
+        auto Cy = yapoints[y] >> 16;
+        auto yap = yapoints[y] & 0xffff;
 
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
+        auto dptr = dest + (y * dow);
+        for (auto x = 0; x < dw; x++) {
+            auto sptr = ypoints[y] + xpoints[x];
             int r, g, b;
             qt_qimageScaleAARGB_helper(sptr, yap, Cy, sow, r, g, b);
 
-            int xap = xapoints[x];
+            auto xap = xapoints[x];
             if (xap > 0) {
                 int rr, bb, gg;
                 qt_qimageScaleAARGB_helper(sptr + 1, yap, Cy, sow, rr, gg, bb);
@@ -645,23 +645,23 @@ static void qt_qimageScaleAARGB_up_x_down_y(QImageScaleInfo *isi, unsigned int *
 static void qt_qimageScaleAARGB_down_x_up_y(QImageScaleInfo *isi, unsigned int *dest,
                                             int dw, int dh, int dow, int sow)
 {
-    const unsigned int **ypoints = isi->ypoints;
-    int *xpoints = isi->xpoints;
-    int *xapoints = isi->xapoints;
-    int *yapoints = isi->yapoints;
+    auto ypoints = isi->ypoints;
+    auto xpoints = isi->xpoints;
+    auto xapoints = isi->xapoints;
+    auto yapoints = isi->yapoints;
 
     /* go through every scanline in the output buffer */
-    for (int y = 0; y < dh; y++) {
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            int Cx = xapoints[x] >> 16;
-            int xap = xapoints[x] & 0xffff;
+    for (auto y = 0; y < dh; y++) {
+        auto dptr = dest + (y * dow);
+        for (auto x = 0; x < dw; x++) {
+            auto Cx = xapoints[x] >> 16;
+            auto xap = xapoints[x] & 0xffff;
 
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
+            auto sptr = ypoints[y] + xpoints[x];
             int r, g, b;
             qt_qimageScaleAARGB_helper(sptr, xap, Cx, 1, r, g, b);
 
-            int yap = yapoints[y];
+            auto yap = yapoints[y];
             if (yap > 0) {
                 int rr, bb, gg;
                 qt_qimageScaleAARGB_helper(sptr + sow, xap, Cx, 1, rr, gg, bb);
@@ -681,27 +681,27 @@ static void qt_qimageScaleAARGB_down_x_up_y(QImageScaleInfo *isi, unsigned int *
 static void qt_qimageScaleAARGB_down_xy(QImageScaleInfo *isi, unsigned int *dest,
                                         int dw, int dh, int dow, int sow)
 {
-    const unsigned int **ypoints = isi->ypoints;
-    int *xpoints = isi->xpoints;
-    int *xapoints = isi->xapoints;
-    int *yapoints = isi->yapoints;
+    auto ypoints = isi->ypoints;
+    auto xpoints = isi->xpoints;
+    auto xapoints = isi->xapoints;
+    auto yapoints = isi->yapoints;
 
-    for (int y = 0; y < dh; y++) {
-        int Cy = yapoints[y] >> 16;
-        int yap = yapoints[y] & 0xffff;
+    for (auto y = 0; y < dh; y++) {
+        auto Cy = yapoints[y] >> 16;
+        auto yap = yapoints[y] & 0xffff;
 
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            int Cx = xapoints[x] >> 16;
-            int xap = xapoints[x] & 0xffff;
+        auto dptr = dest + (y * dow);
+        for (auto x = 0; x < dw; x++) {
+            auto Cx = xapoints[x] >> 16;
+            auto xap = xapoints[x] & 0xffff;
 
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
+            auto sptr = ypoints[y] + xpoints[x];
             int rx, gx, bx;
             qt_qimageScaleAARGB_helper(sptr, xap, Cx, 1, rx, gx, bx);
 
-            int r = (rx >> 4) * yap;
-            int g = (gx >> 4) * yap;
-            int b = (bx >> 4) * yap;
+            auto r = (rx >> 4) * yap;
+            auto g = (gx >> 4) * yap;
+            auto b = (bx >> 4) * yap;
 
             int j;
             for (j = (1 << 14) - yap; j > Cy; j -= Cy) {
@@ -731,9 +731,9 @@ QImage qSmoothScaleImage(const QImage &src, int dw, int dh)
     if (src.isNull() || dw <= 0 || dh <= 0)
         return buffer;
 
-    int w = src.width();
-    int h = src.height();
-    QImageScaleInfo *scaleinfo =
+    auto w = src.width();
+    auto h = src.height();
+    auto scaleinfo =
         qimageCalcScaleInfo(src, w, h, dw, dh, true);
     if (!scaleinfo)
         return buffer;

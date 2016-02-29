@@ -98,7 +98,7 @@ QByteArray QFontSubset::glyphName(unsigned short unicode, bool symbol)
         // map from latin1 to symbol
         unicode = symbol_map[unicode];
 
-    const AGLEntry *r = std::lower_bound(unicode_to_agl_map, unicode_to_agl_map + unicode_to_agl_map_size, unicode);
+    auto r = std::lower_bound(unicode_to_agl_map, unicode_to_agl_map + unicode_to_agl_map_size, unicode);
     if ((r != unicode_to_agl_map + unicode_to_agl_map_size) && !(unicode < *r))
         return glyph_names + r->index;
 
@@ -132,15 +132,15 @@ QByteArray QFontSubset::widthArray() const
 {
     Q_ASSERT(!widths.isEmpty());
 
-    QFontEngine::Properties properties = fontEngine->properties();
+    auto properties = fontEngine->properties();
 
     QByteArray width;
     QPdf::ByteStream s(&width);
-    QFixed scale = QFixed(1000)/emSquare;
+    auto scale = QFixed(1000)/emSquare;
 
-    QFixed defWidth = widths[0];
+    auto defWidth = widths[0];
     //qDebug("defWidth=%d, scale=%f", defWidth.toInt(), scale.toReal());
-    for (int i = 0; i < nGlyphs(); ++i) {
+    for (auto i = 0; i < nGlyphs(); ++i) {
         if (defWidth != widths[i])
             defWidth = 0;
     }
@@ -148,13 +148,13 @@ QByteArray QFontSubset::widthArray() const
         s << "/DW " << (defWidth*scale).toInt();
     } else {
         s << "/W [";
-        for (int g = 0; g < nGlyphs();) {
-            QFixed w = widths[g];
-            int start = g;
-            int startLinear = 0;
+        for (auto g = 0; g < nGlyphs();) {
+            auto w = widths[g];
+            auto start = g;
+            auto startLinear = 0;
             ++g;
             while (g < nGlyphs()) {
-                QFixed nw = widths[g];
+                auto nw = widths[g];
                 if (nw == w) {
                 if (!startLinear)
                     startLinear = g - 1;
@@ -169,11 +169,11 @@ QByteArray QFontSubset::widthArray() const
             // qDebug("start=%x startLinear=%x g-1=%x",start,startLinear,g-1);
             if (g - startLinear < 10)
                 startLinear = 0;
-            int endnonlinear = startLinear ? startLinear : g;
+            auto endnonlinear = startLinear ? startLinear : g;
             // qDebug("    startLinear=%x endnonlinear=%x", startLinear,endnonlinear);
             if (endnonlinear > start) {
                 s << start << '[';
-                for (int i = start; i < endnonlinear; ++i)
+                for (auto i = start; i < endnonlinear; ++i)
                     s << (widths[i]*scale).toInt();
                 s << "]\n";
             }
@@ -199,7 +199,7 @@ QVector<int> QFontSubset::getReverseMap() const
 {
     QVector<int> reverseMap(0x10000, 0);
     for (uint uc = 0; uc < 0x10000; ++uc) {
-        int idx = glyph_indices.indexOf(fontEngine->glyphIndex(uc));
+        auto idx = glyph_indices.indexOf(fontEngine->glyphIndex(uc));
         if (idx >= 0 && !reverseMap.at(idx))
             reverseMap[idx] = uc;
     }
@@ -208,7 +208,7 @@ QVector<int> QFontSubset::getReverseMap() const
 
 QByteArray QFontSubset::createToUnicodeMap() const
 {
-    QVector<int> reverseMap = getReverseMap();
+    auto reverseMap = getReverseMap();
 
     QByteArray touc;
     QPdf::ByteStream ts(&touc);
@@ -222,22 +222,22 @@ QByteArray QFontSubset::createToUnicodeMap() const
         "<0000> <FFFF>\n"
         "endcodespacerange\n";
 
-    int nranges = 1;
+    auto nranges = 1;
     QByteArray ranges = "<0000> <0000> <0000>\n";
     QPdf::ByteStream s(&ranges);
 
     char buf[5];
-    for (int g = 1; g < nGlyphs(); ) {
-        int uc0 = reverseMap.at(g);
+    for (auto g = 1; g < nGlyphs(); ) {
+        auto uc0 = reverseMap.at(g);
         if (!uc0) {
             ++g;
             continue;
         }
-        int start = g;
-        int startLinear = 0;
+        auto start = g;
+        auto startLinear = 0;
         ++g;
         while (g < nGlyphs()) {
-            int uc = reverseMap[g];
+            auto uc = reverseMap[g];
             // cmaps can't have the high byte changing within one range, so we need to break on that as well
             if (!uc || (g>>8) != (start >> 8))
                 break;
@@ -255,7 +255,7 @@ QByteArray QFontSubset::createToUnicodeMap() const
         // qDebug("start=%x startLinear=%x g-1=%x",start,startLinear,g-1);
         if (g - startLinear < 10)
             startLinear = 0;
-        int endnonlinear = startLinear ? startLinear : g;
+        auto endnonlinear = startLinear ? startLinear : g;
         // qDebug("    startLinear=%x endnonlinear=%x", startLinear,endnonlinear);
         if (endnonlinear > start) {
             s << '<' << QPdf::toHex((ushort)start, buf) << "> <";
@@ -264,7 +264,7 @@ QByteArray QFontSubset::createToUnicodeMap() const
                 s << '<' << QPdf::toHex((ushort)reverseMap[start], buf) << ">\n";
             } else {
                 s << '[';
-                for (int i = start; i < endnonlinear; ++i) {
+                for (auto i = start; i < endnonlinear; ++i) {
                     s << '<' << QPdf::toHex((ushort)reverseMap[i], buf) << "> ";
                 }
                 s << "]\n";
@@ -273,9 +273,9 @@ QByteArray QFontSubset::createToUnicodeMap() const
         }
         if (startLinear) {
             while (startLinear < g) {
-                int len = g - startLinear;
-                int uc_start = reverseMap[startLinear];
-                int uc_end = uc_start + len - 1;
+                auto len = g - startLinear;
+                auto uc_start = reverseMap[startLinear];
+                auto uc_end = uc_start + len - 1;
                 if ((uc_end >> 8) != (uc_start >> 8))
                     len = 256 - (uc_start & 0xff);
                 s << '<' << QPdf::toHex((ushort)startLinear, buf) << "> <";
@@ -300,7 +300,7 @@ QByteArray QFontSubset::createToUnicodeMap() const
 
 int QFontSubset::addGlyph(int index)
 {
-    int idx = glyph_indices.indexOf(index);
+    auto idx = glyph_indices.indexOf(index);
     if (idx < 0) {
         idx = glyph_indices.size();
         glyph_indices.append(index);
@@ -429,13 +429,13 @@ static QByteArray bindFont(const QVector<QTtfTable>& _tables);
 static quint32 checksum(const QByteArray &table)
 {
     quint32 sum = 0;
-    int offset = 0;
-    const uchar *d = (const uchar *)table.constData();
+    auto offset = 0;
+    auto d = (const uchar *)table.constData();
     while (offset <= table.size()-3) {
         sum += qFromBigEndian<quint32>(d + offset);
         offset += 4;
     }
-    int shift = 24;
+    auto shift = 24;
     quint32 x = 0;
     while (offset < table.size()) {
         x |= ((quint32)d[offset]) << shift;
@@ -449,7 +449,7 @@ static quint32 checksum(const QByteArray &table)
 
 static QTtfTable generateHead(const qttf_head_table &head)
 {
-    const int head_size = 54;
+    const auto head_size = 54;
     QTtfTable t;
     t.tag = MAKE_TAG('h', 'e', 'a', 'd');
     t.data.resize(head_size);
@@ -520,7 +520,7 @@ static QTtfTable generateHead(const qttf_head_table &head)
 
 static QTtfTable generateHhea(const qttf_hhea_table &hhea)
 {
-    const int hhea_size = 36;
+    const auto hhea_size = 36;
     QTtfTable t;
     t.tag = MAKE_TAG('h', 'h', 'e', 'a');
     t.data.resize(hhea_size);
@@ -571,7 +571,7 @@ static QTtfTable generateHhea(const qttf_hhea_table &hhea)
 
 static QTtfTable generateMaxp(const qttf_maxp_table &maxp)
 {
-    const int maxp_size = 32;
+    const auto maxp_size = 32;
     QTtfTable t;
     t.tag = MAKE_TAG('m', 'a', 'x', 'p');
     t.data.resize(maxp_size);
@@ -650,14 +650,14 @@ static QTtfTable generateName(const qttf_name_table &name)
 // ####### should probably generate Macintosh/Roman name entries as well
 static QTtfTable generateName(const QVector<QTtfNameRecord> &name)
 {
-    const int char_size = 2;
+    const auto char_size = 2;
 
     QTtfTable t;
     t.tag = MAKE_TAG('n', 'a', 'm', 'e');
 
-    const int name_size = 6 + 12*name.size();
-    int string_size = 0;
-    for (int i = 0; i < name.size(); ++i) {
+    const auto name_size = 6 + 12*name.size();
+    auto string_size = 0;
+    for (auto i = 0; i < name.size(); ++i) {
         string_size += name.at(i).value.length()*char_size;
     }
     t.data.resize(name_size + string_size);
@@ -672,9 +672,9 @@ static QTtfTable generateName(const QVector<QTtfNameRecord> &name)
 // NameRecord  nameRecord[count]  The name records where count is the number of records.
 // (Variable)
 
-    int off = 0;
-    for (int i = 0; i < name.size(); ++i) {
-        int len = name.at(i).value.length()*char_size;
+    auto off = 0;
+    for (auto i = 0; i < name.size(); ++i) {
+        auto len = name.at(i).value.length()*char_size;
 // quint16  platformID  Platform ID.
 // quint16  encodingID  Platform-specific encoding ID.
 // quint16  languageID  Language ID.
@@ -689,10 +689,10 @@ static QTtfTable generateName(const QVector<QTtfNameRecord> &name)
           << quint16(off);
         off += len;
     }
-    for (int i = 0; i < name.size(); ++i) {
+    for (auto i = 0; i < name.size(); ++i) {
         const QString &n = name.at(i).value;
-        const ushort *uc = n.utf16();
-        for (int i = 0; i < n.length(); ++i) {
+        auto uc = n.utf16();
+        for (auto i = 0; i < n.length(); ++i) {
             s << quint16(*uc);
             ++uc;
         }
@@ -721,8 +721,8 @@ Q_DECLARE_TYPEINFO(TTF_POINT, Q_PRIMITIVE_TYPE);
 
 static void convertPath(const QPainterPath &path, QVector<TTF_POINT> *points, QVector<int> *endPoints, qreal ppem)
 {
-    int numElements = path.elementCount();
-    for (int i = 0; i < numElements - 1; ++i) {
+    auto numElements = path.elementCount();
+    for (auto i = 0; i < numElements - 1; ++i) {
         const QPainterPath::Element &e = path.elementAt(i);
         TTF_POINT p;
         p.x = qRound(e.x * 2048. / ppem);
@@ -733,8 +733,8 @@ static void convertPath(const QPainterPath &path, QVector<TTF_POINT> *points, QV
         case QPainterPath::MoveToElement:
             if (i != 0) {
                 // see if start and end points of the last contour agree
-                int start = endPoints->size() ? endPoints->at(endPoints->size()-1) - 1 : 0;
-                int end = points->size() - 1;
+                auto start = endPoints->size() ? endPoints->at(endPoints->size()-1) - 1 : 0;
+                auto end = points->size() - 1;
                 if (points->at(end).x == points->at(start).x
                     && points->at(end).y == points->at(start).y)
                     points->takeLast();
@@ -758,12 +758,12 @@ static void convertPath(const QPainterPath &path, QVector<TTF_POINT> *points, QV
 
             TTF_POINT *base = list;
 
-            bool try_reduce = points->size() > 1
+            auto try_reduce = points->size() > 1
                               && points->at(points->size() - 1).flags == OnCurve
                               && points->at(points->size() - 2).flags == OffCurve;
 //             qDebug("generating beziers:");
             while (base >= list) {
-                const int split_limit = 3;
+                const auto split_limit = 3;
 //                 {
 //                     qDebug("iteration:");
 //                     TTF_POINT *x = list;
@@ -774,10 +774,10 @@ static void convertPath(const QPainterPath &path, QVector<TTF_POINT> *points, QV
 //                 }
                 Q_ASSERT(base - list < 3*16 + 1);
                 // first see if we can easily reduce the cubic to a quadratic bezier curve
-                int i1_x = base[1].x + ((base[1].x - base[0].x) >> 1);
-                int i1_y = base[1].y + ((base[1].y - base[0].y) >> 1);
-                int i2_x = base[2].x + ((base[2].x - base[3].x) >> 1);
-                int i2_y = base[2].y + ((base[2].y - base[3].y) >> 1);
+                auto i1_x = base[1].x + ((base[1].x - base[0].x) >> 1);
+                auto i1_y = base[1].y + ((base[1].y - base[0].y) >> 1);
+                auto i2_x = base[2].x + ((base[2].x - base[3].x) >> 1);
+                auto i2_y = base[2].y + ((base[2].y - base[3].y) >> 1);
 //                 qDebug() << "checking: i1=" << QPoint(i1_x, i1_y) << " i2=" << QPoint(i2_x, i2_y);
                 if (qAbs(i1_x - i2_x) <= split_limit && qAbs(i1_y - i2_y) <= split_limit) {
                     // got a quadratic bezier curve
@@ -786,8 +786,8 @@ static void convertPath(const QPainterPath &path, QVector<TTF_POINT> *points, QV
                     np.y = (i1_y + i2_y) >> 1;
                     if (try_reduce) {
                         // see if we can optimize out the last onCurve point
-                        int mx = (points->at(points->size() - 2).x + base[2].x) >> 1;
-                        int my = (points->at(points->size() - 2).y + base[2].y) >> 1;
+                        auto mx = (points->at(points->size() - 2).x + base[2].x) >> 1;
+                        auto my = (points->at(points->size() - 2).y + base[2].y) >> 1;
                         if (qAbs(mx - base[3].x) <= split_limit && qAbs(my = base[3].y) <= split_limit)
                             points->takeLast();
                         try_reduce = false;
@@ -833,8 +833,8 @@ static void convertPath(const QPainterPath &path, QVector<TTF_POINT> *points, QV
 //         qDebug() << "   appending oncurve point " << QPoint(p.x, p.y);
         points->append(p);
     }
-    int start = endPoints->size() ? endPoints->at(endPoints->size()-1) + 1 : 0;
-    int end = points->size() - 1;
+    auto start = endPoints->size() ? endPoints->at(endPoints->size()-1) + 1 : 0;
+    auto end = points->size() - 1;
     if (points->at(end).x == points->at(start).x
         && points->at(end).y == points->at(start).y)
         points->takeLast();
@@ -848,7 +848,7 @@ static void getBounds(const QVector<TTF_POINT> &points, qint16 *xmin, qint16 *xm
     *ymin = points.at(0).y;
     *ymax = *ymin;
 
-    for (int i = 1; i < points.size(); ++i) {
+    for (auto i = 1; i < points.size(); ++i) {
         *xmin = qMin(*xmin, points.at(i).x);
         *xmax = qMax(*xmax, points.at(i).x);
         *ymin = qMin(*ymin, points.at(i).y);
@@ -862,8 +862,8 @@ static int convertToRelative(QVector<TTF_POINT> *points)
 //     qDebug() << "relative points:";
     qint16 prev_x = 0;
     qint16 prev_y = 0;
-    int point_array_size = 0;
-    for (int i = 0; i < points->size(); ++i) {
+    auto point_array_size = 0;
+    for (auto i = 0; i < points->size(); ++i) {
         const int x = points->at(i).x;
         const int y = points->at(i).y;
         TTF_POINT rel;
@@ -923,26 +923,26 @@ static void getGlyphData(QTtfGlyph *glyph, const QVector<TTF_POINT> &points, con
     s << qint16(endPoints.size())
       << glyph->xMin << glyph->yMin << glyph->xMax << glyph->yMax;
 
-    for (int i = 0; i < endPoints.size(); ++i)
+    for (auto i = 0; i < endPoints.size(); ++i)
         s << quint16(endPoints.at(i));
     s << quint16(0); // instruction length
 
     // emit flags
-    for (int i = 0; i < points.size(); ++i)
+    for (auto i = 0; i < points.size(); ++i)
         s << quint8(points.at(i).flags);
     // emit points
-    for (int i = 0; i < points.size(); ++i) {
-        quint8 flags = points.at(i).flags;
-        qint16 x = points.at(i).x;
+    for (auto i = 0; i < points.size(); ++i) {
+        auto flags = points.at(i).flags;
+        auto x = points.at(i).x;
 
         if (flags & XShortVector)
             s << quint8(x);
         else if (!(flags & XSame))
             s << qint16(x);
     }
-    for (int i = 0; i < points.size(); ++i) {
-        quint8 flags = points.at(i).flags;
-        qint16 y = points.at(i).y;
+    for (auto i = 0; i < points.size(); ++i) {
+        auto flags = points.at(i).flags;
+        auto y = points.at(i).y;
 
         if (flags & YShortVector)
             s << quint8(y);
@@ -985,7 +985,7 @@ static QTtfGlyph generateGlyph(int index, const QPainterPath &path, qreal advanc
 //         qDebug() << endPoints.at(i);
 
     getBounds(points, &glyph.xMin, &glyph.xMax, &glyph.yMin, &glyph.yMax);
-    int point_array_size = convertToRelative(&points);
+    auto point_array_size = convertToRelative(&points);
     getGlyphData(&glyph, points, endPoints, point_array_size);
     return glyph;
 }
@@ -997,15 +997,15 @@ static bool operator <(const QTtfGlyph &g1, const QTtfGlyph &g2)
 
 static QVector<QTtfTable> generateGlyphTables(qttf_font_tables &tables, const QVector<QTtfGlyph> &_glyphs)
 {
-    const int max_size_small = 65536*2;
-    QVector<QTtfGlyph> glyphs = _glyphs;
+    const auto max_size_small = 65536*2;
+    auto glyphs = _glyphs;
     std::sort(glyphs.begin(), glyphs.end());
 
     Q_ASSERT(tables.maxp.numGlyphs == glyphs.at(glyphs.size()-1).index + 1);
     int nGlyphs = tables.maxp.numGlyphs;
 
-    int glyf_size = 0;
-    for (int i = 0; i < glyphs.size(); ++i)
+    auto glyf_size = 0;
+    for (auto i = 0; i < glyphs.size(); ++i)
         glyf_size += (glyphs.at(i).data.size() + 3) & ~3;
 
     tables.head.indexToLocFormat = glyf_size < max_size_small ? 0 : 1;
@@ -1024,9 +1024,9 @@ static QVector<QTtfTable> generateGlyphTables(qttf_font_tables &tables, const QV
     hmtx.data.resize(nGlyphs*4);
     QTtfStream hs(hmtx.data);
 
-    int pos = 0;
-    for (int i = 0; i < nGlyphs; ++i) {
-        int gpos = glyf.data.size();
+    auto pos = 0;
+    for (auto i = 0; i < nGlyphs; ++i) {
+        auto gpos = glyf.data.size();
         quint16 advance = 0;
         qint16 lsb = 0;
 
@@ -1076,7 +1076,7 @@ static bool operator <(const QTtfTable &t1, const QTtfTable &t2)
 
 static QByteArray bindFont(const QVector<QTtfTable>& _tables)
 {
-    QVector<QTtfTable> tables = _tables;
+    auto tables = _tables;
 
     std::sort(tables.begin(), tables.end());
 
@@ -1085,9 +1085,9 @@ static QByteArray bindFont(const QVector<QTtfTable>& _tables)
     const int directory_size = 4*sizeof(quint32)*tables.size();
     font.resize(header_size + directory_size);
 
-    int log2 = 0;
-    int pow = 1;
-    int n = tables.size() >> 1;
+    auto log2 = 0;
+    auto pow = 1;
+    auto n = tables.size() >> 1;
     while (n) {
         ++log2;
         pow <<= 1;
@@ -1117,7 +1117,7 @@ static QByteArray bindFont(const QVector<QTtfTable>& _tables)
 //   quint32  offset  Offset from beginning of TrueType font file.
 //   quint32  length  Length of this table.
         quint32 table_offset = header_size + directory_size;
-        for (int i = 0; i < tables.size(); ++i) {
+        for (auto i = 0; i < tables.size(); ++i) {
             const QTtfTable &t = tables.at(i);
             const quint32 size = (t.data.size() + 3) & ~3;
             if (t.tag == MAKE_TAG('h', 'e', 'a', 'd'))
@@ -1131,10 +1131,10 @@ static QByteArray bindFont(const QVector<QTtfTable>& _tables)
             //qDebug() << "table " << TAG(t.tag) << "has size " << t.data.size() << "stream at " << f.offset();
         }
     }
-    for (int i = 0; i < tables.size(); ++i) {
+    for (auto i = 0; i < tables.size(); ++i) {
         const QByteArray &t = tables.at(i).data;
         font += t;
-        int s = t.size();
+        auto s = t.size();
         while (s & 3) { font += '\0'; ++s; }
     }
 
@@ -1144,7 +1144,7 @@ static QByteArray bindFont(const QVector<QTtfTable>& _tables)
     }
 
     // calculate the fonts checksum and qToBigEndian into 'head's checksum_adjust
-    quint32 checksum_adjust = 0xB1B0AFBA - checksum(font);
+    auto checksum_adjust = 0xB1B0AFBA - checksum(font);
     qToBigEndian(checksum_adjust, (uchar *)font.data() + head_offset + 8);
 
     return font;
@@ -1165,10 +1165,10 @@ QByteArray QFontSubset::toTruetype() const
     qttf_font_tables font;
     memset(&font, 0, sizeof(qttf_font_tables));
 
-    qreal ppem = fontEngine->fontDef.pixelSize;
+    auto ppem = fontEngine->fontDef.pixelSize;
 #define TO_TTF(x) qRound(x * 2048. / ppem)
 
-    QFontEngine::Properties properties = fontEngine->properties();
+    auto properties = fontEngine->properties();
     // initialize some stuff needed in createWidthArray
     emSquare = 2048;
     widths.resize(nGlyphs());
@@ -1201,13 +1201,13 @@ QByteArray QFontSubset::toTruetype() const
     font.maxp.maxCompositeContours = 0;
     font.maxp.maxComponentElements = 0;
     font.maxp.maxComponentDepth = 0;
-    const int numGlyphs = nGlyphs();
+    const auto numGlyphs = nGlyphs();
     font.maxp.numGlyphs = numGlyphs;
     QVector<QTtfGlyph> glyphs;
     glyphs.reserve(numGlyphs);
 
     uint sumAdvances = 0;
-    for (int i = 0; i < numGlyphs; ++i) {
+    for (auto i = 0; i < numGlyphs; ++i) {
         glyph_t g = glyph_indices.at(i);
         QPainterPath path;
         glyph_metrics_t metric;
@@ -1217,7 +1217,7 @@ QByteArray QFontSubset::toTruetype() const
             if (g == 0)
                 path.addRect(QRectF(0, 0, 1000, 1000));
         }
-        QTtfGlyph glyph = generateGlyph(i, path, metric.xoff.toReal(), metric.x.toReal(), properties.emSquare.toReal());
+        auto glyph = generateGlyph(i, path, metric.xoff.toReal(), metric.x.toReal(), properties.emSquare.toReal());
 
         font.head.xMin = qMin(font.head.xMin, glyph.xMin);
         font.head.xMax = qMax(font.head.xMax, glyph.xMax);
@@ -1238,7 +1238,7 @@ QByteArray QFontSubset::toTruetype() const
     }
 
 
-    QVector<QTtfTable> tables = generateGlyphTables(font, glyphs);
+    auto tables = generateGlyphTables(font, glyphs);
     tables.append(generateHead(font.head));
     tables.append(generateHhea(font.hhea));
     tables.append(generateMaxp(font.maxp));

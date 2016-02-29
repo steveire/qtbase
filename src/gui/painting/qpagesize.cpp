@@ -400,13 +400,13 @@ static QPageSize::PageSizeId qt_idForPpdKey(const QString &ppdKey, QSize *match 
 {
     if (ppdKey.isEmpty())
         return QPageSize::Custom;
-    QString key = ppdKey;
+    auto key = ppdKey;
     // Remove any Rotated or Tranverse modifiers
     if (key.endsWith(QLatin1String("Rotated")))
         key.chop(7);
     else if (key.endsWith(QLatin1String(".Transverse")))
         key.chop(11);
-    for (int i = 0; i <= int(QPageSize::LastPageSize); ++i) {
+    for (auto i = 0; i <= int(QPageSize::LastPageSize); ++i) {
         if (QLatin1String(qt_pageSizes[i].mediaOption) == key) {
             if (match)
                 *match = QSize(qt_pageSizes[i].widthPoints, qt_pageSizes[i].heightPoints);
@@ -423,14 +423,14 @@ static QPageSize::PageSizeId qt_idForWindowsID(int windowsId, QSize *match = 0)
     if (windowsId <= DMPAPER_NONE || windowsId > DMPAPER_LAST)
         return QPageSize::Custom;
     // Check if one of the unsupported values, convert to valid value if is
-    for (int i = 0; i < windowsConversionCount; ++i) {
+    for (auto i = 0; i < windowsConversionCount; ++i) {
         if (qt_windowsConversion[i][0] == windowsId) {
             windowsId = qt_windowsConversion[i][1];
             break;
         }
     }
     // Look for the value in our supported size table
-    for (int i = 0; i <= int(QPageSize::LastPageSize); ++i) {
+    for (auto i = 0; i <= int(QPageSize::LastPageSize); ++i) {
         if (qt_pageSizes[i].windowsId == windowsId) {
             if (match)
                 *match = QSize(qt_pageSizes[i].widthPoints, qt_pageSizes[i].heightPoints);
@@ -445,7 +445,7 @@ static QPageSize::PageSizeId qt_idForWindowsID(int windowsId, QSize *match = 0)
 static QString qt_keyForCustomSize(const QSizeF &size, QPageSize::Unit units)
 {
     // PPD custom format
-    QString key = QStringLiteral("Custom.%1x%2%3");
+    auto key = QStringLiteral("Custom.%1x%2%3");
     QString abbrev;
     switch (units) {
     case QPageSize::Millimeter:
@@ -532,7 +532,7 @@ Q_GUI_EXPORT qreal qt_pixelMultiplier(int resolution)
 
 static QSizeF qt_definitionSize(QPageSize::PageSizeId pageSizeId)
 {
-    QPageSize::Unit units = qt_pageSizes[pageSizeId].definitionUnits;
+    auto units = qt_pageSizes[pageSizeId].definitionUnits;
     if (units == QPageSize::Millimeter)
         return QSizeF(qt_pageSizes[pageSizeId].widthMillimeters, qt_pageSizes[pageSizeId].heightMillimeters);
     Q_ASSERT(units == QPageSize::Inch);  // We currently only support definitions in mm or inches
@@ -548,17 +548,17 @@ static QSizeF qt_convertUnits(const QSizeF &size, QPageSize::Unit fromUnits, QPa
     if (fromUnits == toUnits || (qFuzzyIsNull(size.width()) && qFuzzyIsNull(size.height())))
         return size;
 
-    QSizeF newSize = size;
+    auto newSize = size;
     // First convert to points
     if (fromUnits != QPageSize::Point) {
-        const qreal multiplier = qt_pointMultiplier(fromUnits);
+        const auto multiplier = qt_pointMultiplier(fromUnits);
         newSize = newSize * multiplier;
     }
     // Then convert from points to required units
-    const qreal multiplier = qt_pointMultiplier(toUnits);
+    const auto multiplier = qt_pointMultiplier(toUnits);
     // Try force to 2 decimal places for consistency
-    const int width = qRound(newSize.width() * 100 / multiplier);
-    const int height = qRound(newSize.height() * 100 / multiplier);
+    const auto width = qRound(newSize.width() * 100 / multiplier);
+    const auto height = qRound(newSize.height() * 100 / multiplier);
     return QSizeF(width / 100.0, height / 100.0);
 }
 
@@ -573,7 +573,7 @@ static QSize qt_convertPointsToPixels(const QSize &size, int resolution)
 {
     if (!size.isValid() || resolution <= 0)
         return QSize();
-    const qreal multiplier = qt_pixelMultiplier(resolution);
+    const auto multiplier = qt_pixelMultiplier(resolution);
     return QSize(qRound(size.width() / multiplier), qRound(size.height() / multiplier));
 }
 
@@ -581,10 +581,10 @@ static QSizeF qt_convertPointsToUnits(const QSize &size, QPageSize::Unit units)
 {
     if (!size.isValid())
         return QSizeF();
-    const qreal multiplier = qt_pointMultiplier(units);
+    const auto multiplier = qt_pointMultiplier(units);
     // Try force to 2 decimal places for consistency
-    const int width = qRound(size.width() * 100 / multiplier);
-    const int height = qRound(size.height() * 100 / multiplier);
+    const auto width = qRound(size.width() * 100 / multiplier);
+    const auto height = qRound(size.height() * 100 / multiplier);
     return QSizeF(width / 100.0, height / 100.0);
 }
 
@@ -613,7 +613,7 @@ static QPageSize::PageSizeId qt_idForPointSize(const QSize &size, QPageSize::Siz
         return QPageSize::Custom;
 
     // Try exact match in portrait layout
-    for (int i = 0; i <= int(QPageSize::LastPageSize); ++i) {
+    for (auto i = 0; i <= int(QPageSize::LastPageSize); ++i) {
         if (size.width() == qt_pageSizes[i].widthPoints && size.height() == qt_pageSizes[i].heightPoints) {
             if (match)
                 *match = QSize(qt_pageSizes[i].widthPoints, qt_pageSizes[i].heightPoints);
@@ -625,16 +625,16 @@ static QPageSize::PageSizeId qt_idForPointSize(const QSize &size, QPageSize::Siz
     if (matchPolicy != QPageSize::ExactMatch) {
         // Set up the fuzzy tolerance
         // TODO Use ISO standard tolerance based on page size?
-        const int tolerance = 3; // = approx 1mm
-        const int minWidth = size.width() - tolerance;
-        const int maxWidth = size.width() + tolerance;
-        const int minHeight = size.height() - tolerance;
-        const int maxHeight = size.height() + tolerance;
+        const auto tolerance = 3; // = approx 1mm
+        const auto minWidth = size.width() - tolerance;
+        const auto maxWidth = size.width() + tolerance;
+        const auto minHeight = size.height() - tolerance;
+        const auto maxHeight = size.height() + tolerance;
 
         // First try fuzzy match in portrait layout
-        for (int i = 0; i <= QPageSize::LastPageSize; ++i) {
-            const int width = qt_pageSizes[i].widthPoints;
-            const int height = qt_pageSizes[i].heightPoints;
+        for (auto i = 0; i <= QPageSize::LastPageSize; ++i) {
+            const auto width = qt_pageSizes[i].widthPoints;
+            const auto height = qt_pageSizes[i].heightPoints;
             if (width >= minWidth && width <= maxWidth && height >= minHeight && height <= maxHeight) {
                 if (match)
                     *match = QSize(qt_pageSizes[i].widthPoints, qt_pageSizes[i].heightPoints);
@@ -645,7 +645,7 @@ static QPageSize::PageSizeId qt_idForPointSize(const QSize &size, QPageSize::Siz
         // If FuzzyOrientationMatch then try rotated sizes
         if (matchPolicy == QPageSize::FuzzyOrientationMatch) {
             // First try exact match in landscape layout
-            for (int i = 0; i <= QPageSize::LastPageSize; ++i) {
+            for (auto i = 0; i <= QPageSize::LastPageSize; ++i) {
                 if (size.width() == qt_pageSizes[i].heightPoints && size.height() == qt_pageSizes[i].widthPoints) {
                     if (match)
                         *match = QSize(qt_pageSizes[i].widthPoints, qt_pageSizes[i].heightPoints);
@@ -654,9 +654,9 @@ static QPageSize::PageSizeId qt_idForPointSize(const QSize &size, QPageSize::Siz
             }
 
             // Then try fuzzy match in landscape layout
-            for (int i = 0; i <= QPageSize::LastPageSize; ++i) {
-                const int width = qt_pageSizes[i].heightPoints;
-                const int height = qt_pageSizes[i].widthPoints;
+            for (auto i = 0; i <= QPageSize::LastPageSize; ++i) {
+                const auto width = qt_pageSizes[i].heightPoints;
+                const auto height = qt_pageSizes[i].widthPoints;
                 if (width >= minWidth && width <= maxWidth && height >= minHeight && height <= maxHeight) {
                     if (match)
                         *match = QSize(qt_pageSizes[i].widthPoints, qt_pageSizes[i].heightPoints);
@@ -681,7 +681,7 @@ static QPageSize::PageSizeId qt_idForSize(const QSizeF &size, QPageSize::Unit un
 
     // Try exact match if units are the same
     if (units == QPageSize::Millimeter) {
-        for (int i = 0; i <= QPageSize::LastPageSize; ++i) {
+        for (auto i = 0; i <= QPageSize::LastPageSize; ++i) {
             if (size.width() == qt_pageSizes[i].widthMillimeters && size.height() == qt_pageSizes[i].heightMillimeters) {
                 if (match)
                     *match = QSize(qt_pageSizes[i].widthPoints, qt_pageSizes[i].heightPoints);
@@ -689,7 +689,7 @@ static QPageSize::PageSizeId qt_idForSize(const QSizeF &size, QPageSize::Unit un
             }
         }
     } else if (units == QPageSize::Inch) {
-        for (int i = 0; i <= QPageSize::LastPageSize; ++i) {
+        for (auto i = 0; i <= QPageSize::LastPageSize; ++i) {
             if (size.width() == qt_pageSizes[i].widthInches && size.height() == qt_pageSizes[i].heightInches) {
                 if (match)
                     *match = QSize(qt_pageSizes[i].widthPoints, qt_pageSizes[i].heightPoints);
@@ -697,7 +697,7 @@ static QPageSize::PageSizeId qt_idForSize(const QSizeF &size, QPageSize::Unit un
             }
         }
     } else if (units == QPageSize::Point) {
-        for (int i = 0; i <= QPageSize::LastPageSize; ++i) {
+        for (auto i = 0; i <= QPageSize::LastPageSize; ++i) {
             if (size.width() == qt_pageSizes[i].widthPoints && size.height() == qt_pageSizes[i].heightPoints) {
                 if (match)
                     *match = QSize(qt_pageSizes[i].widthPoints, qt_pageSizes[i].heightPoints);
@@ -707,7 +707,7 @@ static QPageSize::PageSizeId qt_idForSize(const QSizeF &size, QPageSize::Unit un
     }
 
     // If no exact match then convert to points and try match those
-    QSize points = qt_convertUnitsToPoints(size, units);
+    auto points = qt_convertUnitsToPoints(size, units);
     return qt_idForPointSize(points, matchPolicy, match);
 }
 
@@ -772,7 +772,7 @@ QPageSizePrivate::QPageSizePrivate(const QSize &pointSize, const QString &name, 
       m_units(QPageSize::Point)
 {
     if (pointSize.isValid()) {
-        QPageSize::PageSizeId id = qt_idForPointSize(pointSize, matchPolicy, 0);
+        auto id = qt_idForPointSize(pointSize, matchPolicy, 0);
         id == QPageSize::Custom ? init(pointSize, name) : init(id, name);
     }
 }
@@ -784,7 +784,7 @@ QPageSizePrivate::QPageSizePrivate(const QSizeF &size, QPageSize::Unit units,
       m_units(QPageSize::Point)
 {
     if (size.isValid()) {
-        QPageSize::PageSizeId id = qt_idForSize(size, units, matchPolicy, 0);
+        auto id = qt_idForSize(size, units, matchPolicy, 0);
         id == QPageSize::Custom ? init(size, units, name) : init(id, name);
     }
 }
@@ -795,7 +795,7 @@ QPageSizePrivate::QPageSizePrivate(const QString &key, const QSize &pointSize, c
       m_units(QPageSize::Point)
 {
     if (!key.isEmpty() && pointSize.isValid()) {
-        QPageSize::PageSizeId id = qt_idForPpdKey(key, 0);
+        auto id = qt_idForPpdKey(key, 0);
         // If not a known PPD key, check if size is a standard PPD size
         if (id == QPageSize::Custom)
             id = qt_idForPointSize(pointSize, QPageSize::FuzzyMatch, 0);
@@ -810,7 +810,7 @@ QPageSizePrivate::QPageSizePrivate(int windowsId, const QSize &pointSize, const 
       m_units(QPageSize::Point)
 {
     if (windowsId > 0 && pointSize.isValid()) {
-        QPageSize::PageSizeId id = qt_idForWindowsID(windowsId, 0);
+        auto id = qt_idForWindowsID(windowsId, 0);
         // If not a known Windows ID, check if size is a standard PPD size
         if (id == QPageSize::Custom)
             id = qt_idForPointSize(pointSize, QPageSize::FuzzyMatch, 0);
@@ -1862,7 +1862,7 @@ QDebug operator<<(QDebug dbg, const QPageSize &pageSize)
 {
     QDebugStateSaver saver(dbg);
     if (pageSize.isValid()) {
-        QString output = QStringLiteral("QPageSize(\"%1\", \"%2\", %3x%4pt, %5)");
+        auto output = QStringLiteral("QPageSize(\"%1\", \"%2\", %3x%4pt, %5)");
         output = output.arg(pageSize.name())
                        .arg(pageSize.key())
                        .arg(pageSize.sizePoints().width())

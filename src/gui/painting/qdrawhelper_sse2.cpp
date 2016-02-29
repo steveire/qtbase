@@ -54,15 +54,15 @@ void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
                                     int w, int h,
                                     int const_alpha)
 {
-    const quint32 *src = (const quint32 *) srcPixels;
-    quint32 *dst = (quint32 *) destPixels;
+    auto src = (const quint32 *) srcPixels;
+    auto dst = (quint32 *) destPixels;
     if (const_alpha == 256) {
-        const __m128i alphaMask = _mm_set1_epi32(0xff000000);
-        const __m128i nullVector = _mm_set1_epi32(0);
-        const __m128i half = _mm_set1_epi16(0x80);
-        const __m128i one = _mm_set1_epi16(0xff);
-        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
-        for (int y = 0; y < h; ++y) {
+        const auto alphaMask = _mm_set1_epi32(0xff000000);
+        const auto nullVector = _mm_set1_epi32(0);
+        const auto half = _mm_set1_epi16(0x80);
+        const auto one = _mm_set1_epi16(0xff);
+        const auto colorMask = _mm_set1_epi32(0x00ff00ff);
+        for (auto y = 0; y < h; ++y) {
             BLEND_SOURCE_OVER_ARGB32_SSE2(dst, src, w, nullVector, half, one, colorMask, alphaMask);
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);
@@ -72,12 +72,12 @@ void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         //      = s * ca + d * (sia * ca + cia)
         //      = s * ca + d * (1 - sa*ca)
         const_alpha = (const_alpha * 255) >> 8;
-        const __m128i nullVector = _mm_set1_epi32(0);
-        const __m128i half = _mm_set1_epi16(0x80);
-        const __m128i one = _mm_set1_epi16(0xff);
-        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
-        const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
-        for (int y = 0; y < h; ++y) {
+        const auto nullVector = _mm_set1_epi32(0);
+        const auto half = _mm_set1_epi16(0x80);
+        const auto one = _mm_set1_epi16(0xff);
+        const auto colorMask = _mm_set1_epi32(0x00ff00ff);
+        const auto constAlphaVector = _mm_set1_epi16(const_alpha);
+        for (auto y = 0; y < h; ++y) {
             BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2(dst, src, w, nullVector, half, one, colorMask, constAlphaVector)
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);
@@ -97,20 +97,20 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                                  int w, int h,
                                  int const_alpha)
 {
-    const quint32 *src = (const quint32 *) srcPixels;
-    quint32 *dst = (quint32 *) destPixels;
+    auto src = (const quint32 *) srcPixels;
+    auto dst = (quint32 *) destPixels;
     if (const_alpha != 256) {
         if (const_alpha != 0) {
-            const __m128i nullVector = _mm_set1_epi32(0);
-            const __m128i half = _mm_set1_epi16(0x80);
-            const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+            const auto nullVector = _mm_set1_epi32(0);
+            const auto half = _mm_set1_epi16(0x80);
+            const auto colorMask = _mm_set1_epi32(0x00ff00ff);
 
             const_alpha = (const_alpha * 255) >> 8;
-            int one_minus_const_alpha = 255 - const_alpha;
-            const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
-            const __m128i oneMinusConstAlpha =  _mm_set1_epi16(one_minus_const_alpha);
-            for (int y = 0; y < h; ++y) {
-                int x = 0;
+            auto one_minus_const_alpha = 255 - const_alpha;
+            const auto constAlphaVector = _mm_set1_epi16(const_alpha);
+            const auto oneMinusConstAlpha =  _mm_set1_epi16(one_minus_const_alpha);
+            for (auto y = 0; y < h; ++y) {
+                auto x = 0;
 
                 // First, align dest to 16 bytes:
                 ALIGNMENT_PROLOGUE_16BYTES(dst, x, w) {
@@ -118,9 +118,9 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                 }
 
                 for (; x < w-3; x += 4) {
-                    __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
+                    auto srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
                     if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVector, nullVector)) != 0xffff) {
-                        const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+                        const auto dstVector = _mm_load_si128((__m128i *)&dst[x]);
                         __m128i result;
                         INTERPOLATE_PIXEL_255_SSE2(result, srcVector, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half);
                         _mm_store_si128((__m128i *)&dst[x], result);
@@ -142,25 +142,25 @@ void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixe
 {
     Q_ASSERT(const_alpha < 256);
 
-    const quint32 *src = (const quint32 *) srcPixels;
-    quint32 *dst = (quint32 *) destPixels;
+    auto src = (const quint32 *) srcPixels;
+    auto dst = (quint32 *) destPixels;
 
-    const __m128i nullVector = _mm_set1_epi32(0);
-    const __m128i half = _mm_set1_epi16(0x80);
-    const __m128i one = _mm_set1_epi16(0xff);
-    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+    const auto nullVector = _mm_set1_epi32(0);
+    const auto half = _mm_set1_epi16(0x80);
+    const auto one = _mm_set1_epi16(0xff);
+    const auto colorMask = _mm_set1_epi32(0x00ff00ff);
     if (const_alpha == 255) {
-        const __m128i alphaMask = _mm_set1_epi32(0xff000000);
+        const auto alphaMask = _mm_set1_epi32(0xff000000);
         BLEND_SOURCE_OVER_ARGB32_SSE2(dst, src, length, nullVector, half, one, colorMask, alphaMask);
     } else {
-        const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
+        const auto constAlphaVector = _mm_set1_epi16(const_alpha);
         BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2(dst, src, length, nullVector, half, one, colorMask, constAlphaVector);
     }
 }
 
 void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha)
 {
-    int x = 0;
+    auto x = 0;
 
     if (const_alpha == 255) {
         // 1) Prologue: align destination on 16 bytes
@@ -169,10 +169,10 @@ void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uin
 
         // 2) composition with SSE2
         for (; x < length - 3; x += 4) {
-            const __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
-            const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+            const auto srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
+            const auto dstVector = _mm_load_si128((__m128i *)&dst[x]);
 
-            const __m128i result = _mm_adds_epu8(srcVector, dstVector);
+            const auto result = _mm_adds_epu8(srcVector, dstVector);
             _mm_store_si128((__m128i *)&dst[x], result);
         }
 
@@ -181,21 +181,21 @@ void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uin
             dst[x] = comp_func_Plus_one_pixel(dst[x], src[x]);
     } else {
         const int one_minus_const_alpha = 255 - const_alpha;
-        const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
-        const __m128i oneMinusConstAlpha =  _mm_set1_epi16(one_minus_const_alpha);
+        const auto constAlphaVector = _mm_set1_epi16(const_alpha);
+        const auto oneMinusConstAlpha =  _mm_set1_epi16(one_minus_const_alpha);
 
         // 1) Prologue: align destination on 16 bytes
         ALIGNMENT_PROLOGUE_16BYTES(dst, x, length)
             dst[x] = comp_func_Plus_one_pixel_const_alpha(dst[x], src[x], const_alpha, one_minus_const_alpha);
 
-        const __m128i half = _mm_set1_epi16(0x80);
-        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        const auto half = _mm_set1_epi16(0x80);
+        const auto colorMask = _mm_set1_epi32(0x00ff00ff);
         // 2) composition with SSE2
         for (; x < length - 3; x += 4) {
-            const __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
-            const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+            const auto srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
+            const auto dstVector = _mm_load_si128((__m128i *)&dst[x]);
 
-            __m128i result = _mm_adds_epu8(srcVector, dstVector);
+            auto result = _mm_adds_epu8(srcVector, dstVector);
             INTERPOLATE_PIXEL_255_SSE2(result, result, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half)
             _mm_store_si128((__m128i *)&dst[x], result);
         }
@@ -213,20 +213,20 @@ void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, u
     } else {
         const int ialpha = 255 - const_alpha;
 
-        int x = 0;
+        auto x = 0;
 
         // 1) prologue, align on 16 bytes
         ALIGNMENT_PROLOGUE_16BYTES(dst, x, length)
             dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], ialpha);
 
         // 2) interpolate pixels with SSE2
-        const __m128i half = _mm_set1_epi16(0x80);
-        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
-        const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
-        const __m128i oneMinusConstAlpha =  _mm_set1_epi16(ialpha);
+        const auto half = _mm_set1_epi16(0x80);
+        const auto colorMask = _mm_set1_epi32(0x00ff00ff);
+        const auto constAlphaVector = _mm_set1_epi16(const_alpha);
+        const auto oneMinusConstAlpha =  _mm_set1_epi16(ialpha);
         for (; x < length - 3; x += 4) {
-            const __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
-            __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+            const auto srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
+            auto dstVector = _mm_load_si128((__m128i *)&dst[x]);
             INTERPOLATE_PIXEL_255_SSE2(dstVector, srcVector, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half)
             _mm_store_si128((__m128i *)&dst[x], dstVector);
         }
@@ -258,7 +258,7 @@ void qt_memfill32(quint32 *dest, quint32 value, int count)
     case 12: *dest++ = value; --count;
     }
 
-    const int rest = count & 0x3;
+    const auto rest = count & 0x3;
     if (rest) {
         switch (rest) {
         case 3: dest[count - 3] = value;
@@ -267,10 +267,10 @@ void qt_memfill32(quint32 *dest, quint32 value, int count)
         }
     }
 
-    int count128 = count / 4;
-    __m128i *dst128 = reinterpret_cast<__m128i*>(dest);
-    __m128i *end128 = dst128 + count128;
-    const __m128i value128 = _mm_set_epi32(value, value, value, value);
+    auto count128 = count / 4;
+    auto dst128 = reinterpret_cast<__m128i*>(dest);
+    auto end128 = dst128 + count128;
+    const auto value128 = _mm_set_epi32(value, value, value, value);
 
     while (dst128 + 3 < end128) {
         _mm_stream_si128(dst128 + 0, value128);
@@ -296,19 +296,19 @@ void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, u
             color = BYTE_MUL(color, const_alpha);
 
         const quint32 minusAlphaOfColor = qAlpha(~color);
-        int x = 0;
+        auto x = 0;
 
-        quint32 *dst = (quint32 *) destPixels;
-        const __m128i colorVector = _mm_set1_epi32(color);
-        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
-        const __m128i half = _mm_set1_epi16(0x80);
-        const __m128i minusAlphaOfColorVector = _mm_set1_epi16(minusAlphaOfColor);
+        auto dst = (quint32 *) destPixels;
+        const auto colorVector = _mm_set1_epi32(color);
+        const auto colorMask = _mm_set1_epi32(0x00ff00ff);
+        const auto half = _mm_set1_epi16(0x80);
+        const auto minusAlphaOfColorVector = _mm_set1_epi16(minusAlphaOfColor);
 
         ALIGNMENT_PROLOGUE_16BYTES(dst, x, length)
             destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
 
         for (; x < length-3; x += 4) {
-            __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+            auto dstVector = _mm_load_si128((__m128i *)&dst[x]);
             BYTE_MUL_SSE2(dstVector, dstVector, minusAlphaOfColorVector, colorMask, half);
             dstVector = _mm_add_epi8(colorVector, dstVector);
             _mm_store_si128((__m128i *)&dst[x], dstVector);
@@ -344,27 +344,27 @@ void qt_bitmapblit32_sse2_base(QRasterBuffer *rasterBuffer, int x, int y,
                           quint32 color,
                           const uchar *src, int width, int height, int stride)
 {
-    quint32 *dest = reinterpret_cast<quint32*>(rasterBuffer->scanLine(y)) + x;
+    auto dest = reinterpret_cast<quint32*>(rasterBuffer->scanLine(y)) + x;
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint32);
 
-    const __m128i c128 = _mm_set1_epi32(color);
-    const __m128i maskmask1 = _mm_set_epi32(0x10101010, 0x20202020,
+    const auto c128 = _mm_set1_epi32(color);
+    const auto maskmask1 = _mm_set_epi32(0x10101010, 0x20202020,
                                             0x40404040, 0x80808080);
-    const __m128i maskadd1 = _mm_set_epi32(0x70707070, 0x60606060,
+    const auto maskadd1 = _mm_set_epi32(0x70707070, 0x60606060,
                                            0x40404040, 0x00000000);
 
     if (width > 4) {
-        const __m128i maskmask2 = _mm_set_epi32(0x01010101, 0x02020202,
+        const auto maskmask2 = _mm_set_epi32(0x01010101, 0x02020202,
                                                 0x04040404, 0x08080808);
-        const __m128i maskadd2 = _mm_set_epi32(0x7f7f7f7f, 0x7e7e7e7e,
+        const auto maskadd2 = _mm_set_epi32(0x7f7f7f7f, 0x7e7e7e7e,
                                                0x7c7c7c7c, 0x78787878);
         while (height--) {
-            for (int x = 0; x < width; x += 8) {
-                const quint8 s = src[x >> 3];
+            for (auto x = 0; x < width; x += 8) {
+                const auto s = src[x >> 3];
                 if (!s)
                     continue;
-                __m128i mask1 = _mm_set1_epi8(s);
-                __m128i mask2 = mask1;
+                auto mask1 = _mm_set1_epi8(s);
+                auto mask2 = mask1;
 
                 mask1 = _mm_and_si128(mask1, maskmask1);
                 mask1 = _mm_add_epi8(mask1, maskadd1);
@@ -378,9 +378,9 @@ void qt_bitmapblit32_sse2_base(QRasterBuffer *rasterBuffer, int x, int y,
         }
     } else {
         while (height--) {
-            const quint8 s = *src;
+            const auto s = *src;
             if (s) {
-                __m128i mask1 = _mm_set1_epi8(s);
+                auto mask1 = _mm_set1_epi8(s);
                 mask1 = _mm_and_si128(mask1, maskmask1);
                 mask1 = _mm_add_epi8(mask1, maskadd1);
                 _mm_maskmoveu_si128(c128, mask1, (char*)(dest));
@@ -409,23 +409,23 @@ void qt_bitmapblit16_sse2(QRasterBuffer *rasterBuffer, int x, int y,
                           const QRgba64 &color,
                           const uchar *src, int width, int height, int stride)
 {
-    const quint16 c = qConvertRgb32To16(color.toArgb32());
-    quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
+    const auto c = qConvertRgb32To16(color.toArgb32());
+    auto dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
 
-    const __m128i c128 = _mm_set1_epi16(c);
+    const auto c128 = _mm_set1_epi16(c);
 QT_WARNING_DISABLE_MSVC(4309) // truncation of constant value
-    const __m128i maskmask = _mm_set_epi16(0x0101, 0x0202, 0x0404, 0x0808,
+    const auto maskmask = _mm_set_epi16(0x0101, 0x0202, 0x0404, 0x0808,
                                            0x1010, 0x2020, 0x4040, 0x8080);
-    const __m128i maskadd = _mm_set_epi16(0x7f7f, 0x7e7e, 0x7c7c, 0x7878,
+    const auto maskadd = _mm_set_epi16(0x7f7f, 0x7e7e, 0x7c7c, 0x7878,
                                           0x7070, 0x6060, 0x4040, 0x0000);
 
     while (height--) {
-        for (int x = 0; x < width; x += 8) {
-            const quint8 s = src[x >> 3];
+        for (auto x = 0; x < width; x += 8) {
+            const auto s = src[x >> 3];
             if (!s)
                 continue;
-            __m128i mask = _mm_set1_epi8(s);
+            auto mask = _mm_set1_epi8(s);
             mask = _mm_and_si128(mask, maskmask);
             mask = _mm_add_epi8(mask, maskadd);
             _mm_maskmoveu_si128(c128, mask, (char*)(dest + x));
@@ -494,21 +494,21 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         return qt_scale_image_argb32_on_argb32(destPixels, dbpl, srcPixels, sbpl, srch, targetRect, sourceRect, clip, const_alpha);
     }
 
-    qreal sx = targetRect.width() / (qreal) sourceRect.width();
-    qreal sy = targetRect.height() / (qreal) sourceRect.height();
+    auto sx = targetRect.width() / (qreal) sourceRect.width();
+    auto sy = targetRect.height() / (qreal) sourceRect.height();
 
     int ix = 0x00010000 / sx;
     int iy = 0x00010000 / sy;
 
-    int cx1 = clip.x();
-    int cx2 = clip.x() + clip.width();
-    int cy1 = clip.top();
-    int cy2 = clip.y() + clip.height();
+    auto cx1 = clip.x();
+    auto cx2 = clip.x() + clip.width();
+    auto cy1 = clip.top();
+    auto cy2 = clip.y() + clip.height();
 
-    int tx1 = qRound(targetRect.left());
-    int tx2 = qRound(targetRect.right());
-    int ty1 = qRound(targetRect.top());
-    int ty2 = qRound(targetRect.bottom());
+    auto tx1 = qRound(targetRect.left());
+    auto tx2 = qRound(targetRect.right());
+    auto ty1 = qRound(targetRect.top());
+    auto ty2 = qRound(targetRect.bottom());
 
     if (tx2 < tx1)
         qSwap(tx2, tx1);
@@ -530,35 +530,35 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
     if (ty1 >= ty2)
         return;
 
-    int h = ty2 - ty1;
-    int w = tx2 - tx1;
+    auto h = ty2 - ty1;
+    auto w = tx2 - tx1;
 
     quint32 basex;
     quint32 srcy;
 
     if (sx < 0) {
-        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        auto dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
         basex = quint32(sourceRect.right() * 65536) + dstx;
     } else {
-        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        auto dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
         basex = quint32(sourceRect.left() * 65536) + dstx;
     }
     if (sy < 0) {
-        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        auto dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
         srcy = quint32(sourceRect.bottom() * 65536) + dsty;
     } else {
-        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        auto dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
         srcy = quint32(sourceRect.top() * 65536) + dsty;
     }
 
-    quint32 *dst = ((quint32 *) (destPixels + ty1 * dbpl)) + tx1;
+    auto dst = ((quint32 *) (destPixels + ty1 * dbpl)) + tx1;
 
-    const __m128i nullVector = _mm_set1_epi32(0);
-    const __m128i half = _mm_set1_epi16(0x80);
-    const __m128i one = _mm_set1_epi16(0xff);
-    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
-    const __m128i alphaMask = _mm_set1_epi32(0xff000000);
-    const __m128i ixVector = _mm_set1_epi32(4*ix);
+    const auto nullVector = _mm_set1_epi32(0);
+    const auto half = _mm_set1_epi16(0x80);
+    const auto one = _mm_set1_epi16(0xff);
+    const auto colorMask = _mm_set1_epi32(0x00ff00ff);
+    const auto alphaMask = _mm_set1_epi32(0xff000000);
+    const auto ixVector = _mm_set1_epi32(4*ix);
 
     // this bounds check here is required as floating point rounding above might in some cases lead to
     // w/h values that are one pixel too large, falling outside of the valid image area.
@@ -570,17 +570,17 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         --w;
 
     while (h--) {
-        const uint *src = (const quint32 *) (srcPixels + (srcy >> 16) * sbpl);
+        auto src = (const quint32 *) (srcPixels + (srcy >> 16) * sbpl);
         int srcx = basex;
-        int x = 0;
+        auto x = 0;
 
         ALIGNMENT_PROLOGUE_16BYTES(dst, x, w) {
-            uint s = src[srcx >> 16];
+            auto s = src[srcx >> 16];
             dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
             srcx += ix;
         }
 
-        __m128i srcxVector = _mm_set_epi32(srcx, srcx + ix, srcx + ix + ix, srcx + ix + ix + ix);
+        auto srcxVector = _mm_set_epi32(srcx, srcx + ix, srcx + ix + ix, srcx + ix + ix + ix);
 
         for (; x<w - 3; x += 4) {
             union Vect_buffer { __m128i vect; quint32 i[4]; };
@@ -588,12 +588,12 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
             addr.vect = _mm_srli_epi32(srcxVector, 16);
             srcxVector = _mm_add_epi32(srcxVector, ixVector);
 
-            const __m128i srcVector = _mm_set_epi32(src[addr.i[0]], src[addr.i[1]], src[addr.i[2]], src[addr.i[3]]);
+            const auto srcVector = _mm_set_epi32(src[addr.i[0]], src[addr.i[1]], src[addr.i[2]], src[addr.i[3]]);
             BLEND_SOURCE_OVER_ARGB32_SSE2_helper(dst, srcVector, nullVector, half, one, colorMask, alphaMask);
         }
 
         for (; x<w; x++) {
-            uint s = src[(basex + x*ix) >> 16];
+            auto s = src[(basex + x*ix) >> 16];
             dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
         }
         dst = (quint32 *)(((uchar *) dst) + dbpl);

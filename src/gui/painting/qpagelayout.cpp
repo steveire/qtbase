@@ -79,16 +79,16 @@ QPointF qt_convertPoint(const QPointF &xy, QPageLayout::Unit fromUnits, QPageLay
 
     // If converting to points then convert and round to 0 decimal places
     if (toUnits == QPageLayout::Point) {
-        const qreal multiplier = qt_pointMultiplier(fromUnits);
+        const auto multiplier = qt_pointMultiplier(fromUnits);
         return QPointF(qRound(xy.x() * multiplier),
                        qRound(xy.y() * multiplier));
     }
 
     // If converting to other units, need to convert to unrounded points first
-    QPointF pointXy = (fromUnits == QPageLayout::Point) ? xy : xy * qt_pointMultiplier(fromUnits);
+    auto pointXy = (fromUnits == QPageLayout::Point) ? xy : xy * qt_pointMultiplier(fromUnits);
 
     // Then convert from points to required units rounded to 2 decimal places
-    const qreal multiplier = qt_pointMultiplier(toUnits);
+    const auto multiplier = qt_pointMultiplier(toUnits);
     return QPointF(qRound(pointXy.x() * 100 / multiplier) / 100.0,
                    qRound(pointXy.y() * 100 / multiplier) / 100.0);
 }
@@ -101,7 +101,7 @@ Q_GUI_EXPORT QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::
 
     // If converting to points then convert and round to 0 decimal places
     if (toUnits == QPageLayout::Point) {
-        const qreal multiplier = qt_pointMultiplier(fromUnits);
+        const auto multiplier = qt_pointMultiplier(fromUnits);
         return QMarginsF(qRound(margins.left() * multiplier),
                          qRound(margins.top() * multiplier),
                          qRound(margins.right() * multiplier),
@@ -109,10 +109,10 @@ Q_GUI_EXPORT QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::
     }
 
     // If converting to other units, need to convert to unrounded points first
-    QMarginsF pointMargins = fromUnits == QPageLayout::Point ? margins : margins * qt_pointMultiplier(fromUnits);
+    auto pointMargins = fromUnits == QPageLayout::Point ? margins : margins * qt_pointMultiplier(fromUnits);
 
     // Then convert from points to required units rounded to 2 decimal places
-    const qreal multiplier = qt_pointMultiplier(toUnits);
+    const auto multiplier = qt_pointMultiplier(toUnits);
     return QMarginsF(qRound(pointMargins.left() * 100 / multiplier) / 100.0,
                      qRound(pointMargins.top() * 100 / multiplier) / 100.0,
                      qRound(pointMargins.right() * 100 / multiplier) / 100.0,
@@ -248,7 +248,7 @@ void QPageLayoutPrivate::setDefaultMargins(const QMarginsF &minMargins)
 
 QSizeF QPageLayoutPrivate::fullSizeUnits(QPageLayout::Unit units) const
 {
-    QSizeF fullPageSize = m_pageSize.size(QPageSize::Unit(units));
+    auto fullPageSize = m_pageSize.size(QPageSize::Unit(units));
     return m_orientation == QPageLayout::Landscape ? fullPageSize.transposed() : fullPageSize;
 }
 
@@ -540,7 +540,7 @@ void QPageLayout::setOrientation(Orientation orientation)
         d->m_orientation = orientation;
         d->m_fullSize = d->fullSizeUnits(d->m_units);
         // Adust the max margins to reflect change in max page size
-        const qreal change = d->m_fullSize.width() - d->m_fullSize.height();
+        const auto change = d->m_fullSize.width() - d->m_fullSize.height();
         d->m_maxMargins.setLeft(d->m_maxMargins.left() + change);
         d->m_maxMargins.setRight(d->m_maxMargins.right() + change);
         d->m_maxMargins.setTop(d->m_maxMargins.top() - change);
@@ -950,7 +950,7 @@ QDebug operator<<(QDebug dbg, const QPageLayout &layout)
 {
     QDebugStateSaver saver(dbg);
     if (layout.isValid()) {
-        QString output = QStringLiteral("QPageLayout(%1, %2, l:%3 r:%4 t:%5 b:%6 %7)");
+        auto output = QStringLiteral("QPageLayout(%1, %2, l:%3 r:%4 t:%5 b:%6 %7)");
         QString units;
         switch (layout.units()) {
         case QPageLayout::Millimeter:

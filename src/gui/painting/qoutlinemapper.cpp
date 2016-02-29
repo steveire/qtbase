@@ -53,8 +53,8 @@ QT_BEGIN_NAMESPACE
 
 static const QRectF boundingRect(const QPointF *points, int pointCount)
 {
-    const QPointF *e = points;
-    const QPointF *last = points + pointCount;
+    auto e = points;
+    auto last = points + pointCount;
     qreal minx, maxx, miny, maxy;
     minx = maxx = e->x();
     miny = maxy = e->y();
@@ -76,10 +76,10 @@ void QOutlineMapper::curveTo(const QPointF &cp1, const QPointF &cp2, const QPoin
     printf("QOutlineMapper::curveTo() (%f, %f)\n", ep.x(), ep.y());
 #endif
 
-    QBezier bezier = QBezier::fromPoints(m_elements.last(), cp1, cp2, ep);
+    auto bezier = QBezier::fromPoints(m_elements.last(), cp1, cp2, ep);
     bezier.addToPolygon(m_elements, m_curve_threshold);
     m_element_types.reserve(m_elements.size());
-    for (int i = m_elements.size() - m_element_types.size(); i; --i)
+    for (auto i = m_elements.size() - m_element_types.size(); i; --i)
         m_element_types << QPainterPath::LineToElement;
     Q_ASSERT(m_elements.size() == m_element_types.size());
 }
@@ -88,13 +88,13 @@ void QOutlineMapper::curveTo(const QPointF &cp1, const QPointF &cp2, const QPoin
 QT_FT_Outline *QOutlineMapper::convertPath(const QPainterPath &path)
 {
     Q_ASSERT(!path.isEmpty());
-    int elmCount = path.elementCount();
+    auto elmCount = path.elementCount();
 #ifdef QT_DEBUG_CONVERT
     printf("QOutlineMapper::convertPath(), size=%d\n", elmCount);
 #endif
     beginOutline(path.fillRule());
 
-    for (int index=0; index<elmCount; ++index) {
+    for (auto index=0; index<elmCount; ++index) {
         const QPainterPath::Element &elm = path.elementAt(index);
 
         switch (elm.type) {
@@ -125,7 +125,7 @@ QT_FT_Outline *QOutlineMapper::convertPath(const QPainterPath &path)
 
 QT_FT_Outline *QOutlineMapper::convertPath(const QVectorPath &path)
 {
-    int count = path.elementCount();
+    auto count = path.elementCount();
 
 #ifdef QT_DEBUG_CONVERT
     printf("QOutlineMapper::convertPath(VP), size=%d\n", count);
@@ -135,10 +135,10 @@ QT_FT_Outline *QOutlineMapper::convertPath(const QVectorPath &path)
     if (path.elements()) {
         // TODO: if we do closing of subpaths in convertElements instead we
         // could avoid this loop
-        const QPainterPath::ElementType *elements = path.elements();
-        const QPointF *points = reinterpret_cast<const QPointF *>(path.points());
+        auto elements = path.elements();
+        auto points = reinterpret_cast<const QPointF *>(path.points());
 
-        for (int index = 0; index < count; ++index) {
+        for (auto index = 0; index < count; ++index) {
             switch (elements[index]) {
                 case QPainterPath::MoveToElement:
                     if (index == count - 1)
@@ -184,23 +184,23 @@ void QOutlineMapper::endOutline()
         return;
     }
 
-    QPointF *elements = m_elements.data();
+    auto elements = m_elements.data();
 
     // Transform the outline
     if (m_txop == QTransform::TxNone) {
         // Nothing to do.
     } else if (m_txop == QTransform::TxTranslate) {
-        for (int i = 0; i < m_elements.size(); ++i) {
+        for (auto i = 0; i < m_elements.size(); ++i) {
             QPointF &e = elements[i];
             e = QPointF(e.x() + m_dx, e.y() + m_dy);
         }
     } else if (m_txop == QTransform::TxScale) {
-        for (int i = 0; i < m_elements.size(); ++i) {
+        for (auto i = 0; i < m_elements.size(); ++i) {
             QPointF &e = elements[i];
             e = QPointF(m_m11 * e.x() + m_dx, m_m22 * e.y() + m_dy);
         }
     } else if (m_txop < QTransform::TxProject) {
-        for (int i = 0; i < m_elements.size(); ++i) {
+        for (auto i = 0; i < m_elements.size(); ++i) {
             QPointF &e = elements[i];
             e = QPointF(m_m11 * e.x() + m_m21 * e.y() + m_dx,
                         m_m22 * e.y() + m_m12 * e.x() + m_dy);
@@ -208,11 +208,11 @@ void QOutlineMapper::endOutline()
     } else {
         const QVectorPath vp((qreal *)elements, m_elements.size(),
                              m_element_types.size() ? m_element_types.data() : 0);
-        QPainterPath path = vp.convertToPainterPath();
+        auto path = vp.convertToPainterPath();
         path = QTransform(m_m11, m_m12, m_m13, m_m21, m_m22, m_m23, m_dx, m_dy, m_m33).map(path);
         if (!(m_outline.flags & QT_FT_OUTLINE_EVEN_ODD_FILL))
             path.setFillRule(Qt::WindingFill);
-        uint old_txop = m_txop;
+        auto old_txop = m_txop;
         m_txop = QTransform::TxNone;
         if (path.isEmpty())
             m_valid = false;
@@ -233,7 +233,7 @@ void QOutlineMapper::endOutline()
 
 
     // Check for out of dev bounds...
-    const bool do_clip = !m_in_clip_elements && ((controlPointRect.left() < -QT_RASTER_COORD_LIMIT
+    const auto do_clip = !m_in_clip_elements && ((controlPointRect.left() < -QT_RASTER_COORD_LIMIT
                           || controlPointRect.right() > QT_RASTER_COORD_LIMIT
                           || controlPointRect.top() < -QT_RASTER_COORD_LIMIT
                           || controlPointRect.bottom() > QT_RASTER_COORD_LIMIT
@@ -254,8 +254,8 @@ void QOutlineMapper::convertElements(const QPointF *elements,
 
     if (types) {
         // Translate into FT coords
-        const QPointF *e = elements;
-        for (int i=0; i<element_count; ++i) {
+        auto e = elements;
+        for (auto i=0; i<element_count; ++i) {
             switch (*types) {
             case QPainterPath::MoveToElement:
                 {
@@ -305,8 +305,8 @@ void QOutlineMapper::convertElements(const QPointF *elements,
         }
     } else {
         // Plain polygon...
-        const QPointF *last = elements + element_count;
-        const QPointF *e = elements;
+        auto last = elements + element_count;
+        auto e = elements;
         while (e < last) {
             QT_FT_Vector pt_fixed = { qreal_to_fixed_26_6(e->x()),
                                       qreal_to_fixed_26_6(e->y()) };
@@ -360,7 +360,7 @@ void QOutlineMapper::clipElements(const QPointF *elements,
         path.setFillRule(Qt::WindingFill);
 
     if (types) {
-        for (int i=0; i<element_count; ++i) {
+        for (auto i=0; i<element_count; ++i) {
             switch (types[i]) {
             case QPainterPath::MoveToElement:
                 path.moveTo(elements[i]);
@@ -380,14 +380,14 @@ void QOutlineMapper::clipElements(const QPointF *elements,
         }
     } else {
         path.moveTo(elements[0]);
-        for (int i=1; i<element_count; ++i)
+        for (auto i=1; i<element_count; ++i)
             path.lineTo(elements[i]);
     }
 
     QPainterPath clipPath;
     clipPath.addRect(m_clip_rect);
-    QPainterPath clippedPath = path.intersected(clipPath);
-    uint old_txop = m_txop;
+    auto clippedPath = path.intersected(clipPath);
+    auto old_txop = m_txop;
     m_txop = QTransform::TxNone;
     if (clippedPath.isEmpty())
         m_valid = false;

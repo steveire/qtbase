@@ -68,8 +68,8 @@ int QCssScanner_Generated::lex()
 {
     lexemStart = pos;
     lexemLength = 0;
-    int lastAcceptingPos = -1;
-    int token = -1;
+    auto lastAcceptingPos = -1;
+    auto token = -1;
     QChar ch;
 
     // initial state

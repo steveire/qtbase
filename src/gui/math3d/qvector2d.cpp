@@ -193,7 +193,7 @@ QVector2D::QVector2D(const QVector4D& vector)
 float QVector2D::length() const
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp);
     return float(std::sqrt(len));
 }
@@ -221,12 +221,12 @@ float QVector2D::lengthSquared() const
 QVector2D QVector2D::normalized() const
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp);
     if (qFuzzyIsNull(len - 1.0f)) {
         return *this;
     } else if (!qFuzzyIsNull(len)) {
-        double sqrtLen = std::sqrt(len);
+        auto sqrtLen = std::sqrt(len);
         return QVector2D(float(double(xp) / sqrtLen), float(double(yp) / sqrtLen));
     } else {
         return QVector2D();
@@ -242,7 +242,7 @@ QVector2D QVector2D::normalized() const
 void QVector2D::normalize()
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp);
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
@@ -282,7 +282,7 @@ float QVector2D::distanceToLine
 {
     if (direction.isNull())
         return (*this - point).length();
-    QVector2D p = point + dotProduct(*this - point, direction) * direction;
+    auto p = point + dotProduct(*this - point, direction) * direction;
     return (*this - p).length();
 }
 

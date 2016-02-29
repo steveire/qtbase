@@ -152,8 +152,8 @@ const QFontEngineQPF2::Glyph *QFontEngineQPF2::findGlyph(glyph_t g) const
 {
     if (!g || g >= glyphMapEntries)
         return 0;
-    const quint32 *gmapPtr = reinterpret_cast<const quint32 *>(fontData + glyphMapOffset);
-    quint32 glyphPos = qFromBigEndian<quint32>(gmapPtr[g]);
+    auto gmapPtr = reinterpret_cast<const quint32 *>(fontData + glyphMapOffset);
+    auto glyphPos = qFromBigEndian<quint32>(gmapPtr[g]);
     if (glyphPos > glyphDataSize) {
         if (glyphPos == 0xffffffff)
             return 0;
@@ -170,7 +170,7 @@ bool QFontEngineQPF2::verifyHeader(const uchar *data, int size)
 {
     VERIFY(quintptr(data) % Q_ALIGNOF(Header) == 0);
     VERIFY(size >= int(sizeof(Header)));
-    const Header *header = reinterpret_cast<const Header *>(data);
+    auto header = reinterpret_cast<const Header *>(data);
     if (header->magic[0] != 'Q'
         || header->magic[1] != 'P'
         || header->magic[2] != 'F'
@@ -178,11 +178,11 @@ bool QFontEngineQPF2::verifyHeader(const uchar *data, int size)
         return false;
 
     VERIFY(header->majorVersion <= CurrentMajorVersion);
-    const quint16 dataSize = qFromBigEndian<quint16>(header->dataSize);
+    const auto dataSize = qFromBigEndian<quint16>(header->dataSize);
     VERIFY(size >= int(sizeof(Header)) + dataSize);
 
-    const uchar *tagPtr = data + sizeof(Header);
-    const uchar *tagEndPtr = tagPtr + dataSize;
+    auto tagPtr = data + sizeof(Header);
+    auto tagEndPtr = tagPtr + dataSize;
     while (tagPtr < tagEndPtr - 3) {
         tagPtr = verifyTag(tagPtr, tagEndPtr);
         VERIFY(tagPtr);
@@ -194,12 +194,12 @@ bool QFontEngineQPF2::verifyHeader(const uchar *data, int size)
 
 QVariant QFontEngineQPF2::extractHeaderField(const uchar *data, HeaderTag requestedTag)
 {
-    const Header *header = reinterpret_cast<const Header *>(data);
-    const uchar *tagPtr = data + sizeof(Header);
-    const uchar *endPtr = tagPtr + qFromBigEndian<quint16>(header->dataSize);
+    auto header = reinterpret_cast<const Header *>(data);
+    auto tagPtr = data + sizeof(Header);
+    auto endPtr = tagPtr + qFromBigEndian<quint16>(header->dataSize);
     while (tagPtr < endPtr - 3) {
-        quint16 tag = readValue<quint16>(tagPtr);
-        quint16 length = readValue<quint16>(tagPtr);
+        auto tag = readValue<quint16>(tagPtr);
+        auto length = readValue<quint16>(tagPtr);
         if (tag == requestedTag) {
             switch (tagTypes[requestedTag]) {
                 case StringType:
@@ -251,16 +251,16 @@ QFontEngineQPF2::QFontEngineQPF2(const QFontDef &def, const QByteArray &data)
         return;
     }
 
-    const Header *header = reinterpret_cast<const Header *>(fontData);
+    auto header = reinterpret_cast<const Header *>(fontData);
 
     readOnly = (header->lock == 0xffffffff);
 
-    const uchar *imgData = fontData + sizeof(Header) + qFromBigEndian<quint16>(header->dataSize);
-    const uchar *endPtr = fontData + dataSize;
+    auto imgData = fontData + sizeof(Header) + qFromBigEndian<quint16>(header->dataSize);
+    auto endPtr = fontData + dataSize;
     while (imgData <= endPtr - 8) {
-        quint16 blockTag = readValue<quint16>(imgData);
+        auto blockTag = readValue<quint16>(imgData);
         imgData += 2; // skip padding
-        quint32 blockSize = readValue<quint32>(imgData);
+        auto blockSize = readValue<quint32>(imgData);
 
         if (blockTag == CMapBlock) {
             cmapOffset = imgData - fontData;
@@ -287,9 +287,9 @@ QFontEngineQPF2::QFontEngineQPF2(const QFontDef &def, const QByteArray &data)
 
     // verify all the positions in the glyphMap
     if (glyphMapOffset) {
-        const quint32 *gmapPtr = reinterpret_cast<const quint32 *>(fontData + glyphMapOffset);
+        auto gmapPtr = reinterpret_cast<const quint32 *>(fontData + glyphMapOffset);
         for (uint i = 0; i < glyphMapEntries; ++i) {
-            quint32 glyphDataPos = qFromBigEndian<quint32>(gmapPtr[i]);
+            auto glyphDataPos = qFromBigEndian<quint32>(gmapPtr[i]);
             if (glyphDataPos == 0xffffffff)
                 continue;
             if (glyphDataPos >= glyphDataSize) {
@@ -328,7 +328,7 @@ bool QFontEngineQPF2::getSfntTableData(uint tag, uchar *buffer, uint *length) co
 
 glyph_t QFontEngineQPF2::glyphIndex(uint ucs4) const
 {
-    glyph_t glyph = getTrueTypeGlyphIndex(cmap, cmapSize, ucs4);
+    auto glyph = getTrueTypeGlyphIndex(cmap, cmapSize, ucs4);
     if (glyph == 0 && symbol && ucs4 < 0x100)
         glyph = getTrueTypeGlyphIndex(cmap, cmapSize, ucs4 + 0xf000);
     if (!findGlyph(glyph))
@@ -349,11 +349,11 @@ bool QFontEngineQPF2::stringToCMap(const QChar *str, int len, QGlyphLayout *glyp
     QSet<QChar> seenGlyphs;
 #endif
 
-    int glyph_pos = 0;
+    auto glyph_pos = 0;
     if (symbol) {
         QStringIterator it(str, str + len);
         while (it.hasNext()) {
-            const uint uc = it.next();
+            const auto uc = it.next();
             glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
             if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000);
@@ -362,7 +362,7 @@ bool QFontEngineQPF2::stringToCMap(const QChar *str, int len, QGlyphLayout *glyp
     } else {
         QStringIterator it(str, str + len);
         while (it.hasNext()) {
-            const uint uc = it.next();
+            const auto uc = it.next();
             glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
 #if 0 && defined(DEBUG_FONTENGINE)
             QChar c(uc);
@@ -386,8 +386,8 @@ bool QFontEngineQPF2::stringToCMap(const QChar *str, int len, QGlyphLayout *glyp
 
 void QFontEngineQPF2::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags) const
 {
-    for (int i = 0; i < glyphs->numGlyphs; ++i) {
-        const Glyph *g = findGlyph(glyphs->glyphs[i]);
+    for (auto i = 0; i < glyphs->numGlyphs; ++i) {
+        auto g = findGlyph(glyphs->glyphs[i]);
         if (!g)
             continue;
         glyphs->advances[i] = g->advance;
@@ -396,11 +396,11 @@ void QFontEngineQPF2::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFl
 
 QImage QFontEngineQPF2::alphaMapForGlyph(glyph_t g)
 {
-    const Glyph *glyph = findGlyph(g);
+    auto glyph = findGlyph(g);
     if (!glyph)
         return QImage();
 
-    const uchar *bits = ((const uchar *) glyph) + sizeof(Glyph);
+    auto bits = ((const uchar *) glyph) + sizeof(Glyph);
 
     QImage image(bits,glyph->width, glyph->height, glyph->bytesPerLine, QImage::Format_Alpha8);
 
@@ -421,13 +421,13 @@ glyph_metrics_t QFontEngineQPF2::boundingBox(const QGlyphLayout &glyphs)
 
     QFixed ymax = 0;
     QFixed xmax = 0;
-    for (int i = 0; i < glyphs.numGlyphs; i++) {
-        const Glyph *g = findGlyph(glyphs.glyphs[i]);
+    for (auto i = 0; i < glyphs.numGlyphs; i++) {
+        auto g = findGlyph(glyphs.glyphs[i]);
         if (!g)
             continue;
 
-        QFixed x = overall.xoff + glyphs.offsets[i].x + g->x;
-        QFixed y = overall.yoff + glyphs.offsets[i].y + g->y;
+        auto x = overall.xoff + glyphs.offsets[i].x + g->x;
+        auto y = overall.yoff + glyphs.offsets[i].y + g->y;
         overall.x = qMin(overall.x, x);
         overall.y = qMin(overall.y, y);
         xmax = qMax(xmax, x + g->width);
@@ -443,7 +443,7 @@ glyph_metrics_t QFontEngineQPF2::boundingBox(const QGlyphLayout &glyphs)
 glyph_metrics_t QFontEngineQPF2::boundingBox(glyph_t glyph)
 {
     glyph_metrics_t overall;
-    const Glyph *g = findGlyph(glyph);
+    auto g = findGlyph(glyph);
     if (!g)
         return overall;
     overall.x = g->x;
@@ -526,14 +526,14 @@ void QPF2Generator::writeHeader()
 
     writeTaggedString(QFontEngineQPF2::Tag_FontName, fe->fontDef.family.toUtf8());
 
-    QFontEngine::FaceId face = fe->faceId();
+    auto face = fe->faceId();
     writeTaggedString(QFontEngineQPF2::Tag_FileName, face.filename);
     writeTaggedUInt32(QFontEngineQPF2::Tag_FileIndex, face.index);
 
     {
-        const QByteArray head = fe->getSfntTable(MAKE_TAG('h', 'e', 'a', 'd'));
+        const auto head = fe->getSfntTable(MAKE_TAG('h', 'e', 'a', 'd'));
         if (head.size() >= 4) {
-            const quint32 revision = qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(head.constData()));
+            const auto revision = qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(head.constData()));
             writeTaggedUInt32(QFontEngineQPF2::Tag_FontRevision, revision);
         }
     }
@@ -584,10 +584,10 @@ void QPF2Generator::writeBlock(QFontEngineQPF2::BlockTag tag, const QByteArray &
 {
     writeUInt16(tag);
     writeUInt16(0); // padding
-    const int padSize = ((data.size() + 3) / 4) * 4 - data.size();
+    const auto padSize = ((data.size() + 3) / 4) * 4 - data.size();
     writeUInt32(data.size() + padSize);
     dev->write(data);
-    for (int i = 0; i < padSize; ++i)
+    for (auto i = 0; i < padSize; ++i)
         writeUInt8(0);
 }
 

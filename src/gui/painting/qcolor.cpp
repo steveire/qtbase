@@ -1089,7 +1089,7 @@ qreal QColor::alphaF() const Q_DECL_NOTHROW
 void QColor::setAlphaF(qreal alpha)
 {
     QCOLOR_REAL_RANGE_CHECK("QColor::setAlphaF", alpha);
-    qreal tmp = alpha * USHRT_MAX;
+    auto tmp = alpha * USHRT_MAX;
     ct.argb.alpha = qRound(tmp);
 }
 
@@ -1591,15 +1591,15 @@ QColor QColor::toRgb() const Q_DECL_NOTHROW
             }
 
             // chromatic case
-            const qreal h = ct.ahsv.hue == 36000 ? 0 : ct.ahsv.hue / 6000.;
-            const qreal s = ct.ahsv.saturation / qreal(USHRT_MAX);
-            const qreal v = ct.ahsv.value / qreal(USHRT_MAX);
-            const int i = int(h);
-            const qreal f = h - i;
-            const qreal p = v * (qreal(1.0) - s);
+            const auto h = ct.ahsv.hue == 36000 ? 0 : ct.ahsv.hue / 6000.;
+            const auto s = ct.ahsv.saturation / qreal(USHRT_MAX);
+            const auto v = ct.ahsv.value / qreal(USHRT_MAX);
+            const auto i = int(h);
+            const auto f = h - i;
+            const auto p = v * (qreal(1.0) - s);
 
             if (i & 1) {
-                const qreal q = v * (qreal(1.0) - (s * f));
+                const auto q = v * (qreal(1.0) - (s * f));
 
                 switch (i) {
                 case 1:
@@ -1619,7 +1619,7 @@ QColor QColor::toRgb() const Q_DECL_NOTHROW
                     break;
                 }
             } else {
-                const qreal t = v * (qreal(1.0) - (s * (qreal(1.0) - f)));
+                const auto t = v * (qreal(1.0) - (s * (qreal(1.0) - f)));
 
                 switch (i) {
                 case 0:
@@ -1651,9 +1651,9 @@ QColor QColor::toRgb() const Q_DECL_NOTHROW
                 color.ct.argb.red = color.ct.argb.green = color.ct.argb.blue = 0;
             } else {
                 // chromatic case
-                const qreal h = ct.ahsl.hue == 36000 ? 0 : ct.ahsl.hue / 36000.;
-                const qreal s = ct.ahsl.saturation / qreal(USHRT_MAX);
-                const qreal l = ct.ahsl.lightness / qreal(USHRT_MAX);
+                const auto h = ct.ahsl.hue == 36000 ? 0 : ct.ahsl.hue / 36000.;
+                const auto s = ct.ahsl.saturation / qreal(USHRT_MAX);
+                const auto l = ct.ahsl.lightness / qreal(USHRT_MAX);
 
                 qreal temp2;
                 if (l < qreal(0.5))
@@ -1661,18 +1661,18 @@ QColor QColor::toRgb() const Q_DECL_NOTHROW
                 else
                     temp2 = l + s - (l * s);
 
-                const qreal temp1 = (qreal(2.0) * l) - temp2;
+                const auto temp1 = (qreal(2.0) * l) - temp2;
                 qreal temp3[3] = { h + (qreal(1.0) / qreal(3.0)),
                                    h,
                                    h - (qreal(1.0) / qreal(3.0)) };
 
-                for (int i = 0; i != 3; ++i) {
+                for (auto i = 0; i != 3; ++i) {
                     if (temp3[i] < qreal(0.0))
                         temp3[i] += qreal(1.0);
                     else if (temp3[i] > qreal(1.0))
                         temp3[i] -= qreal(1.0);
 
-                    const qreal sixtemp3 = temp3[i] * qreal(6.0);
+                    const auto sixtemp3 = temp3[i] * qreal(6.0);
                     if (sixtemp3 < qreal(1.0))
                         color.ct.array[i+1] = qRound((temp1 + (temp2 - temp1) * sixtemp3) * USHRT_MAX);
                     else if ((temp3[i] * qreal(2.0)) < qreal(1.0))
@@ -1690,10 +1690,10 @@ QColor QColor::toRgb() const Q_DECL_NOTHROW
         }
     case Cmyk:
         {
-            const qreal c = ct.acmyk.cyan / qreal(USHRT_MAX);
-            const qreal m = ct.acmyk.magenta / qreal(USHRT_MAX);
-            const qreal y = ct.acmyk.yellow / qreal(USHRT_MAX);
-            const qreal k = ct.acmyk.black / qreal(USHRT_MAX);
+            const auto c = ct.acmyk.cyan / qreal(USHRT_MAX);
+            const auto m = ct.acmyk.magenta / qreal(USHRT_MAX);
+            const auto y = ct.acmyk.yellow / qreal(USHRT_MAX);
+            const auto k = ct.acmyk.black / qreal(USHRT_MAX);
 
             color.ct.argb.red   = qRound((qreal(1.0) - (c * (qreal(1.0) - k) + k)) * USHRT_MAX);
             color.ct.argb.green = qRound((qreal(1.0) - (m * (qreal(1.0) - k) + k)) * USHRT_MAX);
@@ -1730,12 +1730,12 @@ QColor QColor::toHsv() const Q_DECL_NOTHROW
     color.ct.ahsv.alpha = ct.argb.alpha;
     color.ct.ahsv.pad = 0;
 
-    const qreal r = ct.argb.red   / qreal(USHRT_MAX);
-    const qreal g = ct.argb.green / qreal(USHRT_MAX);
-    const qreal b = ct.argb.blue  / qreal(USHRT_MAX);
-    const qreal max = Q_MAX_3(r, g, b);
-    const qreal min = Q_MIN_3(r, g, b);
-    const qreal delta = max - min;
+    const auto r = ct.argb.red   / qreal(USHRT_MAX);
+    const auto g = ct.argb.green / qreal(USHRT_MAX);
+    const auto b = ct.argb.blue  / qreal(USHRT_MAX);
+    const auto max = Q_MAX_3(r, g, b);
+    const auto min = Q_MIN_3(r, g, b);
+    const auto delta = max - min;
     color.ct.ahsv.value = qRound(max * USHRT_MAX);
     if (qFuzzyIsNull(delta)) {
         // achromatic case, hue is undefined
@@ -1781,14 +1781,14 @@ QColor QColor::toHsl() const Q_DECL_NOTHROW
     color.ct.ahsl.alpha = ct.argb.alpha;
     color.ct.ahsl.pad = 0;
 
-    const qreal r = ct.argb.red   / qreal(USHRT_MAX);
-    const qreal g = ct.argb.green / qreal(USHRT_MAX);
-    const qreal b = ct.argb.blue  / qreal(USHRT_MAX);
-    const qreal max = Q_MAX_3(r, g, b);
-    const qreal min = Q_MIN_3(r, g, b);
-    const qreal delta = max - min;
-    const qreal delta2 = max + min;
-    const qreal lightness = qreal(0.5) * delta2;
+    const auto r = ct.argb.red   / qreal(USHRT_MAX);
+    const auto g = ct.argb.green / qreal(USHRT_MAX);
+    const auto b = ct.argb.blue  / qreal(USHRT_MAX);
+    const auto max = Q_MAX_3(r, g, b);
+    const auto min = Q_MIN_3(r, g, b);
+    const auto delta = max - min;
+    const auto delta2 = max + min;
+    const auto lightness = qreal(0.5) * delta2;
     color.ct.ahsl.lightness = qRound(lightness * USHRT_MAX);
     if (qFuzzyIsNull(delta)) {
         // achromatic case, hue is undefined
@@ -1836,15 +1836,15 @@ QColor QColor::toCmyk() const Q_DECL_NOTHROW
     color.ct.acmyk.alpha = ct.argb.alpha;
 
     // rgb -> cmy
-    const qreal r = ct.argb.red   / qreal(USHRT_MAX);
-    const qreal g = ct.argb.green / qreal(USHRT_MAX);
-    const qreal b = ct.argb.blue  / qreal(USHRT_MAX);
-    qreal c = qreal(1.0) - r;
-    qreal m = qreal(1.0) - g;
-    qreal y = qreal(1.0) - b;
+    const auto r = ct.argb.red   / qreal(USHRT_MAX);
+    const auto g = ct.argb.green / qreal(USHRT_MAX);
+    const auto b = ct.argb.blue  / qreal(USHRT_MAX);
+    auto c = qreal(1.0) - r;
+    auto m = qreal(1.0) - g;
+    auto y = qreal(1.0) - b;
 
     // cmy -> cmyk
-    const qreal k = qMin(c, qMin(m, y));
+    const auto k = qMin(c, qMin(m, y));
 
     if (!qFuzzyIsNull(k - 1)) {
         c = (c - k) / (qreal(1.0) - k);
@@ -2336,7 +2336,7 @@ QColor QColor::light(int factor) const Q_DECL_NOTHROW
     else if (factor < 100)                        // makes color darker
         return darker(10000 / factor);
 
-    QColor hsv = toHsv();
+    auto hsv = toHsv();
     int s = hsv.ct.ahsv.saturation;
     uint v = hsv.ct.ahsv.value;
 
@@ -2386,7 +2386,7 @@ QColor QColor::dark(int factor) const Q_DECL_NOTHROW
     else if (factor < 100)                        // makes color lighter
         return lighter(10000 / factor);
 
-    QColor hsv = toHsv();
+    auto hsv = toHsv();
     hsv.ct.ahsv.value = (hsv.ct.ahsv.value * 100) / factor;
 
     // convert back to same color spec as original color
@@ -2509,18 +2509,18 @@ QDataStream &operator<<(QDataStream &stream, const QColor &color)
     if (stream.version() < 7) {
         if (!color.isValid())
             return stream << quint32(0x49000000);
-        quint32 p = (quint32)color.rgb();
+        auto p = (quint32)color.rgb();
         if (stream.version() == 1) // Swap red and blue
             p = ((p << 16) & 0xff0000) | ((p >> 16) & 0xff) | (p & 0xff00ff00);
         return stream << p;
     }
 
     qint8   s = color.cspec;
-    quint16 a = color.ct.argb.alpha;
-    quint16 r = color.ct.argb.red;
-    quint16 g = color.ct.argb.green;
-    quint16 b = color.ct.argb.blue;
-    quint16 p = color.ct.argb.pad;
+    auto a = color.ct.argb.alpha;
+    auto r = color.ct.argb.red;
+    auto g = color.ct.argb.green;
+    auto b = color.ct.argb.blue;
+    auto p = color.ct.argb.pad;
 
     stream << s;
     stream << a;

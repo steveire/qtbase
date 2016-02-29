@@ -115,7 +115,7 @@ Qt::DropAction QPlatformDrag::defaultAction(Qt::DropActions possibleActions,
     qDebug() << "QDragManager::defaultAction(Qt::DropActions possibleActions)\nkeyboard modifiers : " << modifiers;
 #endif
 
-    Qt::DropAction default_action = Qt::IgnoreAction;
+    auto default_action = Qt::IgnoreAction;
 
     if (currentDrag()) {
         default_action = currentDrag()->defaultAction();

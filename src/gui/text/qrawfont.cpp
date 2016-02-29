@@ -474,7 +474,7 @@ QVector<quint32> QRawFont::glyphIndexesForString(const QString &text) const
     if (!d->isValid() || text.isEmpty())
         return glyphIndexes;
 
-    int numGlyphs = text.size();
+    auto numGlyphs = text.size();
     glyphIndexes.resize(numGlyphs);
 
     QGlyphLayout glyphs;
@@ -571,7 +571,7 @@ bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *adv
     if (layoutFlags & KernedAdvances)
         d->fontEngine->doKerning(&glyphs, design ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlag(0));
 
-    for (int i=0; i<numGlyphs; ++i)
+    for (auto i=0; i<numGlyphs; ++i)
         advances[i] = QPointF(tmpAdvances[i].toReal(), 0.0);
 
     return true;
@@ -614,7 +614,7 @@ QByteArray QRawFont::fontTable(const char *tagName) const
     if (!d->isValid())
         return QByteArray();
 
-    const quint32 *tagId = reinterpret_cast<const quint32 *>(tagName);
+    auto tagId = reinterpret_cast<const quint32 *>(tagName);
     return d->fontEngine->getSfntTable(qToBigEndian(*tagId));
 }
 
@@ -633,23 +633,23 @@ QList<QFontDatabase::WritingSystem> QRawFont::supportedWritingSystems() const
 {
     QList<QFontDatabase::WritingSystem> writingSystems;
     if (d->isValid()) {
-        QByteArray os2Table = fontTable("OS/2");
+        auto os2Table = fontTable("OS/2");
         if (os2Table.size() > 86) {
-            char *data = os2Table.data();
-            quint32 *bigEndianUnicodeRanges = reinterpret_cast<quint32 *>(data + 42);
-            quint32 *bigEndianCodepageRanges = reinterpret_cast<quint32 *>(data + 78);
+            auto data = os2Table.data();
+            auto bigEndianUnicodeRanges = reinterpret_cast<quint32 *>(data + 42);
+            auto bigEndianCodepageRanges = reinterpret_cast<quint32 *>(data + 78);
 
             quint32 unicodeRanges[4];
             quint32 codepageRanges[2];
 
-            for (int i=0; i<4; ++i) {
+            for (auto i=0; i<4; ++i) {
                 if (i < 2)
                     codepageRanges[i] = qFromBigEndian(bigEndianCodepageRanges[i]);
                 unicodeRanges[i] = qFromBigEndian(bigEndianUnicodeRanges[i]);
             }
 
-            QSupportedWritingSystems ws = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRanges, codepageRanges);
-            for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
+            auto ws = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRanges, codepageRanges);
+            for (auto i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
                 if (ws.supported(QFontDatabase::WritingSystem(i)))
                     writingSystems.append(QFontDatabase::WritingSystem(i));
             }
@@ -694,12 +694,12 @@ extern int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSyst
 QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writingSystem)
 {
     QRawFont rawFont;
-    const QFontPrivate *font_d = QFontPrivate::get(font);
-    int script = qt_script_for_writing_system(writingSystem);
-    QFontEngine *fe = font_d->engineForScript(script);
+    auto font_d = QFontPrivate::get(font);
+    auto script = qt_script_for_writing_system(writingSystem);
+    auto fe = font_d->engineForScript(script);
 
     if (fe != 0 && fe->type() == QFontEngine::Multi) {
-        QFontEngineMulti *multiEngine = static_cast<QFontEngineMulti *>(fe);
+        auto multiEngine = static_cast<QFontEngineMulti *>(fe);
         fe = multiEngine->engine(0);
         Q_ASSERT(fe);
     }
@@ -731,7 +731,7 @@ void QRawFontPrivate::loadFromData(const QByteArray &fontData, qreal pixelSize,
 {
     Q_ASSERT(fontEngine == 0);
 
-    QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+    auto pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
     setFontEngine(pfdb->fontEngine(fontData, pixelSize, hintingPreference));
 }
 
@@ -745,7 +745,7 @@ QRectF QRawFont::boundingRect(quint32 glyphIndex) const
     if (!d->isValid())
         return QRectF();
 
-    glyph_metrics_t gm = d->fontEngine->boundingBox(glyphIndex);
+    auto gm = d->fontEngine->boundingBox(glyphIndex);
     return QRectF(gm.x.toReal(), gm.y.toReal(), gm.width.toReal(), gm.height.toReal());
 }
 

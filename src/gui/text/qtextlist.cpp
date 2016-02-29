@@ -180,12 +180,12 @@ int QTextList::itemNumber(const QTextBlock &blockIt) const
 QString QTextList::itemText(const QTextBlock &blockIt) const
 {
     Q_D(const QTextList);
-    int item = d->blocks.indexOf(blockIt) + 1;
+    auto item = d->blocks.indexOf(blockIt) + 1;
     if (item <= 0)
         return QString();
 
-    QTextBlock block = d->blocks.at(item-1);
-    QTextBlockFormat blockFormat = block.blockFormat();
+    auto block = d->blocks.at(item-1);
+    auto blockFormat = block.blockFormat();
 
     QString result;
 
@@ -206,9 +206,9 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
         case QTextListFormat::ListLowerAlpha:
         case QTextListFormat::ListUpperAlpha:
             {
-                const char baseChar = style == QTextListFormat::ListUpperAlpha ? 'A' : 'a';
+                const auto baseChar = style == QTextListFormat::ListUpperAlpha ? 'A' : 'a';
 
-                int c = item;
+                auto c = item;
                 while (c > 0) {
                     c--;
                     result.prepend(QChar(baseChar + (c % 26)));
@@ -232,11 +232,11 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                         romanSymbols = QByteArray::fromRawData(romanSymbolsUpper, sizeof(romanSymbolsUpper));
 
                     int c[] = { 1, 4, 5, 9, 10, 40, 50, 90, 100, 400, 500, 900, 1000 };
-                    int n = item;
-                    for (int i = 12; i >= 0; n %= c[i], i--) {
-                        int q = n / c[i];
+                    auto n = item;
+                    for (auto i = 12; i >= 0; n %= c[i], i--) {
+                        auto q = n / c[i];
                         if (q > 0) {
-                            int startDigit = i + (i+3)/4;
+                            auto startDigit = i + (i+3)/4;
                             int numDigits;
                             if (i % 4) {
                                 // c[i] == 4|5|9|40|50|90|400|500|900
@@ -287,7 +287,7 @@ void QTextList::removeItem(int i)
     if (i < 0 || i >= d->blocks.size())
         return;
 
-    QTextBlock block = d->blocks.at(i);
+    auto block = d->blocks.at(i);
     remove(block);
 }
 
@@ -299,7 +299,7 @@ void QTextList::removeItem(int i)
 */
 void QTextList::remove(const QTextBlock &block)
 {
-    QTextBlockFormat fmt = block.blockFormat();
+    auto fmt = block.blockFormat();
     fmt.setIndent(fmt.indent() + format().indent());
     fmt.setObjectIndex(-1);
     block.docHandle()->setBlockFormat(block, block, fmt, QTextDocumentPrivate::SetFormat);
@@ -312,7 +312,7 @@ void QTextList::remove(const QTextBlock &block)
 */
 void QTextList::add(const QTextBlock &block)
 {
-    QTextBlockFormat fmt = block.blockFormat();
+    auto fmt = block.blockFormat();
     fmt.setObjectIndex(objectIndex());
     block.docHandle()->setBlockFormat(block, block, fmt, QTextDocumentPrivate::SetFormat);
 }

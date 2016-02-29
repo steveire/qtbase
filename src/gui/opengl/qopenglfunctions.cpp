@@ -225,7 +225,7 @@ static QOpenGLFunctionsPrivateEx *qt_gl_functions(QOpenGLContext *context = 0)
     if (!context)
         context = QOpenGLContext::currentContext();
     Q_ASSERT(context);
-    QOpenGLFunctionsPrivateEx *funcs =
+    auto funcs =
         qt_gl_functions_resource()->value<QOpenGLFunctionsPrivateEx>(context);
     return funcs;
 }
@@ -280,7 +280,7 @@ QOpenGLExtensions::QOpenGLExtensions(QOpenGLContext *context)
 
 static int qt_gl_resolve_features()
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (ctx->isOpenGLES()) {
         // OpenGL ES
         int features = QOpenGLFunctions::Multitexture |
@@ -303,7 +303,7 @@ static int qt_gl_resolve_features()
                 QOpenGLFunctions::NPOTTextureRepeat;
         if (ctx->format().majorVersion() >= 3 || extensions.match("GL_EXT_texture_rg")) {
             // Mesa's GLES implementation (as of 10.6.0) is unable to handle this, even though it provides 3.0.
-            const char *renderer = reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_RENDERER));
+            auto renderer = reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_RENDERER));
             if (!(renderer && strstr(renderer, "Mesa")))
                 features |= QOpenGLFunctions::TextureRGFormats;
         }
@@ -313,7 +313,7 @@ static int qt_gl_resolve_features()
     } else {
         // OpenGL
         int features = QOpenGLFunctions::TextureRGFormats;
-        QSurfaceFormat format = QOpenGLContext::currentContext()->format();
+        auto format = QOpenGLContext::currentContext()->format();
         QOpenGLExtensionMatcher extensions;
 
         if (format.majorVersion() >= 3)
@@ -358,7 +358,7 @@ static int qt_gl_resolve_features()
                     QOpenGLFunctions::NPOTTextureRepeat;
         }
 
-        const QPair<int, int> version = format.version();
+        const auto version = format.version();
         if (version < qMakePair(3, 0)
             || (version == qMakePair(3, 0) && format.testOption(QSurfaceFormat::DeprecatedFunctions))
             || (version == qMakePair(3, 1) && extensions.match("GL_ARB_compatibility"))
@@ -371,10 +371,10 @@ static int qt_gl_resolve_features()
 
 static int qt_gl_resolve_extensions()
 {
-    int extensions = 0;
+    auto extensions = 0;
     QOpenGLExtensionMatcher extensionMatcher;
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    QSurfaceFormat format = ctx->format();
+    auto ctx = QOpenGLContext::currentContext();
+    auto format = ctx->format();
 
     if (extensionMatcher.match("GL_EXT_bgra"))
         extensions |= QOpenGLExtensions::BGRATextureFormat;
@@ -494,7 +494,7 @@ static int qt_gl_resolve_extensions()
 */
 QOpenGLFunctions::OpenGLFeatures QOpenGLFunctions::openGLFeatures() const
 {
-    QOpenGLFunctionsPrivateEx *d = static_cast<QOpenGLFunctionsPrivateEx *>(d_ptr);
+    auto d = static_cast<QOpenGLFunctionsPrivateEx *>(d_ptr);
     if (!d)
         return 0;
     if (d->m_features == -1)
@@ -513,7 +513,7 @@ QOpenGLFunctions::OpenGLFeatures QOpenGLFunctions::openGLFeatures() const
 */
 bool QOpenGLFunctions::hasOpenGLFeature(QOpenGLFunctions::OpenGLFeature feature) const
 {
-    QOpenGLFunctionsPrivateEx *d = static_cast<QOpenGLFunctionsPrivateEx *>(d_ptr);
+    auto d = static_cast<QOpenGLFunctionsPrivateEx *>(d_ptr);
     if (!d)
         return false;
     if (d->m_features == -1)
@@ -532,7 +532,7 @@ bool QOpenGLFunctions::hasOpenGLFeature(QOpenGLFunctions::OpenGLFeature feature)
 */
 QOpenGLExtensions::OpenGLExtensions QOpenGLExtensions::openGLExtensions()
 {
-    QOpenGLFunctionsPrivateEx *d = static_cast<QOpenGLFunctionsPrivateEx *>(d_ptr);
+    auto d = static_cast<QOpenGLFunctionsPrivateEx *>(d_ptr);
     if (!d)
         return 0;
     if (d->m_extensions == -1)
@@ -551,7 +551,7 @@ QOpenGLExtensions::OpenGLExtensions QOpenGLExtensions::openGLExtensions()
 */
 bool QOpenGLExtensions::hasOpenGLExtension(QOpenGLExtensions::OpenGLExtension extension) const
 {
-    QOpenGLFunctionsPrivateEx *d = static_cast<QOpenGLFunctionsPrivateEx *>(d_ptr);
+    auto d = static_cast<QOpenGLFunctionsPrivateEx *>(d_ptr);
     if (!d)
         return false;
     if (d->m_extensions == -1)
@@ -3210,7 +3210,7 @@ static GLvoid *QOPENGLF_APIENTRY qopenglfResolveMapBuffer(GLenum target, GLenum 
     // differentiate between glUnmapBufferOES and glUnmapBuffer causes extra
     // headache. QOpenGLBuffer::map() will handle this automatically, while direct
     // calls are better off with migrating to the standard glMapBufferRange.
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (ctx->isOpenGLES() && ctx->format().majorVersion() >= 3) {
         qWarning("QOpenGLFunctions: glMapBuffer is not available in OpenGL ES 3.0 and up. Use glMapBufferRange instead.");
         return 0;
@@ -5775,7 +5775,7 @@ QOpenGLES3Helper::QOpenGLES3Helper()
     if (Q_UNLIKELY(!init())) {
         qFatal("Failed to load libGLESv2");
     } else {
-        const QPair<int, int> contextVersion = QOpenGLContext::currentContext()->format().version();
+        const auto contextVersion = QOpenGLContext::currentContext()->format().version();
 
         qCDebug(lcGLES3, "Resolving OpenGL ES 3.0 entry points");
 
@@ -5981,10 +5981,10 @@ QOpenGLES3Helper::QOpenGLES3Helper()
 // does not count because there the plain resolvers work anyhow.
 static inline bool isES3(int minor)
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
 
-    const bool libMatches = QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES;
-    const bool contextMatches = ctx->isOpenGLES() && ctx->format().version() >= qMakePair(3, minor);
+    const auto libMatches = QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES;
+    const auto contextMatches = ctx->isOpenGLES() && ctx->format().version() >= qMakePair(3, minor);
 
     // Resolving happens whenever qgles3Helper() is called first. So do it only
     // when the driver gives a 3.0+ context.
@@ -7602,7 +7602,7 @@ void QOpenGLExtensions::flushShared()
         // is enough (e.g. iOS explicitly documents it), while certain drivers only work
         // properly when doing glFinish().
         d->flushIsSufficientToSyncContexts = false; // default to false, not guaranteed by the spec
-        const char *vendor = (const char *) glGetString(GL_VENDOR);
+        auto vendor = (const char *) glGetString(GL_VENDOR);
         if (vendor) {
             static const char *const flushEnough[] = { "Apple", "ATI", "Intel", "NVIDIA" };
             for (size_t i = 0; i < sizeof(flushEnough) / sizeof(const char *); ++i) {

@@ -54,9 +54,9 @@ QT_BEGIN_NAMESPACE
 
 static void discard_pbm_line(QIODevice *d)
 {
-    const int buflen = 100;
+    const auto buflen = 100;
     char buf[buflen];
-    int res = 0;
+    auto res = 0;
     do {
         res = d->readLine(buf, buflen);
     } while (res > 0 && buf[res-1] != '\n');
@@ -65,7 +65,7 @@ static void discard_pbm_line(QIODevice *d)
 static int read_pbm_int(QIODevice *d)
 {
     char c;
-    int          val = -1;
+    auto val = -1;
     bool  digit;
     for (;;) {
         if (!d->getChar(&c))                // end of file
@@ -148,7 +148,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
     }
     raw = type >= '4';
 
-    int maxc = mcc;
+    auto maxc = mcc;
     if (maxc > 255)
         maxc = 255;
     if (outImage->size() != QSize(w, h) || outImage->format() != format) {
@@ -202,10 +202,10 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
             n = pbm_bpl;
             if (nbits == 1) {
                 int b;
-                int bitsLeft = w;
+                auto bitsLeft = w;
                 while (n--) {
                     b = 0;
-                    for (int i=0; i<8; i++) {
+                    for (auto i=0; i<8; i++) {
                         if (i < bitsLeft)
                             b = (b << 1) | (read_pbm_int(device) & 1);
                         else
@@ -260,11 +260,11 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
 static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QByteArray &sourceFormat)
 {
     QByteArray str;
-    QImage image = sourceImage;
-    QByteArray format = sourceFormat;
+    auto image = sourceImage;
+    auto format = sourceFormat;
 
     format = format.left(3);                        // ignore RAW part
-    bool gray = format == "pgm";
+    auto gray = format == "pgm";
 
     if (format == "pbm") {
         image = image.convertToFormat(QImage::Format_Mono);
@@ -293,9 +293,9 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
         if (qGray(image.color(0)) < qGray(image.color(1))) {
             // 0=dark/black, 1=light/white - invert
             image.detach();
-            for (int y=0; y<image.height(); y++) {
-                uchar *p = image.scanLine(y);
-                uchar *end = p + image.bytesPerLine();
+            for (auto y=0; y<image.height(); y++) {
+                auto p = image.scanLine(y);
+                auto end = p + image.bytesPerLine();
                 while (p < end)
                     *p++ ^= 0xff;
             }
@@ -318,7 +318,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
                 return false;
             w = (w+7)/8;
             for (uint y=0; y<h; y++) {
-                uchar* line = image.scanLine(y);
+                auto line = image.scanLine(y);
                 if (w != (uint)out->write((char*)line, w))
                     return false;
             }
@@ -330,22 +330,22 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
             str.append("255\n");
             if (out->write(str, str.length()) != str.length())
                 return false;
-            uint bpl = w * (gray ? 1 : 3);
-            uchar *buf = new uchar[bpl];
+            auto bpl = w * (gray ? 1 : 3);
+            auto buf = new uchar[bpl];
             if (image.format() == QImage::Format_Indexed8) {
-                QVector<QRgb> color = image.colorTable();
+                auto color = image.colorTable();
                 for (uint y=0; y<h; y++) {
-                    const uchar *b = image.constScanLine(y);
-                    uchar *p = buf;
-                    uchar *end = buf+bpl;
+                    auto b = image.constScanLine(y);
+                    auto p = buf;
+                    auto end = buf+bpl;
                     if (gray) {
                         while (p < end) {
-                            uchar g = (uchar)qGray(color[*b++]);
+                            auto g = (uchar)qGray(color[*b++]);
                             *p++ = g;
                         }
                     } else {
                         while (p < end) {
-                            QRgb rgb = color[*b++];
+                            auto rgb = color[*b++];
                             *p++ = qRed(rgb);
                             *p++ = qGreen(rgb);
                             *p++ = qBlue(rgb);
@@ -356,15 +356,15 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
                 }
             } else {
                 for (uint y=0; y<h; y++) {
-                    const uchar *b = image.constScanLine(y);
-                    uchar *p = buf;
-                    uchar *end = buf + bpl;
+                    auto b = image.constScanLine(y);
+                    auto p = buf;
+                    auto end = buf + bpl;
                     if (gray) {
                         while (p < end)
                             *p++ = *b++;
                     } else {
                         while (p < end) {
-                            uchar color = *b++;
+                            auto color = *b++;
                             *p++ = color;
                             *p++ = color;
                             *p++ = color;
@@ -383,14 +383,14 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
             str.append("255\n");
             if (out->write(str, str.length()) != str.length())
                 return false;
-            uint bpl = w * 3;
-            uchar *buf = new uchar[bpl];
+            auto bpl = w * 3;
+            auto buf = new uchar[bpl];
             for (uint y=0; y<h; y++) {
-                const QRgb  *b = reinterpret_cast<const QRgb *>(image.constScanLine(y));
-                uchar *p = buf;
-                uchar *end = buf+bpl;
+                auto b = reinterpret_cast<const QRgb *>(image.constScanLine(y));
+                auto p = buf;
+                auto end = buf+bpl;
                 while (p < end) {
-                    QRgb rgb = *b++;
+                    auto rgb = *b++;
                     *p++ = qRed(rgb);
                     *p++ = qGreen(rgb);
                     *p++ = qBlue(rgb);
@@ -511,7 +511,7 @@ QVariant QPpmHandler::option(ImageOption option) const
             return QVariant();
         if (state == Ready && !const_cast<QPpmHandler*>(this)->readHeader())
             return QVariant();
-        QImage::Format format = QImage::Format_Invalid;
+        auto format = QImage::Format_Invalid;
         switch (type) {
             case '1':                                // ascii PBM
             case '4':                                // raw PBM

@@ -68,14 +68,14 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     int h, s, v;
     button.getHsv(&h, &s, &v);
     // inactive and active are the same..
-    const QBrush whiteBrush = QBrush(Qt::white);
-    const QBrush blackBrush = QBrush(Qt::black);
-    const QBrush baseBrush = v > 128 ? whiteBrush : blackBrush;
-    const QBrush foregroundBrush = v > 128 ? blackBrush : whiteBrush;
-    const QBrush buttonBrush = QBrush(button);
-    const QBrush buttonBrushDark = QBrush(button.darker());
-    const QBrush buttonBrushDark150 = QBrush(button.darker(150));
-    const QBrush buttonBrushLight150 = QBrush(button.lighter(150));
+    const auto whiteBrush = QBrush(Qt::white);
+    const auto blackBrush = QBrush(Qt::black);
+    const auto baseBrush = v > 128 ? whiteBrush : blackBrush;
+    const auto foregroundBrush = v > 128 ? blackBrush : whiteBrush;
+    const auto buttonBrush = QBrush(button);
+    const auto buttonBrushDark = QBrush(button.darker());
+    const auto buttonBrushDark150 = QBrush(button.darker(150));
+    const auto buttonBrushLight150 = QBrush(button.lighter(150));
     pal.setColorGroup(QPalette::Active, foregroundBrush, buttonBrush, buttonBrushLight150,
                       buttonBrushDark, buttonBrushDark150, foregroundBrush, whiteBrush,
                       baseBrush, buttonBrush);
@@ -605,17 +605,17 @@ QPalette::QPalette(const QColor &button, const QColor &window)
     int h, s, v;
     window.getHsv(&h, &s, &v);
 
-    const QBrush windowBrush = QBrush(window);
-    const QBrush whiteBrush = QBrush(Qt::white);
-    const QBrush blackBrush = QBrush(Qt::black);
-    const QBrush baseBrush = v > 128 ? whiteBrush : blackBrush;
-    const QBrush foregroundBrush = v > 128 ? blackBrush : whiteBrush;
-    const QBrush disabledForeground = QBrush(Qt::darkGray);
+    const auto windowBrush = QBrush(window);
+    const auto whiteBrush = QBrush(Qt::white);
+    const auto blackBrush = QBrush(Qt::black);
+    const auto baseBrush = v > 128 ? whiteBrush : blackBrush;
+    const auto foregroundBrush = v > 128 ? blackBrush : whiteBrush;
+    const auto disabledForeground = QBrush(Qt::darkGray);
 
-    const QBrush buttonBrush = QBrush(button);
-    const QBrush buttonBrushDark = QBrush(button.darker());
-    const QBrush buttonBrushDark150 = QBrush(button.darker(150));
-    const QBrush buttonBrushLight150 = QBrush(button.lighter(150));
+    const auto buttonBrush = QBrush(button);
+    const auto buttonBrushDark = QBrush(button.darker());
+    const auto buttonBrushDark150 = QBrush(button.darker(150));
+    const auto buttonBrushLight150 = QBrush(button.lighter(150));
 
     //inactive and active are identical
     setColorGroup(Inactive, foregroundBrush, buttonBrush, buttonBrushLight150, buttonBrushDark,
@@ -754,7 +754,7 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
     detach();
     if(cg >= (int)NColorGroups) {
         if(cg == All) {
-            for(int i = 0; i < (int)NColorGroups; i++)
+            for(auto i = 0; i < (int)NColorGroups; i++)
                 d->br[i][cr] = b;
             data.resolve_mask |= (1<<cr);
             return;
@@ -789,9 +789,9 @@ bool QPalette::isBrushSet(ColorGroup cg, ColorRole cr) const
 void QPalette::detach()
 {
     if (d->ref.load() != 1) {
-        QPalettePrivate *x = new QPalettePrivate;
-        for(int grp = 0; grp < (int)NColorGroups; grp++) {
-            for(int role = 0; role < (int)NColorRoles; role++)
+        auto x = new QPalettePrivate;
+        for(auto grp = 0; grp < (int)NColorGroups; grp++) {
+            for(auto role = 0; role < (int)NColorRoles; role++)
                 x->br[grp][role] = d->br[grp][role];
         }
         if(!d->ref.deref())
@@ -826,8 +826,8 @@ bool QPalette::operator==(const QPalette &p) const
 {
     if (isCopyOf(p))
         return true;
-    for(int grp = 0; grp < (int)NColorGroups; grp++) {
-        for(int role = 0; role < (int)NColorRoles; role++) {
+    for(auto grp = 0; grp < (int)NColorGroups; grp++) {
+        for(auto role = 0; role < (int)NColorRoles; role++) {
             if(d->br[grp][role] != p.d->br[grp][role])
                 return false;
         }
@@ -861,7 +861,7 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
     }
     if(group1 == group2)
         return true;
-    for(int role = 0; role < (int)NColorRoles; role++) {
+    for(auto role = 0; role < (int)NColorRoles; role++) {
         if(d->br[group1][role] != d->br[group2][role])
                 return false;
     }
@@ -905,7 +905,7 @@ QPalette QPalette::resolve(const QPalette &other) const
 {
     if ((*this == other && data.resolve_mask == other.data.resolve_mask)
         || data.resolve_mask == 0) {
-        QPalette o = other;
+        auto o = other;
         o.data.resolve_mask = data.resolve_mask;
         return o;
     }
@@ -913,9 +913,9 @@ QPalette QPalette::resolve(const QPalette &other) const
     QPalette palette(*this);
     palette.detach();
 
-    for(int role = 0; role < (int)NColorRoles; role++)
+    for(auto role = 0; role < (int)NColorRoles; role++)
         if (!(data.resolve_mask & (1<<role)))
-            for(int grp = 0; grp < (int)NColorGroups; grp++)
+            for(auto grp = 0; grp < (int)NColorGroups; grp++)
                 palette.d->br[grp][role] = other.d->br[grp][role];
 
     return palette;
@@ -953,18 +953,18 @@ static const int oldRoles[7] = { QPalette::Foreground, QPalette::Background, QPa
 
 QDataStream &operator<<(QDataStream &s, const QPalette &p)
 {
-    for (int grp = 0; grp < (int)QPalette::NColorGroups; grp++) {
+    for (auto grp = 0; grp < (int)QPalette::NColorGroups; grp++) {
         if (s.version() == 1) {
             // Qt 1.x
-            for (int i = 0; i < NumOldRoles; ++i)
+            for (auto i = 0; i < NumOldRoles; ++i)
                 s << p.d->br[grp][oldRoles[i]].color();
         } else {
-            int max = QPalette::ToolTipText + 1;
+            auto max = QPalette::ToolTipText + 1;
             if (s.version() <= QDataStream::Qt_2_1)
                 max = QPalette::HighlightedText + 1;
             else if (s.version() <= QDataStream::Qt_4_3)
                 max = QPalette::AlternateBase + 1;
-            for (int r = 0; r < max; r++)
+            for (auto r = 0; r < max; r++)
                 s << p.d->br[grp][r];
         }
     }
@@ -973,7 +973,7 @@ QDataStream &operator<<(QDataStream &s, const QPalette &p)
 
 static void readV1ColorGroup(QDataStream &s, QPalette &pal, QPalette::ColorGroup grp)
 {
-    for (int i = 0; i < NumOldRoles; ++i) {
+    for (auto i = 0; i < NumOldRoles; ++i) {
         QColor col;
         s >> col;
         pal.setColor(grp, (QPalette::ColorRole)oldRoles[i], col);
@@ -1007,8 +1007,8 @@ QDataStream &operator>>(QDataStream &s, QPalette &p)
         }
 
         QBrush tmp;
-        for(int grp = 0; grp < (int)QPalette::NColorGroups; ++grp) {
-            for(int role = 0; role < max; ++role) {
+        for(auto grp = 0; grp < (int)QPalette::NColorGroups; ++grp) {
+            for(auto role = 0; role < max; ++role) {
                 s >> tmp;
                 p.setBrush((QPalette::ColorGroup)grp, (QPalette::ColorRole)role, tmp);
             }
@@ -1045,8 +1045,8 @@ void QPalette::setColorGroup(ColorGroup cg, const QBrush &windowText, const QBru
                              const QBrush &text, const QBrush &bright_text, const QBrush &base,
                              const QBrush &window)
 {
-    QBrush alt_base = QBrush(qt_mix_colors(base.color(), button.color()));
-    QBrush mid_light = QBrush(qt_mix_colors(button.color(), light.color()));
+    auto alt_base = QBrush(qt_mix_colors(base.color(), button.color()));
+    auto mid_light = QBrush(qt_mix_colors(button.color(), light.color()));
     QColor toolTipBase(255, 255, 220);
     QColor toolTipText(0, 0, 0);
 
@@ -1116,19 +1116,19 @@ void QPalette::setColorGroup(ColorGroup cg, const QBrush &foreground, const QBru
 Q_GUI_EXPORT QPalette qt_fusionPalette()
 {
     QColor backGround(239, 235, 231);
-    QColor light = backGround.lighter(150);
+    auto light = backGround.lighter(150);
     QColor mid(backGround.darker(130));
-    QColor midLight = mid.lighter(110);
+    auto midLight = mid.lighter(110);
     QColor base = Qt::white;
     QColor disabledBase(backGround);
-    QColor dark = backGround.darker(150);
-    QColor darkDisabled = QColor(209, 200, 191).darker(110);
+    auto dark = backGround.darker(150);
+    auto darkDisabled = QColor(209, 200, 191).darker(110);
     QColor text = Qt::black;
     QColor hightlightedText = Qt::white;
-    QColor disabledText = QColor(190, 190, 190);
-    QColor button = backGround;
-    QColor shadow = dark.darker(135);
-    QColor disabledShadow = shadow.lighter(150);
+    auto disabledText = QColor(190, 190, 190);
+    auto button = backGround;
+    auto shadow = dark.darker(135);
+    auto disabledShadow = shadow.lighter(150);
 
     QPalette fusionPalette(Qt::black,backGround,light,dark,mid,text,base);
     fusionPalette.setBrush(QPalette::Midlight, midLight);
@@ -1159,18 +1159,18 @@ QDebug operator<<(QDebug dbg, const QPalette &p)
          "HighlightedText", "Link", "LinkVisited", "AlternateBase", "NoRole",
          "ToolTipBase","ToolTipText" };
     QDebugStateSaver saver(dbg);
-    QDebug nospace = dbg.nospace();
-    const uint mask = p.resolve();
+    auto nospace = dbg.nospace();
+    const auto mask = p.resolve();
     nospace << "QPalette(resolve=" << hex << showbase << mask << ',';
-    for (int role = 0; role < (int)QPalette::NColorRoles; ++role) {
+    for (auto role = 0; role < (int)QPalette::NColorRoles; ++role) {
         if (mask & (1<<role)) {
             if (role)
                 nospace << ',';
             nospace << colorRoleNames[role] << ":[";
-            for (int group = 0; group < (int)QPalette::NColorGroups; ++group) {
+            for (auto group = 0; group < (int)QPalette::NColorGroups; ++group) {
                 if (group)
                     nospace << ',';
-                const QRgb color = p.color(static_cast<QPalette::ColorGroup>(group),
+                const auto color = p.color(static_cast<QPalette::ColorGroup>(group),
                                            static_cast<QPalette::ColorRole>(role)).rgba();
                 nospace << colorGroupNames[group] << ':' << color;
             }

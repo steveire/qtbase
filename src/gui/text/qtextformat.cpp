@@ -202,7 +202,7 @@ public:
         hashDirty = true;
         if (key >= QTextFormat::FirstFontProperty && key <= QTextFormat::LastFontProperty)
             fontDirty = true;
-        for (int i = 0; i < props.count(); ++i)
+        for (auto i = 0; i < props.count(); ++i)
             if (props.at(i).key == key) {
                 props[i].value = value;
                 return;
@@ -212,7 +212,7 @@ public:
 
     inline void clearProperty(qint32 key)
     {
-        for (int i = 0; i < props.count(); ++i)
+        for (auto i = 0; i < props.count(); ++i)
             if (props.at(i).key == key) {
                 hashDirty = true;
                 if (key >= QTextFormat::FirstFontProperty && key <= QTextFormat::LastFontProperty)
@@ -224,7 +224,7 @@ public:
 
     inline int propertyIndex(qint32 key) const
     {
-        for (int i = 0; i < props.count(); ++i)
+        for (auto i = 0; i < props.count(); ++i)
             if (props.at(i).key == key)
                 return i;
         return -1;
@@ -232,7 +232,7 @@ public:
 
     inline QVariant property(qint32 key) const
     {
-        const int idx = propertyIndex(key);
+        const auto idx = propertyIndex(key);
         if (idx < 0)
             return QVariant();
         return props.at(idx).value;
@@ -310,7 +310,7 @@ static inline int getHash(const QTextFormatPrivate *d, int format)
 uint QTextFormatPrivate::recalcHash() const
 {
     hashValue = 0;
-    for (QVector<Property>::ConstIterator it = props.constBegin(); it != props.constEnd(); ++it)
+    for (auto it = props.constBegin(); it != props.constEnd(); ++it)
         hashValue += (static_cast<quint32>(it->key) << 16) + variantHash(it->value);
 
     hashDirty = false;
@@ -321,20 +321,20 @@ uint QTextFormatPrivate::recalcHash() const
 void QTextFormatPrivate::resolveFont(const QFont &defaultFont)
 {
     recalcFont();
-    const uint oldMask = fnt.resolve();
+    const auto oldMask = fnt.resolve();
     fnt = fnt.resolve(defaultFont);
 
     if (hasProperty(QTextFormat::FontSizeAdjustment)) {
         const qreal scaleFactors[7] = {qreal(0.7), qreal(0.8), qreal(1.0), qreal(1.2), qreal(1.5), qreal(2), qreal(2.4)};
 
-        const int htmlFontSize = qBound(0, property(QTextFormat::FontSizeAdjustment).toInt() + 3 - 1, 6);
+        const auto htmlFontSize = qBound(0, property(QTextFormat::FontSizeAdjustment).toInt() + 3 - 1, 6);
 
 
         if (defaultFont.pointSize() <= 0) {
-            qreal pixelSize = scaleFactors[htmlFontSize] * defaultFont.pixelSize();
+            auto pixelSize = scaleFactors[htmlFontSize] * defaultFont.pixelSize();
             fnt.setPixelSize(qRound(pixelSize));
         } else {
-            qreal pointSize = scaleFactors[htmlFontSize] * defaultFont.pointSizeF();
+            auto pointSize = scaleFactors[htmlFontSize] * defaultFont.pointSizeF();
             fnt.setPointSizeF(pointSize);
         }
     }
@@ -347,11 +347,11 @@ void QTextFormatPrivate::recalcFont() const
     // update cached font as well
     QFont f;
 
-    bool hasSpacingInformation = false;
-    QFont::SpacingType spacingType = QFont::PercentageSpacing;
-    qreal letterSpacing = 0.0;
+    auto hasSpacingInformation = false;
+    auto spacingType = QFont::PercentageSpacing;
+    auto letterSpacing = 0.0;
 
-    for (int i = 0; i < props.count(); ++i) {
+    for (auto i = 0; i < props.count(); ++i) {
         switch (props.at(i).key) {
             case QTextFormat::FontFamily:
                 f.setFamily(props.at(i).value.toString());
@@ -363,7 +363,7 @@ void QTextFormatPrivate::recalcFont() const
                 f.setPixelSize(props.at(i).value.toInt());
                 break;
             case QTextFormat::FontWeight: {
-                int weight = props.at(i).value.toInt();
+                auto weight = props.at(i).value.toInt();
                 if (weight == 0) weight = QFont::Normal;
                 f.setWeight(weight);
                 break; }
@@ -398,7 +398,7 @@ void QTextFormatPrivate::recalcFont() const
                 f.setCapitalization(static_cast<QFont::Capitalization> (props.at(i).value.toInt()));
                 break;
             case QTextFormat::FontFixedPitch: {
-                const bool value = props.at(i).value.toBool();
+                const auto value = props.at(i).value.toBool();
                 if (f.fixedPitch() != value)
                     f.setFixedPitch(value);
                 break; }
@@ -446,7 +446,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     if(!fmt.d)
         fmt.d = new QTextFormatPrivate();
 
-    for (QMap<qint32, QVariant>::ConstIterator it = properties.constBegin();
+    for (auto it = properties.constBegin();
          it != properties.constEnd(); ++it)
         fmt.d->insertProperty(it.key(), it.value());
 
@@ -845,7 +845,7 @@ void QTextFormat::merge(const QTextFormat &other)
 
     const QVector<QTextFormatPrivate::Property> &otherProps = other.d->props;
     d->props.reserve(d->props.size() + otherProps.size());
-    for (int i = 0; i < otherProps.count(); ++i) {
+    for (auto i = 0; i < otherProps.count(); ++i) {
         const QTextFormatPrivate::Property &p = otherProps.at(i);
         d->insertProperty(p.key, p.value);
     }
@@ -930,7 +930,7 @@ bool QTextFormat::boolProperty(int propertyId) const
 {
     if (!d)
         return false;
-    const QVariant prop = d->property(propertyId);
+    const auto prop = d->property(propertyId);
     if (prop.userType() != QVariant::Bool)
         return false;
     return prop.toBool();
@@ -946,11 +946,11 @@ bool QTextFormat::boolProperty(int propertyId) const
 int QTextFormat::intProperty(int propertyId) const
 {
     // required, since the default layout direction has to be LayoutDirectionAuto, which is not integer 0
-    int def = (propertyId == QTextFormat::LayoutDirection) ? int(Qt::LayoutDirectionAuto) : 0;
+    auto def = (propertyId == QTextFormat::LayoutDirection) ? int(Qt::LayoutDirectionAuto) : 0;
 
     if (!d)
         return def;
-    const QVariant prop = d->property(propertyId);
+    const auto prop = d->property(propertyId);
     if (prop.userType() != QVariant::Int)
         return def;
     return prop.toInt();
@@ -968,7 +968,7 @@ qreal QTextFormat::doubleProperty(int propertyId) const
 {
     if (!d)
         return 0.;
-    const QVariant prop = d->property(propertyId);
+    const auto prop = d->property(propertyId);
     if (prop.userType() != QVariant::Double && prop.userType() != QMetaType::Float)
         return 0.;
     return qvariant_cast<qreal>(prop);
@@ -986,7 +986,7 @@ QString QTextFormat::stringProperty(int propertyId) const
 {
     if (!d)
         return QString();
-    const QVariant prop = d->property(propertyId);
+    const auto prop = d->property(propertyId);
     if (prop.userType() != QVariant::String)
         return QString();
     return prop.toString();
@@ -1004,7 +1004,7 @@ QColor QTextFormat::colorProperty(int propertyId) const
 {
     if (!d)
         return QColor();
-    const QVariant prop = d->property(propertyId);
+    const auto prop = d->property(propertyId);
     if (prop.userType() != QVariant::Color)
         return QColor();
     return qvariant_cast<QColor>(prop);
@@ -1022,7 +1022,7 @@ QPen QTextFormat::penProperty(int propertyId) const
 {
     if (!d)
         return QPen(Qt::NoPen);
-    const QVariant prop = d->property(propertyId);
+    const auto prop = d->property(propertyId);
     if (prop.userType() != QVariant::Pen)
         return QPen(Qt::NoPen);
     return qvariant_cast<QPen>(prop);
@@ -1040,7 +1040,7 @@ QBrush QTextFormat::brushProperty(int propertyId) const
 {
     if (!d)
         return QBrush(Qt::NoBrush);
-    const QVariant prop = d->property(propertyId);
+    const auto prop = d->property(propertyId);
     if (prop.userType() != QVariant::Brush)
         return QBrush(Qt::NoBrush);
     return qvariant_cast<QBrush>(prop);
@@ -1072,13 +1072,13 @@ QVector<QTextLength> QTextFormat::lengthVectorProperty(int propertyId) const
     QVector<QTextLength> vector;
     if (!d)
         return vector;
-    const QVariant prop = d->property(propertyId);
+    const auto prop = d->property(propertyId);
     if (prop.userType() != QVariant::List)
         return vector;
 
-    QList<QVariant> propertyList = prop.toList();
-    for (int i=0; i<propertyList.size(); ++i) {
-        QVariant var = propertyList.at(i);
+    auto propertyList = prop.toList();
+    for (auto i=0; i<propertyList.size(); ++i) {
+        auto var = propertyList.at(i);
         if (var.userType() == QVariant::TextLength)
             vector.append(qvariant_cast<QTextLength>(var));
     }
@@ -1121,9 +1121,9 @@ void QTextFormat::setProperty(int propertyId, const QVector<QTextLength> &value)
     if (!d)
         d = new QTextFormatPrivate;
     QVariantList list;
-    const int numValues = value.size();
+    const auto numValues = value.size();
     list.reserve(numValues);
-    for (int i = 0; i < numValues; ++i)
+    for (auto i = 0; i < numValues; ++i)
         list << value.at(i);
     d->insertProperty(propertyId, list);
 }
@@ -1168,7 +1168,7 @@ int QTextFormat::objectIndex() const
 {
     if (!d)
         return -1;
-    const QVariant prop = d->property(ObjectIndex);
+    const auto prop = d->property(ObjectIndex);
     if (prop.userType() != QVariant::Int) // ####
         return -1;
     return prop.toInt();
@@ -1218,7 +1218,7 @@ QMap<int, QVariant> QTextFormat::properties() const
 {
     QMap<int, QVariant> map;
     if (d) {
-        for (int i = 0; i < d->props.count(); ++i)
+        for (auto i = 0; i < d->props.count(); ++i)
             map.insert(d->props.at(i).key, d->props.at(i).value);
     }
     return map;
@@ -1767,7 +1767,7 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 */
 QString QTextCharFormat::anchorName() const
 {
-    QVariant prop = property(AnchorName);
+    auto prop = property(AnchorName);
     if (prop.userType() == QVariant::StringList)
         return prop.toStringList().value(0);
     else if (prop.userType() != QVariant::String)
@@ -1785,7 +1785,7 @@ QString QTextCharFormat::anchorName() const
 */
 QStringList QTextCharFormat::anchorNames() const
 {
-    QVariant prop = property(AnchorName);
+    auto prop = property(AnchorName);
     if (prop.userType() == QVariant::StringList)
         return prop.toStringList();
     else if (prop.userType() != QVariant::String)
@@ -1906,17 +1906,17 @@ void QTextCharFormat::setFont(const QFont &font)
 */
 void QTextCharFormat::setFont(const QFont &font, FontPropertiesInheritanceBehavior behavior)
 {
-    const uint mask = behavior == FontPropertiesAll ? uint(QFont::AllPropertiesResolved)
+    const auto mask = behavior == FontPropertiesAll ? uint(QFont::AllPropertiesResolved)
                                                     : font.resolve();
 
     if (mask & QFont::FamilyResolved)
         setFontFamily(font.family());
     if (mask & QFont::SizeResolved) {
-        const qreal pointSize = font.pointSizeF();
+        const auto pointSize = font.pointSizeF();
         if (pointSize > 0) {
             setFontPointSize(pointSize);
         } else {
-            const int pixelSize = font.pixelSize();
+            const auto pixelSize = font.pixelSize();
             if (pixelSize > 0)
                 setProperty(QTextFormat::FontPixelSize, pixelSize);
         }
@@ -2050,7 +2050,7 @@ void QTextBlockFormat::setTabPositions(const QList<QTextOption::Tab> &tabs)
 {
     QList<QVariant> list;
     list.reserve(tabs.count());
-    QList<QTextOption::Tab>::ConstIterator iter = tabs.constBegin();
+    auto iter = tabs.constBegin();
     while (iter != tabs.constEnd()) {
         QVariant v;
         v.setValue<QTextOption::Tab>(*iter);
@@ -2068,12 +2068,12 @@ void QTextBlockFormat::setTabPositions(const QList<QTextOption::Tab> &tabs)
 */
 QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
 {
-    QVariant variant = property(TabPositions);
+    auto variant = property(TabPositions);
     if(variant.isNull())
         return QList<QTextOption::Tab>();
     QList<QTextOption::Tab> answer;
-    QList<QVariant> variantsList = qvariant_cast<QList<QVariant> >(variant);
-    QList<QVariant>::Iterator iter = variantsList.begin();
+    auto variantsList = qvariant_cast<QList<QVariant> >(variant);
+    auto iter = variantsList.begin();
     answer.reserve(variantsList.count());
     while(iter != variantsList.end()) {
         answer.append( qvariant_cast<QTextOption::Tab>(*iter));
@@ -3390,7 +3390,7 @@ QTextFormatCollection::~QTextFormatCollection()
 int QTextFormatCollection::indexForFormat(const QTextFormat &format)
 {
     uint hash = getHash(format.d, format.format_type);
-    QMultiHash<uint, int>::const_iterator i = hashes.constFind(hash);
+    auto i = hashes.constFind(hash);
     while (i != hashes.constEnd() && i.key() == hash) {
         if (formats.value(i.value()) == format) {
             return i.value();
@@ -3398,7 +3398,7 @@ int QTextFormatCollection::indexForFormat(const QTextFormat &format)
         ++i;
     }
 
-    int idx = formats.size();
+    auto idx = formats.size();
     formats.append(format);
 
     QT_TRY{
@@ -3420,7 +3420,7 @@ int QTextFormatCollection::indexForFormat(const QTextFormat &format)
 bool QTextFormatCollection::hasFormatCached(const QTextFormat &format) const
 {
     uint hash = getHash(format.d, format.format_type);
-    QMultiHash<uint, int>::const_iterator i = hashes.constFind(hash);
+    auto i = hashes.constFind(hash);
     while (i != hashes.constEnd() && i.key() == hash) {
         if (formats.value(i.value()) == format) {
             return true;
@@ -3444,7 +3444,7 @@ void QTextFormatCollection::setObjectFormatIndex(int objectIndex, int formatInde
 
 int QTextFormatCollection::createObjectIndex(const QTextFormat &f)
 {
-    const int objectIndex = objFormats.size();
+    const auto objectIndex = objFormats.size();
     objFormats.append(indexForFormat(f));
     return objectIndex;
 }
@@ -3460,7 +3460,7 @@ QTextFormat QTextFormatCollection::format(int idx) const
 void QTextFormatCollection::setDefaultFont(const QFont &f)
 {
     defaultFnt = f;
-    for (int i = 0; i < formats.count(); ++i)
+    for (auto i = 0; i < formats.count(); ++i)
         if (formats[i].d)
             formats[i].d->resolveFont(defaultFnt);
 }

@@ -235,13 +235,13 @@ QVector3D::QVector3D(const QVector4D& vector)
 QVector3D QVector3D::normalized() const
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp) +
                  double(zp) * double(zp);
     if (qFuzzyIsNull(len - 1.0f)) {
         return *this;
     } else if (!qFuzzyIsNull(len)) {
-        double sqrtLen = std::sqrt(len);
+        auto sqrtLen = std::sqrt(len);
         return QVector3D(float(double(xp) / sqrtLen),
                          float(double(yp) / sqrtLen),
                          float(double(zp) / sqrtLen));
@@ -259,7 +259,7 @@ QVector3D QVector3D::normalized() const
 void QVector3D::normalize()
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp) +
                  double(zp) * double(zp);
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
@@ -433,14 +433,14 @@ QVector3D QVector3D::project(const QMatrix4x4 &modelView, const QMatrix4x4 &proj
  */
 QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &projection, const QRect &viewport) const
 {
-    QMatrix4x4 inverse = QMatrix4x4( projection * modelView ).inverted();
+    auto inverse = QMatrix4x4( projection * modelView ).inverted();
 
     QVector4D tmp(*this, 1.0f);
     tmp.setX((tmp.x() - float(viewport.x())) / float(viewport.width()));
     tmp.setY((tmp.y() - float(viewport.y())) / float(viewport.height()));
     tmp = tmp * 2.0f - QVector4D(1.0f, 1.0f, 1.0f, 1.0f);
 
-    QVector4D obj = inverse * tmp;
+    auto obj = inverse * tmp;
     if (qFuzzyIsNull(obj.w()))
         obj.setW(1.0f);
     obj /= obj.w();
@@ -493,7 +493,7 @@ float QVector3D::distanceToPlane
 float QVector3D::distanceToPlane
     (const QVector3D& plane1, const QVector3D& plane2, const QVector3D& plane3) const
 {
-    QVector3D n = normal(plane2 - plane1, plane3 - plane1);
+    auto n = normal(plane2 - plane1, plane3 - plane1);
     return dotProduct(*this - plane1, n);
 }
 
@@ -511,7 +511,7 @@ float QVector3D::distanceToLine
 {
     if (direction.isNull())
         return (*this - point).length();
-    QVector3D p = point + dotProduct(*this - point, direction) * direction;
+    auto p = point + dotProduct(*this - point, direction) * direction;
     return (*this - p).length();
 }
 
@@ -682,7 +682,7 @@ QVector3D::operator QVariant() const
 float QVector3D::length() const
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp) +
                  double(zp) * double(zp);
     return float(std::sqrt(len));

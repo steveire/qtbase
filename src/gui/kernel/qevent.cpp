@@ -1231,9 +1231,9 @@ Qt::KeyboardModifiers QKeyEvent::modifiers() const
 bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
 {
     //The keypad and group switch modifier should not make a difference
-    uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier | Qt::GroupSwitchModifier);
+    auto searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier | Qt::GroupSwitchModifier);
 
-    const QList<QKeySequence> bindings = QKeySequence::keyBindings(matchKey);
+    const auto bindings = QKeySequence::keyBindings(matchKey);
     return bindings.contains(QKeySequence(searchkey));
 }
 #endif // QT_NO_SHORTCUT
@@ -2164,7 +2164,7 @@ QInputMethodQueryEvent::~QInputMethodQueryEvent()
  */
 void QInputMethodQueryEvent::setValue(Qt::InputMethodQuery query, const QVariant &value)
 {
-    for (int i = 0; i < m_values.size(); ++i) {
+    for (auto i = 0; i < m_values.size(); ++i) {
         if (m_values.at(i).query == query) {
             m_values[i].value = value;
             return;
@@ -2179,7 +2179,7 @@ void QInputMethodQueryEvent::setValue(Qt::InputMethodQuery query, const QVariant
  */
 QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
 {
-    for (int i = 0; i < m_values.size(); ++i)
+    for (auto i = 0; i < m_values.size(); ++i)
         if (m_values.at(i).query == query)
             return m_values.at(i).value;
     return QVariant();
@@ -2912,7 +2912,7 @@ QDropEvent::~QDropEvent()
 */
 QObject* QDropEvent::source() const
 {
-    if (const QDragManager *manager = QDragManager::self())
+    if (auto manager = QDragManager::self())
         return manager->source();
     return 0;
 }
@@ -3595,7 +3595,7 @@ static inline void formatTouchEvent(QDebug d, const QTouchEvent &t)
 static void formatUnicodeString(QDebug d, const QString &s)
 {
     d << '"' << hex;
-    for (int i = 0; i < s.size(); ++i) {
+    for (auto i = 0; i < s.size(); ++i) {
         if (i)
             d << ',';
         d << "U+" << s.at(i).unicode();
@@ -3618,9 +3618,9 @@ static inline void formatInputMethodEvent(QDebug d, const QInputMethodEvent *e)
         d << ", replacementStart=" << e->replacementStart() << ", replacementLength="
           << e->replacementLength();
     }
-    if (const int attributeCount = e->attributes().size()) {
+    if (const auto attributeCount = e->attributes().size()) {
         d << ", attributes= {";
-        for (int a = 0; a < attributeCount; ++a) {
+        for (auto a = 0; a < attributeCount; ++a) {
             const QInputMethodEvent::Attribute &at = e->attributes().at(a);
             if (a)
                 d << ',';
@@ -3634,12 +3634,12 @@ static inline void formatInputMethodEvent(QDebug d, const QInputMethodEvent *e)
 
 static inline void formatInputMethodQueryEvent(QDebug d, const QInputMethodQueryEvent *e)
 {
-    const Qt::InputMethodQueries queries = e->queries();
+    const auto queries = e->queries();
     d << "QInputMethodQueryEvent(queries=" << showbase << hex << int(queries)
       << noshowbase << dec << ", {";
     for (unsigned mask = 1; mask <= Qt::ImTextAfterCursor; mask<<=1) {
         if (queries & mask) {
-            const QVariant value = e->value(static_cast<Qt::InputMethodQuery>(mask));
+            const auto value = e->value(static_cast<Qt::InputMethodQuery>(mask));
             if (value.isValid())
                 d << '[' << showbase << hex << mask <<  noshowbase << dec << '=' << value << "],";
         }
@@ -3768,7 +3768,7 @@ static const char *eventClassName(QEvent::Type t)
 
 static void formatDropEvent(QDebug d, const QDropEvent *e)
 {
-    const QEvent::Type type = e->type();
+    const auto type = e->type();
     d << eventClassName(type) << "(dropAction=";
     QtDebugUtils::formatQEnum(d, e->dropAction());
     d << ", proposedAction=";
@@ -3791,7 +3791,7 @@ static void formatDropEvent(QDebug d, const QDropEvent *e)
 
 static void formatTabletEvent(QDebug d, const QTabletEvent *e)
 {
-    const QEvent::Type type = e->type();
+    const auto type = e->type();
 
     d << eventClassName(type)  << '(';
     QtDebugUtils::formatQEnum(d, type);
@@ -3844,7 +3844,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         return dbg;
     }
     // More useful event output could be added here
-    const QEvent::Type type = e->type();
+    const auto type = e->type();
     switch (type) {
     case QEvent::Expose:
         dbg << "QExposeEvent(" << static_cast<const QExposeEvent *>(e)->region() << ')';
@@ -3858,9 +3858,9 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     case QEvent::NonClientAreaMouseButtonRelease:
     case QEvent::NonClientAreaMouseButtonDblClick:
     {
-        const QMouseEvent *me = static_cast<const QMouseEvent*>(e);
-        const Qt::MouseButton button = me->button();
-        const Qt::MouseButtons buttons = me->buttons();
+        auto me = static_cast<const QMouseEvent*>(e);
+        const auto button = me->button();
+        const auto buttons = me->buttons();
         dbg << "QMouseEvent(";
         QtDebugUtils::formatQEnum(dbg, type);
         if (type != QEvent::MouseMove && type != QEvent::NonClientAreaMouseMove) {
@@ -3883,7 +3883,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         break;
 #  ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel: {
-        const QWheelEvent *we = static_cast<const QWheelEvent *>(e);
+        auto we = static_cast<const QWheelEvent *>(e);
         dbg << "QWheelEvent(" << "pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta() << ')';
     }
         break;
@@ -3892,7 +3892,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     case QEvent::KeyRelease:
     case QEvent::ShortcutOverride:
     {
-        const QKeyEvent *ke = static_cast<const QKeyEvent *>(e);
+        auto ke = static_cast<const QKeyEvent *>(e);
         dbg << "QKeyEvent(";
         QtDebugUtils::formatQEnum(dbg, type);
         dbg << ", ";
@@ -3906,7 +3906,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     }
         break;
     case QEvent::Shortcut: {
-        const QShortcutEvent *se = static_cast<const QShortcutEvent *>(e);
+        auto se = static_cast<const QShortcutEvent *>(e);
         dbg << "QShortcutEvent(" << se->key().toString() << ", id=" << se->shortcutId();
         if (se->isAmbiguous())
             dbg << ", ambiguous";
@@ -3923,7 +3923,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         dbg << ')';
         break;
     case QEvent::Move: {
-        const QMoveEvent *me = static_cast<const QMoveEvent *>(e);
+        auto me = static_cast<const QMoveEvent *>(e);
         dbg << "QMoveEvent(";
         QtDebugUtils::formatQPoint(dbg, me->pos());
         if (!me->spontaneous())
@@ -3932,7 +3932,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     }
          break;
     case QEvent::Resize: {
-        const QResizeEvent *re = static_cast<const QResizeEvent *>(e);
+        auto re = static_cast<const QResizeEvent *>(e);
         dbg << "QResizeEvent(";
         QtDebugUtils::formatQSize(dbg, re->size());
         if (!re->spontaneous())
@@ -3967,7 +3967,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         break;
 #  ifndef QT_NO_GESTURES
     case QEvent::NativeGesture: {
-        const QNativeGestureEvent *ne = static_cast<const QNativeGestureEvent *>(e);
+        auto ne = static_cast<const QNativeGestureEvent *>(e);
         dbg << "QNativeGestureEvent(";
         QtDebugUtils::formatQEnum(dbg, ne->gestureType());
         dbg << "localPos=";

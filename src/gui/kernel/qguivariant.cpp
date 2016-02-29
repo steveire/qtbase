@@ -181,13 +181,13 @@ static bool convert(const QVariant::Private *d, int t,
     switch (t) {
     case QVariant::ByteArray:
         if (d->type == QVariant::Color) {
-            const QColor *c = v_cast<QColor>(d);
+            auto c = v_cast<QColor>(d);
             *static_cast<QByteArray *>(result) = c->name(c->alpha() != 255 ? QColor::HexArgb : QColor::HexRgb).toLatin1();
             return true;
         }
         break;
     case QVariant::String: {
-        QString *str = static_cast<QString *>(result);
+        auto str = static_cast<QString *>(result);
         switch (d->type) {
 #ifndef QT_NO_SHORTCUT
         case QVariant::KeySequence:
@@ -198,7 +198,7 @@ static bool convert(const QVariant::Private *d, int t,
             *str = v_cast<QFont>(d)->toString();
             return true;
         case QVariant::Color: {
-            const QColor *c = v_cast<QColor>(d);
+            auto c = v_cast<QColor>(d);
             *str = c->name(c->alpha() != 255 ? QColor::HexArgb : QColor::HexRgb);
             return true;
         }
@@ -250,7 +250,7 @@ static bool convert(const QVariant::Private *d, int t,
 #endif
     case QVariant::Font:
         if (d->type == QVariant::String) {
-            QFont *f = static_cast<QFont *>(result);
+            auto f = static_cast<QFont *>(result);
             f->fromString(*v_cast<QString>(d));
             return true;
         }
@@ -281,7 +281,7 @@ static bool convert(const QVariant::Private *d, int t,
         break;
 #ifndef QT_NO_SHORTCUT
     case QVariant::KeySequence: {
-        QKeySequence *seq = static_cast<QKeySequence *>(result);
+        auto seq = static_cast<QKeySequence *>(result);
         switch (d->type) {
         case QVariant::String:
             *seq = QKeySequence(*v_cast<QString>(d));
@@ -310,7 +310,7 @@ static bool convert(const QVariant::Private *d, int t,
 #if !defined(QT_NO_DEBUG_STREAM)
 static void streamDebug(QDebug dbg, const QVariant &v)
 {
-    QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
+    auto d = const_cast<QVariant::Private *>(&v.data_ptr());
     QVariantDebugStream<GuiTypesFilter> stream(dbg, d);
     QMetaTypeSwitcher::switcher<void>(stream, d->type, 0);
 }

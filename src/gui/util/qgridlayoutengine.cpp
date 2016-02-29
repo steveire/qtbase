@@ -75,14 +75,14 @@ static qreal fixedDescent(qreal descent, qreal ascent, qreal targetSize)
     Q_ASSERT(ascent >= 0.0);
     Q_ASSERT(targetSize >= ascent + descent);
 
-    qreal extra = targetSize - (ascent + descent);
+    auto extra = targetSize - (ascent + descent);
     return descent + (extra / 2.0);
 }
 
 static qreal compare(const QGridLayoutBox &box1, const QGridLayoutBox &box2, int which)
 {
-    qreal size1 = box1.q_sizes(which);
-    qreal size2 = box2.q_sizes(which);
+    auto size1 = box1.q_sizes(which);
+    auto size2 = box2.q_sizes(which);
 
     if (which == MaximumSize) {
         return size2 - size1;
@@ -140,7 +140,7 @@ void QGridLayoutBox::dump(int indent) const
 
 bool operator==(const QGridLayoutBox &box1, const QGridLayoutBox &box2)
 {
-    for (int i = 0; i < NSizes; ++i) {
+    for (auto i = 0; i < NSizes; ++i) {
         if (box1.q_sizes(i) != box2.q_sizes(i))
             return false;
     }
@@ -160,31 +160,31 @@ void QGridLayoutRowData::reset(int count)
 
 void QGridLayoutRowData::distributeMultiCells(const QGridLayoutRowInfo &rowInfo, bool snapToPixelGrid)
 {
-    MultiCellMap::const_iterator i = multiCellMap.constBegin();
+    auto i = multiCellMap.constBegin();
     for (; i != multiCellMap.constEnd(); ++i) {
-        int start = i.key().first;
-        int span = i.key().second;
-        int end = start + span;
+        auto start = i.key().first;
+        auto span = i.key().second;
+        auto end = start + span;
         const QGridLayoutBox &box = i.value().q_box;
-        int stretch = i.value().q_stretch;
+        auto stretch = i.value().q_stretch;
 
-        QGridLayoutBox totalBox = this->totalBox(start, end);
+        auto totalBox = this->totalBox(start, end);
         QVarLengthArray<QGridLayoutBox> extras(span);
         QVarLengthArray<qreal> dummy(span);
         QVarLengthArray<qreal> newSizes(span);
 
-        for (int j = 0; j < NSizes; ++j) {
-            qreal extra = compare(box, totalBox, j);
+        for (auto j = 0; j < NSizes; ++j) {
+            auto extra = compare(box, totalBox, j);
             if (extra > 0.0) {
                 calculateGeometries(start, end, box.q_sizes(j), dummy.data(), newSizes.data(),
                                     0, totalBox, rowInfo, snapToPixelGrid);
 
-                for (int k = 0; k < span; ++k)
+                for (auto k = 0; k < span; ++k)
                     extras[k].q_sizes(j) = newSizes[k];
             }
         }
 
-        for (int k = 0; k < span; ++k) {
+        for (auto k = 0; k < span; ++k) {
             boxes[start + k].combine(extras[k]);
             if (stretch != 0)
                 stretches[start + k] = qMax(stretches[start + k], stretch);
@@ -210,14 +210,14 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
 
     targetSize = qMax(totalBox.q_minimumSize, targetSize);
 
-    int n = end - start;
+    auto n = end - start;
     QVarLengthArray<qreal> newSizes(n);
     QVarLengthArray<qreal> factors(n);
-    qreal sumFactors = 0.0;
-    int sumStretches = 0;
+    auto sumFactors = 0.0;
+    auto sumStretches = 0;
     qreal sumAvailable;
 
-    for (int i = 0; i < n; ++i) {
+    for (auto i = 0; i < n; ++i) {
         if (stretches[start + i] > 0)
             sumStretches += stretches[start + i];
     }
@@ -227,28 +227,28 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
 
         sumAvailable = targetSize - totalBox.q_minimumSize;
         if (sumAvailable > 0.0) {
-            qreal sumDesired = totalBox.q_preferredSize - totalBox.q_minimumSize;
+            auto sumDesired = totalBox.q_preferredSize - totalBox.q_minimumSize;
 
-            for (int i = 0; i < n; ++i) {
+            for (auto i = 0; i < n; ++i) {
                 if (ignore.testBit(start + i)) {
                     factors[i] = 0.0;
                     continue;
                 }
 
                 const QGridLayoutBox &box = boxes.at(start + i);
-                qreal desired = box.q_preferredSize - box.q_minimumSize;
+                auto desired = box.q_preferredSize - box.q_minimumSize;
                 factors[i] = growthFactorBelowPreferredSize(desired, sumAvailable, sumDesired);
                 sumFactors += factors[i];
             }
 
-            for (int i = 0; i < n; ++i) {
+            for (auto i = 0; i < n; ++i) {
                 Q_ASSERT(sumFactors > 0.0);
-                qreal delta = sumAvailable * factors[i] / sumFactors;
+                auto delta = sumAvailable * factors[i] / sumFactors;
                 newSizes[i] = sizes[i] + delta;
             }
         }
     } else {
-        bool isLargerThanMaximum = (targetSize > totalBox.q_maximumSize);
+        auto isLargerThanMaximum = (targetSize > totalBox.q_maximumSize);
         if (isLargerThanMaximum) {
             stealBox(start, end, MaximumSize, positions, sizes);
             sumAvailable = targetSize - totalBox.q_maximumSize;
@@ -258,14 +258,14 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
         }
 
         if (sumAvailable > 0.0) {
-            qreal sumCurrentAvailable = sumAvailable;
-            bool somethingHasAMaximumSize = false;
+            auto sumCurrentAvailable = sumAvailable;
+            auto somethingHasAMaximumSize = false;
 
-            qreal sumSizes = 0.0;
-            for (int i = 0; i < n; ++i)
+            auto sumSizes = 0.0;
+            for (auto i = 0; i < n; ++i)
                 sumSizes += sizes[i];
 
-            for (int i = 0; i < n; ++i) {
+            for (auto i = 0; i < n; ++i) {
                 if (ignore.testBit(start + i)) {
                     newSizes[i] = 0.0;
                     factors[i] = 0.0;
@@ -289,7 +289,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                 } else {
                     Q_ASSERT(desired > 0.0);
 
-                    int stretch = stretches[start + i];
+                    auto stretch = stretches[start + i];
                     if (sumStretches == 0) {
                         if (hasIgnoreFlag || sizes[i] == 0.0) {
                             factors[i] = (stretch < 0) ? 1.0 : 0.0;
@@ -303,7 +303,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                     } else {
                         qreal ultimateSize;
                         qreal ultimateSumSizes;
-                        qreal x = ((stretch * sumSizes)
+                        auto x = ((stretch * sumSizes)
                                    - (sumStretches * boxSize))
                                   / (sumStretches - stretch);
                         if (x >= 0.0) {
@@ -323,14 +323,14 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                         ultimateSize = ultimateSize * 3 / 2;
                         ultimateSumSizes = ultimateSumSizes * 3 / 2;
 
-                        qreal beta = ultimateSumSizes - sumSizes;
+                        auto beta = ultimateSumSizes - sumSizes;
                         if (!beta) {
                             factors[i] = 1;
                         } else {
-                            qreal alpha = qMin(sumCurrentAvailable, beta);
-                            qreal ultimateFactor = (stretch * ultimateSumSizes / sumStretches)
+                            auto alpha = qMin(sumCurrentAvailable, beta);
+                            auto ultimateFactor = (stretch * ultimateSumSizes / sumStretches)
                                                    - (boxSize);
-                            qreal transitionalFactor = sumCurrentAvailable * (ultimateSize - boxSize) / beta;
+                            auto transitionalFactor = sumCurrentAvailable * (ultimateSize - boxSize) / beta;
 
                             factors[i] = ((alpha * ultimateFactor)
                                           + ((beta - alpha) * transitionalFactor)) / beta;
@@ -345,23 +345,23 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                 }
             }
 
-            bool keepGoing = somethingHasAMaximumSize;
+            auto keepGoing = somethingHasAMaximumSize;
             while (keepGoing) {
                 //sumCurrentAvailable is so large that something *might* reach its maximum size
                 keepGoing = false;
 
-                for (int i = 0; i < n; ++i) {
+                for (auto i = 0; i < n; ++i) {
                     if (newSizes[i] >= 0.0)
                         continue;
 
                     const QVector<QGridLayoutBox> &rBoxes = isLargerThanMaximum ? rowInfo.boxes : boxes;
                     const QGridLayoutBox &box = rBoxes.value(start + i);
-                    qreal maxBoxSize = box.q_maximumSize;
+                    auto maxBoxSize = box.q_maximumSize;
 
                     if (snapToPixelGrid)
                         maxBoxSize = qMax(box.q_minimumSize, std::floor(maxBoxSize));
 
-                    qreal avail = sumCurrentAvailable * factors[i] / sumFactors;
+                    auto avail = sumCurrentAvailable * factors[i] / sumFactors;
                     if (sizes[i] + avail >= maxBoxSize) {
                         newSizes[i] = maxBoxSize;
                         sumCurrentAvailable -= maxBoxSize - sizes[i];
@@ -372,9 +372,9 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                     }
                 }
             }
-            for (int i = 0; i < n; ++i) {
+            for (auto i = 0; i < n; ++i) {
                 if (newSizes[i] < 0.0) {
-                    qreal delta = (sumFactors == 0.0) ? 0.0
+                    auto delta = (sumFactors == 0.0) ? 0.0
                                                       : sumCurrentAvailable * factors[i] / sumFactors;
                     newSizes[i] = sizes[i] + delta;
                 }
@@ -384,8 +384,8 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
 
     if (sumAvailable > 0) {
         qreal offset = 0;
-        for (int i = 0; i < n; ++i) {
-            qreal delta = newSizes[i] - sizes[i];
+        for (auto i = 0; i < n; ++i) {
+            auto delta = newSizes[i] - sizes[i];
             positions[i] += offset;
             sizes[i] += delta;
             offset += delta;
@@ -416,12 +416,12 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
 #endif
     }
     if (snapToPixelGrid) {
-        for (int i = 0; i < n; ++i)
+        for (auto i = 0; i < n; ++i)
             positions[i] = qround(positions[i]);
     }
 
     if (descents) {
-        for (int i = 0; i < n; ++i) {
+        for (auto i = 0; i < n; ++i) {
             if (ignore.testBit(start + i))
                 continue;
             const QGridLayoutBox &box = boxes.at(start + i);
@@ -435,8 +435,8 @@ QGridLayoutBox QGridLayoutRowData::totalBox(int start, int end) const
     QGridLayoutBox result;
     if (start < end) {
         result.q_maximumSize = 0.0;
-        qreal nextSpacing = 0.0;
-        for (int i = start; i < end; ++i) {
+        auto nextSpacing = 0.0;
+        for (auto i = start; i < end; ++i) {
             if (ignore.testBit(i))
                 continue;
             result.add(boxes.at(i), stretches.at(i), nextSpacing);
@@ -448,11 +448,11 @@ QGridLayoutBox QGridLayoutRowData::totalBox(int start, int end) const
 
 void QGridLayoutRowData::stealBox(int start, int end, int which, qreal *positions, qreal *sizes)
 {
-    qreal offset = 0.0;
-    qreal nextSpacing = 0.0;
+    auto offset = 0.0;
+    auto nextSpacing = 0.0;
 
-    for (int i = start; i < end; ++i) {
-        qreal avail = 0.0;
+    for (auto i = start; i < end; ++i) {
+        auto avail = 0.0;
 
         if (!ignore.testBit(i)) {
             const QGridLayoutBox &box = boxes.at(i);
@@ -543,11 +543,11 @@ void QGridLayoutItem::setRowSpan(int rowSpan, Qt::Orientation orientation)
 
 int QGridLayoutItem::stretchFactor(Qt::Orientation orientation) const
 {
-    int stretch = q_stretches[orientation == Qt::Vertical];
+    auto stretch = q_stretches[orientation == Qt::Vertical];
     if (stretch >= 0)
         return stretch;
 
-    QLayoutPolicy::Policy policy = sizePolicy(orientation);
+    auto policy = sizePolicy(orientation);
 
     if (policy & QLayoutPolicy::ExpandFlag) {
         return 1;
@@ -572,7 +572,7 @@ QLayoutPolicy::ControlTypes QGridLayoutItem::controlTypes(LayoutSide /*side*/) c
 QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, qreal constraint) const
 {
     QGridLayoutBox result;
-    QLayoutPolicy::Policy policy = sizePolicy(orientation);
+    auto policy = sizePolicy(orientation);
 
     if (orientation == Qt::Horizontal) {
         QSizeF constraintSize(-1.0, constraint);
@@ -610,7 +610,7 @@ QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, qreal constrain
         if (alignment() & Qt::AlignBaseline) {
             result.q_minimumDescent = sizeHint(Qt::MinimumDescent, constraintSize).height();
             if (result.q_minimumDescent != -1.0) {
-                const qreal minSizeHint = sizeHint(Qt::MinimumSize, constraintSize).height();
+                const auto minSizeHint = sizeHint(Qt::MinimumSize, constraintSize).height();
                 result.q_minimumDescent -= (minSizeHint - result.q_minimumSize);
                 result.q_minimumAscent = result.q_minimumSize - result.q_minimumDescent;
             }
@@ -625,10 +625,10 @@ QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, qreal constrain
 QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal height,
                                        qreal rowDescent, Qt::Alignment align) const
 {
-    const qreal cellWidth = width;
-    const qreal cellHeight = height;
+    const auto cellWidth = width;
+    const auto cellHeight = height;
 
-    QSizeF size = effectiveMaxSize(QSizeF(-1,-1));
+    auto size = effectiveMaxSize(QSizeF(-1,-1));
     if (hasDynamicConstraint()) {
         if (dynamicConstraintOrientation() == Qt::Vertical) {
            if (size.width() > cellWidth)
@@ -661,9 +661,9 @@ QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal heig
         break;
     case Qt::AlignBaseline: {
         width = qMin(effectiveMaxSize(QSizeF(-1,-1)).width(), width);
-        QGridLayoutBox vBox = box(Qt::Vertical);
-        const qreal descent = vBox.q_minimumDescent;
-        const qreal ascent = vBox.q_minimumSize - descent;
+        auto vBox = box(Qt::Vertical);
+        const auto descent = vBox.q_minimumDescent;
+        const auto ascent = vBox.q_minimumSize - descent;
         y += (cellHeight - rowDescent - ascent);
         height = ascent + descent;
         break; }
@@ -682,7 +682,7 @@ void QGridLayoutItem::transpose()
 
 void QGridLayoutItem::insertOrRemoveRows(int row, int delta, Qt::Orientation orientation)
 {
-    int oldFirstRow = firstRow(orientation);
+    auto oldFirstRow = firstRow(orientation);
     if (oldFirstRow >= row) {
         setFirstRow(oldFirstRow + delta, orientation);
     } else if (lastRow(orientation) >= row) {
@@ -699,11 +699,11 @@ void QGridLayoutItem::insertOrRemoveRows(int row, int delta, Qt::Orientation ori
 */
 QSizeF QGridLayoutItem::effectiveMaxSize(const QSizeF &constraint) const
 {
-    QSizeF size = constraint;
-    bool vGrow = (sizePolicy(Qt::Vertical) & QLayoutPolicy::GrowFlag) == QLayoutPolicy::GrowFlag;
-    bool hGrow = (sizePolicy(Qt::Horizontal) & QLayoutPolicy::GrowFlag) == QLayoutPolicy::GrowFlag;
+    auto size = constraint;
+    auto vGrow = (sizePolicy(Qt::Vertical) & QLayoutPolicy::GrowFlag) == QLayoutPolicy::GrowFlag;
+    auto hGrow = (sizePolicy(Qt::Horizontal) & QLayoutPolicy::GrowFlag) == QLayoutPolicy::GrowFlag;
     if (!vGrow || !hGrow) {
-        QSizeF pref = sizeHint(Qt::PreferredSize, constraint);
+        auto pref = sizeHint(Qt::PreferredSize, constraint);
         if (!vGrow)
             size.setHeight(pref.height());
         if (!hGrow)
@@ -711,7 +711,7 @@ QSizeF QGridLayoutItem::effectiveMaxSize(const QSizeF &constraint) const
     }
 
     if (!size.isValid()) {
-        QSizeF maxSize = sizeHint(Qt::MaximumSize, size);
+        auto maxSize = sizeHint(Qt::MaximumSize, size);
         if (size.width() == -1)
             size.setWidth(maxSize.width());
         if (size.height() == -1)
@@ -824,7 +824,7 @@ void QGridLayoutEngine::setSpacing(qreal spacing, Qt::Orientations orientations)
 qreal QGridLayoutEngine::spacing(Qt::Orientation orientation, const QAbstractLayoutStyleInfo *styleInfo) const
 {
     if (!q_defaultSpacings[orientation == Qt::Vertical].isUser()) {
-        qreal defaultSpacing = styleInfo->spacing(orientation);
+        auto defaultSpacing = styleInfo->spacing(orientation);
         q_defaultSpacings[orientation == Qt::Vertical].setCachedValue(defaultSpacing);
     }
     return q_defaultSpacings[orientation == Qt::Vertical].value();
@@ -846,7 +846,7 @@ void QGridLayoutEngine::setRowSpacing(int row, qreal spacing, Qt::Orientation or
 
 qreal QGridLayoutEngine::rowSpacing(int row, Qt::Orientation orientation) const
 {
-    QLayoutParameter<qreal> spacing = q_infos[orientation == Qt::Vertical].spacings.value(row);
+    auto spacing = q_infos[orientation == Qt::Vertical].spacings.value(row);
     if (!spacing.isDefault())
         return spacing.value();
     return q_defaultSpacings[orientation == Qt::Vertical].value();
@@ -867,7 +867,7 @@ void QGridLayoutEngine::setRowStretchFactor(int row, int stretch, Qt::Orientatio
 
 int QGridLayoutEngine::rowStretchFactor(int row, Qt::Orientation orientation) const
 {
-    QStretchParameter stretch = q_infos[orientation == Qt::Vertical].stretches.value(row);
+    auto stretch = q_infos[orientation == Qt::Vertical].stretches.value(row);
     if (!stretch.isDefault())
         return stretch.value();
     return 0;
@@ -913,17 +913,17 @@ Qt::Alignment QGridLayoutEngine::rowAlignment(int row, Qt::Orientation orientati
 
 Qt::Alignment QGridLayoutEngine::effectiveAlignment(const QGridLayoutItem *layoutItem) const
 {
-    Qt::Alignment align = layoutItem->alignment();
+    auto align = layoutItem->alignment();
     if (!(align & Qt::AlignVertical_Mask)) {
         // no vertical alignment, respect the row alignment
-        int y = layoutItem->firstRow();
+        auto y = layoutItem->firstRow();
         align |= (rowAlignment(y, Qt::Vertical) & Qt::AlignVertical_Mask);
         if (!(align & Qt::AlignVertical_Mask))
             align |= (m_defaultAlignment & Qt::AlignVertical_Mask);
     }
     if (!(align & Qt::AlignHorizontal_Mask)) {
         // no horizontal alignment, respect the column alignment
-        int x = layoutItem->firstColumn();
+        auto x = layoutItem->firstColumn();
         align |= (rowAlignment(x, Qt::Horizontal) & Qt::AlignHorizontal_Mask);
     }
 
@@ -945,8 +945,8 @@ void QGridLayoutEngine::insertItem(QGridLayoutItem *item, int index)
     else
         q_items.insert(index, item);
 
-    for (int i = item->firstRow(); i <= item->lastRow(); ++i) {
-        for (int j = item->firstColumn(); j <= item->lastColumn(); ++j) {
+    for (auto i = item->firstRow(); i <= item->lastRow(); ++i) {
+        for (auto j = item->firstColumn(); j <= item->lastColumn(); ++j) {
             if (itemAt(i, j))
                 qWarning("QGridLayoutEngine::addItem: Cell (%d, %d) already taken", i, j);
             setItemAt(i, j, item);
@@ -965,8 +965,8 @@ void QGridLayoutEngine::removeItem(QGridLayoutItem *item)
 
     invalidate();
 
-    for (int i = item->firstRow(); i <= item->lastRow(); ++i) {
-        for (int j = item->firstColumn(); j <= item->lastColumn(); ++j) {
+    for (auto i = item->firstRow(); i <= item->lastRow(); ++i) {
+        for (auto j = item->firstColumn(); j <= item->lastColumn(); ++j) {
             if (itemAt(i, j) == item)
                 setItemAt(i, j, 0);
         }
@@ -1012,21 +1012,21 @@ void QGridLayoutEngine::setGeometries(const QRectF &contentsGeometry, const QAbs
 
     ensureGeometries(contentsGeometry.size(), styleInfo);
 
-    for (int i = q_items.count() - 1; i >= 0; --i) {
-        QGridLayoutItem *item = q_items.at(i);
+    for (auto i = q_items.count() - 1; i >= 0; --i) {
+        auto item = q_items.at(i);
 
-        qreal x = q_xx[item->firstColumn()];
-        qreal y = q_yy[item->firstRow()];
-        qreal width = q_widths[item->lastColumn()];
-        qreal height = q_heights[item->lastRow()];
+        auto x = q_xx[item->firstColumn()];
+        auto y = q_yy[item->firstRow()];
+        auto width = q_widths[item->lastColumn()];
+        auto height = q_heights[item->lastRow()];
 
         if (item->columnSpan() != 1)
             width += q_xx[item->lastColumn()] - x;
         if (item->rowSpan() != 1)
             height += q_yy[item->lastRow()] - y;
 
-        const Qt::Alignment align = effectiveAlignment(item);
-        QRectF geom = item->geometryWithin(contentsGeometry.x() + x, contentsGeometry.y() + y,
+        const auto align = effectiveAlignment(item);
+        auto geom = item->geometryWithin(contentsGeometry.x() + x, contentsGeometry.y() + y,
                                                width, height, q_descents[item->lastRow()], align);
         if (m_snapToPixelGrid) {
             // x and y should already be rounded, but the call to geometryWithin() above might
@@ -1051,13 +1051,13 @@ QRectF QGridLayoutEngine::cellRect(const QRectF &contentsGeometry, int row, int 
 
     ensureGeometries(contentsGeometry.size(), styleInfo);
 
-    int lastColumn = qMax(column + columnSpan, columnCount()) - 1;
-    int lastRow = qMax(row + rowSpan, rowCount()) - 1;
+    auto lastColumn = qMax(column + columnSpan, columnCount()) - 1;
+    auto lastRow = qMax(row + rowSpan, rowCount()) - 1;
 
-    qreal x = q_xx[column];
-    qreal y = q_yy[row];
-    qreal width = q_widths[lastColumn];
-    qreal height = q_heights[lastRow];
+    auto x = q_xx[column];
+    auto y = q_yy[row];
+    auto width = q_widths[lastColumn];
+    auto height = q_heights[lastRow];
 
     if (columnSpan != 1)
         width += q_xx[lastColumn] - x;
@@ -1074,7 +1074,7 @@ QSizeF QGridLayoutEngine::sizeHint(Qt::SizeHint which, const QSizeF &constraint,
 
     if (hasDynamicConstraint() && rowCount() > 0 && columnCount() > 0) {
         QGridLayoutBox sizehint_totalBoxes[NOrientations];
-        bool sizeHintCalculated = false;
+        auto sizeHintCalculated = false;
         if (constraintOrientation() == Qt::Vertical) {
             //We have items whose height depends on their width
             if (constraint.width() >= 0) {
@@ -1084,7 +1084,7 @@ QSizeF QGridLayoutEngine::sizeHint(Qt::SizeHint which, const QSizeF &constraint,
 
                 sizehint_xx.resize(columnCount());
                 sizehint_widths.resize(columnCount());
-                qreal width = constraint.width();
+                auto width = constraint.width();
                 //Calculate column widths and positions, and put results in q_xx.data() and q_widths.data() so that we can use this information as
                 //constraints to find the row heights
                 q_columnData.calculateGeometries(0, columnCount(), width, sizehint_xx.data(), sizehint_widths.data(),
@@ -1101,7 +1101,7 @@ QSizeF QGridLayoutEngine::sizeHint(Qt::SizeHint which, const QSizeF &constraint,
 
                 sizehint_yy.resize(rowCount());
                 sizehint_heights.resize(rowCount());
-                qreal height = constraint.height();
+                auto height = constraint.height();
                 //Calculate row heights and positions, and put results in q_yy.data() and q_heights.data() so that we can use this information as
                 //constraints to find the column widths
                 q_rowData.calculateGeometries(0, rowCount(), height, sizehint_yy.data(), sizehint_heights.data(),
@@ -1122,13 +1122,13 @@ QSizeF QGridLayoutEngine::sizeHint(Qt::SizeHint which, const QSizeF &constraint,
 
 QLayoutPolicy::ControlTypes QGridLayoutEngine::controlTypes(LayoutSide side) const
 {
-    Qt::Orientation orientation = (side == Top || side == Bottom) ? Qt::Vertical : Qt::Horizontal;
-    int row = (side == Top || side == Left) ? effectiveFirstRow(orientation)
+    auto orientation = (side == Top || side == Bottom) ? Qt::Vertical : Qt::Horizontal;
+    auto row = (side == Top || side == Left) ? effectiveFirstRow(orientation)
                                             : effectiveLastRow(orientation);
     QLayoutPolicy::ControlTypes result = 0;
 
-    for (int column = columnCount(orientation) - 1; column >= 0; --column) {
-        if (QGridLayoutItem *item = itemAt(row, column, orientation))
+    for (auto column = columnCount(orientation) - 1; column >= 0; --column) {
+        if (auto item = itemAt(row, column, orientation))
             result |= item->controlTypes(side);
     }
     return result;
@@ -1138,7 +1138,7 @@ void QGridLayoutEngine::transpose()
 {
     invalidate();
 
-    for (int i = q_items.count() - 1; i >= 0; --i)
+    for (auto i = q_items.count() - 1; i >= 0; --i)
         q_items.at(i)->transpose();
 
     qSwap(q_defaultSpacings[Hor], q_defaultSpacings[Ver]);
@@ -1216,24 +1216,24 @@ void QGridLayoutEngine::maybeExpandGrid(int row, int column, Qt::Orientation ori
     if (row < rowCount() && column < columnCount())
         return;
 
-    int oldGridRowCount = internalGridRowCount();
-    int oldGridColumnCount = internalGridColumnCount();
+    auto oldGridRowCount = internalGridRowCount();
+    auto oldGridColumnCount = internalGridColumnCount();
 
     q_infos[Ver].count = qMax(row + 1, rowCount());
     q_infos[Hor].count = qMax(column + 1, columnCount());
 
-    int newGridRowCount = internalGridRowCount();
-    int newGridColumnCount = internalGridColumnCount();
+    auto newGridRowCount = internalGridRowCount();
+    auto newGridColumnCount = internalGridColumnCount();
 
-    int newGridSize = newGridRowCount * newGridColumnCount;
+    auto newGridSize = newGridRowCount * newGridColumnCount;
     if (newGridSize != q_grid.count()) {
         q_grid.resize(newGridSize);
 
         if (newGridColumnCount != oldGridColumnCount) {
-            for (int i = oldGridRowCount - 1; i >= 1; --i) {
-                for (int j = oldGridColumnCount - 1; j >= 0; --j) {
-                    int oldIndex = (i * oldGridColumnCount) + j;
-                    int newIndex = (i * newGridColumnCount) + j;
+            for (auto i = oldGridRowCount - 1; i >= 1; --i) {
+                for (auto j = oldGridColumnCount - 1; j >= 0; --j) {
+                    auto oldIndex = (i * oldGridColumnCount) + j;
+                    auto newIndex = (i * newGridColumnCount) + j;
 
                     Q_ASSERT(newIndex > oldIndex);
                     q_grid[newIndex] = q_grid[oldIndex];
@@ -1248,11 +1248,11 @@ void QGridLayoutEngine::regenerateGrid()
 {
     q_grid.fill(0);
 
-    for (int i = q_items.count() - 1; i >= 0; --i) {
-        QGridLayoutItem *item = q_items.at(i);
+    for (auto i = q_items.count() - 1; i >= 0; --i) {
+        auto item = q_items.at(i);
 
-        for (int j = item->firstRow(); j <= item->lastRow(); ++j) {
-            for (int k = item->firstColumn(); k <= item->lastColumn(); ++k) {
+        for (auto j = item->firstRow(); j <= item->lastRow(); ++j) {
+            for (auto k = item->firstColumn(); k <= item->lastColumn(); ++k) {
                 setItemAt(j, k, item);
             }
         }
@@ -1268,7 +1268,7 @@ void QGridLayoutEngine::setItemAt(int row, int column, QGridLayoutItem *item)
 
 void QGridLayoutEngine::insertOrRemoveRows(int row, int delta, Qt::Orientation orientation)
 {
-    int oldRowCount = rowCount(orientation);
+    auto oldRowCount = rowCount(orientation);
     Q_ASSERT(uint(row) <= uint(oldRowCount));
 
     invalidate();
@@ -1281,7 +1281,7 @@ void QGridLayoutEngine::insertOrRemoveRows(int row, int delta, Qt::Orientation o
 
     q_infos[orientation == Qt::Vertical].insertOrRemoveRows(row, delta);
 
-    for (int i = q_items.count() - 1; i >= 0; --i)
+    for (auto i = q_items.count() - 1; i >= 0; --i)
         q_items.at(i)->insertOrRemoveRows(row, delta, orientation);
 
     q_grid.resize(internalGridRowCount() * internalGridColumnCount());
@@ -1296,20 +1296,20 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
     const int ButtonMask = QLayoutPolicy::ButtonBox | QLayoutPolicy::PushButton;
     const QGridLayoutRowInfo &rowInfo = q_infos[orientation == Qt::Vertical];
     const QGridLayoutRowInfo &columnInfo = q_infos[orientation == Qt::Horizontal];
-    LayoutSide top = (orientation == Qt::Vertical) ? Top : Left;
-    LayoutSide bottom = (orientation == Qt::Vertical) ? Bottom : Right;
+    auto top = (orientation == Qt::Vertical) ? Top : Left;
+    auto bottom = (orientation == Qt::Vertical) ? Bottom : Right;
 
     const QLayoutParameter<qreal> &defaultSpacing = q_defaultSpacings[orientation == Qt::Vertical];
-    qreal innerSpacing = styleInfo->spacing(orientation);
+    auto innerSpacing = styleInfo->spacing(orientation);
     if (innerSpacing >= 0.0)
         defaultSpacing.setCachedValue(innerSpacing);
 
-    for (int row = 0; row < rowInfo.count; ++row) {
-        bool rowIsEmpty = true;
-        bool rowIsIdenticalToPrevious = (row > 0);
+    for (auto row = 0; row < rowInfo.count; ++row) {
+        auto rowIsEmpty = true;
+        auto rowIsIdenticalToPrevious = (row > 0);
 
-        for (int column = 0; column < columnInfo.count; ++column) {
-            QGridLayoutItem *item = itemAt(row, column, orientation);
+        for (auto column = 0; column < columnInfo.count; ++column) {
+            auto item = itemAt(row, column, orientation);
 
             if (rowIsIdenticalToPrevious && item != itemAt(row - 1, column, orientation))
                 rowIsIdenticalToPrevious = false;
@@ -1352,7 +1352,7 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
     RowAdHocData nextToNextToLastRowAdHocData;
 
     rowData->hasIgnoreFlag = false;
-    for (int row = 0; row < rowInfo.count; ++row) {
+    for (auto row = 0; row < rowInfo.count; ++row) {
         if (rowData->ignore.testBit(row))
             continue;
 
@@ -1363,24 +1363,24 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
             lastRowAdHocData.init(row);
         }
 
-        bool userRowStretch = rowInfo.stretches.value(row).isUser();
+        auto userRowStretch = rowInfo.stretches.value(row).isUser();
         int &rowStretch = rowData->stretches[row];
 
-        bool hasIgnoreFlag = true;
-        for (int column = 0; column < columnInfo.count; ++column) {
-            QGridLayoutItem *item = itemAt(row, column, orientation);
+        auto hasIgnoreFlag = true;
+        for (auto column = 0; column < columnInfo.count; ++column) {
+            auto item = itemAt(row, column, orientation);
             if (item) {
-                int itemRow = item->firstRow(orientation);
-                int itemColumn = item->firstColumn(orientation);
+                auto itemRow = item->firstRow(orientation);
+                auto itemColumn = item->firstColumn(orientation);
 
                 if (itemRow == row && itemColumn == column) {
-                    int itemStretch = item->stretchFactor(orientation);
+                    auto itemStretch = item->stretchFactor(orientation);
                     if (!(item->sizePolicy(orientation) & QLayoutPolicy::IgnoreFlag))
                         hasIgnoreFlag = false;
-                    int itemRowSpan = item->rowSpan(orientation);
+                    auto itemRowSpan = item->rowSpan(orientation);
 
-                    int effectiveRowSpan = 1;
-                    for (int i = 1; i < itemRowSpan; ++i) {
+                    auto effectiveRowSpan = 1;
+                    for (auto i = 1; i < itemRowSpan; ++i) {
                         if (!rowData->ignore.testBit(i + itemRow))
                             ++effectiveRowSpan;
                     }
@@ -1404,7 +1404,7 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
                          * and colPositions parameters.
                          * The variable name is still colSizes even when it actually has the row sizes
                          */
-                        qreal length = colSizes[item->lastColumn(orientation)];
+                        auto length = colSizes[item->lastColumn(orientation)];
                         if (item->columnSpan(orientation) != 1)
                             length += colPositions[item->lastColumn(orientation)] - colPositions[item->firstColumn(orientation)];
                         box->combine(item->box(orientation, length));
@@ -1413,7 +1413,7 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
                     }
 
                     if (effectiveRowSpan == 1) {
-                        QLayoutPolicy::ControlTypes controls = item->controlTypes(top);
+                        auto controls = item->controlTypes(top);
                         if (controls & ButtonMask)
                             lastRowAdHocData.q_hasButtons = true;
                         if (controls & ~ButtonMask)
@@ -1423,7 +1423,7 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
             }
         }
         if (row < rowInfo.boxes.count()) {
-            QGridLayoutBox rowBoxInfo = rowInfo.boxes.at(row);
+            auto rowBoxInfo = rowInfo.boxes.at(row);
             rowBoxInfo.normalize();
             rowBox.q_minimumSize = qMax(rowBox.q_minimumSize, rowBoxInfo.q_minimumSize);
             rowBox.q_maximumSize = qMax(rowBox.q_minimumSize,
@@ -1441,28 +1441,28 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
         Heuristic: Detect button boxes that don't use QLayoutPolicy::ButtonBox.
         This is somewhat ad hoc but it usually does the trick.
     */
-    bool lastRowIsButtonBox = (lastRowAdHocData.hasOnlyButtons()
+    auto lastRowIsButtonBox = (lastRowAdHocData.hasOnlyButtons()
                                && nextToLastRowAdHocData.hasOnlyNonButtons());
-    bool lastTwoRowsIsButtonBox = (lastRowAdHocData.hasOnlyButtons()
+    auto lastTwoRowsIsButtonBox = (lastRowAdHocData.hasOnlyButtons()
                                    && nextToLastRowAdHocData.hasOnlyButtons()
                                    && nextToNextToLastRowAdHocData.hasOnlyNonButtons()
                                    && orientation == Qt::Vertical);
 
     if (defaultSpacing.isDefault()) {
-        int prevRow = -1;
-        for (int row = 0; row < rowInfo.count; ++row) {
+        auto prevRow = -1;
+        for (auto row = 0; row < rowInfo.count; ++row) {
             if (rowData->ignore.testBit(row))
                 continue;
 
             if (prevRow != -1 && !rowInfo.spacings.value(prevRow).isUser()) {
                 qreal &rowSpacing = rowData->spacings[prevRow];
-                for (int column = 0; column < columnInfo.count; ++column) {
-                    QGridLayoutItem *item1 = itemAt(prevRow, column, orientation);
-                    QGridLayoutItem *item2 = itemAt(row, column, orientation);
+                for (auto column = 0; column < columnInfo.count; ++column) {
+                    auto item1 = itemAt(prevRow, column, orientation);
+                    auto item2 = itemAt(row, column, orientation);
 
                     if (item1 && item2 && item1 != item2) {
-                        QLayoutPolicy::ControlTypes controls1 = item1->controlTypes(bottom);
-                        QLayoutPolicy::ControlTypes controls2 = item2->controlTypes(top);
+                        auto controls1 = item1->controlTypes(bottom);
+                        auto controls2 = item2->controlTypes(top);
 
                         if (controls2 & QLayoutPolicy::PushButton) {
                             if ((row == nextToLastRowAdHocData.q_row && lastTwoRowsIsButtonBox)
@@ -1472,26 +1472,26 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
                             }
                         }
 
-                        qreal spacing = styleInfo->combinedLayoutSpacing(controls1, controls2,
+                        auto spacing = styleInfo->combinedLayoutSpacing(controls1, controls2,
                                                                          orientation);
                         if (orientation == Qt::Horizontal) {
-                            qreal width1 = rowData->boxes.at(prevRow).q_minimumSize;
-                            qreal width2 = rowData->boxes.at(row).q_minimumSize;
-                            QRectF rect1 = item1->geometryWithin(0.0, 0.0, width1, FLT_MAX, -1.0, effectiveAlignment(item1));
-                            QRectF rect2 = item2->geometryWithin(0.0, 0.0, width2, FLT_MAX, -1.0, effectiveAlignment(item2));
+                            auto width1 = rowData->boxes.at(prevRow).q_minimumSize;
+                            auto width2 = rowData->boxes.at(row).q_minimumSize;
+                            auto rect1 = item1->geometryWithin(0.0, 0.0, width1, FLT_MAX, -1.0, effectiveAlignment(item1));
+                            auto rect2 = item2->geometryWithin(0.0, 0.0, width2, FLT_MAX, -1.0, effectiveAlignment(item2));
                             spacing -= (width1 - (rect1.x() + rect1.width())) + rect2.x();
                         } else {
                             const QGridLayoutBox &box1 = rowData->boxes.at(prevRow);
                             const QGridLayoutBox &box2 = rowData->boxes.at(row);
-                            qreal height1 = box1.q_minimumSize;
-                            qreal height2 = box2.q_minimumSize;
-                            qreal rowDescent1 = fixedDescent(box1.q_minimumDescent,
+                            auto height1 = box1.q_minimumSize;
+                            auto height2 = box2.q_minimumSize;
+                            auto rowDescent1 = fixedDescent(box1.q_minimumDescent,
                                                              box1.q_minimumAscent, height1);
-                            qreal rowDescent2 = fixedDescent(box2.q_minimumDescent,
+                            auto rowDescent2 = fixedDescent(box2.q_minimumDescent,
                                                              box2.q_minimumAscent, height2);
-                            QRectF rect1 = item1->geometryWithin(0.0, 0.0, FLT_MAX, height1,
+                            auto rect1 = item1->geometryWithin(0.0, 0.0, FLT_MAX, height1,
                                                                  rowDescent1, effectiveAlignment(item1));
-                            QRectF rect2 = item2->geometryWithin(0.0, 0.0, FLT_MAX, height2,
+                            auto rect2 = item2->geometryWithin(0.0, 0.0, FLT_MAX, height2,
                                                                  rowDescent2, effectiveAlignment(item2));
                             spacing -= (height1 - (rect1.y() + rect1.height())) + rect2.y();
                         }
@@ -1507,10 +1507,10 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
             bit and use the window margin as the spacing. This
             significantly improves the look of dialogs.
         */
-        int prevRow = lastRowIsButtonBox ? nextToLastRowAdHocData.q_row
+        auto prevRow = lastRowIsButtonBox ? nextToLastRowAdHocData.q_row
                                          : nextToNextToLastRowAdHocData.q_row;
         if (!defaultSpacing.isUser() && !rowInfo.spacings.value(prevRow).isUser()) {
-            qreal windowMargin = styleInfo->windowMargin(orientation);
+            auto windowMargin = styleInfo->windowMargin(orientation);
             qreal &rowSpacing = rowData->spacings[prevRow];
             rowSpacing = qMax(windowMargin, rowSpacing);
         }
@@ -1520,19 +1520,19 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
 void QGridLayoutEngine::ensureEffectiveFirstAndLastRows() const
 {
     if (q_cachedEffectiveFirstRows[Hor] == -1 && !q_items.isEmpty()) {
-        int rowCount = this->rowCount();
-        int columnCount = this->columnCount();
+        auto rowCount = this->rowCount();
+        auto columnCount = this->columnCount();
 
         q_cachedEffectiveFirstRows[Ver] = rowCount;
         q_cachedEffectiveFirstRows[Hor] = columnCount;
         q_cachedEffectiveLastRows[Ver] = -1;
         q_cachedEffectiveLastRows[Hor] = -1;
 
-        for (int i = q_items.count() - 1; i >= 0; --i) {
-            const QGridLayoutItem *item = q_items.at(i);
+        for (auto i = q_items.count() - 1; i >= 0; --i) {
+            auto item = q_items.at(i);
 
-            for (int j = 0; j < NOrientations; ++j) {
-                Qt::Orientation orientation = (j == Hor) ? Qt::Horizontal : Qt::Vertical;
+            for (auto j = 0; j < NOrientations; ++j) {
+                auto orientation = (j == Hor) ? Qt::Horizontal : Qt::Vertical;
                 if (item->firstRow(orientation) < q_cachedEffectiveFirstRows[j])
                     q_cachedEffectiveFirstRows[j] = item->firstRow(orientation);
                 if (item->lastRow(orientation) > q_cachedEffectiveLastRows[j])
@@ -1548,9 +1548,9 @@ void QGridLayoutEngine::ensureColumnAndRowData(QGridLayoutRowData *rowData, QGri
                                                const QAbstractLayoutStyleInfo *styleInfo) const
 {
     const int o = (orientation == Qt::Vertical ? Ver : Hor);
-    const int cc = columnCount(orientation);
+    const auto cc = columnCount(orientation);
 
-    const qreal constraint = (colPositions && colSizes && hasDynamicConstraint()) ? (colPositions[cc - 1] + colSizes[cc - 1]) : qreal(CachedWithNoConstraint);
+    const auto constraint = (colPositions && colSizes && hasDynamicConstraint()) ? (colPositions[cc - 1] + colSizes[cc - 1]) : qreal(CachedWithNoConstraint);
     qreal &cachedConstraint = q_totalBoxCachedConstraints[o];
     if (cachedConstraint == constraint) {
         if (totalBox != &q_totalBoxes[o])
@@ -1576,10 +1576,10 @@ void QGridLayoutEngine::ensureColumnAndRowData(QGridLayoutRowData *rowData, QGri
 bool QGridLayoutEngine::ensureDynamicConstraint() const
 {
     if (q_cachedConstraintOrientation == UnknownConstraint) {
-        for (int i = q_items.count() - 1; i >= 0; --i) {
-            QGridLayoutItem *item = q_items.at(i);
+        for (auto i = q_items.count() - 1; i >= 0; --i) {
+            auto item = q_items.at(i);
             if (item->hasDynamicConstraint()) {
-                Qt::Orientation itemConstraintOrientation = item->dynamicConstraintOrientation();
+                auto itemConstraintOrientation = item->dynamicConstraintOrientation();
                 if (q_cachedConstraintOrientation == UnknownConstraint) {
                     q_cachedConstraintOrientation = itemConstraintOrientation;
                 } else if (q_cachedConstraintOrientation != itemConstraintOrientation) {

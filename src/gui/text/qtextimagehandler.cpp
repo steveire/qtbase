@@ -81,13 +81,13 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format, con
 {
     QPixmap pm;
 
-    QString name = format.name();
+    auto name = format.name();
     if (name.startsWith(QLatin1String(":/"))) // auto-detect resources and convert them to url
         name.prepend(QLatin1String("qrc"));
-    QUrl url = QUrl(name);
-    qreal sourcePixelRatio = 1.0;
+    auto url = QUrl(name);
+    auto sourcePixelRatio = 1.0;
     name = resolveFileName(name, &url, devicePixelRatio, &sourcePixelRatio);
-    const QVariant data = doc->resource(QTextDocument::ImageResource, url);
+    const auto data = doc->resource(QTextDocument::ImageResource, url);
     if (data.type() == QVariant::Pixmap || data.type() == QVariant::Image) {
         pm = qvariant_cast<QPixmap>(data);
     } else if (data.type() == QVariant::ByteArray) {
@@ -121,10 +121,10 @@ static QSize getPixmapSize(QTextDocument *doc, const QTextImageFormat &format)
 {
     QPixmap pm;
 
-    const bool hasWidth = format.hasProperty(QTextFormat::ImageWidth);
-    const int width = qRound(format.width());
-    const bool hasHeight = format.hasProperty(QTextFormat::ImageHeight);
-    const int height = qRound(format.height());
+    const auto hasWidth = format.hasProperty(QTextFormat::ImageWidth);
+    const auto width = qRound(format.width());
+    const auto hasHeight = format.hasProperty(QTextFormat::ImageHeight);
+    const auto height = qRound(format.height());
 
     QSize size(width, height);
     if (!hasWidth || !hasHeight) {
@@ -146,8 +146,8 @@ static QSize getPixmapSize(QTextDocument *doc, const QTextImageFormat &format)
         }
     }
 
-    qreal scale = 1.0;
-    QPaintDevice *pdev = doc->documentLayout()->paintDevice();
+    auto scale = 1.0;
+    auto pdev = doc->documentLayout()->paintDevice();
     if (pdev) {
         if (pm.isNull())
             pm = getPixmap(doc, format);
@@ -163,13 +163,13 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format, const
 {
     QImage image;
 
-    QString name = format.name();
+    auto name = format.name();
     if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
         name.prepend(QLatin1String("qrc"));
-    QUrl url = QUrl(name);
-    qreal sourcePixelRatio = 1.0;
+    auto url = QUrl(name);
+    auto sourcePixelRatio = 1.0;
     name = resolveFileName(name, &url, devicePixelRatio, &sourcePixelRatio);
-    const QVariant data = doc->resource(QTextDocument::ImageResource, url);
+    const auto data = doc->resource(QTextDocument::ImageResource, url);
     if (data.type() == QVariant::Image) {
         image = qvariant_cast<QImage>(data);
     } else if (data.type() == QVariant::ByteArray) {
@@ -202,10 +202,10 @@ static QSize getImageSize(QTextDocument *doc, const QTextImageFormat &format)
 {
     QImage image;
 
-    const bool hasWidth = format.hasProperty(QTextFormat::ImageWidth);
-    const int width = qRound(format.width());
-    const bool hasHeight = format.hasProperty(QTextFormat::ImageHeight);
-    const int height = qRound(format.height());
+    const auto hasWidth = format.hasProperty(QTextFormat::ImageWidth);
+    const auto width = qRound(format.width());
+    const auto hasHeight = format.hasProperty(QTextFormat::ImageHeight);
+    const auto height = qRound(format.height());
 
     QSize size(width, height);
     if (!hasWidth || !hasHeight) {
@@ -216,8 +216,8 @@ static QSize getImageSize(QTextDocument *doc, const QTextImageFormat &format)
             size.setHeight(image.height() / image.devicePixelRatio());
     }
 
-    qreal scale = 1.0;
-    QPaintDevice *pdev = doc->documentLayout()->paintDevice();
+    auto scale = 1.0;
+    auto pdev = doc->documentLayout()->paintDevice();
     if (pdev) {
         if (image.isNull())
             image = getImage(doc, format);
@@ -237,7 +237,7 @@ QTextImageHandler::QTextImageHandler(QObject *parent)
 QSizeF QTextImageHandler::intrinsicSize(QTextDocument *doc, int posInDocument, const QTextFormat &format)
 {
     Q_UNUSED(posInDocument)
-    const QTextImageFormat imageFormat = format.toImageFormat();
+    const auto imageFormat = format.toImageFormat();
 
     if (QCoreApplication::instance()->thread() != QThread::currentThread())
         return getImageSize(doc, imageFormat);
@@ -254,13 +254,13 @@ QImage QTextImageHandler::image(QTextDocument *doc, const QTextImageFormat &imag
 void QTextImageHandler::drawObject(QPainter *p, const QRectF &rect, QTextDocument *doc, int posInDocument, const QTextFormat &format)
 {
     Q_UNUSED(posInDocument)
-        const QTextImageFormat imageFormat = format.toImageFormat();
+        const auto imageFormat = format.toImageFormat();
 
     if (QCoreApplication::instance()->thread() != QThread::currentThread()) {
-        const QImage image = getImage(doc, imageFormat, p->device()->devicePixelRatioF());
+        const auto image = getImage(doc, imageFormat, p->device()->devicePixelRatioF());
         p->drawImage(rect, image, image.rect());
     } else {
-        const QPixmap pixmap = getPixmap(doc, imageFormat, p->device()->devicePixelRatioF());
+        const auto pixmap = getPixmap(doc, imageFormat, p->device()->devicePixelRatioF());
         p->drawPixmap(rect, pixmap, pixmap.rect());
     }
 }

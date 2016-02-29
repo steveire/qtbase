@@ -123,7 +123,7 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
 */
 QPaintDevice *QBackingStore::paintDevice()
 {
-    QPaintDevice *device = d_ptr->platformBackingStore->paintDevice();
+    auto device = d_ptr->platformBackingStore->paintDevice();
 
     if (QHighDpiScaling::isActive() && device->devType() == QInternal::Image)
         return d_ptr->highDpiBackingstore.data();
@@ -178,10 +178,10 @@ void QBackingStore::beginPaint(const QRegion &region)
     // devicePixelRatio. Do this on a separate image instance that shares
     // the image data to avoid having the new devicePixelRatio be propagated
     // back to the platform plugin.
-    QPaintDevice *device = d_ptr->platformBackingStore->paintDevice();
+    auto device = d_ptr->platformBackingStore->paintDevice();
     if (QHighDpiScaling::isActive() && device->devType() == QInternal::Image) {
-        QImage *source = static_cast<QImage *>(device);
-        const bool needsNewImage = d_ptr->highDpiBackingstore.isNull()
+        auto source = static_cast<QImage *>(device);
+        const auto needsNewImage = d_ptr->highDpiBackingstore.isNull()
             || source->data_ptr() != d_ptr->highDpiBackingstore->data_ptr()
             || source->size() != d_ptr->highDpiBackingstore->size()
             || source->devicePixelRatio() != d_ptr->highDpiBackingstore->devicePixelRatio();
@@ -191,7 +191,7 @@ void QBackingStore::beginPaint(const QRegion &region)
             d_ptr->highDpiBackingstore.reset(
                 new QImage(source->bits(), source->width(), source->height(), source->bytesPerLine(), source->format()));
 
-            qreal targetDevicePixelRatio = d_ptr->window->devicePixelRatio();
+            auto targetDevicePixelRatio = d_ptr->window->devicePixelRatio();
             d_ptr->highDpiBackingstore->setDevicePixelRatio(targetDevicePixelRatio);
             qCDebug(lcScaling) <<"  destination size" << d_ptr->highDpiBackingstore->size()
                                << "dpr" << targetDevicePixelRatio;
@@ -272,14 +272,14 @@ bool QBackingStore::hasStaticContents() const
 void Q_GUI_EXPORT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
 {
     // make sure we don't detach
-    uchar *mem = const_cast<uchar*>(const_cast<const QImage &>(img).bits());
+    auto mem = const_cast<uchar*>(const_cast<const QImage &>(img).bits());
 
-    int lineskip = img.bytesPerLine();
-    int depth = img.depth() >> 3;
+    auto lineskip = img.bytesPerLine();
+    auto depth = img.depth() >> 3;
 
     const QRect imageRect(0, 0, img.width(), img.height());
-    const QRect r = rect & imageRect & imageRect.translated(-offset);
-    const QPoint p = rect.topLeft() + offset;
+    const auto r = rect & imageRect & imageRect.translated(-offset);
+    const auto p = rect.topLeft() + offset;
 
     if (r.isEmpty())
         return;
@@ -296,9 +296,9 @@ void Q_GUI_EXPORT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPo
         dest = mem + p.y() * lineskip + p.x() * depth;
     }
 
-    const int w = r.width();
-    int h = r.height();
-    const int bytes = w * depth;
+    const auto w = r.width();
+    auto h = r.height();
+    const auto bytes = w * depth;
 
     // overlapping segments?
     if (offset.y() == 0 && qAbs(offset.x()) < w) {

@@ -310,7 +310,7 @@ void QBlitterPaintEnginePrivate::updatePenState(QPainterState *s)
 
 void QBlitterPaintEnginePrivate::updateBrushState(QPainterState *s)
 {
-    Qt::BrushStyle style = qbrush_style(s->brush);
+    auto style = qbrush_style(s->brush);
 
     caps.updateState(STATE_BRUSH_PATTERN, style > Qt::SolidPattern);
     caps.updateState(STATE_BRUSH_ALPHA,
@@ -319,13 +319,13 @@ void QBlitterPaintEnginePrivate::updateBrushState(QPainterState *s)
 
 void QBlitterPaintEnginePrivate::updateOpacityState(QPainterState *s)
 {
-    bool translucent = s->opacity < 1;
+    auto translucent = s->opacity < 1;
     caps.updateState(STATE_ALPHA, translucent);
 }
 
 void QBlitterPaintEnginePrivate::updateCompositionModeState(QPainterState *s)
 {
-    bool nonTrivial = s->composition_mode != QPainter::CompositionMode_SourceOver
+    auto nonTrivial = s->composition_mode != QPainter::CompositionMode_SourceOver
                       && s->composition_mode != QPainter::CompositionMode_Source;
 
     caps.updateState(STATE_BLENDING_COMPLEX, nonTrivial);
@@ -339,7 +339,7 @@ void QBlitterPaintEnginePrivate::updateRenderHintsState(QPainterState *s)
 
 void QBlitterPaintEnginePrivate::updateTransformState(QPainterState *s)
 {
-    QTransform::TransformationType type = s->matrix.type();
+    auto type = s->matrix.type();
 
     // consider scaling operations with a negative factor as "complex" for now.
     // as some blitters could handle axisymmetrical operations, we should improve blitter
@@ -353,8 +353,8 @@ void QBlitterPaintEnginePrivate::updateTransformState(QPainterState *s)
 
 void QBlitterPaintEnginePrivate::updateClipState(QPainterState *)
 {
-    const QClipData *clipData = clip();
-    bool complexClip = clipData && !(clipData->hasRectClip || clipData->hasRegionClip);
+    auto clipData = clip();
+    auto complexClip = clipData && !(clipData->hasRectClip || clipData->hasRegionClip);
     caps.updateState(STATE_CLIP_COMPLEX, complexClip);
 }
 
@@ -362,10 +362,10 @@ void QBlitterPaintEnginePrivate::fillRect(const QRectF &rect, const QColor &colo
 {
     Q_Q(QBlitterPaintEngine);
     pmData->unmarkRasterOverlay(rect);
-    QRectF targetRect = rect;
+    auto targetRect = rect;
     if (hasXForm)
         targetRect = q->state()->matrix.mapRect(rect);
-    const QClipData *clipData = clip();
+    auto clipData = clip();
     if (clipData) {
         if (clipData->hasRectClip) {
             unlock();
@@ -374,9 +374,9 @@ void QBlitterPaintEnginePrivate::fillRect(const QRectF &rect, const QColor &colo
             else
                 pmData->blittable()->fillRect(targetRect & clipData->clipRect, color);
         } else if (clipData->hasRegionClip) {
-            QVector<QRect> rects = clipData->clipRegion.rects();
-            for (int i = 0; i < rects.size(); ++i) {
-                QRect intersectRect = rects.at(i).intersected(targetRect.toRect());
+            auto rects = clipData->clipRegion.rects();
+            for (auto i = 0; i < rects.size(); ++i) {
+                auto intersectRect = rects.at(i).intersected(targetRect.toRect());
                 if (!intersectRect.isEmpty()) {
                     unlock();
                     if (alpha)
@@ -413,26 +413,26 @@ void QBlitterPaintEnginePrivate::clipAndDrawPixmap(const QRectF &clip,
                                                    bool  opacity)
 {
     Q_Q(QBlitterPaintEngine);
-    QRectF intersectedRect = clip.intersected(target);
+    auto intersectedRect = clip.intersected(target);
     if (intersectedRect.isEmpty())
         return;
-    QRectF source = sr;
+    auto source = sr;
     if (intersectedRect.size() != target.size()) {
         if (sr.size() == target.size()) {
             // no resize
-            qreal deltaTop = target.top() - intersectedRect.top();
-            qreal deltaLeft = target.left() - intersectedRect.left();
-            qreal deltaBottom = target.bottom() - intersectedRect.bottom();
-            qreal deltaRight = target.right() - intersectedRect.right();
+            auto deltaTop = target.top() - intersectedRect.top();
+            auto deltaLeft = target.left() - intersectedRect.left();
+            auto deltaBottom = target.bottom() - intersectedRect.bottom();
+            auto deltaRight = target.right() - intersectedRect.right();
             source.adjust(-deltaLeft, -deltaTop, -deltaRight, -deltaBottom);
         } else {
             // resize case
-            qreal hFactor = sr.size().width() / target.size().width();
-            qreal vFactor = sr.size().height() / target.size().height();
-            qreal deltaTop = (target.top() - intersectedRect.top()) * vFactor;
-            qreal deltaLeft = (target.left() - intersectedRect.left()) * hFactor;
-            qreal deltaBottom = (target.bottom() - intersectedRect.bottom()) * vFactor;
-            qreal deltaRight = (target.right() - intersectedRect.right()) * hFactor;
+            auto hFactor = sr.size().width() / target.size().width();
+            auto vFactor = sr.size().height() / target.size().height();
+            auto deltaTop = (target.top() - intersectedRect.top()) * vFactor;
+            auto deltaLeft = (target.left() - intersectedRect.left()) * hFactor;
+            auto deltaBottom = (target.bottom() - intersectedRect.bottom()) * vFactor;
+            auto deltaRight = (target.right() - intersectedRect.right()) * hFactor;
             source.adjust(-deltaLeft, -deltaTop, -deltaRight, -deltaBottom);
         }
     }
@@ -506,7 +506,7 @@ void QBlitterPaintEngine::clipEnabledChanged()
 bool QBlitterPaintEngine::begin(QPaintDevice *pdev)
 {
     Q_D(QBlitterPaintEngine);
-    bool ok = QRasterPaintEngine::begin(pdev);
+    auto ok = QRasterPaintEngine::begin(pdev);
 #ifdef QT_BLITTER_RASTEROVERLAY
     d->pmData->unmergeOverlay();
 #endif
@@ -578,17 +578,17 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
                (brush.transform().type() <= QTransform::TxTranslate) &&
                 ((d->caps.canBlitterDrawPixmapOpacity(brush.texture())) ||
                  (d->caps.canBlitterDrawPixmap(rect, brush.texture(), rect)))) {
-        bool rectIsFilled = false;
-        QRectF transformedRect = state()->matrix.mapRect(rect);
-        qreal x = transformedRect.x();
-        qreal y = transformedRect.y();
-        QPixmap pm = brush.texture();
+        auto rectIsFilled = false;
+        auto transformedRect = state()->matrix.mapRect(rect);
+        auto x = transformedRect.x();
+        auto y = transformedRect.y();
+        auto pm = brush.texture();
         d->unlock();
-        int srcX = int(rect.x() - state()->brushOrigin.x() - brush.transform().dx()) % pm.width();
+        auto srcX = int(rect.x() - state()->brushOrigin.x() - brush.transform().dx()) % pm.width();
         if (srcX < 0)
             srcX = pm.width() + srcX;
-        const int startX = srcX;
-        int srcY = int(rect.y() - state()->brushOrigin.y() - brush.transform().dy()) % pm.height();
+        const auto startX = srcX;
+        auto srcY = int(rect.y() - state()->brushOrigin.y() - brush.transform().dy()) % pm.height();
         if (srcY < 0)
             srcY = pm.height() + srcY;
         while (!rectIsFilled) {
@@ -598,9 +598,9 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
                 blitWidth = transformedRect.right() -x;
             if (y + blitHeight > transformedRect.bottom())
                 blitHeight = transformedRect.bottom() - y;
-            const QClipData *clipData = d->clip();
+            auto clipData = d->clip();
             if (clipData->hasRectClip) {
-                QRect targetRect = QRect(x, y, blitWidth, blitHeight).intersected(clipData->clipRect);
+                auto targetRect = QRect(x, y, blitWidth, blitHeight).intersected(clipData->clipRect);
                 if (targetRect.isValid()) {
                     int tmpSrcX  = srcX + (targetRect.x() - x);
                     int tmpSrcY = srcY + (targetRect.y() - y);
@@ -609,9 +609,9 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
                 }
             } else if (clipData->hasRegionClip) {
                 QRect unclippedTargetRect(x, y, blitWidth, blitHeight);
-                const QVector<QRect> intersectedRects = clipData->clipRegion.intersected(unclippedTargetRect).rects();
-                const int intersectedSize = intersectedRects.size();
-                for (int i = 0; i < intersectedSize; ++i) {
+                const auto intersectedRects = clipData->clipRegion.intersected(unclippedTargetRect).rects();
+                const auto intersectedSize = intersectedRects.size();
+                for (auto i = 0; i < intersectedSize; ++i) {
                     const QRect &targetRect = intersectedRects.at(i);
                     if (!targetRect.isValid() || targetRect.isEmpty())
                         continue;
@@ -644,7 +644,7 @@ void QBlitterPaintEngine::drawRects(const QRect *rects, int rectCount)
 {
     Q_D(QBlitterPaintEngine);
     if (d->caps.canBlitterDrawRectMask()) {
-        for (int i=0; i<rectCount; ++i)
+        for (auto i=0; i<rectCount; ++i)
             d->fillRect(rects[i], qbrush_color(state()->brush), false);
     } else {
         d->pmData->markRasterOverlay(rects, rectCount);
@@ -656,7 +656,7 @@ void QBlitterPaintEngine::drawRects(const QRectF *rects, int rectCount)
 {
     Q_D(QBlitterPaintEngine);
     if (d->caps.canBlitterDrawRectMask()) {
-        for (int i = 0; i < rectCount; ++i)
+        for (auto i = 0; i < rectCount; ++i)
             d->fillRect(rects[i], qbrush_color(state()->brush), false);
     } else {
         d->pmData->markRasterOverlay(rects, rectCount);
@@ -678,16 +678,16 @@ void QBlitterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const Q
     if (canDrawOpacity || (d->caps.canBlitterDrawPixmap(r, pm, sr))) {
 
         d->unlock();
-        QRectF targetRect = r;
+        auto targetRect = r;
         if (d->hasXForm)
             targetRect = state()->matrix.mapRect(r);
-        const QClipData *clipData = d->clip();
+        auto clipData = d->clip();
         if (clipData) {
             if (clipData->hasRectClip) {
                 d->clipAndDrawPixmap(clipData->clipRect, targetRect, pm, sr, canDrawOpacity);
             } else if (clipData->hasRegionClip) {
-                QVector<QRect>rects = clipData->clipRegion.rects();
-                for (int i = 0; i<rects.size(); ++i)
+                auto rects = clipData->clipRegion.rects();
+                for (auto i = 0; i<rects.size(); ++i)
                     d->clipAndDrawPixmap(rects.at(i), targetRect, pm, sr, canDrawOpacity);
             }
         } else {
@@ -811,17 +811,17 @@ void QBlitterPaintEngine::drawStaticTextItem(QStaticTextItem *sti)
 bool QBlitterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions, QFontEngine *fontEngine)
 {
     Q_D(QBlitterPaintEngine);
-    QFontEngine::GlyphFormat glyphFormat = d->glyphCacheFormat;
+    auto glyphFormat = d->glyphCacheFormat;
     if (fontEngine->glyphFormat != QFontEngine::Format_None)
         glyphFormat = fontEngine->glyphFormat;
 
-    const QClipData *clipData = d->clip();
-    const bool complexClip = clipData && !clipData->hasRectClip;
+    auto clipData = d->clip();
+    const auto complexClip = clipData && !clipData->hasRectClip;
 
-    const QPainterState *s = state();
+    auto s = state();
     if (d->caps.canBlitterDrawCachedGlyphs(s->transform(), glyphFormat, complexClip)) {
         d->unlock();
-        const bool result = d->pmData->blittable()->drawCachedGlyphs(s, glyphFormat, numGlyphs, glyphs, positions, fontEngine);
+        const auto result = d->pmData->blittable()->drawCachedGlyphs(s, glyphFormat, numGlyphs, glyphs, positions, fontEngine);
         // Lock again as the raster paint engine might draw decorations now.
         d->lock();
         return result;

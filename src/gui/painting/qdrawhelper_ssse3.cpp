@@ -144,16 +144,16 @@ void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
                                      int w, int h,
                                      int const_alpha)
 {
-    const quint32 *src = (const quint32 *) srcPixels;
-    quint32 *dst = (quint32 *) destPixels;
+    auto src = (const quint32 *) srcPixels;
+    auto dst = (quint32 *) destPixels;
     if (const_alpha == 256) {
-        const __m128i alphaMask = _mm_set1_epi32(0xff000000);
-        const __m128i nullVector = _mm_setzero_si128();
-        const __m128i half = _mm_set1_epi16(0x80);
-        const __m128i one = _mm_set1_epi16(0xff);
-        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        const auto alphaMask = _mm_set1_epi32(0xff000000);
+        const auto nullVector = _mm_setzero_si128();
+        const auto half = _mm_set1_epi16(0x80);
+        const auto one = _mm_set1_epi16(0xff);
+        const auto colorMask = _mm_set1_epi32(0x00ff00ff);
 
-        for (int y = 0; y < h; ++y) {
+        for (auto y = 0; y < h; ++y) {
             BLEND_SOURCE_OVER_ARGB32_SSSE3(dst, src, w, nullVector, half, one, colorMask, alphaMask);
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);
@@ -163,12 +163,12 @@ void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
         //      = s * ca + d * (sia * ca + cia)
         //      = s * ca + d * (1 - sa*ca)
         const_alpha = (const_alpha * 255) >> 8;
-        const __m128i nullVector = _mm_setzero_si128();
-        const __m128i half = _mm_set1_epi16(0x80);
-        const __m128i one = _mm_set1_epi16(0xff);
-        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
-        const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
-        for (int y = 0; y < h; ++y) {
+        const auto nullVector = _mm_setzero_si128();
+        const auto half = _mm_set1_epi16(0x80);
+        const auto one = _mm_set1_epi16(0xff);
+        const auto colorMask = _mm_set1_epi32(0x00ff00ff);
+        const auto constAlphaVector = _mm_set1_epi16(const_alpha);
+        for (auto y = 0; y < h; ++y) {
             BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2(dst, src, w, nullVector, half, one, colorMask, constAlphaVector)
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);

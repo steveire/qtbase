@@ -63,8 +63,8 @@ static inline int hex2byte(char *p)
 
 static bool read_xbm_header(QIODevice *device, int& w, int& h)
 {
-    const int buflen = 300;
-    const int maxlen = 4096;
+    const auto buflen = 300;
+    const auto maxlen = 4096;
     char buf[buflen + 1];
     QRegExp r1(QLatin1String("^#define[ \t]+[a-zA-Z0-9._]+[ \t]+"));
     QRegExp r2(QLatin1String("[0-9]+"));
@@ -119,7 +119,7 @@ static bool read_xbm_header(QIODevice *device, int& w, int& h)
 
 static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
 {
-    const int buflen = 300;
+    const auto buflen = 300;
     char buf[buflen + 1];
 
     qint64 readBytes = 0;
@@ -146,9 +146,9 @@ static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
     outImage->setColor(0, qRgb(255,255,255));        // white
     outImage->setColor(1, qRgb(0,0,0));                // black
 
-    int           x = 0, y = 0;
-    uchar *b = outImage->scanLine(0);
-    char  *p = buf + QByteArray::fromRawData(buf, readBytes).indexOf("0x");
+    auto x = 0, y = 0;
+    auto b = outImage->scanLine(0);
+    auto p = buf + QByteArray::fromRawData(buf, readBytes).indexOf("0x");
     w = (w+7)/8;                                // byte width
 
     while (y < h) {                                // for all encoded bytes...
@@ -172,7 +172,7 @@ static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
 
 static bool read_xbm_image(QIODevice *device, QImage *outImage)
 {
-    int w = 0, h = 0;
+    auto w = 0, h = 0;
     if (!read_xbm_header(device, w, h))
         return false;
     return read_xbm_body(device, w, h, outImage);
@@ -180,13 +180,13 @@ static bool read_xbm_image(QIODevice *device, QImage *outImage)
 
 static bool write_xbm_image(const QImage &sourceImage, QIODevice *device, const QString &fileName)
 {
-    QImage image = sourceImage;
-    int        w = image.width();
-    int        h = image.height();
+    auto image = sourceImage;
+    auto w = image.width();
+    auto h = image.height();
     int        i;
-    QString    s = fileName; // get file base name
-    int        msize = s.length() + 100;
-    char *buf = new char[msize];
+    auto s = fileName; // get file base name
+    auto msize = s.length() + 100;
+    auto buf = new char[msize];
 
     qsnprintf(buf, msize, "#define %s_width %d\n", s.toUtf8().data(), w);
     device->write(buf, qstrlen(buf));
@@ -198,7 +198,7 @@ static bool write_xbm_image(const QImage &sourceImage, QIODevice *device, const 
     if (image.format() != QImage::Format_MonoLSB)
         image = image.convertToFormat(QImage::Format_MonoLSB);
 
-    bool invert = qGray(image.color(0)) < qGray(image.color(1));
+    auto invert = qGray(image.color(0)) < qGray(image.color(1));
     char hexrep[16];
     for (i=0; i<10; i++)
         hexrep[i] = '0' + i;
@@ -212,11 +212,11 @@ static bool write_xbm_image(const QImage &sourceImage, QIODevice *device, const 
             hexrep[i] = t;
         }
     }
-    int bcnt = 0;
-    char *p = buf;
-    int bpl = (w+7)/8;
-    for (int y = 0; y < h; ++y) {
-        const uchar *b = image.constScanLine(y);
+    auto bcnt = 0;
+    auto p = buf;
+    auto bpl = (w+7)/8;
+    for (auto y = 0; y < h; ++y) {
+        auto b = image.constScanLine(y);
         for (i = 0; i < bpl; ++i) {
             *p++ = '0'; *p++ = 'x';
             *p++ = hexrep[*b >> 4];
@@ -289,8 +289,8 @@ bool QXbmHandler::canRead(QIODevice *device)
     if (device->isSequential())
         return false;
 
-    qint64 oldPos = device->pos();
-    bool success = read_xbm_image(device, &image);
+    auto oldPos = device->pos();
+    auto success = read_xbm_image(device, &image);
     device->seek(oldPos);
 
     return success;

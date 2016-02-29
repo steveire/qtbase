@@ -49,8 +49,8 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     // Resolve EXT_direct_state_access entry points if present.
 
     // However, disable it on some systems where DSA is known to be unreliable.
-    bool allowDSA = true;
-    const char *renderer = reinterpret_cast<const char *>(context->functions()->glGetString(GL_RENDERER));
+    auto allowDSA = true;
+    auto renderer = reinterpret_cast<const char *>(context->functions()->glGetString(GL_RENDERER));
     // QTBUG-40653, QTBUG-44988
     if (renderer && strstr(renderer, "AMD Radeon HD"))
         allowDSA = false;
@@ -267,10 +267,10 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         CompressedTexImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const GLvoid*)>(context->getProcAddress(QByteArrayLiteral("glCompressedTexImage3DOES")));
         CompressedTexSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, const GLvoid*)>(context->getProcAddress(QByteArrayLiteral("glCompressedTexSubImage3DOES")));
     } else {
-        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        auto ctx = QOpenGLContext::currentContext();
         if (ctx->isOpenGLES() && ctx->format().majorVersion() >= 3) {
             // OpenGL ES 3.0+ has glTexImage3D.
-            QOpenGLES3Helper *es3 = static_cast<QOpenGLExtensions *>(ctx->functions())->gles3Helper();
+            auto es3 = static_cast<QOpenGLExtensions *>(ctx->functions())->gles3Helper();
             TexImage3D = es3->TexImage3D;
             TexSubImage3D = es3->TexSubImage3D;
             CompressedTexImage3D = es3->CompressedTexImage3D;

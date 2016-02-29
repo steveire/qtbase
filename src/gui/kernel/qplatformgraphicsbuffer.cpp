@@ -154,7 +154,7 @@ bool QPlatformGraphicsBuffer::bindToTexture(const QRect &rect) const
 */
 bool QPlatformGraphicsBuffer::lock(AccessTypes access, const QRect &rect)
 {
-    bool locked = doLock(access, rect);
+    auto locked = doLock(access, rect);
     if (locked)
         m_lock_access |= access;
 
@@ -171,7 +171,7 @@ void QPlatformGraphicsBuffer::unlock()
 {
     if (m_lock_access == None)
         return;
-    AccessTypes previous = m_lock_access;
+    auto previous = m_lock_access;
     doUnlock();
     m_lock_access = None;
     emit unlocked(previous);

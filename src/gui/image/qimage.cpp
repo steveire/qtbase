@@ -149,7 +149,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format, int nu
         d->colortable[0] = QColor(Qt::black).rgba();
         d->colortable[1] = QColor(Qt::white).rgba();
     } else {
-        for (int i = 0; i < numColors; ++i)
+        for (auto i = 0; i < numColors; ++i)
             d->colortable[i] = 0;
     }
 
@@ -189,7 +189,7 @@ QImageData::~QImageData()
 
 bool QImageData::checkForAlphaPixels() const
 {
-    bool has_alpha_pixels = false;
+    auto has_alpha_pixels = false;
 
     switch (format) {
 
@@ -203,9 +203,9 @@ bool QImageData::checkForAlphaPixels() const
         break;
     case QImage::Format_ARGB32:
     case QImage::Format_ARGB32_Premultiplied: {
-        uchar *bits = data;
-        for (int y=0; y<height && !has_alpha_pixels; ++y) {
-            for (int x=0; x<width; ++x)
+        auto bits = data;
+        for (auto y=0; y<height && !has_alpha_pixels; ++y) {
+            for (auto x=0; x<width; ++x)
                 has_alpha_pixels |= (((uint *)bits)[x] & 0xff000000) != 0xff000000;
             bits += bytes_per_line;
         }
@@ -213,9 +213,9 @@ bool QImageData::checkForAlphaPixels() const
 
     case QImage::Format_RGBA8888:
     case QImage::Format_RGBA8888_Premultiplied: {
-        uchar *bits = data;
-        for (int y=0; y<height && !has_alpha_pixels; ++y) {
-            for (int x=0; x<width; ++x)
+        auto bits = data;
+        for (auto y=0; y<height && !has_alpha_pixels; ++y) {
+            for (auto x=0; x<width; ++x)
                 has_alpha_pixels |= bits[x*4+3] != 0xff;
             bits += bytes_per_line;
         }
@@ -223,9 +223,9 @@ bool QImageData::checkForAlphaPixels() const
 
     case QImage::Format_A2BGR30_Premultiplied:
     case QImage::Format_A2RGB30_Premultiplied: {
-        uchar *bits = data;
-        for (int y=0; y<height && !has_alpha_pixels; ++y) {
-            for (int x=0; x<width; ++x)
+        auto bits = data;
+        for (auto y=0; y<height && !has_alpha_pixels; ++y) {
+            for (auto x=0; x<width; ++x)
                 has_alpha_pixels |= (((uint *)bits)[x] & 0xc0000000) != 0xc0000000;
             bits += bytes_per_line;
         }
@@ -233,10 +233,10 @@ bool QImageData::checkForAlphaPixels() const
 
     case QImage::Format_ARGB8555_Premultiplied:
     case QImage::Format_ARGB8565_Premultiplied: {
-        uchar *bits = data;
-        uchar *end_bits = data + bytes_per_line;
+        auto bits = data;
+        auto end_bits = data + bytes_per_line;
 
-        for (int y=0; y<height && !has_alpha_pixels; ++y) {
+        for (auto y=0; y<height && !has_alpha_pixels; ++y) {
             while (bits < end_bits) {
                 has_alpha_pixels |= bits[0] != 0;
                 bits += 3;
@@ -247,10 +247,10 @@ bool QImageData::checkForAlphaPixels() const
     } break;
 
     case QImage::Format_ARGB6666_Premultiplied: {
-        uchar *bits = data;
-        uchar *end_bits = data + bytes_per_line;
+        auto bits = data;
+        auto end_bits = data + bytes_per_line;
 
-        for (int y=0; y<height && !has_alpha_pixels; ++y) {
+        for (auto y=0; y<height && !has_alpha_pixels; ++y) {
             while (bits < end_bits) {
                 has_alpha_pixels |= (bits[0] & 0xfc) != 0;
                 bits += 3;
@@ -261,10 +261,10 @@ bool QImageData::checkForAlphaPixels() const
     } break;
 
     case QImage::Format_ARGB4444_Premultiplied: {
-        uchar *bits = data;
-        uchar *end_bits = data + bytes_per_line;
+        auto bits = data;
+        auto end_bits = data + bytes_per_line;
 
-        for (int y=0; y<height && !has_alpha_pixels; ++y) {
+        for (auto y=0; y<height && !has_alpha_pixels; ++y) {
             while (bits < end_bits) {
                 has_alpha_pixels |= (bits[0] & 0xf0) != 0;
                 bits += 2;
@@ -806,9 +806,9 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
     if (format == QImage::Format_Invalid)
         return d;
 
-    const int depth = qt_depthForFormat(format);
-    const int calc_bytes_per_line = ((width * depth + 31)/32) * 4;
-    const int min_bytes_per_line = (width * depth + 7)/8;
+    const auto depth = qt_depthForFormat(format);
+    const auto calc_bytes_per_line = ((width * depth + 31)/32) * 4;
+    const auto min_bytes_per_line = (width * depth + 7)/8;
 
     if (bpl <= 0)
         bpl = calc_bytes_per_line;
@@ -1165,8 +1165,8 @@ QImage QImage::copy(const QRect& r) const
         // Qt for Embedded Linux can create images with non-default bpl
         // make sure we don't crash.
         if (image.d->nbytes != d->nbytes) {
-            int bpl = qMin(bytesPerLine(), image.bytesPerLine());
-            for (int i = 0; i < height(); i++)
+            auto bpl = qMin(bytesPerLine(), image.bytesPerLine());
+            for (auto i = 0; i < height(); i++)
                 memcpy(image.scanLine(i), scanLine(i), bpl);
         } else
             memcpy(image.bits(), bits(), d->nbytes);
@@ -1177,13 +1177,13 @@ QImage QImage::copy(const QRect& r) const
         return image;
     }
 
-    int x = r.x();
-    int y = r.y();
-    int w = r.width();
-    int h = r.height();
+    auto x = r.x();
+    auto y = r.y();
+    auto w = r.width();
+    auto h = r.height();
 
-    int dx = 0;
-    int dy = 0;
+    auto dx = 0;
+    auto dy = 0;
     if (w <= 0 || h <= 0)
         return QImage();
 
@@ -1206,35 +1206,35 @@ QImage QImage::copy(const QRect& r) const
 
     image.d->colortable = d->colortable;
 
-    int pixels_to_copy = qMax(w - dx, 0);
+    auto pixels_to_copy = qMax(w - dx, 0);
     if (x > d->width)
         pixels_to_copy = 0;
     else if (pixels_to_copy > d->width - x)
         pixels_to_copy = d->width - x;
-    int lines_to_copy = qMax(h - dy, 0);
+    auto lines_to_copy = qMax(h - dy, 0);
     if (y > d->height)
         lines_to_copy = 0;
     else if (lines_to_copy > d->height - y)
         lines_to_copy = d->height - y;
 
-    bool byteAligned = true;
+    auto byteAligned = true;
     if (d->format == Format_Mono || d->format == Format_MonoLSB)
         byteAligned = !(dx & 7) && !(x & 7) && !(pixels_to_copy & 7);
 
     if (byteAligned) {
-        const uchar *src = d->data + ((x * d->depth) >> 3) + y * d->bytes_per_line;
-        uchar *dest = image.d->data + ((dx * d->depth) >> 3) + dy * image.d->bytes_per_line;
-        const int bytes_to_copy = (pixels_to_copy * d->depth) >> 3;
-        for (int i = 0; i < lines_to_copy; ++i) {
+        auto src = d->data + ((x * d->depth) >> 3) + y * d->bytes_per_line;
+        auto dest = image.d->data + ((dx * d->depth) >> 3) + dy * image.d->bytes_per_line;
+        const auto bytes_to_copy = (pixels_to_copy * d->depth) >> 3;
+        for (auto i = 0; i < lines_to_copy; ++i) {
             memcpy(dest, src, bytes_to_copy);
             src += d->bytes_per_line;
             dest += image.d->bytes_per_line;
         }
     } else if (d->format == Format_Mono) {
-        const uchar *src = d->data + y * d->bytes_per_line;
-        uchar *dest = image.d->data + dy * image.d->bytes_per_line;
-        for (int i = 0; i < lines_to_copy; ++i) {
-            for (int j = 0; j < pixels_to_copy; ++j) {
+        auto src = d->data + y * d->bytes_per_line;
+        auto dest = image.d->data + dy * image.d->bytes_per_line;
+        for (auto i = 0; i < lines_to_copy; ++i) {
+            for (auto j = 0; j < pixels_to_copy; ++j) {
                 if (src[(x + j) >> 3] & (0x80 >> ((x + j) & 7)))
                     dest[(dx + j) >> 3] |= (0x80 >> ((dx + j) & 7));
                 else
@@ -1245,10 +1245,10 @@ QImage QImage::copy(const QRect& r) const
         }
     } else { // Format_MonoLSB
         Q_ASSERT(d->format == Format_MonoLSB);
-        const uchar *src = d->data + y * d->bytes_per_line;
-        uchar *dest = image.d->data + dy * image.d->bytes_per_line;
-        for (int i = 0; i < lines_to_copy; ++i) {
-            for (int j = 0; j < pixels_to_copy; ++j) {
+        auto src = d->data + y * d->bytes_per_line;
+        auto dest = image.d->data + dy * image.d->bytes_per_line;
+        for (auto i = 0; i < lines_to_copy; ++i) {
+            for (auto j = 0; j < pixels_to_copy; ++j) {
                 if (src[(x + j) >> 3] & (0x1 << ((x + j) & 7)))
                     dest[(dx + j) >> 3] |= (0x1 << ((dx + j) & 7));
                 else
@@ -1401,7 +1401,7 @@ void QImage::setColorTable(const QVector<QRgb> colors)
     d->colortable = qMove(const_cast<QVector<QRgb>&>(colors));
 #endif
     d->has_alpha_clut = false;
-    for (int i = 0; i < d->colortable.size(); ++i) {
+    for (auto i = 0; i < d->colortable.size(); ++i) {
         if (qAlpha(d->colortable.at(i)) != 255) {
             d->has_alpha_clut = true;
             break;
@@ -1694,7 +1694,7 @@ void QImage::fill(uint pixel)
         return;
 
     if (d->depth == 1 || d->depth == 8) {
-        int w = d->width;
+        auto w = d->width;
         if (d->depth == 1) {
             if (pixel & 1)
                 pixel = 0xffffffff;
@@ -1806,7 +1806,7 @@ void QImage::fill(const QColor &color)
         break;
     case QImage::Format_Indexed8: {
         uint pixel = 0;
-        for (int i=0; i<d->colortable.size(); ++i) {
+        for (auto i=0; i<d->colortable.size(); ++i) {
             if (color.rgba() == d->colortable.at(i)) {
                 pixel = i;
                 break;
@@ -1861,7 +1861,7 @@ void QImage::invertPixels(InvertMode mode)
     if (!d)
         return;
 
-    QImage::Format originalFormat = d->format;
+    auto originalFormat = d->format;
     // Inverting premultiplied pixels would produce invalid image data.
     if (hasAlphaChannel() && qPixelLayouts[d->format].premultiplied) {
         if (!d->convertInPlace(QImage::Format_ARGB32, 0))
@@ -1870,18 +1870,18 @@ void QImage::invertPixels(InvertMode mode)
 
     if (depth() < 32) {
         // This assumes no alpha-channel as the only formats with non-premultipled alpha are 32bit.
-        int bpl = (d->width * d->depth + 7) / 8;
-        int pad = d->bytes_per_line - bpl;
-        uchar *sl = d->data;
-        for (int y=0; y<d->height; ++y) {
-            for (int x=0; x<bpl; ++x)
+        auto bpl = (d->width * d->depth + 7) / 8;
+        auto pad = d->bytes_per_line - bpl;
+        auto sl = d->data;
+        for (auto y=0; y<d->height; ++y) {
+            for (auto x=0; x<bpl; ++x)
                 *sl++ ^= 0xff;
             sl += pad;
         }
     } else {
-        quint32 *p = (quint32*)d->data;
-        quint32 *end = (quint32*)(d->data + d->nbytes);
-        quint32 xorbits = 0xffffffff;
+        auto p = (quint32*)d->data;
+        auto end = (quint32*)(d->data + d->nbytes);
+        auto xorbits = 0xffffffff;
         switch (d->format) {
         case QImage::Format_RGBA8888:
             if (mode == InvertRgba)
@@ -1966,9 +1966,9 @@ void QImage::setColorCount(int colorCount)
         d->colortable = QVector<QRgb>();
         return;
     }
-    int nc = d->colortable.size();
+    auto nc = d->colortable.size();
     d->colortable.resize(colorCount);
-    for (int i = nc; i < colorCount; ++i)
+    for (auto i = nc; i < colorCount; ++i)
         d->colortable[i] = 0;
 }
 
@@ -2038,24 +2038,24 @@ bool QImage::convertToFormat_inplace(Format format, Qt::ImageConversionFlags fla
 }
 
 static inline int pixel_distance(QRgb p1, QRgb p2) {
-    int r1 = qRed(p1);
-    int g1 = qGreen(p1);
-    int b1 = qBlue(p1);
-    int a1 = qAlpha(p1);
+    auto r1 = qRed(p1);
+    auto g1 = qGreen(p1);
+    auto b1 = qBlue(p1);
+    auto a1 = qAlpha(p1);
 
-    int r2 = qRed(p2);
-    int g2 = qGreen(p2);
-    int b2 = qBlue(p2);
-    int a2 = qAlpha(p2);
+    auto r2 = qRed(p2);
+    auto g2 = qGreen(p2);
+    auto b2 = qBlue(p2);
+    auto a2 = qAlpha(p2);
 
     return abs(r1 - r2) + abs(g1 - g2) + abs(b1 - b2) + abs(a1 - a2);
 }
 
 static inline int closestMatch(QRgb pixel, const QVector<QRgb> &clut) {
-    int idx = 0;
-    int current_distance = INT_MAX;
-    for (int i=0; i<clut.size(); ++i) {
-        int dist = pixel_distance(pixel, clut.at(i));
+    auto idx = 0;
+    auto current_distance = INT_MAX;
+    for (auto i=0; i<clut.size(); ++i) {
+        auto dist = pixel_distance(pixel, clut.at(i));
         if (dist < current_distance) {
             current_distance = dist;
             idx = i;
@@ -2069,25 +2069,25 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
     QImage dest(src.size(), format);
     dest.setColorTable(clut);
 
-    QString textsKeys = src.text();
+    auto textsKeys = src.text();
     const auto textKeyList = textsKeys.splitRef(QLatin1Char('\n'), QString::SkipEmptyParts);
     for (const auto &textKey : textKeyList) {
         const auto textKeySplitted = textKey.split(QLatin1String(": "));
         dest.setText(textKeySplitted[0].toString(), textKeySplitted[1].toString());
     }
 
-    int h = src.height();
-    int w = src.width();
+    auto h = src.height();
+    auto w = src.width();
 
     QHash<QRgb, int> cache;
 
     if (format == QImage::Format_Indexed8) {
-        for (int y=0; y<h; ++y) {
-            const QRgb *src_pixels = (const QRgb *) src.scanLine(y);
-            uchar *dest_pixels = (uchar *) dest.scanLine(y);
-            for (int x=0; x<w; ++x) {
+        for (auto y=0; y<h; ++y) {
+            auto src_pixels = (const QRgb *) src.scanLine(y);
+            auto dest_pixels = (uchar *) dest.scanLine(y);
+            for (auto x=0; x<w; ++x) {
                 int src_pixel = src_pixels[x];
-                int value = cache.value(src_pixel, -1);
+                auto value = cache.value(src_pixel, -1);
                 if (value == -1) {
                     value = closestMatch(src_pixel, clut);
                     cache.insert(src_pixel, value);
@@ -2096,13 +2096,13 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
             }
         }
     } else {
-        QVector<QRgb> table = clut;
+        auto table = clut;
         table.resize(2);
-        for (int y=0; y<h; ++y) {
-            const QRgb *src_pixels = (const QRgb *) src.scanLine(y);
-            for (int x=0; x<w; ++x) {
+        for (auto y=0; y<h; ++y) {
+            auto src_pixels = (const QRgb *) src.scanLine(y);
+            for (auto x=0; x<w; ++x) {
                 int src_pixel = src_pixels[x];
-                int value = cache.value(src_pixel, -1);
+                auto value = cache.value(src_pixel, -1);
                 if (value == -1) {
                     value = closestMatch(src_pixel, table);
                     cache.insert(src_pixel, value);
@@ -2134,7 +2134,7 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
         return convertWithPalette(*this, format, colorTable);
     }
 
-    const Image_Converter *converterPtr = &qimage_converter_map[d->format][format];
+    auto converterPtr = &qimage_converter_map[d->format][format];
     Image_Converter converter = *converterPtr;
     if (!converter)
         return QImage();
@@ -2193,7 +2193,7 @@ int QImage::pixelIndex(int x, int y) const
         qWarning("QImage::pixelIndex: coordinate (%d,%d) out of range", x, y);
         return -12345;
     }
-    const uchar * s = scanLine(y);
+    auto s = scanLine(y);
     switch(d->format) {
     case Format_Mono:
         return (*(s + (x >> 3)) >> (7- (x & 7))) & 1;
@@ -2235,7 +2235,7 @@ QRgb QImage::pixel(int x, int y) const
         return 12345;
     }
 
-    const uchar *s = d->data + y * d->bytes_per_line;
+    auto s = d->data + y * d->bytes_per_line;
     switch(d->format) {
     case Format_Mono:
         return d->colortable.at((*(s + (x >> 3)) >> (~x & 7)) & 1);
@@ -2263,9 +2263,9 @@ QRgb QImage::pixel(int x, int y) const
     default:
         break;
     }
-    const QPixelLayout *layout = &qPixelLayouts[d->format];
+    auto layout = &qPixelLayouts[d->format];
     uint result;
-    const uint *ptr = qFetchPixels[layout->bpp](&result, s, x, 1);
+    auto ptr = qFetchPixels[layout->bpp](&result, s, x, 1);
     return *layout->convertToARGB32PM(&result, ptr, 1, layout, 0);
 }
 
@@ -2302,7 +2302,7 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
         return;
     }
     // detach is called from within scanLine
-    uchar * s = scanLine(y);
+    auto s = scanLine(y);
     switch(d->format) {
     case Format_Mono:
     case Format_MonoLSB:
@@ -2366,9 +2366,9 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
         break;
     }
 
-    const QPixelLayout *layout = &qPixelLayouts[d->format];
+    auto layout = &qPixelLayouts[d->format];
     uint result;
-    const uint *ptr = layout->convertFromARGB32PM(&result, &index_or_rgb, 1, layout, 0);
+    auto ptr = layout->convertFromARGB32PM(&result, &index_or_rgb, 1, layout, 0);
     qStorePixels[layout->bpp](s, ptr, x, 1);
 }
 
@@ -2402,7 +2402,7 @@ QColor QImage::pixelColor(int x, int y) const
     }
 
     QRgba64 c;
-    const uchar * s = constScanLine(y);
+    auto s = constScanLine(y);
     switch (d->format) {
     case Format_BGR30:
     case Format_A2BGR30_Premultiplied:
@@ -2451,13 +2451,13 @@ void QImage::setPixelColor(int x, int y, const QColor &color)
         return;
     }
     // QColor is always unpremultiplied
-    QRgba64 c = color.rgba64();
+    auto c = color.rgba64();
     if (!hasAlphaChannel())
         c.setAlpha(65535);
     else if (qPixelLayouts[d->format].premultiplied)
         c = c.premultiplied();
     // detach is called from within scanLine
-    uchar * s = scanLine(y);
+    auto s = scanLine(y);
     switch (d->format) {
     case Format_Mono:
     case Format_MonoLSB:
@@ -2500,7 +2500,7 @@ bool QImage::allGray() const
     case Format_Mono:
     case Format_MonoLSB:
     case Format_Indexed8:
-        for (int i = 0; i < d->colortable.size(); ++i) {
+        for (auto i = 0; i < d->colortable.size(); ++i) {
             if (!qIsGray(d->colortable.at(i)))
                 return false;
         }
@@ -2517,18 +2517,18 @@ bool QImage::allGray() const
     case Format_RGBA8888:
     case Format_RGBA8888_Premultiplied:
 #endif
-        for (int j = 0; j < d->height; ++j) {
-            const QRgb *b = (const QRgb *)constScanLine(j);
-            for (int i = 0; i < d->width; ++i) {
+        for (auto j = 0; j < d->height; ++j) {
+            auto b = (const QRgb *)constScanLine(j);
+            for (auto i = 0; i < d->width; ++i) {
                 if (!qIsGray(b[i]))
                     return false;
             }
         }
         return true;
     case Format_RGB16:
-        for (int j = 0; j < d->height; ++j) {
-            const quint16 *b = (const quint16 *)constScanLine(j);
-            for (int i = 0; i < d->width; ++i) {
+        for (auto j = 0; j < d->height; ++j) {
+            auto b = (const quint16 *)constScanLine(j);
+            for (auto i = 0; i < d->width; ++i) {
                 if (!qIsGray(qConvertRgb16To32(b[i])))
                     return false;
             }
@@ -2538,18 +2538,18 @@ bool QImage::allGray() const
         break;
     }
 
-    const int buffer_size = 2048;
+    const auto buffer_size = 2048;
     uint buffer[buffer_size];
-    const QPixelLayout *layout = &qPixelLayouts[d->format];
+    auto layout = &qPixelLayouts[d->format];
     FetchPixelsFunc fetch = qFetchPixels[layout->bpp];
-    for (int j = 0; j < d->height; ++j) {
-        const uchar *b = constScanLine(j);
-        int x = 0;
+    for (auto j = 0; j < d->height; ++j) {
+        auto b = constScanLine(j);
+        auto x = 0;
         while (x < d->width) {
-            int l = qMin(d->width - x, buffer_size);
-            const uint *ptr = fetch(buffer, b, x, l);
+            auto l = qMin(d->width - x, buffer_size);
+            auto ptr = fetch(buffer, b, x, l);
             ptr = layout->convertToARGB32PM(buffer, ptr, l, layout, 0);
-            for (int i = 0; i < l; ++i) {
+            for (auto i = 0; i < l; ++i) {
                 if (!qIsGray(ptr[i]))
                     return false;
             }
@@ -2586,7 +2586,7 @@ bool QImage::isGrayscale() const
         return allGray();
     case 8: {
         Q_ASSERT(d->format == QImage::Format_Indexed8);
-        for (int i = 0; i < colorCount(); i++)
+        for (auto i = 0; i < colorCount(); i++)
             if (d->colortable.at(i) != qRgb(i,i,i))
                 return false;
         return true;
@@ -2642,15 +2642,15 @@ QImage QImage::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Transf
     if (s.isEmpty())
         return QImage();
 
-    QSize newSize = size();
+    auto newSize = size();
     newSize.scale(s, aspectMode);
     newSize.rwidth() = qMax(newSize.width(), 1);
     newSize.rheight() = qMax(newSize.height(), 1);
     if (newSize == size())
         return *this;
 
-    QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
-    QImage img = transformed(wm, mode);
+    auto wm = QTransform::fromScale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
+    auto img = transformed(wm, mode);
     return img;
 }
 
@@ -2677,8 +2677,8 @@ QImage QImage::scaledToWidth(int w, Qt::TransformationMode mode) const
     if (w <= 0)
         return QImage();
 
-    qreal factor = (qreal) w / width();
-    QTransform wm = QTransform::fromScale(factor, factor);
+    auto factor = (qreal) w / width();
+    auto wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -2705,8 +2705,8 @@ QImage QImage::scaledToHeight(int h, Qt::TransformationMode mode) const
     if (h <= 0)
         return QImage();
 
-    qreal factor = (qreal) h / height();
-    QTransform wm = QTransform::fromScale(factor, factor);
+    auto factor = (qreal) h / height();
+    auto wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -2815,14 +2815,14 @@ QImage QImage::createHeuristicMask(bool clipTight) const
         return QImage();
 
     if (d->depth != 32) {
-        QImage img32 = convertToFormat(Format_RGB32);
+        auto img32 = convertToFormat(Format_RGB32);
         return img32.createHeuristicMask(clipTight);
     }
 
 #define PIX(x,y)  (*((const QRgb*)scanLine(y)+x) & 0x00ffffff)
 
-    int w = width();
-    int h = height();
+    auto w = width();
+    auto h = height();
     QImage m(w, h, Format_MonoLSB);
     QIMAGE_SANITYCHECK_MEMORY(m);
     m.setColorCount(2);
@@ -2830,7 +2830,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
     m.setColor(1, QColor(Qt::color1).rgba());
     m.fill(0xff);
 
-    QRgb background = PIX(0,0);
+    auto background = PIX(0,0);
     if (background != PIX(w-1,0) &&
          background != PIX(0,h-1) &&
          background != PIX(w-1,h-1)) {
@@ -2843,7 +2843,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
     }
 
     int x,y;
-    bool done = false;
+    auto done = false;
     uchar *ypp, *ypc, *ypn;
     while(!done) {
         done = true;
@@ -2853,7 +2853,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
             ypp = ypc;
             ypc = ypn;
             ypn = (y == h-1) ? 0 : m.scanLine(y+1);
-            const QRgb *p = (const QRgb *)scanLine(y);
+            auto p = (const QRgb *)scanLine(y);
             for (x = 0; x < w; x++) {
                 // slowness here - it's possible to do six of these tests
                 // together in one go. oh well.
@@ -2879,7 +2879,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
             ypp = ypc;
             ypc = ypn;
             ypn = (y == h-1) ? 0 : m.scanLine(y+1);
-            const QRgb *p = (const QRgb *)scanLine(y);
+            auto p = (const QRgb *)scanLine(y);
             for (x = 0; x < w; x++) {
                 if ((*p & 0x00ffffff) != background) {
                     if (x > 0)
@@ -2919,20 +2919,20 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
     QImage maskImage(size(), QImage::Format_MonoLSB);
     QIMAGE_SANITYCHECK_MEMORY(maskImage);
     maskImage.fill(0);
-    uchar *s = maskImage.bits();
+    auto s = maskImage.bits();
 
     if (depth() == 32) {
-        for (int h = 0; h < d->height; h++) {
-            const uint *sl = (const uint *) scanLine(h);
-            for (int w = 0; w < d->width; w++) {
+        for (auto h = 0; h < d->height; h++) {
+            auto sl = (const uint *) scanLine(h);
+            for (auto w = 0; w < d->width; w++) {
                 if (sl[w] == color)
                     *(s + (w >> 3)) |= (1 << (w & 7));
             }
             s += maskImage.bytesPerLine();
         }
     } else {
-        for (int h = 0; h < d->height; h++) {
-            for (int w = 0; w < d->width; w++) {
+        for (auto h = 0; h < d->height; h++) {
+            for (auto w = 0; w < d->width; w++) {
                 if ((uint) pixel(w, h) == color)
                     *(s + (w >> 3)) |= (1 << (w & 7));
             }
@@ -2963,27 +2963,27 @@ template<class T> inline void do_mirror_data(QImageData *dst, QImageData *src,
     if (dst == src) {
         // When mirroring in-place, stop in the middle for one of the directions, since we
         // are swapping the bytes instead of merely copying.
-        const int srcXEnd = (dstX0 && !dstY0) ? w / 2 : w;
-        const int srcYEnd = dstY0 ? h / 2 : h;
-        for (int srcY = 0, dstY = dstY0; srcY < srcYEnd; ++srcY, dstY += dstYIncr) {
-            T *srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
-            T *dstPtr = (T *) (dst->data + dstY * dst->bytes_per_line);
-            for (int srcX = 0, dstX = dstX0; srcX < srcXEnd; ++srcX, dstX += dstXIncr)
+        const auto srcXEnd = (dstX0 && !dstY0) ? w / 2 : w;
+        const auto srcYEnd = dstY0 ? h / 2 : h;
+        for (auto srcY = 0, dstY = dstY0; srcY < srcYEnd; ++srcY, dstY += dstYIncr) {
+            auto srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
+            auto dstPtr = (T *) (dst->data + dstY * dst->bytes_per_line);
+            for (auto srcX = 0, dstX = dstX0; srcX < srcXEnd; ++srcX, dstX += dstXIncr)
                 std::swap(srcPtr[srcX], dstPtr[dstX]);
         }
         // If mirroring both ways, the middle line needs to be mirrored horizontally only.
         if (dstX0 && dstY0 && (h & 1)) {
-            int srcY = h / 2;
-            int srcXEnd2 = w / 2;
-            T *srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
-            for (int srcX = 0, dstX = dstX0; srcX < srcXEnd2; ++srcX, dstX += dstXIncr)
+            auto srcY = h / 2;
+            auto srcXEnd2 = w / 2;
+            auto srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
+            for (auto srcX = 0, dstX = dstX0; srcX < srcXEnd2; ++srcX, dstX += dstXIncr)
                 std::swap(srcPtr[srcX], srcPtr[dstX]);
         }
     } else {
-        for (int srcY = 0, dstY = dstY0; srcY < h; ++srcY, dstY += dstYIncr) {
-            T *srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
-            T *dstPtr = (T *) (dst->data + dstY * dst->bytes_per_line);
-            for (int srcX = 0, dstX = dstX0; srcX < w; ++srcX, dstX += dstXIncr)
+        for (auto srcY = 0, dstY = dstY0; srcY < h; ++srcY, dstY += dstYIncr) {
+            auto srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
+            auto dstPtr = (T *) (dst->data + dstY * dst->bytes_per_line);
+            for (auto srcX = 0, dstX = dstX0; srcX < w; ++srcX, dstX += dstXIncr)
                 dstPtr[dstX] = srcPtr[srcX];
         }
     }
@@ -2992,17 +2992,17 @@ template<class T> inline void do_mirror_data(QImageData *dst, QImageData *src,
 inline void do_mirror(QImageData *dst, QImageData *src, bool horizontal, bool vertical)
 {
     Q_ASSERT(src->width == dst->width && src->height == dst->height && src->depth == dst->depth);
-    int w = src->width;
-    int h = src->height;
-    int depth = src->depth;
+    auto w = src->width;
+    auto h = src->height;
+    auto depth = src->depth;
 
     if (src->depth == 1) {
         w = (w + 7) / 8; // byte aligned width
         depth = 8;
     }
 
-    int dstX0 = 0, dstXIncr = 1;
-    int dstY0 = 0, dstYIncr = 1;
+    auto dstX0 = 0, dstXIncr = 1;
+    auto dstY0 = 0, dstYIncr = 1;
     if (horizontal) {
         // 0 -> w-1, 1 -> w-2, 2 -> w-3, ...
         dstX0 = w - 1;
@@ -3036,23 +3036,23 @@ inline void do_mirror(QImageData *dst, QImageData *src, bool horizontal, bool ve
     // bytes have to be flipped too when horizontally mirroring a 1 bit-per-pixel image.
     if (horizontal && dst->depth == 1) {
         Q_ASSERT(dst->format == QImage::Format_Mono || dst->format == QImage::Format_MonoLSB);
-        const int shift = 8 - (dst->width % 8);
-        const uchar *bitflip = qt_get_bitflip_array();
-        for (int y = 0; y < h; ++y) {
-            uchar *begin = dst->data + y * dst->bytes_per_line;
-            uchar *end = begin + dst->bytes_per_line;
-            for (uchar *p = begin; p < end; ++p) {
+        const auto shift = 8 - (dst->width % 8);
+        auto bitflip = qt_get_bitflip_array();
+        for (auto y = 0; y < h; ++y) {
+            auto begin = dst->data + y * dst->bytes_per_line;
+            auto end = begin + dst->bytes_per_line;
+            for (auto p = begin; p < end; ++p) {
                 *p = bitflip[*p];
                 // When the data is non-byte aligned, an extra bit shift (of the number of
                 // unused bits at the end) is needed for the entire scanline.
                 if (shift != 8 && p != begin) {
                     if (dst->format == QImage::Format_Mono) {
-                        for (int i = 0; i < shift; ++i) {
+                        for (auto i = 0; i < shift; ++i) {
                             p[-1] <<= 1;
                             p[-1] |= (*p & (128 >> i)) >> (7 - i);
                         }
                     } else {
-                        for (int i = 0; i < shift; ++i) {
+                        for (auto i = 0; i < shift; ++i) {
                             p[-1] >>= 1;
                             p[-1] |= (*p & (1 << i)) << (7 - i);
                         }
@@ -3131,18 +3131,18 @@ inline void rgbSwapped_generic(int width, int height, const QImage *src, QImage 
     const uint alphaGreenMask = (((1 << layout->alphaWidth) - 1) << layout->alphaShift)
             | (((1 << layout->greenWidth) - 1) << layout->greenShift);
 
-    const int buffer_size = 2048;
+    const auto buffer_size = 2048;
     uint buffer[buffer_size];
-    for (int i = 0; i < height; ++i) {
-        uchar *q = dst->scanLine(i);
-        const uchar *p = src->constScanLine(i);
-        int x = 0;
+    for (auto i = 0; i < height; ++i) {
+        auto q = dst->scanLine(i);
+        auto p = src->constScanLine(i);
+        auto x = 0;
         while (x < width) {
-            int l = qMin(width - x, buffer_size);
-            const uint *ptr = fetch(buffer, p, x, l);
-            for (int j = 0; j < l; ++j) {
-                uint red = (ptr[j] >> layout->redShift) & redBlueMask;
-                uint blue = (ptr[j] >> layout->blueShift) & redBlueMask;
+            auto l = qMin(width - x, buffer_size);
+            auto ptr = fetch(buffer, p, x, l);
+            for (auto j = 0; j < l; ++j) {
+                auto red = (ptr[j] >> layout->redShift) & redBlueMask;
+                auto blue = (ptr[j] >> layout->blueShift) & redBlueMask;
                 buffer[j] = (ptr[j] & alphaGreenMask)
                         | (red << layout->blueShift)
                         | (blue << layout->redShift);
@@ -3175,8 +3175,8 @@ QImage QImage::rgbSwapped_helper() const
     case Format_MonoLSB:
     case Format_Indexed8:
         res = copy();
-        for (int i = 0; i < res.d->colortable.size(); i++) {
-            QRgb c = res.d->colortable.at(i);
+        for (auto i = 0; i < res.d->colortable.size(); i++) {
+            auto c = res.d->colortable.at(i);
             res.d->colortable[i] = QRgb(((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00));
         }
         break;
@@ -3190,12 +3190,12 @@ QImage QImage::rgbSwapped_helper() const
 #endif
         res = QImage(d->width, d->height, d->format);
         QIMAGE_SANITYCHECK_MEMORY(res);
-        for (int i = 0; i < d->height; i++) {
-            uint *q = (uint*)res.scanLine(i);
-            const uint *p = (const uint*)constScanLine(i);
-            const uint *end = p + d->width;
+        for (auto i = 0; i < d->height; i++) {
+            auto q = (uint*)res.scanLine(i);
+            auto p = (const uint*)constScanLine(i);
+            auto end = p + d->width;
             while (p < end) {
-                uint c = *p;
+                auto c = *p;
                 *q = ((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00);
                 p++;
                 q++;
@@ -3205,12 +3205,12 @@ QImage QImage::rgbSwapped_helper() const
     case Format_RGB16:
         res = QImage(d->width, d->height, d->format);
         QIMAGE_SANITYCHECK_MEMORY(res);
-        for (int i = 0; i < d->height; i++) {
-            ushort *q = (ushort*)res.scanLine(i);
-            const ushort *p = (const ushort*)constScanLine(i);
-            const ushort *end = p + d->width;
+        for (auto i = 0; i < d->height; i++) {
+            auto q = (ushort*)res.scanLine(i);
+            auto p = (const ushort*)constScanLine(i);
+            auto end = p + d->width;
             while (p < end) {
-                ushort c = *p;
+                auto c = *p;
                 *q = ((c << 11) & 0xf800) | ((c >> 11) & 0x1f) | (c & 0x07e0);
                 p++;
                 q++;
@@ -3223,10 +3223,10 @@ QImage QImage::rgbSwapped_helper() const
     case Format_A2RGB30_Premultiplied:
         res = QImage(d->width, d->height, d->format);
         QIMAGE_SANITYCHECK_MEMORY(res);
-        for (int i = 0; i < d->height; i++) {
-            uint *q = (uint*)res.scanLine(i);
-            const uint *p = (const uint*)constScanLine(i);
-            const uint *end = p + d->width;
+        for (auto i = 0; i < d->height; i++) {
+            auto q = (uint*)res.scanLine(i);
+            auto p = (const uint*)constScanLine(i);
+            auto end = p + d->width;
             while (p < end) {
                 *q = qRgbSwapRgb30(*p);
                 p++;
@@ -3264,8 +3264,8 @@ void QImage::rgbSwapped_inplace()
     case Format_Mono:
     case Format_MonoLSB:
     case Format_Indexed8:
-        for (int i = 0; i < d->colortable.size(); i++) {
-            QRgb c = d->colortable.at(i);
+        for (auto i = 0; i < d->colortable.size(); i++) {
+            auto c = d->colortable.at(i);
             d->colortable[i] = QRgb(((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00));
         }
         break;
@@ -3277,22 +3277,22 @@ void QImage::rgbSwapped_inplace()
     case Format_RGBA8888:
     case Format_RGBA8888_Premultiplied:
 #endif
-        for (int i = 0; i < d->height; i++) {
-            uint *p = (uint*)scanLine(i);
-            uint *end = p + d->width;
+        for (auto i = 0; i < d->height; i++) {
+            auto p = (uint*)scanLine(i);
+            auto end = p + d->width;
             while (p < end) {
-                uint c = *p;
+                auto c = *p;
                 *p = ((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00);
                 p++;
             }
         }
         break;
     case Format_RGB16:
-        for (int i = 0; i < d->height; i++) {
-            ushort *p = (ushort*)scanLine(i);
-            ushort *end = p + d->width;
+        for (auto i = 0; i < d->height; i++) {
+            auto p = (ushort*)scanLine(i);
+            auto end = p + d->width;
             while (p < end) {
-                ushort c = *p;
+                auto c = *p;
                 *p = ((c << 11) & 0xf800) | ((c >> 11) & 0x1f) | (c & 0x07e0);
                 p++;
             }
@@ -3302,9 +3302,9 @@ void QImage::rgbSwapped_inplace()
     case Format_A2BGR30_Premultiplied:
     case Format_RGB30:
     case Format_A2RGB30_Premultiplied:
-        for (int i = 0; i < d->height; i++) {
-            uint *p = (uint*)scanLine(i);
-            uint *end = p + d->width;
+        for (auto i = 0; i < d->height; i++) {
+            auto p = (uint*)scanLine(i);
+            auto end = p + d->width;
             while (p < end) {
                 *p = qRgbSwapRgb30(*p);
                 p++;
@@ -3337,7 +3337,7 @@ void QImage::rgbSwapped_inplace()
 
 bool QImage::load(const QString &fileName, const char* format)
 {
-    QImage image = QImageReader(fileName, format).read();
+    auto image = QImageReader(fileName, format).read();
     operator=(image);
     return !isNull();
 }
@@ -3351,7 +3351,7 @@ bool QImage::load(const QString &fileName, const char* format)
 
 bool QImage::load(QIODevice* device, const char* format)
 {
-    QImage image = QImageReader(device, format).read();
+    auto image = QImageReader(device, format).read();
     operator=(image);
     return !isNull();
 }
@@ -3372,7 +3372,7 @@ bool QImage::load(QIODevice* device, const char* format)
 
 bool QImage::loadFromData(const uchar *data, int len, const char *format)
 {
-    QImage image = fromData(data, len, format);
+    auto image = fromData(data, len, format);
     operator=(image);
     return !isNull();
 }
@@ -3407,7 +3407,7 @@ bool QImage::loadFromData(const uchar *data, int len, const char *format)
 
 QImage QImage::fromData(const uchar *data, int size, const char *format)
 {
-    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(data), size);
+    auto a = QByteArray::fromRawData(reinterpret_cast<const char *>(data), size);
     QBuffer b;
     b.setData(a);
     b.open(QIODevice::ReadOnly);
@@ -3562,23 +3562,23 @@ bool QImage::operator==(const QImage & i) const
 
     if (d->format != Format_RGB32) {
         if (d->format >= Format_ARGB32) { // all bits defined
-            const int n = d->width * d->depth / 8;
+            const auto n = d->width * d->depth / 8;
             if (n == d->bytes_per_line && n == i.d->bytes_per_line) {
                 if (memcmp(bits(), i.bits(), d->nbytes))
                     return false;
             } else {
-                for (int y = 0; y < d->height; ++y) {
+                for (auto y = 0; y < d->height; ++y) {
                     if (memcmp(scanLine(y), i.scanLine(y), n))
                         return false;
                 }
             }
         } else {
-            const int w = width();
-            const int h = height();
+            const auto w = width();
+            const auto h = height();
             const QVector<QRgb> &colortable = d->colortable;
             const QVector<QRgb> &icolortable = i.d->colortable;
-            for (int y=0; y<h; ++y) {
-                for (int x=0; x<w; ++x) {
+            for (auto y=0; y<h; ++y) {
+                for (auto x=0; x<w; ++x) {
                     if (colortable[pixelIndex(x, y)] != icolortable[i.pixelIndex(x, y)])
                         return false;
                 }
@@ -3586,10 +3586,10 @@ bool QImage::operator==(const QImage & i) const
         }
     } else {
         //alpha channel undefined, so we must mask it out
-        for(int l = 0; l < d->height; l++) {
-            int w = d->width;
-            const uint *p1 = reinterpret_cast<const uint*>(scanLine(l));
-            const uint *p2 = reinterpret_cast<const uint*>(i.scanLine(l));
+        for(auto l = 0; l < d->height; l++) {
+            auto w = d->width;
+            auto p1 = reinterpret_cast<const uint*>(scanLine(l));
+            auto p2 = reinterpret_cast<const uint*>(i.scanLine(l));
             while (w--) {
                 if ((*p1++ & 0x00ffffff) != (*p2++ & 0x00ffffff))
                     return false;
@@ -3865,9 +3865,9 @@ QPaintEngine *QImage::paintEngine() const
         return 0;
 
     if (!d->paintEngine) {
-        QPaintDevice *paintDevice = const_cast<QImage *>(this);
+        auto paintDevice = const_cast<QImage *>(this);
         QPaintEngine *paintEngine = 0;
-        QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+        auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
         if (platformIntegration)
             paintEngine = platformIntegration->createImagePaintEngine(paintDevice);
         d->paintEngine = paintEngine ? paintEngine : new QRasterPaintEngine(paintDevice);
@@ -3993,24 +3993,24 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
                      uchar *dptr, int dbpl, int p_inc, int dHeight,
                      const uchar *sptr, int sbpl, int sWidth, int sHeight)
 {
-    int m11 = int(trueMat.m11()*4096.0);
-    int m12 = int(trueMat.m12()*4096.0);
-    int m21 = int(trueMat.m21()*4096.0);
-    int m22 = int(trueMat.m22()*4096.0);
-    int dx  = qRound(trueMat.dx()*4096.0);
-    int dy  = qRound(trueMat.dy()*4096.0);
+    auto m11 = int(trueMat.m11()*4096.0);
+    auto m12 = int(trueMat.m12()*4096.0);
+    auto m21 = int(trueMat.m21()*4096.0);
+    auto m22 = int(trueMat.m22()*4096.0);
+    auto dx  = qRound(trueMat.dx()*4096.0);
+    auto dy  = qRound(trueMat.dy()*4096.0);
 
-    int m21ydx = dx + (xoffset<<16) + (m11 + m21) / 2;
-    int m22ydy = dy + (m12 + m22) / 2;
+    auto m21ydx = dx + (xoffset<<16) + (m11 + m21) / 2;
+    auto m22ydy = dy + (m12 + m22) / 2;
     uint trigx;
     uint trigy;
     uint maxws = sWidth<<12;
     uint maxhs = sHeight<<12;
 
-    for (int y=0; y<dHeight; y++) {                // for each target scanline
+    for (auto y=0; y<dHeight; y++) {                // for each target scanline
         trigx = m21ydx;
         trigy = m22ydy;
-        uchar *maxp = dptr + dbpl;
+        auto maxp = dptr + dbpl;
         if (depth != 1) {
             switch (depth) {
                 case 8:                                // 8 bpp transform
@@ -4038,7 +4038,7 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
                 case 24:                        // 24 bpp transform
                 while (dptr < maxp) {
                     if (trigx < maxws && trigy < maxhs) {
-                        const uchar *p2 = sptr+sbpl*(trigy>>12) + ((trigx>>12)*3);
+                        auto p2 = sptr+sbpl*(trigy>>12) + ((trigx>>12)*3);
                         dptr[0] = p2[0];
                         dptr[1] = p2[1];
                         dptr[2] = p2[2];
@@ -4173,8 +4173,8 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
     if (!d)
         return;
 
-    int w = d->width;
-    int h = d->height;
+    auto w = d->width;
+    auto h = d->height;
 
     if (w != alphaChannel.d->width || h != alphaChannel.d->height) {
         qWarning("QImage::setAlphaChannel: "
@@ -4198,14 +4198,14 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
 
     // Slight optimization since alphachannels are returned as 8-bit grays.
     if (alphaChannel.format() == QImage::Format_Alpha8 ||( alphaChannel.d->depth == 8 && alphaChannel.isGrayscale())) {
-        const uchar *src_data = alphaChannel.d->data;
-        uchar *dest_data = d->data;
-        for (int y=0; y<h; ++y) {
-            const uchar *src = src_data;
-            QRgb *dest = (QRgb *)dest_data;
-            for (int x=0; x<w; ++x) {
+        auto src_data = alphaChannel.d->data;
+        auto dest_data = d->data;
+        for (auto y=0; y<h; ++y) {
+            auto src = src_data;
+            auto dest = (QRgb *)dest_data;
+            for (auto x=0; x<w; ++x) {
                 int alpha = *src;
-                int destAlpha = qt_div_255(alpha * qAlpha(*dest));
+                auto destAlpha = qt_div_255(alpha * qAlpha(*dest));
                 *dest = ((destAlpha << 24)
                          | (qt_div_255(qRed(*dest) * alpha) << 16)
                          | (qt_div_255(qGreen(*dest) * alpha) << 8)
@@ -4218,15 +4218,15 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
         }
 
     } else {
-        const QImage sourceImage = alphaChannel.convertToFormat(QImage::Format_RGB32);
-        const uchar *src_data = sourceImage.d->data;
-        uchar *dest_data = d->data;
-        for (int y=0; y<h; ++y) {
-            const QRgb *src = (const QRgb *) src_data;
-            QRgb *dest = (QRgb *) dest_data;
-            for (int x=0; x<w; ++x) {
-                int alpha = qGray(*src);
-                int destAlpha = qt_div_255(alpha * qAlpha(*dest));
+        const auto sourceImage = alphaChannel.convertToFormat(QImage::Format_RGB32);
+        auto src_data = sourceImage.d->data;
+        auto dest_data = d->data;
+        for (auto y=0; y<h; ++y) {
+            auto src = (const QRgb *) src_data;
+            auto dest = (QRgb *) dest_data;
+            for (auto x=0; x<w; ++x) {
+                auto alpha = qGray(*src);
+                auto destAlpha = qt_div_255(alpha * qAlpha(*dest));
                 *dest = ((destAlpha << 24)
                          | (qt_div_255(qRed(*dest) * alpha) << 16)
                          | (qt_div_255(qGreen(*dest) * alpha) << 8)
@@ -4271,14 +4271,14 @@ QImage QImage::alphaChannel() const
     if (!d)
         return QImage();
 
-    int w = d->width;
-    int h = d->height;
+    auto w = d->width;
+    auto h = d->height;
 
     QImage image(w, h, Format_Indexed8);
     image.setColorCount(256);
 
     // set up gray scale table.
-    for (int i=0; i<256; ++i)
+    for (auto i=0; i<256; ++i)
         image.setColor(i, qRgb(i, i, i));
 
     if (!hasAlphaChannel()) {
@@ -4287,12 +4287,12 @@ QImage QImage::alphaChannel() const
     }
 
     if (d->format == Format_Indexed8) {
-        const uchar *src_data = d->data;
-        uchar *dest_data = image.d->data;
-        for (int y=0; y<h; ++y) {
-            const uchar *src = src_data;
-            uchar *dest = dest_data;
-            for (int x=0; x<w; ++x) {
+        auto src_data = d->data;
+        auto dest_data = image.d->data;
+        for (auto y=0; y<h; ++y) {
+            auto src = src_data;
+            auto dest = dest_data;
+            for (auto x=0; x<w; ++x) {
                 *dest = qAlpha(d->colortable.at(*src));
                 ++dest;
                 ++src;
@@ -4301,24 +4301,24 @@ QImage QImage::alphaChannel() const
             dest_data += image.d->bytes_per_line;
         }
     } else if (d->format == Format_Alpha8) {
-        const uchar *src_data = d->data;
-        uchar *dest_data = image.d->data;
+        auto src_data = d->data;
+        auto dest_data = image.d->data;
         memcpy(dest_data, src_data, d->bytes_per_line * h);
     } else {
-        QImage alpha32 = *this;
-        bool canSkipConversion = (d->format == Format_ARGB32 || d->format == Format_ARGB32_Premultiplied);
+        auto alpha32 = *this;
+        auto canSkipConversion = (d->format == Format_ARGB32 || d->format == Format_ARGB32_Premultiplied);
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         canSkipConversion = canSkipConversion || (d->format == Format_RGBA8888 || d->format == Format_RGBA8888_Premultiplied);
 #endif
         if (!canSkipConversion)
             alpha32 = convertToFormat(Format_ARGB32);
 
-        const uchar *src_data = alpha32.d->data;
-        uchar *dest_data = image.d->data;
-        for (int y=0; y<h; ++y) {
-            const QRgb *src = (const QRgb *) src_data;
-            uchar *dest = dest_data;
-            for (int x=0; x<w; ++x) {
+        auto src_data = alpha32.d->data;
+        auto dest_data = image.d->data;
+        for (auto y=0; y<h; ++y) {
+            auto src = (const QRgb *) src_data;
+            auto dest = dest_data;
+            for (auto x=0; x<w; ++x) {
                 *dest = qAlpha(*src);
                 ++dest;
                 ++src;
@@ -4341,7 +4341,7 @@ bool QImage::hasAlphaChannel() const
 {
     if (!d)
         return false;
-    const QPixelFormat format = pixelFormat();
+    const auto format = pixelFormat();
     if (format.alphaUsage() == QPixelFormat::UsesAlpha)
         return true;
     if (format.colorModel() == QPixelFormat::Indexed)
@@ -4364,7 +4364,7 @@ int QImage::bitPlaneCount() const
 {
     if (!d)
         return 0;
-    int bpc = 0;
+    auto bpc = 0;
     switch (d->format) {
     case QImage::Format_Invalid:
         break;
@@ -4400,7 +4400,7 @@ int QImage::bitPlaneCount() const
    of width \a w by height \a h pixels.
 */
 QImage QImage::smoothScaled(int w, int h) const {
-    QImage src = *this;
+    auto src = *this;
     switch (src.format()) {
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32_Premultiplied:
@@ -4426,8 +4426,8 @@ static QImage rotated90(const QImage &image) {
     out.setDotsPerMeterY(image.dotsPerMeterX());
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
-    int w = image.width();
-    int h = image.height();
+    auto w = image.width();
+    auto h = image.height();
     switch (image.format()) {
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32:
@@ -4471,12 +4471,12 @@ static QImage rotated90(const QImage &image) {
                         out.bytesPerLine());
         break;
     default:
-        for (int y=0; y<h; ++y) {
+        for (auto y=0; y<h; ++y) {
             if (image.colorCount())
-                for (int x=0; x<w; ++x)
+                for (auto x=0; x<w; ++x)
                     out.setPixel(h-y-1, x, image.pixelIndex(x, y));
             else
-                for (int x=0; x<w; ++x)
+                for (auto x=0; x<w; ++x)
                     out.setPixel(h-y-1, x, image.pixel(x, y));
         }
         break;
@@ -4496,8 +4496,8 @@ static QImage rotated270(const QImage &image) {
     out.setDotsPerMeterY(image.dotsPerMeterX());
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
-    int w = image.width();
-    int h = image.height();
+    auto w = image.width();
+    auto h = image.height();
     switch (image.format()) {
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32:
@@ -4541,12 +4541,12 @@ static QImage rotated270(const QImage &image) {
                        out.bytesPerLine());
         break;
     default:
-        for (int y=0; y<h; ++y) {
+        for (auto y=0; y<h; ++y) {
             if (image.colorCount())
-                for (int x=0; x<w; ++x)
+                for (auto x=0; x<w; ++x)
                     out.setPixel(y, w-x-1, image.pixelIndex(x, y));
             else
-                for (int x=0; x<w; ++x)
+                for (auto x=0; x<w; ++x)
                     out.setPixel(y, w-x-1, image.pixel(x, y));
         }
         break;
@@ -4577,17 +4577,17 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
         return QImage();
 
     // source image data
-    int ws = width();
-    int hs = height();
+    auto ws = width();
+    auto hs = height();
 
     // target image data
     int wd;
     int hd;
 
     // compute size of target image
-    QTransform mat = trueMatrix(matrix, ws, hs);
-    bool complex_xform = false;
-    bool scale_xform = false;
+    auto mat = trueMatrix(matrix, ws, hs);
+    auto complex_xform = false;
+    auto scale_xform = false;
     if (mat.type() <= QTransform::TxScale) {
         if (mat.type() == QTransform::TxNone) // identity matrix
             return *this;
@@ -4612,7 +4612,7 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
 
         QPolygonF a(QRectF(0, 0, ws, hs));
         a = mat.map(a);
-        QRect r = a.boundingRect().toAlignedRect();
+        auto r = a.boundingRect().toAlignedRect();
         wd = r.width();
         hd = r.height();
         complex_xform = true;
@@ -4634,12 +4634,12 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
         }
     }
 
-    int bpp = depth();
+    auto bpp = depth();
 
-    int sbpl = bytesPerLine();
-    const uchar *sptr = bits();
+    auto sbpl = bytesPerLine();
+    auto sptr = bits();
 
-    QImage::Format target_format = d->format;
+    auto target_format = d->format;
 
     if (complex_xform || mode == Qt::SmoothTransformation) {
         if (d->format < QImage::Format_RGB32 || !hasAlphaChannel()) {
@@ -4671,7 +4671,7 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
 
     if (target_format >= QImage::Format_RGB32) {
         // Prevent QPainter from applying devicePixelRatio corrections
-        const QImage sImage = (devicePixelRatio() != 1) ? QImage(constBits(), width(), height(), format()) : *this;
+        const auto sImage = (devicePixelRatio() != 1) ? QImage(constBits(), width(), height(), format()) : *this;
 
         Q_ASSERT(sImage.devicePixelRatio() == 1);
         Q_ASSERT(sImage.devicePixelRatio() == dImage.devicePixelRatio());
@@ -4690,8 +4690,8 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
             return QImage();
 
         // create target image (some of the code is from QImage::copy())
-        int type = format() == Format_Mono ? QT_XFORM_TYPE_MSBFIRST : QT_XFORM_TYPE_LSBFIRST;
-        int dbpl = dImage.bytesPerLine();
+        auto type = format() == Format_Mono ? QT_XFORM_TYPE_MSBFIRST : QT_XFORM_TYPE_LSBFIRST;
+        auto dbpl = dImage.bytesPerLine();
         qt_xForm_helper(mat, 0, type, bpp, dImage.bits(), dbpl, 0, hd, sptr, sbpl, ws, hs);
     }
     copyMetadata(dImage.d, d);
@@ -4723,8 +4723,8 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
 QTransform QImage::trueMatrix(const QTransform &matrix, int w, int h)
 {
     const QRectF rect(0, 0, w, h);
-    const QRect mapped = matrix.mapRect(rect).toAlignedRect();
-    const QPoint delta = mapped.topLeft();
+    const auto mapped = matrix.mapRect(rect).toAlignedRect();
+    const auto delta = mapped.topLeft();
     return matrix * QTransform().translate(-delta.x(), -delta.y());
 }
 
@@ -5163,7 +5163,7 @@ QPixelFormat QImage::toPixelFormat(QImage::Format format) Q_DECL_NOTHROW
 */
 QImage::Format QImage::toImageFormat(QPixelFormat format) Q_DECL_NOTHROW
 {
-    for (int i = 0; i < NImageFormats; i++) {
+    for (auto i = 0; i < NImageFormats; i++) {
         if (format == pixelformats[i])
             return Format(i);
     }

@@ -59,11 +59,11 @@ void qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper,
     Q_ASSERT(helper);
     Q_ASSERT(context);
 
-    bool tryARB = true;
+    auto tryARB = true;
 
     if (context->isOpenGLES()) {
         if (context->format().majorVersion() >= 3) {
-            QOpenGLES3Helper *es3 = static_cast<QOpenGLExtensions *>(context->functions())->gles3Helper();
+            auto es3 = static_cast<QOpenGLExtensions *>(context->functions())->gles3Helper();
             helper->GenVertexArrays = es3->GenVertexArrays;
             helper->DeleteVertexArrays = es3->DeleteVertexArrays;
             helper->BindVertexArray = es3->BindVertexArray;
@@ -145,7 +145,7 @@ bool QOpenGLVertexArrayObjectPrivate::create()
 
     Q_Q(QOpenGLVertexArrayObject);
 
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (!ctx) {
         qWarning("QOpenGLVertexArrayObject::create() requires a valid current OpenGL context");
         return false;
@@ -167,7 +167,7 @@ bool QOpenGLVertexArrayObjectPrivate::create()
     } else {
         vaoFuncs.core_3_0 = 0;
         vaoFuncsType = NotSupported;
-        QSurfaceFormat format = ctx->format();
+        auto format = ctx->format();
 #ifndef QT_OPENGL_ES_2
         if (format.version() >= qMakePair<int, int>(3,2)) {
             vaoFuncs.core_3_2 = ctx->versionFunctions<QOpenGLFunctions_3_2_Core>();
@@ -354,7 +354,7 @@ QOpenGLVertexArrayObject::QOpenGLVertexArrayObject(QOpenGLVertexArrayObjectPriva
 */
 QOpenGLVertexArrayObject::~QOpenGLVertexArrayObject()
 {
-    QOpenGLContext* ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
 
     Q_D(QOpenGLVertexArrayObject);
     QOpenGLContext *oldContext = 0;

@@ -90,7 +90,7 @@ public:
         QOpenGLMultiGroupSharedResource *&shaders = m_storage.localData();
         if (!shaders)
             shaders = new QOpenGLMultiGroupSharedResource;
-        QOpenGLEngineSharedShadersResource *resource =
+        auto resource =
             shaders->value<QOpenGLEngineSharedShadersResource>(context);
         return resource ? resource->shaders() : 0;
     }
@@ -124,7 +124,7 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
     around without having to change the order of the glsl strings. It is hoped this will
     make future hard-to-find runtime bugs more obvious and generally give more solid code.
 */
-    static bool snippetsPopulated = false;
+    static auto snippetsPopulated = false;
     if (!snippetsPopulated) {
 
         const char** code = qShaderSnippets; // shortcut
@@ -222,7 +222,7 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
 
     CachedShader simpleShaderCache(fragSource, vertexSource);
 
-    bool inCache = simpleShaderCache.load(simpleShaderProg, context);
+    auto inCache = simpleShaderCache.load(simpleShaderProg, context);
 
     if (!inCache) {
         vertexShader = new QOpenGLShader(QOpenGLShader::Vertex);
@@ -333,8 +333,8 @@ QByteArray QOpenGLEngineSharedShaders::snippetNameStr(SnippetName name)
 // The program is return bound.
 QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QOpenGLEngineShaderProg &prog)
 {
-    for (int i = 0; i < cachedPrograms.size(); ++i) {
-        QOpenGLEngineShaderProg *cachedProg = cachedPrograms[i];
+    for (auto i = 0; i < cachedPrograms.size(); ++i) {
+        auto cachedProg = cachedPrograms[i];
         if (*cachedProg == prog) {
             // Move the program to the top of the list as a poor-man's cache algo
             cachedPrograms.move(i, 0);
@@ -365,7 +365,7 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
         QScopedPointer<QOpenGLShaderProgram> shaderProgram(new QOpenGLShaderProgram);
 
         CachedShader shaderCache(fragSource, vertexSource);
-        bool inCache = shaderCache.load(shaderProgram.data(), QOpenGLContext::currentContext());
+        auto inCache = shaderCache.load(shaderProgram.data(), QOpenGLContext::currentContext());
 
         if (!inCache) {
 
@@ -461,7 +461,7 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
             // The cache is full, so delete the last 5 programs in the list.
             // These programs will be least used, as a program us bumped to
             // the top of the list when it's used.
-            for (int i = 0; i < 5; ++i) {
+            for (auto i = 0; i < 5; ++i) {
                 delete cachedPrograms.last();
                 cachedPrograms.removeLast();
             }
@@ -476,8 +476,8 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
 void QOpenGLEngineSharedShaders::cleanupCustomStage(QOpenGLCustomShaderStage* stage)
 {
     // Remove any shader programs which has this as the custom shader src:
-    for (int i = 0; i < cachedPrograms.size(); ++i) {
-        QOpenGLEngineShaderProg *cachedProg = cachedPrograms[i];
+    for (auto i = 0; i < cachedPrograms.size(); ++i) {
+        auto cachedProg = cachedPrograms[i];
         if (cachedProg->customStageSource == stage->source()) {
             delete cachedProg;
             cachedPrograms.removeAt(i);
@@ -627,10 +627,10 @@ QOpenGLShaderProgram* QOpenGLEngineShaderManager::currentProgram()
 void QOpenGLEngineShaderManager::useSimpleProgram()
 {
     sharedShaders->simpleProgram()->bind();
-    QOpenGLContextPrivate* ctx_d = ctx->d_func();
+    auto ctx_d = ctx->d_func();
     Q_UNUSED(ctx_d);
 
-    QOpenGL2PaintEngineEx *active_engine = static_cast<QOpenGL2PaintEngineEx *>(ctx_d->active_engine);
+    auto active_engine = static_cast<QOpenGL2PaintEngineEx *>(ctx_d->active_engine);
 
     active_engine->d_func()->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
     active_engine->d_func()->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, false);
@@ -642,8 +642,8 @@ void QOpenGLEngineShaderManager::useSimpleProgram()
 void QOpenGLEngineShaderManager::useBlitProgram()
 {
     sharedShaders->blitProgram()->bind();
-    QOpenGLContextPrivate* ctx_d = ctx->d_func();
-    QOpenGL2PaintEngineEx *active_engine = static_cast<QOpenGL2PaintEngineEx *>(ctx_d->active_engine);
+    auto ctx_d = ctx->d_func();
+    auto active_engine = static_cast<QOpenGL2PaintEngineEx *>(ctx_d->active_engine);
     active_engine->d_func()->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
     active_engine->d_func()->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, true);
     active_engine->d_func()->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
@@ -669,7 +669,7 @@ bool QOpenGLEngineShaderManager::useCorrectShaderProg()
     if (!shaderProgNeedsChanging)
         return false;
 
-    bool useCustomSrc = customSrcStage != 0;
+    auto useCustomSrc = customSrcStage != 0;
     if (useCustomSrc && srcPixelType != QOpenGLEngineShaderManager::ImageSrc && srcPixelType != Qt::TexturePattern) {
         useCustomSrc = false;
         qWarning("QOpenGLEngineShaderManager - Ignoring custom shader stage for non image src");
@@ -677,13 +677,13 @@ bool QOpenGLEngineShaderManager::useCorrectShaderProg()
 
     QOpenGLEngineShaderProg requiredProgram;
 
-    bool texCoords = false;
+    auto texCoords = false;
 
     // Choose vertex shader shader position function (which typically also sets
     // varyings) and the source pixel (srcPixel) fragment shader function:
     requiredProgram.positionVertexShader = QOpenGLEngineSharedShaders::InvalidSnippetName;
     requiredProgram.srcPixelFragShader = QOpenGLEngineSharedShaders::InvalidSnippetName;
-    bool isAffine = brushTransform.isAffine();
+    auto isAffine = brushTransform.isAffine();
     if ( (srcPixelType >= Qt::Dense1Pattern) && (srcPixelType <= Qt::DiagCrossPattern) ) {
         if (isAffine)
             requiredProgram.positionVertexShader = QOpenGLEngineSharedShaders::AffinePositionWithPatternBrushVertexShader;
@@ -758,15 +758,15 @@ bool QOpenGLEngineShaderManager::useCorrectShaderProg()
         requiredProgram.customStageSource = customSrcStage->source();
     }
 
-    const bool hasCompose = compositionMode > QPainter::CompositionMode_Plus;
-    const bool hasMask = maskType != QOpenGLEngineShaderManager::NoMask;
+    const auto hasCompose = compositionMode > QPainter::CompositionMode_Plus;
+    const auto hasMask = maskType != QOpenGLEngineShaderManager::NoMask;
 
     // Choose fragment shader main function:
     if (opacityMode == AttributeOpacity) {
         Q_ASSERT(!hasCompose && !hasMask);
         requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader_ImageArrays;
     } else {
-        bool useGlobalOpacity = (opacityMode == UniformOpacity);
+        auto useGlobalOpacity = (opacityMode == UniformOpacity);
         if (hasCompose && hasMask && useGlobalOpacity)
             requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader_CMO;
         if (hasCompose && hasMask && !useGlobalOpacity)
@@ -878,8 +878,8 @@ bool QOpenGLEngineShaderManager::useCorrectShaderProg()
 
     // Make sure all the vertex attribute arrays the program uses are enabled (and the ones it
     // doesn't use are disabled)
-    QOpenGLContextPrivate* ctx_d = ctx->d_func();
-    QOpenGL2PaintEngineEx *active_engine = static_cast<QOpenGL2PaintEngineEx *>(ctx_d->active_engine);
+    auto ctx_d = ctx->d_func();
+    auto active_engine = static_cast<QOpenGL2PaintEngineEx *>(ctx_d->active_engine);
     active_engine->d_func()->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
     active_engine->d_func()->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, currentShaderProg && currentShaderProg->useTextureCoords);
     active_engine->d_func()->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, currentShaderProg && currentShaderProg->useOpacityAttribute);

@@ -798,7 +798,7 @@ static const struct {
 */
 QKeySequence::QKeySequence(StandardKey key)
 {
-    const QList <QKeySequence> bindings = keyBindings(key);
+    const auto bindings = keyBindings(key);
     //pick only the first/primary shortcut from current bindings
     if (bindings.size() > 0) {
         d = bindings.first().d;
@@ -949,14 +949,14 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
     if(qt_sequence_no_mnemonics)
         return ret;
 
-    bool found = false;
-    int p = 0;
+    auto found = false;
+    auto p = 0;
     while (p >= 0) {
         p = text.indexOf(QLatin1Char('&'), p) + 1;
         if (p <= 0 || p >= (int)text.length())
             break;
         if (text.at(p) != QLatin1Char('&')) {
-            QChar c = text.at(p);
+            auto c = text.at(p);
             if (c.isPrint()) {
                 if (!found) {
                     c = c.toUpper();
@@ -1001,10 +1001,10 @@ int QKeySequence::assign(const QString &ks)
 */
 int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
 {
-    QString keyseq = ks;
+    auto keyseq = ks;
     QString part;
-    int n = 0;
-    int p = 0, diff = 0;
+    auto n = 0;
+    auto p = 0, diff = 0;
 
     // Run through the whole string, but stop
     // if we have MaxKeyCount keys before the end.
@@ -1057,9 +1057,9 @@ int QKeySequence::decodeString(const QString &str)
 
 int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::SequenceFormat format)
 {
-    int ret = 0;
-    QString accel = str.toLower();
-    bool nativeText = (format == QKeySequence::NativeText);
+    auto ret = 0;
+    auto accel = str.toLower();
+    auto nativeText = (format == QKeySequence::NativeText);
 
     QVector<QModifKeyName> *gmodifs;
     if (nativeText) {
@@ -1107,7 +1107,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
     }
     modifs += *gmodifs; // Test non-translated ones last
 
-    QString sl = accel;
+    auto sl = accel;
 #if defined(Q_OS_MACX)
     for (int i = 0; i < modifs.size(); ++i) {
         const QModifKeyName &mkf = modifs.at(i);
@@ -1118,10 +1118,10 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
         }
     }
 #endif
-    int i = 0;
-    int lastI = 0;
+    auto i = 0;
+    auto lastI = 0;
     while ((i = sl.indexOf(QLatin1Char('+'), i + 1)) != -1) {
-        const QStringRef sub = sl.midRef(lastI, i - lastI + 1);
+        const auto sub = sl.midRef(lastI, i - lastI + 1);
         // If we get here the shortcuts contains at least one '+'. We break up
         // along the following strategy:
         //      Meta+Ctrl++   ( "Meta+", "Ctrl+", "+" )
@@ -1137,8 +1137,8 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
                 return Qt::Key_unknown;
         } else {
             // Identify the modifier
-            bool validModifier = false;
-            for (int j = 0; j < modifs.size(); ++j) {
+            auto validModifier = false;
+            for (auto j = 0; j < modifs.size(); ++j) {
                 const QModifKeyName &mkf = modifs.at(j);
                 if (sub == mkf.name) {
                     ret |= mkf.qt_key;
@@ -1153,11 +1153,11 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
         lastI = i + 1;
     }
 
-    int p = accel.lastIndexOf(QLatin1Char('+'), str.length() - 2); // -2 so that Ctrl++ works
+    auto p = accel.lastIndexOf(QLatin1Char('+'), str.length() - 2); // -2 so that Ctrl++ works
     if(p > 0)
         accel = accel.mid(p + 1);
 
-    int fnum = 0;
+    auto fnum = 0;
     if (accel.length() == 1) {
 #if defined(Q_OS_MACX)
         int qtKey = qtkeyForMacSymbol(accel[0]);
@@ -1174,11 +1174,11 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
         // For NativeText, check the traslation table first,
         // if we don't find anything then try it out with just the untranlated stuff.
         // PortableText will only try the untranlated table.
-        bool found = false;
-        for (int tran = 0; tran < 2; ++tran) {
+        auto found = false;
+        for (auto tran = 0; tran < 2; ++tran) {
             if (!nativeText)
                 ++tran;
-            for (int i = 0; keyname[i].name; ++i) {
+            for (auto i = 0; keyname[i].name; ++i) {
                 QString keyName(tran == 0
                                 ? QCoreApplication::translate("QShortcut", keyname[i].name)
                                 : QString::fromLatin1(keyname[i].name));
@@ -1218,7 +1218,7 @@ static inline void addKey(QString &str, const QString &theKey, QKeySequence::Seq
 
 QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat format)
 {
-    bool nativeText = (format == QKeySequence::NativeText);
+    auto nativeText = (format == QKeySequence::NativeText);
     QString s;
 
     // Handle -1 (Invalid Key) and Qt::Key_unknown gracefully
@@ -1267,7 +1267,7 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
     if ((key & Qt::KeypadModifier) == Qt::KeypadModifier)
         addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Num") : QString::fromLatin1("Num"), format);
 
-    QString p = keyName(key, format);
+    auto p = keyName(key, format);
 
 #if defined(Q_OS_OSX)
     if (nativeText)
@@ -1288,7 +1288,7 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
 */
 QString QKeySequencePrivate::keyName(int key, QKeySequence::SequenceFormat format)
 {
-    bool nativeText = (format == QKeySequence::NativeText);
+    auto nativeText = (format == QKeySequence::NativeText);
     key &= ~(Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier | Qt::KeypadModifier);
     QString p;
 
@@ -1303,7 +1303,7 @@ QString QKeySequencePrivate::keyName(int key, QKeySequence::SequenceFormat forma
             p = nativeText ? QCoreApplication::translate("QShortcut", "F%1").arg(key - Qt::Key_F1 + 1)
                            : QString::fromLatin1("F%1").arg(key - Qt::Key_F1 + 1);
     } else if (key) {
-        int i=0;
+        auto i=0;
 #if defined(Q_OS_MACX)
         if (nativeText) {
             QChar ch = qt_macSymbolForQtKey(key);
@@ -1357,10 +1357,10 @@ QKeySequence::SequenceMatch QKeySequence::matches(const QKeySequence &seq) const
 
     // If equal in length, we have a potential ExactMatch sequence,
     // else we already know it can only be partial.
-    SequenceMatch match = (userN == seqN ? ExactMatch : PartialMatch);
+    auto match = (userN == seqN ? ExactMatch : PartialMatch);
 
     for (uint i = 0; i < userN; ++i) {
-        int userKey = (*this)[i],
+        auto userKey = (*this)[i],
             sequenceKey = seq[i];
         if (userKey != sequenceKey)
             return NoMatch;
@@ -1532,8 +1532,8 @@ QString QKeySequence::toString(SequenceFormat format) const
     QString finalString;
     // A standard string, with no translation or anything like that. In some ways it will
     // look like our latin case on Windows and X11
-    int end = count();
-    for (int i = 0; i < end; ++i) {
+    auto end = count();
+    for (auto i = 0; i < end; ++i) {
         finalString += d->encodeString(d->key[i], format);
         finalString += QLatin1String(", ");
     }
@@ -1565,7 +1565,7 @@ QList<QKeySequence> QKeySequence::listFromString(const QString &str, SequenceFor
 {
     QList<QKeySequence> result;
 
-    const QStringList strings = str.split(QLatin1String("; "));
+    const auto strings = str.split(QLatin1String("; "));
     result.reserve(strings.count());
     for (const QString &string : strings) {
         result << fromString(string, format);
@@ -1610,7 +1610,7 @@ QString QKeySequence::listToString(const QList<QKeySequence> &list, SequenceForm
 QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence)
 {
     Q_STATIC_ASSERT_X(QKeySequencePrivate::MaxKeyCount == 4, "Forgot to adapt QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence) to new QKeySequence::MaxKeyCount");
-    const bool extended = s.version() >= 5 && keysequence.count() > 1;
+    const auto extended = s.version() >= 5 && keysequence.count() > 1;
     s << quint32(extended ? 4 : 1) << quint32(keysequence.d->key[0]);
     if (extended) {
         s << quint32(keysequence.d->key[1])

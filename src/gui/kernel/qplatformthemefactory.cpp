@@ -58,13 +58,13 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
 
 QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString &platformPluginPath)
 {
-    QStringList paramList = key.split(QLatin1Char(':'));
-    const QString platform = paramList.takeFirst().toLower();
+    auto paramList = key.split(QLatin1Char(':'));
+    const auto platform = paramList.takeFirst().toLower();
 #ifndef QT_NO_LIBRARY
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
-        if (QPlatformTheme *ret = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(directLoader(), platform, paramList))
+        if (auto ret = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(directLoader(), platform, paramList))
             return ret;
     }
 #else
@@ -91,8 +91,8 @@ QStringList QPlatformThemeFactory::keys(const QString &platformPluginPath)
             const QString postFix = QStringLiteral(" (from ")
                     + QDir::toNativeSeparators(platformPluginPath)
                     + QLatin1Char(')');
-            const QStringList::iterator end = list.end();
-            for (QStringList::iterator it = list.begin(); it != end; ++it)
+            const auto end = list.end();
+            for (auto it = list.begin(); it != end; ++it)
                 (*it).append(postFix);
         }
     }

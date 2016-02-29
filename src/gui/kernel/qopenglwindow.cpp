@@ -304,7 +304,7 @@ void QOpenGLWindowPrivate::endPaint()
             blitter.create();
 
         QRect windowRect(QPoint(0, 0), fbo->size());
-        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(windowRect, windowRect);
+        auto target = QOpenGLTextureBlitter::targetTransform(windowRect, windowRect);
         blitter.bind();
         blitter.blit(fbo->texture(), target, QOpenGLTextureBlitter::OriginBottomLeft);
         blitter.release();
@@ -498,7 +498,7 @@ GLuint QOpenGLWindow::defaultFramebufferObject() const
     Q_D(const QOpenGLWindow);
     if (d->updateBehavior > NoPartialUpdate && d->fbo)
         return d->fbo->handle();
-    else if (QOpenGLContext *ctx = QOpenGLContext::currentContext())
+    else if (auto ctx = QOpenGLContext::currentContext())
         return ctx->defaultFramebufferObject();
     else
         return 0;

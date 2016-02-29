@@ -127,7 +127,7 @@ void QPaintDeviceWindow::paintEvent(QPaintEvent *event)
  */
 int QPaintDeviceWindow::metric(PaintDeviceMetric metric) const
 {
-    QScreen *screen = this->screen();
+    auto screen = this->screen();
     if (!screen && QGuiApplication::primaryScreen())
         screen = QGuiApplication::primaryScreen();
 

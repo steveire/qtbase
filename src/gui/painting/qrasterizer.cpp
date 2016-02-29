@@ -264,7 +264,7 @@ tail_call:
 
 void QScanConverter::emitSpans(int chunk)
 {
-    for (int dy = 0; dy < CHUNK_SIZE; ++dy) {
+    for (auto dy = 0; dy < CHUNK_SIZE; ++dy) {
         m_x = 0;
         m_y = chunk + dy;
         m_winding = 0;
@@ -280,7 +280,7 @@ static void split(QT_FT_Vector *b)
     b[6] = b[3];
 
     {
-        const QT_FT_Pos temp = (b[1].x + b[2].x)/2;
+        const auto temp = (b[1].x + b[2].x)/2;
 
         b[1].x = (b[0].x + b[1].x)/2;
         b[5].x = (b[2].x + b[3].x)/2;
@@ -289,7 +289,7 @@ static void split(QT_FT_Vector *b)
         b[3].x = (b[2].x + b[4].x)/2;
     }
     {
-        const QT_FT_Pos temp = (b[1].y + b[2].y)/2;
+        const auto temp = (b[1].y + b[2].y)/2;
 
         b[1].y = (b[0].y + b[1].y)/2;
         b[5].y = (b[2].y + b[3].y)/2;
@@ -327,12 +327,12 @@ void qScanConvert(QScanConverter &d, T allVertical)
         return;
     }
     std::sort(d.m_lines.data(), d.m_lines.data() + d.m_lines.size(), QT_PREPEND_NAMESPACE(topOrder));
-    int line = 0;
-    for (int y = d.m_lines.first().top; y <= d.m_bottom; ++y) {
+    auto line = 0;
+    for (auto y = d.m_lines.first().top; y <= d.m_bottom; ++y) {
         for (; line < d.m_lines.size() && d.m_lines.at(line).top == y; ++line) {
             // add node to active list
             if (allVertical()) {
-                QScanConverter::Line *l = &d.m_lines.at(line);
+                auto l = &d.m_lines.at(line);
                 d.m_active.resize(d.m_active.size() + 1);
                 int j;
                 for (j = d.m_active.size() - 2; j >= 0 && QT_PREPEND_NAMESPACE(xOrder)(l, d.m_active.at(j)); --j)
@@ -343,12 +343,12 @@ void qScanConvert(QScanConverter &d, T allVertical)
             }
         }
 
-        int numActive = d.m_active.size();
+        auto numActive = d.m_active.size();
         if (!allVertical()) {
         // use insertion sort instead of qSort, as the active edge list is quite small
         // and in the average case already sorted
-            for (int i = 1; i < numActive; ++i) {
-                QScanConverter::Line *l = d.m_active.at(i);
+            for (auto i = 1; i < numActive; ++i) {
+                auto l = d.m_active.at(i);
                 int j;
                 for (j = i-1; j >= 0 && QT_PREPEND_NAMESPACE(xOrder)(l, d.m_active.at(j)); --j)
                     d.m_active.at(j+1) = d.m_active.at(j);
@@ -356,12 +356,12 @@ void qScanConvert(QScanConverter &d, T allVertical)
             }
         }
 
-        int x = 0;
-        int winding = 0;
-        for (int i = 0; i < numActive; ++i) {
-            QScanConverter::Line *node = d.m_active.at(i);
+        auto x = 0;
+        auto winding = 0;
+        for (auto i = 0; i < numActive; ++i) {
+            auto node = d.m_active.at(i);
 
-            const int current = Q16Dot16ToInt(node->x);
+            const auto current = Q16Dot16ToInt(node->x);
             if (winding & d.m_fillRuleMask)
                 d.m_spanBuffer->addSpan(x, current - x, y, 0xff);
 
@@ -370,7 +370,7 @@ void qScanConvert(QScanConverter &d, T allVertical)
 
             if (node->bottom == y) {
                 // remove node from active list
-                for (int j = i; j < numActive - 1; ++j)
+                for (auto j = i; j < numActive - 1; ++j)
                     d.m_active.at(j) = d.m_active.at(j+1);
 
                 d.m_active.resize(--numActive);
@@ -388,8 +388,8 @@ void QScanConverter::end()
         return;
 
     if (m_lines.size() <= 32) {
-        bool allVertical = true;
-        for (int i = 0; i < m_lines.size(); ++i) {
+        auto allVertical = true;
+        for (auto i = 0; i < m_lines.size(); ++i) {
             if (m_lines.at(i).delta) {
                 allVertical = false;
                 break;
@@ -400,26 +400,26 @@ void QScanConverter::end()
         else
             qScanConvert(*this, QBoolToType<false>());
     } else {
-        for (int chunkTop = m_top; chunkTop <= m_bottom; chunkTop += CHUNK_SIZE) {
+        for (auto chunkTop = m_top; chunkTop <= m_bottom; chunkTop += CHUNK_SIZE) {
             prepareChunk();
 
             Intersection isect = { 0, 0, 0, 0 };
 
-            const int chunkBottom = chunkTop + CHUNK_SIZE;
-            for (int i = 0; i < m_lines.size(); ++i) {
+            const auto chunkBottom = chunkTop + CHUNK_SIZE;
+            for (auto i = 0; i < m_lines.size(); ++i) {
                 Line &line = m_lines.at(i);
 
                 if ((line.bottom < chunkTop) || (line.top > chunkBottom))
                     continue;
 
-                const int top = qMax(0, line.top - chunkTop);
-                const int bottom = qMin(CHUNK_SIZE, line.bottom + 1 - chunkTop);
+                const auto top = qMax(0, line.top - chunkTop);
+                const auto bottom = qMin(CHUNK_SIZE, line.bottom + 1 - chunkTop);
                 allocate(m_size + bottom - top);
 
                 isect.winding = line.winding;
 
-                Intersection *it = m_intersections + top;
-                Intersection *end = m_intersections + bottom;
+                auto it = m_intersections + top;
+                auto end = m_intersections + bottom;
 
                 if (line.delta) {
                     for (; it != end; ++it) {
@@ -452,7 +452,7 @@ void QScanConverter::end()
 inline void QScanConverter::allocate(int size)
 {
     if (m_alloc < size) {
-        int newAlloc = qMax(size, 2 * m_alloc);
+        auto newAlloc = qMax(size, 2 * m_alloc);
         m_intersections = q_check_ptr((Intersection *)realloc(m_intersections, newAlloc * sizeof(Intersection)));
         m_alloc = newAlloc;
     }
@@ -460,14 +460,14 @@ inline void QScanConverter::allocate(int size)
 
 inline void QScanConverter::mergeIntersection(Intersection *it, const Intersection &isect)
 {
-    Intersection *current = it;
+    auto current = it;
 
     while (isect.x != current->x) {
         int &next = isect.x < current->x ? current->left : current->right;
         if (next)
             current += next;
         else {
-            Intersection *last = m_intersections + m_size;
+            auto last = m_intersections + m_size;
             next = last - current;
             *last = isect;
             ++m_size;
@@ -491,24 +491,24 @@ void QScanConverter::mergeCurve(const QT_FT_Vector &pa, const QT_FT_Vector &pb,
     b[2] = pc;
     b[3] = pd;
 
-    const QT_FT_Pos flatness = 16;
+    const auto flatness = 16;
 
     while (b >= beziers) {
         QT_FT_Vector delta = { b[3].x - b[0].x, b[3].y - b[0].y };
-        QT_FT_Pos l = qAbs(delta.x) + qAbs(delta.y);
+        auto l = qAbs(delta.x) + qAbs(delta.y);
 
         bool belowThreshold;
         if (l > 64) {
-            qlonglong d2 = qAbs(qlonglong(b[1].x-b[0].x) * qlonglong(delta.y) -
+            auto d2 = qAbs(qlonglong(b[1].x-b[0].x) * qlonglong(delta.y) -
                                 qlonglong(b[1].y-b[0].y) * qlonglong(delta.x));
-            qlonglong d3 = qAbs(qlonglong(b[2].x-b[0].x) * qlonglong(delta.y) -
+            auto d3 = qAbs(qlonglong(b[2].x-b[0].x) * qlonglong(delta.y) -
                                 qlonglong(b[2].y-b[0].y) * qlonglong(delta.x));
 
-            qlonglong d = d2 + d3;
+            auto d = d2 + d3;
 
             belowThreshold = (d <= qlonglong(flatness) * qlonglong(l));
         } else {
-            QT_FT_Pos d = qAbs(b[0].x-b[1].x) + qAbs(b[0].y-b[1].y) +
+            auto d = qAbs(b[0].x-b[1].x) + qAbs(b[0].y-b[1].y) +
                           qAbs(b[0].x-b[2].x) + qAbs(b[0].y-b[2].y);
 
             belowThreshold = (d <= flatness);
@@ -527,7 +527,7 @@ void QScanConverter::mergeCurve(const QT_FT_Vector &pa, const QT_FT_Vector &pb,
 
 inline bool QScanConverter::clip(Q16Dot16 &xFP, int &iTop, int &iBottom, Q16Dot16 slopeFP, Q16Dot16 edgeFP, int winding)
 {
-    bool right = edgeFP == m_rightFP;
+    auto right = edgeFP == m_rightFP;
 
     if (xFP == edgeFP) {
         if ((slopeFP > 0) ^ right)
@@ -539,7 +539,7 @@ inline bool QScanConverter::clip(Q16Dot16 &xFP, int &iTop, int &iBottom, Q16Dot1
         }
     }
 
-    Q16Dot16 lastFP = xFP + slopeFP * (iBottom - iTop);
+    auto lastFP = xFP + slopeFP * (iBottom - iTop);
 
     if (lastFP == edgeFP) {
         if ((slopeFP < 0) ^ right)
@@ -553,12 +553,12 @@ inline bool QScanConverter::clip(Q16Dot16 &xFP, int &iTop, int &iBottom, Q16Dot1
 
     // does line cross edge?
     if ((lastFP < edgeFP) ^ (xFP < edgeFP)) {
-        Q16Dot16 deltaY = Q16Dot16((edgeFP - xFP) / Q16Dot16ToFloat(slopeFP));
+        auto deltaY = Q16Dot16((edgeFP - xFP) / Q16Dot16ToFloat(slopeFP));
 
         if ((xFP < edgeFP) ^ right) {
             // top segment needs to be clipped
-            int iHeight = Q16Dot16ToInt(deltaY + 1);
-            int iMiddle = iTop + iHeight;
+            auto iHeight = Q16Dot16ToInt(deltaY + 1);
+            auto iMiddle = iTop + iHeight;
 
             Line line = { edgeFP, 0, iTop, iMiddle, winding };
             m_lines.add(line);
@@ -570,8 +570,8 @@ inline bool QScanConverter::clip(Q16Dot16 &xFP, int &iTop, int &iBottom, Q16Dot1
                 return true;
         } else {
             // bottom segment needs to be clipped
-            int iHeight = Q16Dot16ToInt(deltaY);
-            int iMiddle = iTop + iHeight;
+            auto iHeight = Q16Dot16ToInt(deltaY);
+            auto iMiddle = iTop + iHeight;
 
             if (iMiddle != iBottom) {
                 Line line = { edgeFP, 0, iMiddle + 1, iBottom, winding };
@@ -592,7 +592,7 @@ inline bool QScanConverter::clip(Q16Dot16 &xFP, int &iTop, int &iBottom, Q16Dot1
 
 void QScanConverter::mergeLine(QT_FT_Vector a, QT_FT_Vector b)
 {
-    int winding = 1;
+    auto winding = 1;
 
     if (a.y > b.y) {
         qSwap(a, b);
@@ -606,23 +606,23 @@ void QScanConverter::mergeLine(QT_FT_Vector a, QT_FT_Vector b)
         b.y += COORD_OFFSET;
     }
 
-    int rounding = m_legacyRounding ? COORD_ROUNDING : 0;
+    auto rounding = m_legacyRounding ? COORD_ROUNDING : 0;
 
-    int iTop = qMax(m_top, int((a.y + 32 - rounding) >> 6));
-    int iBottom = qMin(m_bottom, int((b.y - 32 - rounding) >> 6));
+    auto iTop = qMax(m_top, int((a.y + 32 - rounding) >> 6));
+    auto iBottom = qMin(m_bottom, int((b.y - 32 - rounding) >> 6));
 
     if (iTop <= iBottom) {
-        Q16Dot16 aFP = Q16Dot16Factor/2 + (a.x << 10) - rounding;
+        auto aFP = Q16Dot16Factor/2 + (a.x << 10) - rounding;
 
         if (b.x == a.x) {
             Line line = { qBound(m_leftFP, aFP, m_rightFP), 0, iTop, iBottom, winding };
             m_lines.add(line);
         } else {
-            const qreal slope = (b.x - a.x) / qreal(b.y - a.y);
+            const auto slope = (b.x - a.x) / qreal(b.y - a.y);
 
-            const Q16Dot16 slopeFP = FloatToQ16Dot16(slope);
+            const auto slopeFP = FloatToQ16Dot16(slope);
 
-            Q16Dot16 xFP = aFP + Q16Dot16Multiply(slopeFP,
+            auto xFP = aFP + Q16Dot16Multiply(slopeFP,
                                                   IntToQ16Dot16(iTop)
                                                   + Q16Dot16Factor/2 - (a.y << 10));
 
@@ -674,8 +674,8 @@ void QRasterizer::setLegacyRoundingEnabled(bool legacyRoundingEnabled)
 
 static Q16Dot16 intersectPixelFP(int x, Q16Dot16 top, Q16Dot16 bottom, Q16Dot16 leftIntersectX, Q16Dot16 rightIntersectX, Q16Dot16 slope, Q16Dot16 invSlope)
 {
-    Q16Dot16 leftX = IntToQ16Dot16(x);
-    Q16Dot16 rightX = IntToQ16Dot16(x) + Q16Dot16Factor;
+    auto leftX = IntToQ16Dot16(x);
+    auto rightX = IntToQ16Dot16(x) + Q16Dot16Factor;
 
     Q16Dot16 leftIntersectY, rightIntersectY;
     if (slope > 0) {
@@ -745,7 +745,7 @@ static inline qreal qSafeDivide(qreal x, qreal y)
  */
 static inline int qSafeFloatToQ16Dot16(qreal x)
 {
-    qreal tmp = x * 65536.;
+    auto tmp = x * 65536.;
     if (tmp > qreal(INT_MAX))
         return INT_MAX;
     else if (tmp < qreal(INT_MIN))
@@ -760,16 +760,16 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
 
     Q_ASSERT(width > 0.0);
 
-    QPointF pa = a;
-    QPointF pb = b;
+    auto pa = a;
+    auto pb = b;
 
     if (squareCap) {
-        QPointF delta = pb - pa;
+        auto delta = pb - pa;
         pa -= (0.5f * width) * delta;
         pb += (0.5f * width) * delta;
     }
 
-    QPointF offs = QPointF(qAbs(b.y() - a.y()), qAbs(b.x() - a.x())) * width * 0.5;
+    auto offs = QPointF(qAbs(b.y() - a.y()), qAbs(b.x() - a.x())) * width * 0.5;
     const QRectF clip(d->clipRect.topLeft() - offs, d->clipRect.bottomRight() + QPoint(1, 1) + offs);
 
     if (!clip.contains(pa) || !clip.contains(pb)) {
@@ -782,15 +782,15 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
         const qreal low[2] = { clip.left(), clip.top() };
         const qreal high[2] = { clip.right(), clip.bottom() };
 
-        for (int i = 0; i < 2; ++i) {
+        for (auto i = 0; i < 2; ++i) {
             if (d[i] == 0) {
                 if (o[i] <= low[i] || o[i] >= high[i])
                     return;
                 continue;
             }
-            const qreal d_inv = 1 / d[i];
-            qreal t_low = (low[i] - o[i]) * d_inv;
-            qreal t_high = (high[i] - o[i]) * d_inv;
+            const auto d_inv = 1 / d[i];
+            auto t_low = (low[i] - o[i]) * d_inv;
+            auto t_high = (high[i] - o[i]) * d_inv;
             if (t_low > t_high)
                 qSwap(t_low, t_high);
             if (t1 < t_low)
@@ -801,8 +801,8 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                 return;
         }
 
-        QPointF npa = pa + (pb - pa) * t1;
-        QPointF npb = pa + (pb - pa) * t2;
+        auto npa = pa + (pb - pa) * t1;
+        auto npb = pa + (pb - pa) * t2;
 
         pa = npa;
         pb = npb;
@@ -817,12 +817,12 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
 
     {
         // old delta
-        const QPointF d0 = a - b;
-        const qreal w0 = d0.x() * d0.x() + d0.y() * d0.y();
+        const auto d0 = a - b;
+        const auto w0 = d0.x() * d0.x() + d0.y() * d0.y();
 
         // new delta
-        const QPointF d = pa - pb;
-        const qreal w = d.x() * d.x() + d.y() * d.y();
+        const auto d = pa - pb;
+        const auto w = d.x() * d.x() + d.y() * d.y();
 
         if (w == 0)
             return;
@@ -834,11 +834,11 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
     QSpanBuffer buffer(d->blend, d->data, d->clipRect);
 
     if (q26Dot6Compare(pa.y(), pb.y())) {
-        const qreal x = (pa.x() + pb.x()) * 0.5f;
-        const qreal dx = qAbs(pb.x() - pa.x()) * 0.5f;
+        const auto x = (pa.x() + pb.x()) * 0.5f;
+        const auto dx = qAbs(pb.x() - pa.x()) * 0.5f;
 
-        const qreal y = pa.y();
-        const qreal dy = width * dx;
+        const auto y = pa.y();
+        const auto dy = width * dx;
 
         pa = QPointF(x, y - dy);
         pb = QPointF(x, y + dy);
@@ -850,11 +850,11 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
         if (pa.y() > pb.y())
             qSwap(pa, pb);
 
-        const qreal dy = pb.y() - pa.y();
-        const qreal halfWidth = 0.5f * width * dy;
+        const auto dy = pb.y() - pa.y();
+        const auto halfWidth = 0.5f * width * dy;
 
-        qreal left = pa.x() - halfWidth;
-        qreal right = pa.x() + halfWidth;
+        auto left = pa.x() - halfWidth;
+        auto right = pa.x() + halfWidth;
 
         left = qBound(qreal(d->clipRect.left()), left, qreal(d->clipRect.right() + 1));
         right = qBound(qreal(d->clipRect.left()), right, qreal(d->clipRect.right() + 1));
@@ -866,18 +866,18 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
             return;
 
         if (d->antialiased) {
-            const Q16Dot16 iLeft = int(left);
-            const Q16Dot16 iRight = int(right);
-            const Q16Dot16 leftWidth = IntToQ16Dot16(iLeft + 1)
+            const auto iLeft = int(left);
+            const auto iRight = int(right);
+            const auto leftWidth = IntToQ16Dot16(iLeft + 1)
                                        - qSafeFloatToQ16Dot16(left);
-            const Q16Dot16 rightWidth = qSafeFloatToQ16Dot16(right)
+            const auto rightWidth = qSafeFloatToQ16Dot16(right)
                                         - IntToQ16Dot16(iRight);
 
             Q16Dot16 coverage[3];
             int x[3];
             int len[3];
 
-            int n = 1;
+            auto n = 1;
             if (iLeft == iRight) {
                 coverage[0] = (leftWidth + rightWidth) * 255;
                 x[0] = iLeft;
@@ -902,36 +902,36 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                 }
             }
 
-            const Q16Dot16 iTopFP = IntToQ16Dot16(int(pa.y()));
-            const Q16Dot16 iBottomFP = IntToQ16Dot16(int(pb.y()));
-            const Q16Dot16 yPa = qSafeFloatToQ16Dot16(pa.y());
-            const Q16Dot16 yPb = qSafeFloatToQ16Dot16(pb.y());
-            for (Q16Dot16 yFP = iTopFP; yFP <= iBottomFP; yFP += Q16Dot16Factor) {
-                const Q16Dot16 rowHeight = qMin(yFP + Q16Dot16Factor, yPb)
+            const auto iTopFP = IntToQ16Dot16(int(pa.y()));
+            const auto iBottomFP = IntToQ16Dot16(int(pb.y()));
+            const auto yPa = qSafeFloatToQ16Dot16(pa.y());
+            const auto yPb = qSafeFloatToQ16Dot16(pb.y());
+            for (auto yFP = iTopFP; yFP <= iBottomFP; yFP += Q16Dot16Factor) {
+                const auto rowHeight = qMin(yFP + Q16Dot16Factor, yPb)
                                            - qMax(yFP, yPa);
-                const int y = Q16Dot16ToInt(yFP);
+                const auto y = Q16Dot16ToInt(yFP);
                 if (y > d->clipRect.bottom())
                     break;
-                for (int i = 0; i < n; ++i) {
+                for (auto i = 0; i < n; ++i) {
                     buffer.addSpan(x[i], len[i], y,
                                    Q16Dot16ToInt(Q16Dot16Multiply(rowHeight, coverage[i])));
                 }
             }
         } else { // aliased
-            int iTop = int(pa.y() + 0.5f);
-            int iBottom = pb.y() < 0.5f ? -1 : int(pb.y() - 0.5f);
-            int iLeft = int(left + 0.5f);
-            int iRight = right < 0.5f ? -1 : int(right - 0.5f);
+            auto iTop = int(pa.y() + 0.5f);
+            auto iBottom = pb.y() < 0.5f ? -1 : int(pb.y() - 0.5f);
+            auto iLeft = int(left + 0.5f);
+            auto iRight = right < 0.5f ? -1 : int(right - 0.5f);
 
-            int iWidth = iRight - iLeft + 1;
-            for (int y = iTop; y <= iBottom; ++y)
+            auto iWidth = iRight - iLeft + 1;
+            for (auto y = iTop; y <= iBottom; ++y)
                 buffer.addSpan(iLeft, iWidth, y, 255);
         }
     } else {
         if (pa.y() > pb.y())
             qSwap(pa, pb);
 
-        QPointF delta = pb - pa;
+        auto delta = pb - pa;
         delta *= 0.5f * width;
         const QPointF perp(delta.y(), -delta.x());
 
@@ -957,42 +957,42 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
         left = snapTo26Dot6Grid(left);
         right = snapTo26Dot6Grid(right);
 
-        const qreal topBound = qBound(qreal(d->clipRect.top()), top.y(), qreal(d->clipRect.bottom()));
-        const qreal bottomBound = qBound(qreal(d->clipRect.top()), bottom.y(), qreal(d->clipRect.bottom()));
+        const auto topBound = qBound(qreal(d->clipRect.top()), top.y(), qreal(d->clipRect.bottom()));
+        const auto bottomBound = qBound(qreal(d->clipRect.top()), bottom.y(), qreal(d->clipRect.bottom()));
 
-        const QPointF topLeftEdge = left - top;
-        const QPointF topRightEdge = right - top;
-        const QPointF bottomLeftEdge = bottom - left;
-        const QPointF bottomRightEdge = bottom - right;
+        const auto topLeftEdge = left - top;
+        const auto topRightEdge = right - top;
+        const auto bottomLeftEdge = bottom - left;
+        const auto bottomRightEdge = bottom - right;
 
-        const qreal topLeftSlope = qSafeDivide(topLeftEdge.x(), topLeftEdge.y());
-        const qreal bottomLeftSlope = qSafeDivide(bottomLeftEdge.x(), bottomLeftEdge.y());
+        const auto topLeftSlope = qSafeDivide(topLeftEdge.x(), topLeftEdge.y());
+        const auto bottomLeftSlope = qSafeDivide(bottomLeftEdge.x(), bottomLeftEdge.y());
 
-        const qreal topRightSlope = qSafeDivide(topRightEdge.x(), topRightEdge.y());
-        const qreal bottomRightSlope = qSafeDivide(bottomRightEdge.x(), bottomRightEdge.y());
+        const auto topRightSlope = qSafeDivide(topRightEdge.x(), topRightEdge.y());
+        const auto bottomRightSlope = qSafeDivide(bottomRightEdge.x(), bottomRightEdge.y());
 
-        const Q16Dot16 topLeftSlopeFP = qSafeFloatToQ16Dot16(topLeftSlope);
-        const Q16Dot16 topRightSlopeFP = qSafeFloatToQ16Dot16(topRightSlope);
+        const auto topLeftSlopeFP = qSafeFloatToQ16Dot16(topLeftSlope);
+        const auto topRightSlopeFP = qSafeFloatToQ16Dot16(topRightSlope);
 
-        const Q16Dot16 bottomLeftSlopeFP = qSafeFloatToQ16Dot16(bottomLeftSlope);
-        const Q16Dot16 bottomRightSlopeFP = qSafeFloatToQ16Dot16(bottomRightSlope);
+        const auto bottomLeftSlopeFP = qSafeFloatToQ16Dot16(bottomLeftSlope);
+        const auto bottomRightSlopeFP = qSafeFloatToQ16Dot16(bottomRightSlope);
 
-        const Q16Dot16 invTopLeftSlopeFP = qSafeFloatToQ16Dot16(qSafeDivide(1, topLeftSlope));
-        const Q16Dot16 invTopRightSlopeFP = qSafeFloatToQ16Dot16(qSafeDivide(1, topRightSlope));
+        const auto invTopLeftSlopeFP = qSafeFloatToQ16Dot16(qSafeDivide(1, topLeftSlope));
+        const auto invTopRightSlopeFP = qSafeFloatToQ16Dot16(qSafeDivide(1, topRightSlope));
 
-        const Q16Dot16 invBottomLeftSlopeFP = qSafeFloatToQ16Dot16(qSafeDivide(1, bottomLeftSlope));
-        const Q16Dot16 invBottomRightSlopeFP = qSafeFloatToQ16Dot16(qSafeDivide(1, bottomRightSlope));
+        const auto invBottomLeftSlopeFP = qSafeFloatToQ16Dot16(qSafeDivide(1, bottomLeftSlope));
+        const auto invBottomRightSlopeFP = qSafeFloatToQ16Dot16(qSafeDivide(1, bottomRightSlope));
 
         if (d->antialiased) {
-            const Q16Dot16 iTopFP = IntToQ16Dot16(int(topBound));
-            const Q16Dot16 iLeftFP = IntToQ16Dot16(int(left.y()));
-            const Q16Dot16 iRightFP = IntToQ16Dot16(int(right.y()));
-            const Q16Dot16 iBottomFP = IntToQ16Dot16(int(bottomBound));
+            const auto iTopFP = IntToQ16Dot16(int(topBound));
+            const auto iLeftFP = IntToQ16Dot16(int(left.y()));
+            const auto iRightFP = IntToQ16Dot16(int(right.y()));
+            const auto iBottomFP = IntToQ16Dot16(int(bottomBound));
 
-            Q16Dot16 leftIntersectAf = qSafeFloatToQ16Dot16(top.x() + (int(topBound) - top.y()) * topLeftSlope);
-            Q16Dot16 rightIntersectAf = qSafeFloatToQ16Dot16(top.x() + (int(topBound) - top.y()) * topRightSlope);
-            Q16Dot16 leftIntersectBf = 0;
-            Q16Dot16 rightIntersectBf = 0;
+            auto leftIntersectAf = qSafeFloatToQ16Dot16(top.x() + (int(topBound) - top.y()) * topLeftSlope);
+            auto rightIntersectAf = qSafeFloatToQ16Dot16(top.x() + (int(topBound) - top.y()) * topRightSlope);
+            auto leftIntersectBf = 0;
+            auto rightIntersectBf = 0;
 
             if (iLeftFP < iTopFP)
                 leftIntersectBf = qSafeFloatToQ16Dot16(left.x() + (int(topBound) - left.y()) * bottomLeftSlope);
@@ -1006,10 +1006,10 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
 
             int leftMin, leftMax, rightMin, rightMax;
 
-            const Q16Dot16 yTopFP = qSafeFloatToQ16Dot16(top.y());
-            const Q16Dot16 yLeftFP = qSafeFloatToQ16Dot16(left.y());
-            const Q16Dot16 yRightFP = qSafeFloatToQ16Dot16(right.y());
-            const Q16Dot16 yBottomFP = qSafeFloatToQ16Dot16(bottom.y());
+            const auto yTopFP = qSafeFloatToQ16Dot16(top.y());
+            const auto yLeftFP = qSafeFloatToQ16Dot16(left.y());
+            const auto yRightFP = qSafeFloatToQ16Dot16(right.y());
+            const auto yBottomFP = qSafeFloatToQ16Dot16(bottom.y());
 
             rowTop = qMax(iTopFP, yTopFP);
             topLeftIntersectAf = leftIntersectAf +
@@ -1017,7 +1017,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
             topRightIntersectAf = rightIntersectAf +
                                   Q16Dot16Multiply(topRightSlopeFP, rowTop - iTopFP);
 
-            Q16Dot16 yFP = iTopFP;
+            auto yFP = iTopFP;
             while (yFP <= iBottomFP) {
                 rowBottomLeft = qMin(yFP + Q16Dot16Factor, yLeftFP);
                 rowBottomRight = qMin(yFP + Q16Dot16Factor, yRightFP);
@@ -1026,7 +1026,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                 rowBottom = qMin(yFP + Q16Dot16Factor, yBottomFP);
 
                 if (yFP == iLeftFP) {
-                    const int y = Q16Dot16ToInt(yFP);
+                    const auto y = Q16Dot16ToInt(yFP);
                     leftIntersectBf = qSafeFloatToQ16Dot16(left.x() + (y - left.y()) * bottomLeftSlope);
                     topLeftIntersectBf = leftIntersectBf + Q16Dot16Multiply(bottomLeftSlopeFP, rowTopLeft - yFP);
                     bottomLeftIntersectAf = leftIntersectAf + Q16Dot16Multiply(topLeftSlopeFP, rowBottomLeft - yFP);
@@ -1036,7 +1036,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                 }
 
                 if (yFP == iRightFP) {
-                    const int y = Q16Dot16ToInt(yFP);
+                    const auto y = Q16Dot16ToInt(yFP);
                     rightIntersectBf = qSafeFloatToQ16Dot16(right.x() + (y - right.y()) * bottomRightSlope);
                     topRightIntersectBf = rightIntersectBf + Q16Dot16Multiply(bottomRightSlopeFP, rowTopRight - yFP);
                     bottomRightIntersectAf = rightIntersectAf + Q16Dot16Multiply(topRightSlopeFP, rowBottomRight - yFP);
@@ -1086,11 +1086,11 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                 if (rightMin < leftMin)
                     rightMin = leftMin;
 
-                Q16Dot16 rowHeight = rowBottom - rowTop;
+                auto rowHeight = rowBottom - rowTop;
 
-                int x = leftMin;
+                auto x = leftMin;
                 while (x <= leftMax) {
-                    Q16Dot16 excluded = 0;
+                    auto excluded = 0;
 
                     if (yFP <= iLeftFP)
                         excluded += intersectPixelFP(x, rowTop, rowBottomLeft,
@@ -1112,7 +1112,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                                                                                      bottomRightSlopeFP, invBottomRightSlopeFP);
                     }
 
-                    Q16Dot16 coverage = rowHeight - excluded;
+                    auto coverage = rowHeight - excluded;
                     buffer.addSpan(x, 1, Q16Dot16ToInt(yFP),
                                    Q16Dot16ToInt(255 * coverage));
                     ++x;
@@ -1123,7 +1123,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                     x = rightMin;
                 }
                 while (x <= rightMax) {
-                    Q16Dot16 excluded = 0;
+                    auto excluded = 0;
                     if (yFP <= iRightFP)
                         excluded += (rowBottomRight - rowTop) - intersectPixelFP(x, rowTop, rowBottomRight,
                                                                                  topRightIntersectAf, bottomRightIntersectAf,
@@ -1133,7 +1133,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                                                                                  bottomRightIntersectBf, topRightIntersectBf,
                                                                                  bottomRightSlopeFP, invBottomRightSlopeFP);
 
-                    Q16Dot16 coverage = rowHeight - excluded;
+                    auto coverage = rowHeight - excluded;
                     buffer.addSpan(x, 1, Q16Dot16ToInt(yFP),
                                    Q16Dot16ToInt(255 * coverage));
                     ++x;
@@ -1150,19 +1150,19 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                 rowTop = yFP;
             }
         } else { // aliased
-            int iTop = int(top.y() + 0.5f);
-            int iLeft = left.y() < 0.5f ? -1 : int(left.y() - 0.5f);
-            int iRight = right.y() < 0.5f ? -1 : int(right.y() - 0.5f);
-            int iBottom = bottom.y() < 0.5f? -1 : int(bottom.y() - 0.5f);
-            int iMiddle = qMin(iLeft, iRight);
+            auto iTop = int(top.y() + 0.5f);
+            auto iLeft = left.y() < 0.5f ? -1 : int(left.y() - 0.5f);
+            auto iRight = right.y() < 0.5f ? -1 : int(right.y() - 0.5f);
+            auto iBottom = bottom.y() < 0.5f? -1 : int(bottom.y() - 0.5f);
+            auto iMiddle = qMin(iLeft, iRight);
 
-            Q16Dot16 leftIntersectAf = qSafeFloatToQ16Dot16(top.x() + 0.5f + (iTop + 0.5f - top.y()) * topLeftSlope);
-            Q16Dot16 leftIntersectBf = qSafeFloatToQ16Dot16(left.x() + 0.5f + (iLeft + 1.5f - left.y()) * bottomLeftSlope);
-            Q16Dot16 rightIntersectAf = qSafeFloatToQ16Dot16(top.x() - 0.5f + (iTop + 0.5f - top.y()) * topRightSlope);
-            Q16Dot16 rightIntersectBf = qSafeFloatToQ16Dot16(right.x() - 0.5f + (iRight + 1.5f - right.y()) * bottomRightSlope);
+            auto leftIntersectAf = qSafeFloatToQ16Dot16(top.x() + 0.5f + (iTop + 0.5f - top.y()) * topLeftSlope);
+            auto leftIntersectBf = qSafeFloatToQ16Dot16(left.x() + 0.5f + (iLeft + 1.5f - left.y()) * bottomLeftSlope);
+            auto rightIntersectAf = qSafeFloatToQ16Dot16(top.x() - 0.5f + (iTop + 0.5f - top.y()) * topRightSlope);
+            auto rightIntersectBf = qSafeFloatToQ16Dot16(right.x() - 0.5f + (iRight + 1.5f - right.y()) * bottomRightSlope);
 
             int ny;
-            int y = iTop;
+            auto y = iTop;
 #define DO_SEGMENT(next, li, ri, ls, rs) \
             ny = qMin(next + 1, d->clipRect.top()); \
             if (y < ny) { \
@@ -1195,34 +1195,34 @@ void QRasterizer::rasterize(const QT_FT_Outline *outline, Qt::FillRule fillRule)
     if (outline->n_points < 3 || outline->n_contours == 0)
         return;
 
-    const QT_FT_Vector *points = outline->points;
+    auto points = outline->points;
 
     QSpanBuffer buffer(d->blend, d->data, d->clipRect);
 
     // ### QT_FT_Outline already has a bounding rect which is
     // ### precomputed at this point, so we should probably just be
     // ### using that instead...
-    QT_FT_Pos min_y = points[0].y, max_y = points[0].y;
-    for (int i = 1; i < outline->n_points; ++i) {
+    auto min_y = points[0].y, max_y = points[0].y;
+    for (auto i = 1; i < outline->n_points; ++i) {
         const QT_FT_Vector &p = points[i];
         min_y = qMin(p.y, min_y);
         max_y = qMax(p.y, max_y);
     }
 
-    int rounding = d->legacyRounding ? COORD_OFFSET - COORD_ROUNDING : 0;
+    auto rounding = d->legacyRounding ? COORD_OFFSET - COORD_ROUNDING : 0;
 
-    int iTopBound = qMax(d->clipRect.top(), int((min_y + 32 + rounding) >> 6));
-    int iBottomBound = qMin(d->clipRect.bottom(), int((max_y - 32 + rounding) >> 6));
+    auto iTopBound = qMax(d->clipRect.top(), int((min_y + 32 + rounding) >> 6));
+    auto iBottomBound = qMin(d->clipRect.bottom(), int((max_y - 32 + rounding) >> 6));
 
     if (iTopBound > iBottomBound)
         return;
 
     d->scanConverter.begin(iTopBound, iBottomBound, d->clipRect.left(), d->clipRect.right(), fillRule, d->legacyRounding, &buffer);
 
-    int first = 0;
-    for (int i = 0; i < outline->n_contours; ++i) {
-        const int last = outline->contours[i];
-        for (int j = first; j < last; ++j) {
+    auto first = 0;
+    for (auto i = 0; i < outline->n_contours; ++i) {
+        const auto last = outline->contours[i];
+        for (auto j = first; j < last; ++j) {
             if (outline->tags[j+1] == QT_FT_CURVE_TAG_CUBIC) {
                 Q_ASSERT(outline->tags[j+2] == QT_FT_CURVE_TAG_CUBIC);
                 d->scanConverter.mergeCurve(points[j], points[j+1], points[j+2], points[j+3]);
@@ -1245,26 +1245,26 @@ void QRasterizer::rasterize(const QPainterPath &path, Qt::FillRule fillRule)
 
     QSpanBuffer buffer(d->blend, d->data, d->clipRect);
 
-    QRectF bounds = path.controlPointRect();
+    auto bounds = path.controlPointRect();
 
-    double rounding = d->legacyRounding ? (COORD_OFFSET - COORD_ROUNDING) / 64. : 0.0;
+    auto rounding = d->legacyRounding ? (COORD_OFFSET - COORD_ROUNDING) / 64. : 0.0;
 
-    int iTopBound = qMax(d->clipRect.top(), int(bounds.top() + 0.5 + rounding));
-    int iBottomBound = qMin(d->clipRect.bottom(), int(bounds.bottom() - 0.5 + rounding));
+    auto iTopBound = qMax(d->clipRect.top(), int(bounds.top() + 0.5 + rounding));
+    auto iBottomBound = qMin(d->clipRect.bottom(), int(bounds.bottom() - 0.5 + rounding));
 
     if (iTopBound > iBottomBound)
         return;
 
     d->scanConverter.begin(iTopBound, iBottomBound, d->clipRect.left(), d->clipRect.right(), fillRule, d->legacyRounding, &buffer);
 
-    int subpathStart = 0;
+    auto subpathStart = 0;
     QT_FT_Vector last = { 0, 0 };
-    for (int i = 0; i < path.elementCount(); ++i) {
+    for (auto i = 0; i < path.elementCount(); ++i) {
         switch (path.elementAt(i).type) {
         case QPainterPath::LineToElement:
             {
-                QT_FT_Vector p1 = last;
-                QT_FT_Vector p2 = PointToVector(path.elementAt(i));
+                auto p1 = last;
+                auto p2 = PointToVector(path.elementAt(i));
                 d->scanConverter.mergeLine(p1, p2);
                 last = p2;
                 break;
@@ -1272,7 +1272,7 @@ void QRasterizer::rasterize(const QPainterPath &path, Qt::FillRule fillRule)
         case QPainterPath::MoveToElement:
             {
                 if (i != 0) {
-                    QT_FT_Vector first = PointToVector(path.elementAt(subpathStart));
+                    auto first = PointToVector(path.elementAt(subpathStart));
                     // close previous subpath
                     if (first.x != last.x || first.y != last.y)
                         d->scanConverter.mergeLine(last, first);
@@ -1283,10 +1283,10 @@ void QRasterizer::rasterize(const QPainterPath &path, Qt::FillRule fillRule)
             }
         case QPainterPath::CurveToElement:
             {
-                QT_FT_Vector p1 = last;
-                QT_FT_Vector p2 = PointToVector(path.elementAt(i));
-                QT_FT_Vector p3 = PointToVector(path.elementAt(++i));
-                QT_FT_Vector p4 = PointToVector(path.elementAt(++i));
+                auto p1 = last;
+                auto p2 = PointToVector(path.elementAt(i));
+                auto p3 = PointToVector(path.elementAt(++i));
+                auto p4 = PointToVector(path.elementAt(++i));
                 d->scanConverter.mergeCurve(p1, p2, p3, p4);
                 last = p4;
                 break;
@@ -1297,7 +1297,7 @@ void QRasterizer::rasterize(const QPainterPath &path, Qt::FillRule fillRule)
         }
     }
 
-    QT_FT_Vector first = PointToVector(path.elementAt(subpathStart));
+    auto first = PointToVector(path.elementAt(subpathStart));
 
     // close path
     if (first.x != last.x || first.y != last.y)

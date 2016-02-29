@@ -55,25 +55,25 @@ QT_BEGIN_NAMESPACE
 static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QPointF &pos,
                                   int *winding)
 {
-    qreal x1 = p1.x();
-    qreal y1 = p1.y();
-    qreal x2 = p2.x();
-    qreal y2 = p2.y();
-    qreal y = pos.y();
+    auto x1 = p1.x();
+    auto y1 = p1.y();
+    auto x2 = p2.x();
+    auto y2 = p2.y();
+    auto y = pos.y();
 
-    int dir = 1;
+    auto dir = 1;
 
     if (qFuzzyCompare(y1, y2)) {
         // ignore horizontal lines according to scan conversion rule
         return;
     } else if (y2 < y1) {
-        qreal x_tmp = x2; x2 = x1; x1 = x_tmp;
-        qreal y_tmp = y2; y2 = y1; y1 = y_tmp;
+        auto x_tmp = x2; x2 = x1; x1 = x_tmp;
+        auto y_tmp = y2; y2 = y1; y1 = y_tmp;
         dir = -1;
     }
 
     if (y >= y1 && y < y2) {
-        qreal x = x1 + ((x2 - x1) / (y2 - y1)) * (y - y1);
+        auto x = x1 + ((x2 - x1) / (y2 - y1)) * (y - y1);
 
         // count up the winding number if we're
         if (x<=pos.x()) {
@@ -216,8 +216,8 @@ void QPolygon::translate(int dx, int dy)
     if (dx == 0 && dy == 0)
         return;
 
-    QPoint *p = data();
-    int i = size();
+    auto p = data();
+    auto i = size();
     QPoint pt(dx, dy);
     while (i--) {
         *p += pt;
@@ -266,7 +266,7 @@ QPolygon QPolygon::translated(int dx, int dy) const
 
 void QPolygon::point(int index, int *x, int *y) const
 {
-    QPoint p = at(index);
+    auto p = at(index);
     if (x)
         *x = (int)p.x();
     if (y)
@@ -311,7 +311,7 @@ void QPolygon::point(int index, int *x, int *y) const
 void QPolygon::setPoints(int nPoints, const int *points)
 {
     resize(nPoints);
-    int i = 0;
+    auto i = 0;
     while (nPoints--) {
         setPoint(i++, *points, *(points+1));
         points += 2;
@@ -362,7 +362,7 @@ void QPolygon::putPoints(int index, int nPoints, const int *points)
 {
     if (index + nPoints > size())
         resize(index + nPoints);
-    int i = index;
+    auto i = index;
     while (nPoints--) {
         setPoint(i++, *points, *(points+1));
         points += 2;
@@ -426,7 +426,7 @@ void QPolygon::putPoints(int index, int nPoints, const QPolygon & from, int from
         resize(index + nPoints);
     if (nPoints <= 0)
         return;
-    int n = 0;
+    auto n = 0;
     while(n < nPoints) {
         setPoint(index + n, from[fromIndex+n]);
         ++n;
@@ -445,12 +445,12 @@ QRect QPolygon::boundingRect() const
 {
     if (isEmpty())
         return QRect(0, 0, 0, 0);
-    const QPoint *pd = constData();
+    auto pd = constData();
     int minx, maxx, miny, maxy;
     minx = maxx = pd->x();
     miny = maxy = pd->y();
     ++pd;
-    for (int i = 1; i < size(); ++i) {
+    for (auto i = 1; i < size(); ++i) {
         if (pd->x() < minx)
             minx = pd->x();
         else if (pd->x() > maxx)
@@ -469,7 +469,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QPolygon(";
-    for (int i = 0; i < a.count(); ++i)
+    for (auto i = 0; i < a.count(); ++i)
         dbg.nospace() << a.at(i);
     dbg.nospace() << ')';
     return dbg;
@@ -576,7 +576,7 @@ QPolygonF::QPolygonF(const QRectF &r)
 QPolygonF::QPolygonF(const QPolygon &a)
 {
     reserve(a.size());
-    for (int i=0; i<a.size(); ++i)
+    for (auto i=0; i<a.size(); ++i)
         append(a.at(i));
 }
 
@@ -598,8 +598,8 @@ void QPolygonF::translate(const QPointF &offset)
     if (offset.isNull())
         return;
 
-    QPointF *p = data();
-    int i = size();
+    auto p = data();
+    auto i = size();
     while (i--) {
         *p += offset;
         ++p;
@@ -659,12 +659,12 @@ QRectF QPolygonF::boundingRect() const
 {
     if (isEmpty())
         return QRectF(0, 0, 0, 0);
-    const QPointF *pd = constData();
+    auto pd = constData();
     qreal minx, maxx, miny, maxy;
     minx = maxx = pd->x();
     miny = maxy = pd->y();
     ++pd;
-    for (int i = 1; i < size(); ++i) {
+    for (auto i = 1; i < size(); ++i) {
         if (pd->x() < minx)
             minx = pd->x();
         else if (pd->x() > maxx)
@@ -689,7 +689,7 @@ QPolygon QPolygonF::toPolygon() const
 {
     QPolygon a;
     a.reserve(size());
-    for (int i=0; i<size(); ++i)
+    for (auto i=0; i<size(); ++i)
         a.append(at(i).toPoint());
     return a;
 }
@@ -811,7 +811,7 @@ QDebug operator<<(QDebug dbg, const QPolygonF &a)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QPolygonF(";
-    for (int i = 0; i < a.count(); ++i)
+    for (auto i = 0; i < a.count(); ++i)
         dbg.nospace() << a.at(i);
     dbg.nospace() << ')';
     return dbg;
@@ -832,11 +832,11 @@ bool QPolygonF::containsPoint(const QPointF &pt, Qt::FillRule fillRule) const
     if (isEmpty())
         return false;
 
-    int winding_number = 0;
+    auto winding_number = 0;
 
-    QPointF last_pt = at(0);
-    QPointF last_start = at(0);
-    for (int i = 1; i < size(); ++i) {
+    auto last_pt = at(0);
+    auto last_start = at(0);
+    for (auto i = 1; i < size(); ++i) {
         const QPointF &e = at(i);
         qt_polygon_isect_line(last_pt, e, pt, &winding_number);
         last_pt = e;
@@ -863,11 +863,11 @@ bool QPolygon::containsPoint(const QPoint &pt, Qt::FillRule fillRule) const
     if (isEmpty())
         return false;
 
-    int winding_number = 0;
+    auto winding_number = 0;
 
-    QPoint last_pt = at(0);
-    QPoint last_start = at(0);
-    for (int i = 1; i < size(); ++i) {
+    auto last_pt = at(0);
+    auto last_start = at(0);
+    for (auto i = 1; i < size(); ++i) {
         const QPoint &e = at(i);
         qt_polygon_isect_line(last_pt, e, pt, &winding_number);
         last_pt = e;

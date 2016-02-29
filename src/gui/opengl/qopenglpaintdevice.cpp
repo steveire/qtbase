@@ -204,7 +204,7 @@ QPaintEngine *QOpenGLPaintDevice::paintEngine() const
     if (d_ptr->engine)
         return d_ptr->engine;
 
-    QPaintEngine *engine = qt_opengl_engine()->engine();
+    auto engine = qt_opengl_engine()->engine();
     if (engine->isActive() && engine->paintDevice() != this) {
         d_ptr->engine = new QOpenGL2PaintEngineEx;
         return d_ptr->engine;

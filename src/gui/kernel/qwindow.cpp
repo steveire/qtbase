@@ -313,7 +313,7 @@ void QWindowPrivate::updateVisibility()
 {
     Q_Q(QWindow);
 
-    QWindow::Visibility old = visibility;
+    auto old = visibility;
 
     if (visible) {
         switch (windowState) {
@@ -344,7 +344,7 @@ void QWindowPrivate::updateVisibility()
 inline bool QWindowPrivate::windowRecreationRequired(QScreen *newScreen) const
 {
     Q_Q(const QWindow);
-    const QScreen *oldScreen = q->screen();
+    auto oldScreen = q->screen();
     return oldScreen != newScreen && (platformWindow || !oldScreen)
         && !(oldScreen && oldScreen->virtualSiblings().contains(newScreen));
 }
@@ -365,7 +365,7 @@ void QWindowPrivate::emitScreenChangedRecursion(QScreen *newScreen)
 {
     Q_Q(QWindow);
     emit q->screenChanged(newScreen);
-    for (QObject *child : q->children()) {
+    for (auto child : q->children()) {
         if (child->isWindowType())
             static_cast<QWindow *>(child)->d_func()->emitScreenChangedRecursion(newScreen);
     }
@@ -379,8 +379,8 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
         return;
     }
     if (newScreen != topLevelScreen) {
-        const bool shouldRecreate = recreate && windowRecreationRequired(newScreen);
-        const bool shouldShow = visibilityOnDestroy && !topLevelScreen;
+        const auto shouldRecreate = recreate && windowRecreationRequired(newScreen);
+        const auto shouldShow = visibilityOnDestroy && !topLevelScreen;
         if (shouldRecreate && platformWindow)
             q->destroy();
         connectToScreen(newScreen);
@@ -409,13 +409,13 @@ void QWindowPrivate::create(bool recursive)
         return;
     }
 
-    QObjectList childObjects = q->children();
-    for (int i = 0; i < childObjects.size(); i ++) {
-        QObject *object = childObjects.at(i);
+    auto childObjects = q->children();
+    for (auto i = 0; i < childObjects.size(); i ++) {
+        auto object = childObjects.at(i);
         if (!object->isWindowType())
             continue;
 
-        QWindow *childWindow = static_cast<QWindow *>(object);
+        auto childWindow = static_cast<QWindow *>(object);
         if (recursive)
             childWindow->d_func()->create(recursive);
 
@@ -425,7 +425,7 @@ void QWindowPrivate::create(bool recursive)
         if (childWindow->isVisible())
             childWindow->setVisible(true);
 
-        if (QPlatformWindow *childPlatformWindow = childWindow->d_func()->platformWindow)
+        if (auto childPlatformWindow = childWindow->d_func()->platformWindow)
             childPlatformWindow->setParent(this->platformWindow);
     }
 
@@ -514,7 +514,7 @@ void QWindow::setVisible(bool visible)
         QCoreApplication::removePostedEvents(qApp, QEvent::Quit);
 
         if (type() == Qt::Window) {
-            QGuiApplicationPrivate *app_priv = QGuiApplicationPrivate::instance();
+            auto app_priv = QGuiApplicationPrivate::instance();
             QString &firstWindowTitle = app_priv->firstWindowTitle;
             if (!firstWindowTitle.isEmpty()) {
                 setTitle(firstWindowTitle);
@@ -524,7 +524,7 @@ void QWindow::setVisible(bool visible)
                 setIcon(app_priv->forcedWindowIcon);
 
             // Handling of the -qwindowgeometry, -geometry command line arguments
-            static bool geometryApplied = false;
+            static auto geometryApplied = false;
             if (!geometryApplied) {
                 geometryApplied = true;
                 QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(this);
@@ -629,7 +629,7 @@ void QWindow::setParent(QWindow *parent)
     if (d->parentWindow == parent)
         return;
 
-    QScreen *newScreen = parent ? parent->screen() : screen();
+    auto newScreen = parent ? parent->screen() : screen();
     if (d->windowRecreationRequired(newScreen)) {
         qWarning() << this << '(' << parent << "): Cannot change screens (" << screen() << newScreen << ')';
         return;
@@ -838,7 +838,7 @@ Qt::WindowType QWindow::type() const
 void QWindow::setTitle(const QString &title)
 {
     Q_D(QWindow);
-    bool changed = false;
+    auto changed = false;
     if (d->windowTitle != title) {
         d->windowTitle = title;
         changed = true;
@@ -1054,7 +1054,7 @@ bool QWindow::isActive() const
     if (!d->platformWindow)
         return false;
 
-    QWindow *focus = QGuiApplication::focusWindow();
+    auto focus = QGuiApplication::focusWindow();
 
     // Means the whole application lost the focus
     if (!focus)
@@ -1289,10 +1289,10 @@ QSize QWindow::sizeIncrement() const
 void QWindow::setMinimumSize(const QSize &size)
 {
     Q_D(QWindow);
-    QSize adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
+    auto adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
     if (d->minimumSize == adjustedSize)
         return;
-    QSize oldSize = d->minimumSize;
+    auto oldSize = d->minimumSize;
     d->minimumSize = adjustedSize;
     if (d->platformWindow && isTopLevel())
         d->platformWindow->propagateSizeHints();
@@ -1376,10 +1376,10 @@ void QWindow::setMinimumHeight(int h)
 void QWindow::setMaximumSize(const QSize &size)
 {
     Q_D(QWindow);
-    QSize adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
+    auto adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
     if (d->maximumSize == adjustedSize)
         return;
-    QSize oldSize = d->maximumSize;
+    auto oldSize = d->maximumSize;
     d->maximumSize = adjustedSize;
     if (d->platformWindow && isTopLevel())
         d->platformWindow->propagateSizeHints();
@@ -1471,12 +1471,12 @@ void QWindow::setGeometry(const QRect &rect)
     d->positionAutomatic = false;
     if (rect == geometry())
         return;
-    QRect oldRect = geometry();
+    auto oldRect = geometry();
 
     d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
         QRect nativeRect;
-        QScreen *newScreen = d->screenForGeometry(rect);
+        auto newScreen = d->screenForGeometry(rect);
         if (newScreen && isTopLevel())
             nativeRect = QHighDpi::toNativePixels(rect, newScreen);
         else
@@ -1505,12 +1505,12 @@ void QWindow::setGeometry(const QRect &rect)
 QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry)
 {
     Q_Q(QWindow);
-    QScreen *currentScreen = q->screen();
-    QScreen *fallback = currentScreen;
-    QPoint center = newGeometry.center();
+    auto currentScreen = q->screen();
+    auto fallback = currentScreen;
+    auto center = newGeometry.center();
     if (!q->parent() && currentScreen && !currentScreen->geometry().contains(center)) {
         const auto screens = currentScreen->virtualSiblings();
-        for (QScreen* screen : screens) {
+        for (auto screen : screens) {
             if (screen->geometry().contains(center))
                 return screen;
             if (screen->geometry().intersects(newGeometry))
@@ -1556,7 +1556,7 @@ QRect QWindow::frameGeometry() const
 {
     Q_D(const QWindow);
     if (d->platformWindow) {
-        QMargins m = frameMargins();
+        auto m = frameMargins();
         return QHighDpi::fromNativePixels(d->platformWindow->geometry(), this).adjusted(-m.left(), -m.top(), m.right(), m.bottom());
     }
     return d->geometry;
@@ -1573,7 +1573,7 @@ QPoint QWindow::framePosition() const
 {
     Q_D(const QWindow);
     if (d->platformWindow) {
-        QMargins margins = frameMargins();
+        auto margins = frameMargins();
         return QHighDpi::fromNativePixels(d->platformWindow->geometry().topLeft(), this) - QPoint(margins.left(), margins.top());
     }
     return d->geometry.topLeft();
@@ -1652,7 +1652,7 @@ void QWindow::resize(const QSize &newSize)
     if (d->platformWindow) {
         d->platformWindow->setGeometry(QHighDpi::toNativePixels(QRect(position(), newSize), this));
     } else {
-        const QSize oldSize = d->geometry.size();
+        const auto oldSize = d->geometry.size();
         d->geometry.setSize(newSize);
         if (newSize.width() != oldSize.width())
             emit widthChanged(newSize.width());
@@ -1672,11 +1672,11 @@ void QWindow::destroy()
     if (!d->platformWindow)
         return;
 
-    QObjectList childrenWindows = children();
-    for (int i = 0; i < childrenWindows.size(); i++) {
-        QObject *object = childrenWindows.at(i);
+    auto childrenWindows = children();
+    for (auto i = 0; i < childrenWindows.size(); i++) {
+        auto object = childrenWindows.at(i);
         if (object->isWindowType()) {
-            QWindow *w = static_cast<QWindow*>(object);
+            auto w = static_cast<QWindow*>(object);
             w->destroy();
         }
     }
@@ -1688,13 +1688,13 @@ void QWindow::destroy()
     if (QGuiApplicationPrivate::currentMousePressWindow == this)
         QGuiApplicationPrivate::currentMousePressWindow = parent();
 
-    for (int i = 0; i < QGuiApplicationPrivate::tabletDevicePoints.size(); ++i) {
+    for (auto i = 0; i < QGuiApplicationPrivate::tabletDevicePoints.size(); ++i) {
         QGuiApplicationPrivate::TabletPointData &pointData = QGuiApplicationPrivate::tabletDevicePoints[i];
         if (pointData.target == this)
             pointData.target = parent();
     }
 
-    bool wasVisible = isVisible();
+    auto wasVisible = isVisible();
     d->visibilityOnDestroy = wasVisible && d->platformWindow;
 
     setVisible(false);
@@ -1848,7 +1848,7 @@ QObject *QWindow::focusObject() const
 */
 void QWindow::show()
 {
-    Qt::WindowState defaultState = QGuiApplicationPrivate::platformIntegration()->defaultWindowState(d_func()->windowFlags);
+    auto defaultState = QGuiApplicationPrivate::platformIntegration()->defaultWindowState(d_func()->windowFlags);
     if (defaultState == Qt::WindowFullScreen)
         showFullScreen();
     else if (defaultState == Qt::WindowMaximized)
@@ -1949,7 +1949,7 @@ bool QWindow::close()
     if (!d->platformWindow)
         return true;
 
-    bool accepted = false;
+    auto accepted = false;
     QWindowSystemInterface::handleCloseEvent(this, &accepted);
     QWindowSystemInterface::flushWindowSystemEvents();
     return accepted;
@@ -2373,11 +2373,11 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
 
     Q_Q(QWindow);
     // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
-    bool quitOnClose = QGuiApplication::quitOnLastWindowClosed() && !q->parent();
-    QWindowList list = QGuiApplication::topLevelWindows();
-    bool lastWindowClosed = true;
-    for (int i = 0; i < list.size(); ++i) {
-        QWindow *w = list.at(i);
+    auto quitOnClose = QGuiApplication::quitOnLastWindowClosed() && !q->parent();
+    auto list = QGuiApplication::topLevelWindows();
+    auto lastWindowClosed = true;
+    for (auto i = 0; i < list.size(); ++i) {
+        auto w = list.at(i);
         if (!w->isVisible() || w->transientParent())
             continue;
         lastWindowClosed = false;
@@ -2386,7 +2386,7 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
     if (lastWindowClosed) {
         QGuiApplicationPrivate::emitLastWindowClosed();
         if (quitOnClose) {
-            QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
+            auto applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
             applicationPrivate->maybeQuit();
         }
     }
@@ -2396,10 +2396,10 @@ QWindow *QWindowPrivate::topLevelWindow() const
 {
     Q_Q(const QWindow);
 
-    QWindow *window = const_cast<QWindow *>(q);
+    auto window = const_cast<QWindow *>(q);
 
     while (window) {
-        QWindow *parent = window->parent();
+        auto parent = window->parent();
         if (!parent)
             parent = window->transientParent();
 
@@ -2440,7 +2440,7 @@ QWindow *QWindow::fromWinId(WId id)
         return 0;
     }
 
-    QWindow *window = new QWindow;
+    auto window = new QWindow;
     window->setFlags(Qt::ForeignWindow);
     window->setProperty("_q_foreignWinId", QVariant::fromValue(id));
     window->create();
@@ -2523,7 +2523,7 @@ void QWindowPrivate::setCursor(const QCursor *newCursor)
 
     Q_Q(QWindow);
     if (newCursor) {
-        const Qt::CursorShape newShape = newCursor->shape();
+        const auto newShape = newCursor->shape();
         if (newShape <= Qt::LastCursor && hasCursor && newShape == cursor.shape())
             return; // Unchanged and no bitmap/custom cursor.
         cursor = *newCursor;
@@ -2535,7 +2535,7 @@ void QWindowPrivate::setCursor(const QCursor *newCursor)
         hasCursor = false;
     }
     // Only attempt to set cursor and emit signal if there is an actual platform cursor
-    QScreen* screen = q->screen();
+    auto screen = q->screen();
     if (screen && screen->handle()->cursor()) {
         applyCursor();
         QEvent event(QEvent::CursorChange);
@@ -2547,8 +2547,8 @@ void QWindowPrivate::applyCursor()
 {
     Q_Q(QWindow);
     if (platformWindow) {
-        if (QPlatformCursor *platformCursor = q->screen()->handle()->cursor()) {
-            QCursor *c = QGuiApplication::overrideCursor();
+        if (auto platformCursor = q->screen()->handle()->cursor()) {
+            auto c = QGuiApplication::overrideCursor();
             if (!c && hasCursor)
                 c = &cursor;
             platformCursor->changeCursor(c, q);
@@ -2567,7 +2567,7 @@ QDebug operator<<(QDebug debug, const QWindow *window)
         if (!window->objectName().isEmpty())
             debug << ", name=" << window->objectName();
         if (debug.verbosity() > 2) {
-            const QRect geometry = window->geometry();
+            const auto geometry = window->geometry();
             if (window->isVisible())
                 debug << ", visible";
             if (window->isExposed())
@@ -2579,13 +2579,13 @@ QDebug operator<<(QDebug debug, const QWindow *window)
                 debug << ", toplevel";
             debug << ", " << geometry.width() << 'x' << geometry.height()
                 << forcesign << geometry.x() << geometry.y() << noforcesign;
-            const QMargins margins = window->frameMargins();
+            const auto margins = window->frameMargins();
             if (!margins.isNull())
                 debug << ", margins=" << margins;
             debug << ", devicePixelRatio=" << window->devicePixelRatio();
-            if (const QPlatformWindow *platformWindow = window->handle())
+            if (auto platformWindow = window->handle())
                 debug << ", winId=0x" << hex << platformWindow->winId() << dec;
-            if (const QScreen *screen = window->screen())
+            if (auto screen = window->screen())
                 debug << ", on " << screen->name();
         }
         debug << ')';

@@ -348,11 +348,11 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
                     // ### This could be implemented as QImageReader::rewind()
                     if (reader->device()->isSequential())
                         return QFrameInfo(); // Invalid
-                    QString fileName = reader->fileName();
-                    QByteArray format = reader->format();
-                    QIODevice *device = reader->device();
-                    QColor bgColor = reader->backgroundColor();
-                    QSize scaledSize = reader->scaledSize();
+                    auto fileName = reader->fileName();
+                    auto format = reader->format();
+                    auto device = reader->device();
+                    auto bgColor = reader->backgroundColor();
+                    auto scaledSize = reader->scaledSize();
                     delete reader;
                     if (fileName.isEmpty())
                         reader = new QImageReader(device, format);
@@ -369,15 +369,15 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
         }
         if (reader->canRead()) {
             // reader says we can read. Attempt to actually read image
-            QImage anImage = reader->read();
+            auto anImage = reader->read();
             if (anImage.isNull()) {
                 // Reading image failed.
                 return QFrameInfo(); // Invalid
             }
             if (frameNumber > greatestFrameNumber)
                 greatestFrameNumber = frameNumber;
-            QPixmap aPixmap = QPixmap::fromImage(anImage);
-            int aDelay = reader->nextImageDelay();
+            auto aPixmap = QPixmap::fromImage(anImage);
+            auto aDelay = reader->nextImageDelay();
             return QFrameInfo(aPixmap, aDelay);
         } else if (frameNumber != 0) {
             // We've read all frames now. Return an end marker
@@ -393,17 +393,17 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
     // CacheMode == CacheAll
     if (frameNumber > greatestFrameNumber) {
         // Frame hasn't been read from file yet. Try to do it
-        for (int i = greatestFrameNumber + 1; i <= frameNumber; ++i) {
+        for (auto i = greatestFrameNumber + 1; i <= frameNumber; ++i) {
             if (reader->canRead()) {
                 // reader says we can read. Attempt to actually read image
-                QImage anImage = reader->read();
+                auto anImage = reader->read();
                 if (anImage.isNull()) {
                     // Reading image failed.
                     return QFrameInfo(); // Invalid
                 }
                 greatestFrameNumber = i;
-                QPixmap aPixmap = QPixmap::fromImage(anImage);
-                int aDelay = reader->nextImageDelay();
+                auto aPixmap = QPixmap::fromImage(anImage);
+                auto aDelay = reader->nextImageDelay();
                 QFrameInfo info(aPixmap, aDelay);
                 // Cache it!
                 frameMap.insert(i, info);
@@ -436,7 +436,7 @@ bool QMoviePrivate::next()
 {
     QTime time;
     time.start();
-    QFrameInfo info = infoForFrame(nextFrameNumber);
+    auto info = infoForFrame(nextFrameNumber);
     if (!info.isValid())
         return false;
     if (info.isEndMarker()) {
@@ -462,14 +462,14 @@ bool QMoviePrivate::next()
     }
     // Image and delay OK, update internal state
     currentFrameNumber = nextFrameNumber++;
-    QSize scaledSize = reader->scaledSize();
+    auto scaledSize = reader->scaledSize();
     if (scaledSize.isValid() && (scaledSize != info.pixmap.size()))
         currentPixmap = QPixmap::fromImage( info.pixmap.toImage().scaled(scaledSize) );
     else
         currentPixmap = info.pixmap;
     nextDelay = speedAdjustedDelay(info.delay);
     // Adjust delay according to the time it took to read the frame
-    int processingTime = time.elapsed();
+    auto processingTime = time.elapsed();
     if (processingTime > nextDelay)
         nextDelay = 0;
     else
@@ -970,7 +970,7 @@ void QMovie::setScaledSize(const QSize &size)
 */
 QList<QByteArray> QMovie::supportedFormats()
 {
-    QList<QByteArray> list = QImageReader::supportedImageFormats();
+    auto list = QImageReader::supportedImageFormats();
 
     QBuffer buffer;
     buffer.open(QIODevice::ReadOnly);

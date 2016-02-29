@@ -220,7 +220,7 @@ QSurfaceFormat::QSurfaceFormat(QSurfaceFormat::FormatOptions options) :
 void QSurfaceFormat::detach()
 {
     if (d->ref.load() != 1) {
-        QSurfaceFormatPrivate *newd = new QSurfaceFormatPrivate(d);
+        auto newd = new QSurfaceFormatPrivate(d);
         if (!d->ref.deref())
             delete d;
         d = newd;
@@ -281,7 +281,7 @@ QSurfaceFormat::~QSurfaceFormat()
 */
 void QSurfaceFormat::setStereo(bool enable)
 {
-    QSurfaceFormat::FormatOptions newOptions = d->opts;
+    auto newOptions = d->opts;
     newOptions.setFlag(QSurfaceFormat::StereoBuffers, enable);
 
     if (int(newOptions) != int(d->opts)) {
@@ -329,7 +329,7 @@ void QSurfaceFormat::setSamples(int numSamples)
 */
 void QSurfaceFormat::setOption(QSurfaceFormat::FormatOptions opt)
 {
-    const QSurfaceFormat::FormatOptions newOptions = d->opts | opt;
+    const auto newOptions = d->opts | opt;
     if (int(newOptions) != int(d->opts)) {
         detach();
         d->opts = newOptions;
@@ -814,7 +814,7 @@ bool operator!=(const QSurfaceFormat& a, const QSurfaceFormat& b)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSurfaceFormat &f)
 {
-    const QSurfaceFormatPrivate * const d = f.d;
+    const auto d = f.d;
     QDebugStateSaver saver(dbg);
 
     dbg.nospace() << "QSurfaceFormat("

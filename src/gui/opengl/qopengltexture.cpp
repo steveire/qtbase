@@ -158,7 +158,7 @@ bool QOpenGLTexturePrivate::create()
     if (textureId != 0)
         return true;
 
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (!ctx) {
         qWarning("Requires a valid current OpenGL context.\n"
                  "Texture has not been created");
@@ -170,7 +170,7 @@ bool QOpenGLTexturePrivate::create()
     initializeOpenGLFunctions();
 
     // What features do we have?
-    QOpenGLTexture::Feature feature = QOpenGLTexture::ImmutableStorage;
+    auto feature = QOpenGLTexture::ImmutableStorage;
     while (feature != QOpenGLTexture::MaxFeatureFlag) {
         if (QOpenGLTexture::hasFeature(feature))
             features |= feature;
@@ -187,7 +187,7 @@ void QOpenGLTexturePrivate::destroy()
         // not created or already destroyed
         return;
     }
-    QOpenGLContext *currentContext = QOpenGLContext::currentContext();
+    auto currentContext = QOpenGLContext::currentContext();
     if (!currentContext || !QOpenGLContext::areSharing(currentContext, context)) {
         qWarning("Texture is not valid in the current context.\n"
                  "Texture has not been destroyed");
@@ -236,7 +236,7 @@ void QOpenGLTexturePrivate::bind()
 
 void QOpenGLTexturePrivate::bind(uint unit, QOpenGLTexture::TextureUnitReset reset)
 {
-    GLint oldTextureUnit = 0;
+    auto oldTextureUnit = 0;
     if (reset == QOpenGLTexture::ResetTextureUnit)
         texFuncs->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
 
@@ -254,7 +254,7 @@ void QOpenGLTexturePrivate::release()
 
 void QOpenGLTexturePrivate::release(uint unit, QOpenGLTexture::TextureUnitReset reset)
 {
-    GLint oldTextureUnit = 0;
+    auto oldTextureUnit = 0;
     if (reset == QOpenGLTexture::ResetTextureUnit)
         texFuncs->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
 
@@ -267,20 +267,20 @@ void QOpenGLTexturePrivate::release(uint unit, QOpenGLTexture::TextureUnitReset 
 
 bool QOpenGLTexturePrivate::isBound() const
 {
-    GLint boundTextureId = 0;
+    auto boundTextureId = 0;
     texFuncs->glGetIntegerv(bindingTarget, &boundTextureId);
     return (static_cast<GLuint>(boundTextureId) == textureId);
 }
 
 bool QOpenGLTexturePrivate::isBound(uint unit) const
 {
-    GLint oldTextureUnit = 0;
+    auto oldTextureUnit = 0;
     texFuncs->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
 
-    GLint boundTextureId = 0;
+    auto boundTextureId = 0;
     texFuncs->glActiveTexture(GL_TEXTURE0 + unit);
     texFuncs->glGetIntegerv(bindingTarget, &boundTextureId);
-    bool result = (static_cast<GLuint>(boundTextureId) == textureId);
+    auto result = (static_cast<GLuint>(boundTextureId) == textureId);
 
     texFuncs->glActiveTexture(GL_TEXTURE0 + oldTextureUnit);
     return result;
@@ -1008,7 +1008,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
 
     case QOpenGLTexture::Target1D:
         if (features.testFlag(QOpenGLTexture::Texture1D)) {
-            for (int level = 0; level < mipLevels; ++level)
+            for (auto level = 0; level < mipLevels; ++level)
                 texFuncs->glTextureImage1D(textureId, target, bindingTarget, level, format,
                                            mipLevelSize(level, dimensions[0]),
                                            0,
@@ -1022,7 +1022,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
     case QOpenGLTexture::Target1DArray:
         if (features.testFlag(QOpenGLTexture::Texture1D)
                 && features.testFlag(QOpenGLTexture::TextureArrays)) {
-            for (int level = 0; level < mipLevels; ++level)
+            for (auto level = 0; level < mipLevels; ++level)
                 texFuncs->glTextureImage2D(textureId, target, bindingTarget, level, format,
                                            mipLevelSize(level, dimensions[0]),
                                            layers,
@@ -1036,7 +1036,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
 
     case QOpenGLTexture::Target2D:
     case QOpenGLTexture::TargetRectangle:
-        for (int level = 0; level < mipLevels; ++level)
+        for (auto level = 0; level < mipLevels; ++level)
             texFuncs->glTextureImage2D(textureId, target, bindingTarget, level, format,
                                        mipLevelSize(level, dimensions[0]),
                                        mipLevelSize(level, dimensions[1]),
@@ -1054,8 +1054,8 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
             QOpenGLTexture::CubeMapPositiveZ, QOpenGLTexture::CubeMapNegativeZ
         };
 
-        for (int faceTarget = 0; faceTarget < 6; ++faceTarget) {
-            for (int level = 0; level < mipLevels; ++level) {
+        for (auto faceTarget = 0; faceTarget < 6; ++faceTarget) {
+            for (auto level = 0; level < mipLevels; ++level) {
                 texFuncs->glTextureImage2D(textureId, faceTargets[faceTarget], bindingTarget,
                                            level, format,
                                            mipLevelSize(level, dimensions[0]),
@@ -1069,7 +1069,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
 
     case QOpenGLTexture::Target2DArray:
         if (features.testFlag(QOpenGLTexture::TextureArrays)) {
-            for (int level = 0; level < mipLevels; ++level)
+            for (auto level = 0; level < mipLevels; ++level)
                 texFuncs->glTextureImage3D(textureId, target, bindingTarget, level, format,
                                            mipLevelSize(level, dimensions[0]),
                                            mipLevelSize(level, dimensions[1]),
@@ -1085,7 +1085,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
     case QOpenGLTexture::TargetCubeMapArray:
         // Cubemap arrays must specify number of layer-faces (6 * layers) as depth parameter
         if (features.testFlag(QOpenGLTexture::TextureCubeMapArrays)) {
-            for (int level = 0; level < mipLevels; ++level)
+            for (auto level = 0; level < mipLevels; ++level)
                 texFuncs->glTextureImage3D(textureId, target, bindingTarget, level, format,
                                            mipLevelSize(level, dimensions[0]),
                                            mipLevelSize(level, dimensions[1]),
@@ -1100,7 +1100,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
 
     case QOpenGLTexture::Target3D:
         if (features.testFlag(QOpenGLTexture::Texture3D)) {
-            for (int level = 0; level < mipLevels; ++level)
+            for (auto level = 0; level < mipLevels; ++level)
                 texFuncs->glTextureImage3D(textureId, target, bindingTarget, level, format,
                                            mipLevelSize(level, dimensions[0]),
                                            mipLevelSize(level, dimensions[1]),
@@ -1296,8 +1296,8 @@ void QOpenGLTexturePrivate::setData(int mipLevel, int layer, QOpenGLTexture::Cub
         break;
 
     case QOpenGLTexture::TargetCubeMapArray: {
-        int faceIndex = cubeFace - QOpenGLTexture::CubeMapPositiveX;
-        int layerFace = 6 * layer + faceIndex;
+        auto faceIndex = cubeFace - QOpenGLTexture::CubeMapPositiveX;
+        auto layerFace = 6 * layer + faceIndex;
         texFuncs->glTextureSubImage3D(textureId, target, bindingTarget, mipLevel,
                                       0, 0, layerFace,
                                       mipLevelSize(mipLevel, dimensions[0]),
@@ -1342,7 +1342,7 @@ void QOpenGLTexturePrivate::setCompressedData(int mipLevel, int layer, QOpenGLTe
         return;
     }
 
-    const bool needsFullSpec = !isUsingImmutableStorage(); // was allocateStorage() a no-op?
+    const auto needsFullSpec = !isUsingImmutableStorage(); // was allocateStorage() a no-op?
 
     switch (target) {
     case QOpenGLTexture::Target1D:
@@ -1438,8 +1438,8 @@ void QOpenGLTexturePrivate::setCompressedData(int mipLevel, int layer, QOpenGLTe
         break;
 
     case QOpenGLTexture::TargetCubeMapArray: {
-        int faceIndex = cubeFace - QOpenGLTexture::CubeMapPositiveX;
-        int layerFace = 6 * layer + faceIndex;
+        auto faceIndex = cubeFace - QOpenGLTexture::CubeMapPositiveX;
+        auto layerFace = 6 * layer + faceIndex;
         if (!needsFullSpec) {
             texFuncs->glCompressedTextureSubImage3D(textureId, target, bindingTarget, mipLevel,
                                                     0, 0, layerFace,
@@ -1625,7 +1625,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
     // Do sanity checks - see http://www.opengl.org/wiki/GLAPI/glTextureView
 
     // Check the targets are compatible
-    bool viewTargetCompatible = false;
+    auto viewTargetCompatible = false;
     switch (target) {
     case QOpenGLTexture::Target1D:
     case QOpenGLTexture::Target1DArray:
@@ -1673,7 +1673,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
     }
 
     // Check the formats are compatible
-    bool viewFormatCompatible = false;
+    auto viewFormatCompatible = false;
     switch (formatClass) {
     case QOpenGLTexture::NoFormatClass:
         break;
@@ -1807,7 +1807,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
 
 
     // Create a view
-    QOpenGLTexture *view = new QOpenGLTexture(viewTarget);
+    auto view = new QOpenGLTexture(viewTarget);
     view->setFormat(viewFormat);
     view->create();
     view->d_ptr->textureView = true;
@@ -2382,13 +2382,13 @@ bool QOpenGLTexture::isBound(uint unit)
 */
 GLuint QOpenGLTexture::boundTextureId(BindingTarget target)
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (!ctx) {
         qWarning("QOpenGLTexture::boundTextureId() requires a valid current context");
         return 0;
     }
 
-    GLint textureId = 0;
+    auto textureId = 0;
     ctx->functions()->glGetIntegerv(target, &textureId);
     return static_cast<GLuint>(textureId);
 }
@@ -2399,20 +2399,20 @@ GLuint QOpenGLTexture::boundTextureId(BindingTarget target)
 */
 GLuint QOpenGLTexture::boundTextureId(uint unit, BindingTarget target)
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (!ctx) {
         qWarning("QOpenGLTexture::boundTextureId() requires a valid current context");
         return 0;
     }
 
-    QOpenGLFunctions *funcs = ctx->functions();
+    auto funcs = ctx->functions();
     funcs->initializeOpenGLFunctions();
 
-    GLint oldTextureUnit = 0;
+    auto oldTextureUnit = 0;
     funcs->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
 
     funcs->glActiveTexture(unit);
-    GLint textureId = 0;
+    auto textureId = 0;
     funcs->glGetIntegerv(target, &textureId);
     funcs->glActiveTexture(oldTextureUnit);
 
@@ -2974,8 +2974,8 @@ void QOpenGLTexture::allocateStorage()
 {
     Q_D(QOpenGLTexture);
     if (d->create()) {
-        const QOpenGLTexture::PixelFormat pixelFormat = pixelFormatCompatibleWithInternalFormat(d->format);
-        const QOpenGLTexture::PixelType pixelType = pixelTypeCompatibleWithInternalFormat(d->format);
+        const auto pixelFormat = pixelFormatCompatibleWithInternalFormat(d->format);
+        const auto pixelType = pixelTypeCompatibleWithInternalFormat(d->format);
         d->allocateStorage(pixelFormat, pixelType);
     }
 }
@@ -3223,7 +3223,7 @@ void QOpenGLTexture::setData(PixelFormat sourceFormat, PixelType sourceType,
 */
 void QOpenGLTexture::setData(const QImage& image, MipMapGeneration genMipMaps)
 {
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("QOpenGLTexture::setData() requires a valid current context");
         return;
@@ -3244,7 +3244,7 @@ void QOpenGLTexture::setData(const QImage& image, MipMapGeneration genMipMaps)
     allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
 
     // Upload pixel data and generate mipmaps
-    QImage glImage = image.convertToFormat(QImage::Format_RGBA8888);
+    auto glImage = image.convertToFormat(QImage::Format_RGBA8888);
     QOpenGLPixelTransferOptions uploadOptions;
     uploadOptions.setAlignment(1);
     setData(0, QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, glImage.constBits(), &uploadOptions);
@@ -3369,15 +3369,15 @@ void QOpenGLTexture::setCompressedData(int dataSize, void *data,
 */
 bool QOpenGLTexture::hasFeature(Feature feature)
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (!ctx) {
         qWarning("QOpenGLTexture::hasFeature() requires a valid current context");
         return false;
     }
 
-    QSurfaceFormat f = ctx->format();
+    auto f = ctx->format();
 
-    bool supported = false;
+    auto supported = false;
 
 #if !defined(QT_OPENGL_ES_2)
     if (!ctx->isOpenGLES()) {
@@ -3467,7 +3467,7 @@ bool QOpenGLTexture::hasFeature(Feature feature)
     if (ctx->isOpenGLES())
 #endif
     {
-        const char *renderer = reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_RENDERER));
+        auto renderer = reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_RENDERER));
         switch (feature) {
         case ImmutableStorage:
             supported = (f.version() >= qMakePair(3, 0) || ctx->hasExtension(QByteArrayLiteral("EXT_texture_storage")))
@@ -3680,7 +3680,7 @@ void QOpenGLTexture::generateMipMaps()
     Q_ASSERT(d->texFuncs);
     Q_ASSERT(d->textureId);
     if (isCompressedFormat(d->format)) {
-        if (QOpenGLContext *ctx = QOpenGLContext::currentContext())
+        if (auto ctx = QOpenGLContext::currentContext())
             if (ctx->isOpenGLES() && ctx->format().majorVersion() < 3)
                 return;
     }
@@ -3705,7 +3705,7 @@ void QOpenGLTexture::generateMipMaps(int baseLevel, bool resetBaseLevel)
     Q_ASSERT(d->texFuncs);
     Q_ASSERT(d->textureId);
     if (isCompressedFormat(d->format)) {
-        if (QOpenGLContext *ctx = QOpenGLContext::currentContext())
+        if (auto ctx = QOpenGLContext::currentContext())
             if (ctx->isOpenGLES() && ctx->format().majorVersion() < 3)
                 return;
     }
@@ -4119,7 +4119,7 @@ void QOpenGLTexture::setBorderColor(QColor color)
         values[2] = color.blueF();
         values[3] = color.alphaF();
         d->borderColor.clear();
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             d->borderColor.append(QVariant(values[i]));
         d->texFuncs->glTextureParameterfv(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_BORDER_COLOR, values);
         return;
@@ -4149,7 +4149,7 @@ void QOpenGLTexture::setBorderColor(float r, float g, float b, float a)
         values[2] = b;
         values[3] = a;
         d->borderColor.clear();
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             d->borderColor.append(QVariant(values[i]));
         d->texFuncs->glTextureParameterfv(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_BORDER_COLOR, values);
         return;
@@ -4182,7 +4182,7 @@ void QOpenGLTexture::setBorderColor(int r, int g, int b, int a)
         values[2] = b;
         values[3] = a;
         d->borderColor.clear();
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             d->borderColor.append(QVariant(values[i]));
         d->texFuncs->glTextureParameteriv(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_BORDER_COLOR, values);
         return;
@@ -4217,7 +4217,7 @@ void QOpenGLTexture::setBorderColor(uint r, uint g, uint b, uint a)
         values[2] = int(b);
         values[3] = int(a);
         d->borderColor.clear();
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             d->borderColor.append(QVariant(values[i]));
         d->texFuncs->glTextureParameteriv(d->textureId, d->target, d->bindingTarget, GL_TEXTURE_BORDER_COLOR, values);
         return;
@@ -4262,10 +4262,10 @@ void QOpenGLTexture::borderColor(float *border) const
     Q_D(const QOpenGLTexture);
     Q_ASSERT(border);
     if (d->borderColor.isEmpty()) {
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             border[i] = 0.0f;
     } else {
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             border[i] = d->borderColor.at(i).toFloat();
     }
 }
@@ -4281,10 +4281,10 @@ void QOpenGLTexture::borderColor(int *border) const
     Q_D(const QOpenGLTexture);
     Q_ASSERT(border);
     if (d->borderColor.isEmpty()) {
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             border[i] = 0;
     } else {
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             border[i] = d->borderColor.at(i).toInt();
     }
 }
@@ -4300,10 +4300,10 @@ void QOpenGLTexture::borderColor(unsigned int *border) const
     Q_D(const QOpenGLTexture);
     Q_ASSERT(border);
     if (d->borderColor.isEmpty()) {
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             border[i] = 0;
     } else {
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             border[i] = d->borderColor.at(i).toUInt();
     }
 }

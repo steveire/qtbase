@@ -117,13 +117,13 @@ static inline QGradient::CoordinateMode coordinateMode(const QBrush &brush)
 extern bool qHasPixmapTexture(const QBrush &);
 
 static inline bool is_brush_transparent(const QBrush &brush) {
-    Qt::BrushStyle s = brush.style();
+    auto s = brush.style();
     if (s != Qt::TexturePattern)
         return s >= Qt::Dense1Pattern && s <= Qt::DiagCrossPattern;
     if (qHasPixmapTexture(brush))
         return brush.texture().isQBitmap() || brush.texture().hasAlphaChannel();
     else {
-        const QImage texture = brush.textureImage();
+        const auto texture = brush.textureImage();
         return texture.hasAlphaChannel() || (texture.depth() == 1 && texture.colorCount() == 0);
     }
 }
@@ -178,15 +178,15 @@ static bool qt_painter_thread_test(int devType, int engineType, const char *what
 void QPainterPrivate::checkEmulation()
 {
     Q_ASSERT(extended);
-    bool doEmulation = false;
+    auto doEmulation = false;
     if (state->bgMode == Qt::OpaqueMode)
         doEmulation = true;
 
-    const QGradient *bg = state->brush.gradient();
+    auto bg = state->brush.gradient();
     if (bg && bg->coordinateMode() > QGradient::LogicalMode)
         doEmulation = true;
 
-    const QGradient *pg = qpen_brush(state->pen).gradient();
+    auto pg = qpen_brush(state->pen).gradient();
     if (pg && pg->coordinateMode() > QGradient::LogicalMode)
         doEmulation = true;
 
@@ -217,8 +217,8 @@ QPainterPrivate::~QPainterPrivate()
 QTransform QPainterPrivate::viewTransform() const
 {
     if (state->VxF) {
-        qreal scaleW = qreal(state->vw)/qreal(state->ww);
-        qreal scaleH = qreal(state->vh)/qreal(state->wh);
+        auto scaleW = qreal(state->vw)/qreal(state->ww);
+        auto scaleH = qreal(state->vh)/qreal(state->wh);
         return QTransform(scaleW, 0, 0, scaleH,
                           state->vx - state->wx*scaleW, state->vy - state->wy*scaleH);
     }
@@ -236,7 +236,7 @@ qreal QPainterPrivate::effectiveDevicePixelRatio() const
 
 QTransform QPainterPrivate::hidpiScaleTransform() const
 {
-    const qreal devicePixelRatio = effectiveDevicePixelRatio();
+    const auto devicePixelRatio = effectiveDevicePixelRatio();
     return QTransform::fromScale(devicePixelRatio, devicePixelRatio);
 }
 
@@ -249,7 +249,7 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     Q_ASSERT(q);
     Q_ASSERT(pdev);
 
-    QPainter *sp = pdev->sharedPainter();
+    auto sp = pdev->sharedPainter();
     if (!sp)
         return false;
 
@@ -297,7 +297,7 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     }
     q->d_ptr->updateMatrix();
 
-    QPaintEnginePrivate *enginePrivate = q->d_ptr->engine->d_func();
+    auto enginePrivate = q->d_ptr->engine->d_func();
     if (enginePrivate->currentClipDevice == pdev) {
         enginePrivate->systemStateChanged();
         return true;
@@ -314,7 +314,7 @@ void QPainterPrivate::detachPainterPrivate(QPainter *q)
     Q_ASSERT(refcount > 1);
     Q_ASSERT(q);
 
-    QPainterPrivate *original = d_ptrs[--refcount - 1];
+    auto original = d_ptrs[--refcount - 1];
     if (inDestructor) {
         inDestructor = false;
         if (original)
@@ -347,11 +347,11 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
     if (originalPath.isEmpty())
         return;
 
-    QPaintEngine::PaintEngineFeatures gradientStretch =
+    auto gradientStretch =
         QPaintEngine::PaintEngineFeatures(QGradient_StretchToDevice
                                           | QPaintEngine::ObjectBoundingModeGradients);
 
-    const bool mustEmulateObjectBoundingModeGradients = extended
+    const auto mustEmulateObjectBoundingModeGradients = extended
                                                         || ((state->emulationSpecifier & QPaintEngine::ObjectBoundingModeGradients)
                                                             && !engine->hasFeature(QPaintEngine::PatternTransform));
 
@@ -368,12 +368,12 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
 
     qreal strokeOffsetX = 0, strokeOffsetY = 0;
 
-    QPainterPath path = originalPath * state->matrix;
-    QRectF pathBounds = path.boundingRect();
+    auto path = originalPath * state->matrix;
+    auto pathBounds = path.boundingRect();
     QRectF strokeBounds;
-    bool doStroke = (op & StrokeDraw) && (state->pen.style() != Qt::NoPen);
+    auto doStroke = (op & StrokeDraw) && (state->pen.style() != Qt::NoPen);
     if (doStroke) {
-        qreal penWidth = state->pen.widthF();
+        auto penWidth = state->pen.widthF();
         if (penWidth == 0) {
             strokeOffsetX = 1;
             strokeOffsetY = 1;
@@ -384,7 +384,7 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
                 stroker.setWidth(penWidth);
                 stroker.setJoinStyle(state->pen.joinStyle());
                 stroker.setCapStyle(state->pen.capStyle());
-                QPainterPath stroke = stroker.createStroke(originalPath);
+                auto stroke = stroker.createStroke(originalPath);
                 strokeBounds = (stroke * state->matrix).boundingRect();
             } else {
                 strokeOffsetX = qAbs(penWidth * state->matrix.m11() / 2.0);
@@ -402,7 +402,7 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
     }
 
     if (q->hasClipping()) {
-        bool hasPerspectiveTransform = false;
+        auto hasPerspectiveTransform = false;
         for (const QPainterClipInfo &info : qAsConst(state->clipInfo)) {
             if (info.matrix.type() == QTransform::TxProject) {
                 hasPerspectiveTransform = true;
@@ -418,11 +418,11 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
             // coordinates and converting to/from logical coordinates will
             // lose precision.
             bool old_txinv = txinv;
-            QTransform old_invMatrix = invMatrix;
+            auto old_invMatrix = invMatrix;
             txinv = true;
             invMatrix = QTransform();
-            QPainterPath clipPath = q->clipPath();
-            QRectF r = clipPath.boundingRect().intersected(absPathRect);
+            auto clipPath = q->clipPath();
+            auto r = clipPath.boundingRect().intersected(absPathRect);
             absPathRect = r.toAlignedRect();
             txinv = old_txinv;
             invMatrix = old_invMatrix;
@@ -519,7 +519,7 @@ static inline QBrush stretchGradientToUserSpace(const QBrush &brush, const QRect
     QTransform gradientToUser(boundingRect.width(), 0, 0, boundingRect.height(),
                               boundingRect.x(), boundingRect.y());
 
-    QGradient g = *brush.gradient();
+    auto g = *brush.gradient();
     g.setCoordinateMode(QGradient::LogicalMode);
 
     QBrush b(g);
@@ -534,15 +534,15 @@ void QPainterPrivate::drawStretchedGradient(const QPainterPath &path, DrawOperat
     const qreal sw = helper_device->width();
     const qreal sh = helper_device->height();
 
-    bool changedPen = false;
-    bool changedBrush = false;
-    bool needsFill = false;
+    auto changedPen = false;
+    auto changedBrush = false;
+    auto needsFill = false;
 
-    const QPen pen = state->pen;
-    const QBrush brush = state->brush;
+    const auto pen = state->pen;
+    const auto brush = state->brush;
 
-    const QGradient::CoordinateMode penMode = coordinateMode(pen.brush());
-    const QGradient::CoordinateMode brushMode = coordinateMode(brush);
+    const auto penMode = coordinateMode(pen.brush());
+    const auto brushMode = coordinateMode(brush);
 
     QRectF boundingRect;
 
@@ -554,8 +554,8 @@ void QPainterPrivate::drawStretchedGradient(const QPainterPath &path, DrawOperat
             q->scale(sw, sh);
             updateState(state);
 
-            const qreal isw = 1.0 / sw;
-            const qreal ish = 1.0 / sh;
+            const auto isw = 1.0 / sw;
+            const auto ish = 1.0 / sh;
             QTransform inv(isw, 0, 0, ish, 0, 0);
             engine->drawPath(path * inv);
             q->scale(isw, ish);
@@ -593,10 +593,10 @@ void QPainterPrivate::drawStretchedGradient(const QPainterPath &path, DrawOperat
             stroker.setJoinStyle(pen.joinStyle());
             stroker.setCapStyle(pen.capStyle());
             stroker.setMiterLimit(pen.miterLimit());
-            QPainterPath stroke = stroker.createStroke(path);
+            auto stroke = stroker.createStroke(path);
 
-            const qreal isw = 1.0 / sw;
-            const qreal ish = 1.0 / sh;
+            const auto isw = 1.0 / sw;
+            const auto ish = 1.0 / sh;
             QTransform inv(isw, 0, 0, ish, 0, 0);
             engine->drawPath(stroke * inv);
             q->scale(isw, ish);
@@ -613,7 +613,7 @@ void QPainterPrivate::drawStretchedGradient(const QPainterPath &path, DrawOperat
                 if (!needsFill || brushMode != QGradient::ObjectBoundingMode)
                     boundingRect = path.boundingRect();
 
-                QPen p = pen;
+                auto p = pen;
                 p.setBrush(stretchGradientToUserSpace(pen.brush(), boundingRect));
                 q->setPen(p);
                 changedPen = true;
@@ -673,16 +673,16 @@ extern bool qt_isExtendedRadialGradient(const QBrush &brush);
 
 void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
 {
-    bool alpha = false;
-    bool linearGradient = false;
-    bool radialGradient = false;
-    bool extendedRadialGradient = false;
-    bool conicalGradient = false;
-    bool patternBrush = false;
-    bool xform = false;
-    bool complexXform = false;
+    auto alpha = false;
+    auto linearGradient = false;
+    auto radialGradient = false;
+    auto extendedRadialGradient = false;
+    auto conicalGradient = false;
+    auto patternBrush = false;
+    auto xform = false;
+    auto complexXform = false;
 
-    bool skip = true;
+    auto skip = true;
 
     // Pen and brush properties (we have to check both if one changes because the
     // one that's unchanged can still be in a state which requires emulation)
@@ -695,9 +695,9 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
 
         skip = false;
 
-        QBrush penBrush = (qpen_style(s->pen) == Qt::NoPen) ? QBrush(Qt::NoBrush) : qpen_brush(s->pen);
-        Qt::BrushStyle brushStyle = qbrush_style(s->brush);
-        Qt::BrushStyle penBrushStyle = qbrush_style(penBrush);
+        auto penBrush = (qpen_style(s->pen) == Qt::NoPen) ? QBrush(Qt::NoBrush) : qpen_brush(s->pen);
+        auto brushStyle = qbrush_style(s->brush);
+        auto penBrushStyle = qbrush_style(penBrush);
         alpha = (penBrushStyle != Qt::NoBrush
                  && (penBrushStyle < Qt::LinearGradientPattern && penBrush.color().alpha() != 255)
                  && !penBrush.isOpaque())
@@ -718,12 +718,12 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
                            && brushStyle < Qt::LinearGradientPattern)
                           || brushStyle == Qt::TexturePattern));
 
-        bool penTextureAlpha = false;
+        auto penTextureAlpha = false;
         if (penBrush.style() == Qt::TexturePattern)
             penTextureAlpha = qHasPixmapTexture(penBrush)
                               ? (penBrush.texture().depth() > 1) && penBrush.texture().hasAlpha()
                               : penBrush.textureImage().hasAlphaChannel();
-        bool brushTextureAlpha = false;
+        auto brushTextureAlpha = false;
         if (s->brush.style() == Qt::TexturePattern) {
             brushTextureAlpha = qHasPixmapTexture(s->brush)
                                 ? (s->brush.texture().depth() > 1) && s->brush.texture().hasAlpha()
@@ -774,10 +774,10 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
         complexXform = !s->matrix.isAffine();
     }
 
-    const bool brushXform = (s->brush.transform().type() != QTransform::TxNone);
-    const bool penXform = (s->pen.brush().transform().type() != QTransform::TxNone);
+    const auto brushXform = (s->brush.transform().type() != QTransform::TxNone);
+    const auto penXform = (s->pen.brush().transform().type() != QTransform::TxNone);
 
-    const bool patternXform = patternBrush && (xform || brushXform || penXform);
+    const auto patternXform = patternBrush && (xform || brushXform || penXform);
 
     // Check alphablending
     if (alpha && !engine->hasFeature(QPaintEngine::AlphaBlend))
@@ -833,11 +833,11 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
     else
         s->emulationSpecifier &= ~QPaintEngine::ConstantOpacity;
 
-    bool gradientStretch = false;
-    bool objectBoundingMode = false;
+    auto gradientStretch = false;
+    auto objectBoundingMode = false;
     if (linearGradient || conicalGradient || radialGradient) {
-        QGradient::CoordinateMode brushMode = coordinateMode(s->brush);
-        QGradient::CoordinateMode penMode = coordinateMode(s->pen.brush());
+        auto brushMode = coordinateMode(s->brush);
+        auto penMode = coordinateMode(s->pen.brush());
 
         gradientStretch |= (brushMode == QGradient::StretchToDeviceMode);
         gradientStretch |= (penMode == QGradient::StretchToDeviceMode);
@@ -1612,7 +1612,7 @@ void QPainter::restore()
         return;
     }
 
-    QPainterState *tmp = d->state;
+    auto tmp = d->state;
     d->states.pop_back();
     d->state = d->states.back();
     d->txinv = false;
@@ -1722,7 +1722,7 @@ bool QPainter::begin(QPaintDevice *pd)
     d->original_device = pd;
 
     QPoint redirectionOffset;
-    QPaintDevice *rpd = pd->redirected(&redirectionOffset);
+    auto rpd = pd->redirected(&redirectionOffset);
     if (rpd)
         pd = rpd;
 
@@ -1767,7 +1767,7 @@ bool QPainter::begin(QPaintDevice *pd)
     switch (pd->devType()) {
         case QInternal::Pixmap:
         {
-            QPixmap *pm = static_cast<QPixmap *>(pd);
+            auto pm = static_cast<QPixmap *>(pd);
             Q_ASSERT(pm);
             if (pm->isNull()) {
                 qWarning("QPainter::begin: Cannot paint on a null pixmap");
@@ -1783,7 +1783,7 @@ bool QPainter::begin(QPaintDevice *pd)
         }
         case QInternal::Image:
         {
-            QImage *img = static_cast<QImage *>(pd);
+            auto img = static_cast<QImage *>(pd);
             Q_ASSERT(img);
             if (img->isNull()) {
                 qWarning("QPainter::begin: Cannot paint on a null image");
@@ -1809,7 +1809,7 @@ bool QPainter::begin(QPaintDevice *pd)
 
     d->engine->setPaintDevice(pd);
 
-    bool begun = d->engine->begin(pd);
+    auto begun = d->engine->begin(pd);
     if (!begun) {
         qWarning("QPainter::begin(): Returned false");
         if (d->engine->isActive()) {
@@ -1832,7 +1832,7 @@ bool QPainter::begin(QPaintDevice *pd)
         d->state->deviceFont = d->state->font = QFont(d->state->deviceFont, device());
     }
 
-    QRect systemRect = d->engine->systemRect();
+    auto systemRect = d->engine->systemRect();
     if (!systemRect.isEmpty()) {
         d->state->ww = d->state->vw = systemRect.width();
         d->state->wh = d->state->vh = systemRect.height();
@@ -1841,7 +1841,7 @@ bool QPainter::begin(QPaintDevice *pd)
         d->state->wh = d->state->vh = pd->metric(QPaintDevice::PdmHeight);
     }
 
-    const QPoint coordinateOffset = d->engine->coordinateOffset();
+    const auto coordinateOffset = d->engine->coordinateOffset();
     d->state->redirectionMatrix.translate(-coordinateOffset.x(), -coordinateOffset.y());
 
     Q_ASSERT(d->engine->isActive());
@@ -1887,7 +1887,7 @@ bool QPainter::end()
         return true;
     }
 
-    bool ended = true;
+    auto ended = true;
 
     if (d->engine->isActive()) {
         ended = d->engine->end();
@@ -2504,7 +2504,7 @@ QRegion QPainter::clipRegion() const
     }
 
     QRegion region;
-    bool lastWasNothing = true;
+    auto lastWasNothing = true;
 
     if (!d->txinv)
         const_cast<QPainter *>(this)->d_ptr->updateInvMatrix();
@@ -2514,7 +2514,7 @@ QRegion QPainter::clipRegion() const
         switch (info.clipType) {
 
         case QPainterClipInfo::RegionClip: {
-            QTransform matrix = (info.matrix * d->invMatrix);
+            auto matrix = (info.matrix * d->invMatrix);
             if (lastWasNothing) {
                 region = info.region * matrix;
                 lastWasNothing = false;
@@ -2531,7 +2531,7 @@ QRegion QPainter::clipRegion() const
         }
 
         case QPainterClipInfo::PathClip: {
-            QTransform matrix = (info.matrix * d->invMatrix);
+            auto matrix = (info.matrix * d->invMatrix);
             if (lastWasNothing) {
                 region = QRegion((info.path * matrix).toFillPolygon().toPolygon(),
                                  info.path.fillRule());
@@ -2552,7 +2552,7 @@ QRegion QPainter::clipRegion() const
         }
 
         case QPainterClipInfo::RectClip: {
-            QTransform matrix = (info.matrix * d->invMatrix);
+            auto matrix = (info.matrix * d->invMatrix);
             if (lastWasNothing) {
                 region = QRegion(info.rect) * matrix;
                 lastWasNothing = false;
@@ -2574,7 +2574,7 @@ QRegion QPainter::clipRegion() const
         }
 
         case QPainterClipInfo::RectFClip: {
-            QTransform matrix = (info.matrix * d->invMatrix);
+            auto matrix = (info.matrix * d->invMatrix);
             if (lastWasNothing) {
                 region = QRegion(info.rectf.toRect()) * matrix;
                 lastWasNothing = false;
@@ -2635,12 +2635,12 @@ QPainterPath QPainter::clipPath() const
         // For the simple case avoid conversion.
         if (d->state->clipInfo.size() == 1
             && d->state->clipInfo.at(0).clipType == QPainterClipInfo::PathClip) {
-            QTransform matrix = (d->state->clipInfo.at(0).matrix * d->invMatrix);
+            auto matrix = (d->state->clipInfo.at(0).matrix * d->invMatrix);
             return d->state->clipInfo.at(0).path * matrix;
 
         } else if (d->state->clipInfo.size() == 1
                    && d->state->clipInfo.at(0).clipType == QPainterClipInfo::RectClip) {
-            QTransform matrix = (d->state->clipInfo.at(0).matrix * d->invMatrix);
+            auto matrix = (d->state->clipInfo.at(0).matrix * d->invMatrix);
             QPainterPath path;
             path.addRect(d->state->clipInfo.at(0).rect);
             return path * matrix;
@@ -2676,7 +2676,7 @@ QRectF QPainter::clipBoundingRect() const
     // precise, but it fits within the guarantee and it is reasonably
     // fast.
     QRectF bounds;
-    bool first = true;
+    auto first = true;
     for (const QPainterClipInfo &info : qAsConst(d->state->clipInfo)) {
          QRectF r;
 
@@ -2728,12 +2728,12 @@ void QPainter::setClipRect(const QRectF &rect, Qt::ClipOperation op)
             qWarning("QPainter::setClipRect: Painter not active");
             return;
         }
-        bool simplifyClipOp = (paintEngine()->type() != QPaintEngine::Picture);
+        auto simplifyClipOp = (paintEngine()->type() != QPaintEngine::Picture);
         if (simplifyClipOp && (!d->state->clipEnabled && op != Qt::NoClip))
             op = Qt::ReplaceClip;
 
-        qreal right = rect.x() + rect.width();
-        qreal bottom = rect.y() + rect.height();
+        auto right = rect.x() + rect.width();
+        auto bottom = rect.y() + rect.height();
         qreal pts[] = { rect.x(), rect.y(),
                         right, rect.y(),
                         right, bottom,
@@ -2782,7 +2782,7 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         qWarning("QPainter::setClipRect: Painter not active");
         return;
     }
-    bool simplifyClipOp = (paintEngine()->type() != QPaintEngine::Picture);
+    auto simplifyClipOp = (paintEngine()->type() != QPaintEngine::Picture);
 
     if (simplifyClipOp && (!d->state->clipEnabled && op != Qt::NoClip))
         op = Qt::ReplaceClip;
@@ -2841,7 +2841,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         qWarning("QPainter::setClipRegion: Painter not active");
         return;
     }
-    bool simplifyClipOp = (paintEngine()->type() != QPaintEngine::Picture);
+    auto simplifyClipOp = (paintEngine()->type() != QPaintEngine::Picture);
 
     if (simplifyClipOp && (!d->state->clipEnabled && op != Qt::NoClip))
         op = Qt::ReplaceClip;
@@ -3188,8 +3188,8 @@ void QPainter::rotate(qreal a)
 */
 void QPainter::translate(const QPointF &offset)
 {
-    qreal dx = offset.x();
-    qreal dy = offset.y();
+    auto dx = offset.x();
+    auto dy = offset.y();
 #ifdef QT_DEBUG_DRAW
     if (qt_show_painter_debug_output)
         printf("QPainter::translate(), dx=%f, dy=%f\n", dx, dy);
@@ -3292,15 +3292,15 @@ void QPainter::strokePath(const QPainterPath &path, const QPen &pen)
         return;
 
     if (d->extended) {
-        const QGradient *g = qpen_brush(pen).gradient();
+        auto g = qpen_brush(pen).gradient();
         if (!g || g->coordinateMode() == QGradient::LogicalMode) {
             d->extended->stroke(qtVectorPathForPath(path), pen);
             return;
         }
     }
 
-    QBrush oldBrush = d->state->brush;
-    QPen oldPen = d->state->pen;
+    auto oldBrush = d->state->brush;
+    auto oldPen = d->state->pen;
 
     setPen(pen);
     setBrush(Qt::NoBrush);
@@ -3335,15 +3335,15 @@ void QPainter::fillPath(const QPainterPath &path, const QBrush &brush)
         return;
 
     if (d->extended) {
-        const QGradient *g = brush.gradient();
+        auto g = brush.gradient();
         if (!g || g->coordinateMode() == QGradient::LogicalMode) {
             d->extended->fill(qtVectorPathForPath(path), brush);
             return;
         }
     }
 
-    QBrush oldBrush = d->state->brush;
-    QPen oldPen = d->state->pen;
+    auto oldBrush = d->state->brush;
+    auto oldPen = d->state->pen;
 
     setPen(Qt::NoPen);
     setBrush(brush);
@@ -3515,7 +3515,7 @@ void QPainter::drawRects(const QRectF *rects, int rectCount)
 
     if (d->state->emulationSpecifier == QPaintEngine::PrimitiveTransform
         && d->state->matrix.type() == QTransform::TxTranslate) {
-        for (int i=0; i<rectCount; ++i) {
+        for (auto i=0; i<rectCount; ++i) {
             QRectF r(rects[i].x() + d->state->matrix.dx(),
                      rects[i].y() + d->state->matrix.dy(),
                      rects[i].width(),
@@ -3524,14 +3524,14 @@ void QPainter::drawRects(const QRectF *rects, int rectCount)
         }
     } else {
         if (d->state->brushNeedsResolving() || d->state->penNeedsResolving()) {
-            for (int i=0; i<rectCount; ++i) {
+            for (auto i=0; i<rectCount; ++i) {
                 QPainterPath rectPath;
                 rectPath.addRect(rects[i]);
                 d->draw_helper(rectPath, QPainterPrivate::StrokeAndFillDraw);
             }
         } else {
             QPainterPath rectPath;
-            for (int i=0; i<rectCount; ++i)
+            for (auto i=0; i<rectCount; ++i)
                 rectPath.addRect(rects[i]);
             d->draw_helper(rectPath, QPainterPrivate::StrokeAndFillDraw);
         }
@@ -3575,7 +3575,7 @@ void QPainter::drawRects(const QRect *rects, int rectCount)
 
     if (d->state->emulationSpecifier == QPaintEngine::PrimitiveTransform
         && d->state->matrix.type() == QTransform::TxTranslate) {
-        for (int i=0; i<rectCount; ++i) {
+        for (auto i=0; i<rectCount; ++i) {
             QRectF r(rects[i].x() + d->state->matrix.dx(),
                      rects[i].y() + d->state->matrix.dy(),
                      rects[i].width(),
@@ -3585,14 +3585,14 @@ void QPainter::drawRects(const QRect *rects, int rectCount)
         }
     } else {
         if (d->state->brushNeedsResolving() || d->state->penNeedsResolving()) {
-            for (int i=0; i<rectCount; ++i) {
+            for (auto i=0; i<rectCount; ++i) {
                 QPainterPath rectPath;
                 rectPath.addRect(rects[i]);
                 d->draw_helper(rectPath, QPainterPrivate::StrokeAndFillDraw);
             }
         } else {
             QPainterPath rectPath;
-            for (int i=0; i<rectCount; ++i)
+            for (auto i=0; i<rectCount; ++i)
                 rectPath.addRect(rects[i]);
 
             d->draw_helper(rectPath, QPainterPrivate::StrokeAndFillDraw);
@@ -3676,21 +3676,21 @@ void QPainter::drawPoints(const QPointF *points, int pointCount)
     if (d->state->emulationSpecifier == QPaintEngine::PrimitiveTransform
         && d->state->matrix.type() == QTransform::TxTranslate) {
         // ### use drawPoints function
-        for (int i=0; i<pointCount; ++i) {
+        for (auto i=0; i<pointCount; ++i) {
             QPointF pt(points[i].x() + d->state->matrix.dx(),
                        points[i].y() + d->state->matrix.dy());
             d->engine->drawPoints(&pt, 1);
         }
     } else {
-        QPen pen = d->state->pen;
-        bool flat_pen = pen.capStyle() == Qt::FlatCap;
+        auto pen = d->state->pen;
+        auto flat_pen = pen.capStyle() == Qt::FlatCap;
         if (flat_pen) {
             save();
             pen.setCapStyle(Qt::SquareCap);
             setPen(pen);
         }
         QPainterPath path;
-        for (int i=0; i<pointCount; ++i) {
+        for (auto i=0; i<pointCount; ++i) {
             path.moveTo(points[i].x(), points[i].y());
             path.lineTo(points[i].x() + 0.0001, points[i].y());
         }
@@ -3738,21 +3738,21 @@ void QPainter::drawPoints(const QPoint *points, int pointCount)
     if (d->state->emulationSpecifier == QPaintEngine::PrimitiveTransform
         && d->state->matrix.type() == QTransform::TxTranslate) {
         // ### use drawPoints function
-        for (int i=0; i<pointCount; ++i) {
+        for (auto i=0; i<pointCount; ++i) {
             QPointF pt(points[i].x() + d->state->matrix.dx(),
                        points[i].y() + d->state->matrix.dy());
             d->engine->drawPoints(&pt, 1);
         }
     } else {
-        QPen pen = d->state->pen;
-        bool flat_pen = (pen.capStyle() == Qt::FlatCap);
+        auto pen = d->state->pen;
+        auto flat_pen = (pen.capStyle() == Qt::FlatCap);
         if (flat_pen) {
             save();
             pen.setCapStyle(Qt::SquareCap);
             setPen(pen);
         }
         QPainterPath path;
-        for (int i=0; i<pointCount; ++i) {
+        for (auto i=0; i<pointCount; ++i) {
             path.moveTo(points[i].x(), points[i].y());
             path.lineTo(points[i].x() + 0.0001, points[i].y());
         }
@@ -3914,7 +3914,7 @@ void QPainter::setPen(Qt::PenStyle style)
         return;
     }
 
-    QPen pen = QPen(style);
+    auto pen = QPen(style);
 
     if (d->state->pen == pen)
         return;
@@ -4361,7 +4361,7 @@ void QPainter::drawArc(const QRectF &r, int a, int alen)
     if (!d->engine)
         return;
 
-    QRectF rect = r.normalized();
+    auto rect = r.normalized();
 
     QPainterPath path;
     path.arcMoveTo(rect, a/16.0);
@@ -4430,7 +4430,7 @@ void QPainter::drawPie(const QRectF &r, int a, int alen)
         if (a < 0) a += (360*16);
     }
 
-    QRectF rect = r.normalized();
+    auto rect = r.normalized();
 
     QPainterPath path;
     path.moveTo(rect.center());
@@ -4492,7 +4492,7 @@ void QPainter::drawChord(const QRectF &r, int a, int alen)
     if (!d->engine)
         return;
 
-    QRectF rect = r.normalized();
+    auto rect = r.normalized();
 
     QPainterPath path;
     path.arcMoveTo(rect, a/16.0);
@@ -4546,19 +4546,19 @@ void QPainter::drawLines(const QLineF *lines, int lineCount)
 
     d->updateState(d->state);
 
-    uint lineEmulation = line_emulation(d->state->emulationSpecifier);
+    auto lineEmulation = line_emulation(d->state->emulationSpecifier);
 
     if (lineEmulation) {
         if (lineEmulation == QPaintEngine::PrimitiveTransform
             && d->state->matrix.type() == QTransform::TxTranslate) {
-            for (int i = 0; i < lineCount; ++i) {
-                QLineF line = lines[i];
+            for (auto i = 0; i < lineCount; ++i) {
+                auto line = lines[i];
                 line.translate(d->state->matrix.dx(), d->state->matrix.dy());
                 d->engine->drawLines(&line, 1);
             }
         } else {
             QPainterPath linePath;
-            for (int i = 0; i < lineCount; ++i) {
+            for (auto i = 0; i < lineCount; ++i) {
                 linePath.moveTo(lines[i].p1());
                 linePath.lineTo(lines[i].p2());
             }
@@ -4595,19 +4595,19 @@ void QPainter::drawLines(const QLine *lines, int lineCount)
 
     d->updateState(d->state);
 
-    uint lineEmulation = line_emulation(d->state->emulationSpecifier);
+    auto lineEmulation = line_emulation(d->state->emulationSpecifier);
 
     if (lineEmulation) {
         if (lineEmulation == QPaintEngine::PrimitiveTransform
             && d->state->matrix.type() == QTransform::TxTranslate) {
-            for (int i = 0; i < lineCount; ++i) {
+            for (auto i = 0; i < lineCount; ++i) {
                 QLineF line = lines[i];
                 line.translate(d->state->matrix.dx(), d->state->matrix.dy());
                 d->engine->drawLines(&line, 1);
             }
         } else {
             QPainterPath linePath;
-            for (int i = 0; i < lineCount; ++i) {
+            for (auto i = 0; i < lineCount; ++i) {
                 linePath.moveTo(lines[i].p1());
                 linePath.lineTo(lines[i].p2());
             }
@@ -4713,7 +4713,7 @@ void QPainter::drawPolyline(const QPointF *points, int pointCount)
 
     d->updateState(d->state);
 
-    uint lineEmulation = line_emulation(d->state->emulationSpecifier);
+    auto lineEmulation = line_emulation(d->state->emulationSpecifier);
 
     if (lineEmulation) {
         // ###
@@ -4721,7 +4721,7 @@ void QPainter::drawPolyline(const QPointF *points, int pointCount)
 //             && d->state->matrix.type() == QTransform::TxTranslate) {
 //         } else {
         QPainterPath polylinePath(points[0]);
-        for (int i=1; i<pointCount; ++i)
+        for (auto i=1; i<pointCount; ++i)
             polylinePath.lineTo(points[i]);
         d->draw_helper(polylinePath, QPainterPrivate::StrokeDraw);
 //         }
@@ -4754,7 +4754,7 @@ void QPainter::drawPolyline(const QPoint *points, int pointCount)
 
     d->updateState(d->state);
 
-    uint lineEmulation = line_emulation(d->state->emulationSpecifier);
+    auto lineEmulation = line_emulation(d->state->emulationSpecifier);
 
     if (lineEmulation) {
         // ###
@@ -4762,7 +4762,7 @@ void QPainter::drawPolyline(const QPoint *points, int pointCount)
 //             && d->state->matrix.type() == QTransform::TxTranslate) {
 //         } else {
         QPainterPath polylinePath(points[0]);
-        for (int i=1; i<pointCount; ++i)
+        for (auto i=1; i<pointCount; ++i)
             polylinePath.lineTo(points[i]);
         d->draw_helper(polylinePath, QPainterPrivate::StrokeDraw);
 //         }
@@ -4830,11 +4830,11 @@ void QPainter::drawPolygon(const QPointF *points, int pointCount, Qt::FillRule f
 
     d->updateState(d->state);
 
-    uint emulationSpecifier = d->state->emulationSpecifier;
+    auto emulationSpecifier = d->state->emulationSpecifier;
 
     if (emulationSpecifier) {
         QPainterPath polygonPath(points[0]);
-        for (int i=1; i<pointCount; ++i)
+        for (auto i=1; i<pointCount; ++i)
             polygonPath.lineTo(points[i]);
         polygonPath.closeSubpath();
         polygonPath.setFillRule(fillRule);
@@ -4869,11 +4869,11 @@ void QPainter::drawPolygon(const QPoint *points, int pointCount, Qt::FillRule fi
 
     d->updateState(d->state);
 
-    uint emulationSpecifier = d->state->emulationSpecifier;
+    auto emulationSpecifier = d->state->emulationSpecifier;
 
     if (emulationSpecifier) {
         QPainterPath polygonPath(points[0]);
-        for (int i=1; i<pointCount; ++i)
+        for (auto i=1; i<pointCount; ++i)
             polygonPath.lineTo(points[i]);
         polygonPath.closeSubpath();
         polygonPath.setFillRule(fillRule);
@@ -4968,11 +4968,11 @@ void QPainter::drawConvexPolygon(const QPoint *points, int pointCount)
 
     d->updateState(d->state);
 
-    uint emulationSpecifier = d->state->emulationSpecifier;
+    auto emulationSpecifier = d->state->emulationSpecifier;
 
     if (emulationSpecifier) {
         QPainterPath polygonPath(points[0]);
-        for (int i=1; i<pointCount; ++i)
+        for (auto i=1; i<pointCount; ++i)
             polygonPath.lineTo(points[i]);
         polygonPath.closeSubpath();
         polygonPath.setFillRule(Qt::WindingFill);
@@ -5002,11 +5002,11 @@ void QPainter::drawConvexPolygon(const QPointF *points, int pointCount)
 
     d->updateState(d->state);
 
-    uint emulationSpecifier = d->state->emulationSpecifier;
+    auto emulationSpecifier = d->state->emulationSpecifier;
 
     if (emulationSpecifier) {
         QPainterPath polygonPath(points[0]);
-        for (int i=1; i<pointCount; ++i)
+        for (auto i=1; i<pointCount; ++i)
             polygonPath.lineTo(points[i]);
         polygonPath.closeSubpath();
         polygonPath.setFillRule(Qt::WindingFill);
@@ -5070,11 +5070,11 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         return;
     }
 
-    qreal x = p.x();
-    qreal y = p.y();
+    auto x = p.x();
+    auto y = p.y();
 
-    int w = pm.width();
-    int h = pm.height();
+    auto w = pm.width();
+    auto h = pm.height();
 
     if (w <= 0)
         return;
@@ -5095,7 +5095,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
         if (d->state->matrix.type() <= QTransform::TxScale) {
-            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            const auto p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
             x = p.x();
             y = p.y();
         }
@@ -5114,7 +5114,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
             x += d->state->matrix.dx();
             y += d->state->matrix.dy();
         }
-        qreal scale = pm.devicePixelRatio();
+        auto scale = pm.devicePixelRatio();
         d->engine->drawPixmap(QRectF(x, y, w / scale, h / scale), pm, QRectF(0, 0, w, h));
     }
 }
@@ -5136,19 +5136,19 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
     qt_painter_thread_test(d->device->devType(), d->engine->type(), "drawPixmap()");
 #endif
 
-    qreal x = r.x();
-    qreal y = r.y();
-    qreal w = r.width();
-    qreal h = r.height();
-    qreal sx = sr.x();
-    qreal sy = sr.y();
-    qreal sw = sr.width();
-    qreal sh = sr.height();
+    auto x = r.x();
+    auto y = r.y();
+    auto w = r.width();
+    auto h = r.height();
+    auto sx = sr.x();
+    auto sy = sr.y();
+    auto sw = sr.width();
+    auto sh = sr.height();
 
     // Get pixmap scale. Use it when calculating the target
     // rect size from pixmap size. For example, a 2X 64x64 pixel
     // pixmap should result in a 32x32 point target rect.
-    const qreal pmscale = pm.devicePixelRatio();
+    const auto pmscale = pm.devicePixelRatio();
 
     // Sanity-check clipping
     if (sw <= 0)
@@ -5163,7 +5163,7 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
         h = sh / pmscale;
 
     if (sx < 0) {
-        qreal w_ratio = sx * w/sw;
+        auto w_ratio = sx * w/sw;
         x -= w_ratio;
         w += w_ratio;
         sw += sx;
@@ -5171,7 +5171,7 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
     }
 
     if (sy < 0) {
-        qreal h_ratio = sy * h/sh;
+        auto h_ratio = sy * h/sh;
         y -= h_ratio;
         h += h_ratio;
         sh += sy;
@@ -5179,15 +5179,15 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
     }
 
     if (sw + sx > pm.width()) {
-        qreal delta = sw - (pm.width() - sx);
-        qreal w_ratio = delta * w/sw;
+        auto delta = sw - (pm.width() - sx);
+        auto w_ratio = delta * w/sw;
         sw -= delta;
         w -= w_ratio;
     }
 
     if (sh + sy > pm.height()) {
-        qreal delta = sh - (pm.height() - sy);
-        qreal h_ratio = delta * h/sh;
+        auto delta = sh - (pm.height() - sy);
+        auto h_ratio = delta * h/sh;
         sh -= delta;
         h -= h_ratio;
     }
@@ -5216,7 +5216,7 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
         // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
         if (d->state->matrix.type() <= QTransform::TxScale) {
-            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            const auto p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
             x = p.x();
             y = p.y();
         }
@@ -5368,12 +5368,12 @@ void QPainter::drawImage(const QPointF &p, const QImage &image)
         return;
     }
 
-    qreal x = p.x();
-    qreal y = p.y();
+    auto x = p.x();
+    auto y = p.y();
 
-    int w = image.width();
-    int h = image.height();
-    qreal scale = image.devicePixelRatio();
+    auto w = image.width();
+    auto h = image.height();
+    auto scale = image.devicePixelRatio();
 
     d->updateState(d->state);
 
@@ -5386,7 +5386,7 @@ void QPainter::drawImage(const QPointF &p, const QImage &image)
         // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
         if (d->state->matrix.type() <= QTransform::TxScale) {
-            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            const auto p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
             x = p.x();
             y = p.y();
         }
@@ -5419,15 +5419,15 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
     if (!d->engine || image.isNull())
         return;
 
-    qreal x = targetRect.x();
-    qreal y = targetRect.y();
-    qreal w = targetRect.width();
-    qreal h = targetRect.height();
-    qreal sx = sourceRect.x();
-    qreal sy = sourceRect.y();
-    qreal sw = sourceRect.width();
-    qreal sh = sourceRect.height();
-    qreal imageScale = image.devicePixelRatio();
+    auto x = targetRect.x();
+    auto y = targetRect.y();
+    auto w = targetRect.width();
+    auto h = targetRect.height();
+    auto sx = sourceRect.x();
+    auto sy = sourceRect.y();
+    auto sw = sourceRect.width();
+    auto sh = sourceRect.height();
+    auto imageScale = image.devicePixelRatio();
 
     // Sanity-check clipping
     if (sw <= 0)
@@ -5442,7 +5442,7 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
         h = sh / imageScale;
 
     if (sx < 0) {
-        qreal w_ratio = sx * w/sw;
+        auto w_ratio = sx * w/sw;
         x -= w_ratio;
         w += w_ratio;
         sw += sx;
@@ -5450,7 +5450,7 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
     }
 
     if (sy < 0) {
-        qreal h_ratio = sy * h/sh;
+        auto h_ratio = sy * h/sh;
         y -= h_ratio;
         h += h_ratio;
         sh += sy;
@@ -5458,15 +5458,15 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
     }
 
     if (sw + sx > image.width()) {
-        qreal delta = sw - (image.width() - sx);
-        qreal w_ratio = delta * w/sw;
+        auto delta = sw - (image.width() - sx);
+        auto w_ratio = delta * w/sw;
         sw -= delta;
         w -= w_ratio;
     }
 
     if (sh + sy > image.height()) {
-        qreal delta = sh - (image.height() - sy);
-        qreal h_ratio = delta * h/sh;
+        auto delta = sh - (image.height() - sy);
+        auto h_ratio = delta * h/sh;
         sh -= delta;
         h -= h_ratio;
     }
@@ -5490,7 +5490,7 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
         // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
         if (d->state->matrix.type() <= QTransform::TxScale) {
-            const QPointF p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
+            const auto p = roundInDeviceCoordinates(QPointF(x, y), d->state->matrix);
             x = p.x();
             y = p.y();
         }
@@ -5545,25 +5545,25 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
         return;
     }
 
-    QRawFont font = glyphRun.rawFont();
+    auto font = glyphRun.rawFont();
     if (!font.isValid())
         return;
 
-    QGlyphRunPrivate *glyphRun_d = QGlyphRunPrivate::get(glyphRun);
+    auto glyphRun_d = QGlyphRunPrivate::get(glyphRun);
 
-    const quint32 *glyphIndexes = glyphRun_d->glyphIndexData;
-    const QPointF *glyphPositions = glyphRun_d->glyphPositionData;
+    auto glyphIndexes = glyphRun_d->glyphIndexData;
+    auto glyphPositions = glyphRun_d->glyphPositionData;
 
-    int count = qMin(glyphRun_d->glyphIndexDataSize, glyphRun_d->glyphPositionDataSize);
+    auto count = qMin(glyphRun_d->glyphIndexDataSize, glyphRun_d->glyphPositionDataSize);
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
 
-    QRawFontPrivate *fontD = QRawFontPrivate::get(font);
-    bool engineRequiresPretransformedGlyphPositions = d->extended
+    auto fontD = QRawFontPrivate::get(font);
+    auto engineRequiresPretransformedGlyphPositions = d->extended
         ? d->extended->requiresPretransformedGlyphPositions(fontD->fontEngine, d->state->matrix)
         : d->engine->type() != QPaintEngine::CoreGraphics && !d->state->matrix.isAffine();
 
-    for (int i=0; i<count; ++i) {
-        QPointF processedPosition = position + glyphPositions[i];
+    for (auto i=0; i<count; ++i) {
+        auto processedPosition = position + glyphPositions[i];
         if (engineRequiresPretransformedGlyphPositions)
             processedPosition = d->state->transform().map(processedPosition);
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
@@ -5585,8 +5585,8 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
     QFixed leftMost;
     QFixed rightMost;
     QFixed baseLine;
-    for (int i=0; i<glyphCount; ++i) {
-        glyph_metrics_t gm = fontEngine->boundingBox(glyphArray[i]);
+    for (auto i=0; i<glyphCount; ++i) {
+        auto gm = fontEngine->boundingBox(glyphArray[i]);
         if (i == 0 || leftMost > positions[i].x)
             leftMost = positions[i].x;
 
@@ -5601,7 +5601,7 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
             rightMost = positions[i].x + gm.xoff;
     }
 
-    QFixed width = rightMost - leftMost;
+    auto width = rightMost - leftMost;
 
     if (extended != 0 && state->matrix.isAffine()) {
         QStaticTextItem staticTextItem;
@@ -5727,7 +5727,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     if (!d->engine || staticText.text().isEmpty() || pen().style() == Qt::NoPen)
         return;
 
-    QStaticTextPrivate *staticText_d =
+    auto staticText_d =
             const_cast<QStaticTextPrivate *>(QStaticTextPrivate::get(&staticText));
 
     if (font() != staticText_d->font) {
@@ -5735,7 +5735,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         staticText_d->needsRelayout = true;
     }
 
-    QFontEngine *fe = staticText_d->font.d->engineForScript(QChar::Script_Common);
+    auto fe = staticText_d->font.d->engineForScript(QChar::Script_Common);
     if (fe->type() == QFontEngine::Multi)
         fe = static_cast<QFontEngineMulti *>(fe)->engine(0);
 
@@ -5749,7 +5749,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    bool engineRequiresPretransform = d->extended->requiresPretransformedGlyphPositions(fe, d->state->matrix);
+    auto engineRequiresPretransform = d->extended->requiresPretransformedGlyphPositions(fe, d->state->matrix);
     if (staticText_d->untransformedCoordinates && engineRequiresPretransform) {
         // The coordinates are untransformed, and the engine can't deal with that
         // nativly, so we have to pre-transform the static text.
@@ -5764,7 +5764,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
 
     // Don't recalculate entire layout because of translation, rather add the dx and dy
     // into the position to move each text item the correct distance.
-    QPointF transformedPosition = topLeftPosition;
+    auto transformedPosition = topLeftPosition;
     if (!staticText_d->untransformedCoordinates)
         transformedPosition = transformedPosition * d->state->matrix;
     QTransform oldMatrix;
@@ -5772,13 +5772,13 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     // The translation has been applied to transformedPosition. Remove translation
     // component from matrix.
     if (d->state->matrix.isTranslating() && !staticText_d->untransformedCoordinates) {
-        qreal m11 = d->state->matrix.m11();
-        qreal m12 = d->state->matrix.m12();
-        qreal m13 = d->state->matrix.m13();
-        qreal m21 = d->state->matrix.m21();
-        qreal m22 = d->state->matrix.m22();
-        qreal m23 = d->state->matrix.m23();
-        qreal m33 = d->state->matrix.m33();
+        auto m11 = d->state->matrix.m11();
+        auto m12 = d->state->matrix.m12();
+        auto m13 = d->state->matrix.m13();
+        auto m21 = d->state->matrix.m21();
+        auto m22 = d->state->matrix.m22();
+        auto m23 = d->state->matrix.m23();
+        auto m33 = d->state->matrix.m33();
 
         oldMatrix = d->state->matrix;
         d->state->matrix.setMatrix(m11, m12, m13,
@@ -5799,13 +5799,13 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         staticText_d->init();
 
     if (transformedPosition != staticText_d->position) { // Translate to actual position
-        QFixed fx = QFixed::fromReal(transformedPosition.x());
-        QFixed fy = QFixed::fromReal(transformedPosition.y());
-        QFixed oldX = QFixed::fromReal(staticText_d->position.x());
-        QFixed oldY = QFixed::fromReal(staticText_d->position.y());
-        for (int item=0; item<staticText_d->itemCount;++item) {
-            QStaticTextItem *textItem = staticText_d->items + item;
-            for (int i=0; i<textItem->numGlyphs; ++i) {
+        auto fx = QFixed::fromReal(transformedPosition.x());
+        auto fy = QFixed::fromReal(transformedPosition.y());
+        auto oldX = QFixed::fromReal(staticText_d->position.x());
+        auto oldY = QFixed::fromReal(staticText_d->position.y());
+        for (auto item=0; item<staticText_d->itemCount;++item) {
+            auto textItem = staticText_d->items + item;
+            for (auto i=0; i<textItem->numGlyphs; ++i) {
                 textItem->glyphPositions[i].x += fx - oldX;
                 textItem->glyphPositions[i].y += fy - oldY;
             }
@@ -5815,10 +5815,10 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         staticText_d->position = transformedPosition;
     }
 
-    QPen oldPen = d->state->pen;
-    QColor currentColor = oldPen.color();
-    for (int i=0; i<staticText_d->itemCount; ++i) {
-        QStaticTextItem *item = staticText_d->items + i;
+    auto oldPen = d->state->pen;
+    auto currentColor = oldPen.color();
+    for (auto i=0; i<staticText_d->itemCount; ++i) {
+        auto item = staticText_d->items + i;
         if (item->color.isValid() && currentColor != item->color) {
             setPen(item->color);
             currentColor = item->color;
@@ -5853,10 +5853,10 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
 
     if (tf & Qt::TextBypassShaping) {
         // Skip complex shaping, shape using glyph advances only
-        int len = str.length();
-        int numGlyphs = len;
+        auto len = str.length();
+        auto numGlyphs = len;
         QVarLengthGlyphLayoutArray glyphs(len);
-        QFontEngine *fontEngine = d->state->font.d->engineForScript(QChar::Script_Common);
+        auto fontEngine = d->state->font.d->engineForScript(QChar::Script_Common);
         if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0))
             Q_UNREACHABLE();
 
@@ -5876,10 +5876,10 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
     line.length = str.length();
     engine.shapeLine(line);
 
-    int nItems = engine.layoutData->items.size();
+    auto nItems = engine.layoutData->items.size();
     QVarLengthArray<int> visualOrder(nItems);
     QVarLengthArray<uchar> levels(nItems);
-    for (int i = 0; i < nItems; ++i)
+    for (auto i = 0; i < nItems; ++i)
         levels[i] = engine.layoutData->items[i].analysis.bidiLevel;
     QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
 
@@ -5890,22 +5890,22 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
         line.width = justificationPadding;
         engine.justify(line);
     }
-    QFixed x = QFixed::fromReal(p.x());
+    auto x = QFixed::fromReal(p.x());
 
-    for (int i = 0; i < nItems; ++i) {
-        int item = visualOrder[i];
+    for (auto i = 0; i < nItems; ++i) {
+        auto item = visualOrder[i];
         const QScriptItem &si = engine.layoutData->items.at(item);
         if (si.analysis.flags >= QScriptAnalysis::TabOrObject) {
             x += si.width;
             continue;
         }
-        QFont f = engine.font(si);
+        auto f = engine.font(si);
         QTextItemInt gf(si, &f);
         gf.glyphs = engine.shapedGlyphs(&si);
         gf.chars = engine.layoutData->string.unicode() + si.position;
         gf.num_chars = engine.length(item);
         if (engine.forceJustification) {
-            for (int j=0; j<gf.glyphs.numGlyphs; ++j)
+            for (auto j=0; j<gf.glyphs.numGlyphs; ++j)
                 gf.width += gf.glyphs.effectiveAdvance(j);
         } else {
             gf.width = si.width;
@@ -6179,7 +6179,7 @@ void QPainter::drawText(const QRectF &r, const QString &text, const QTextOption 
 
 static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
 {
-    const qreal radiusBase = qMax(qreal(1), maxRadius);
+    const auto radiusBase = qMax(qreal(1), maxRadius);
 
     QString key = QLatin1String("WaveUnderline-")
                   % pen.color().name()
@@ -6189,9 +6189,9 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
     if (QPixmapCache::find(key, pixmap))
         return pixmap;
 
-    const qreal halfPeriod = qMax(qreal(2), qreal(radiusBase * 1.61803399)); // the golden ratio
+    const auto halfPeriod = qMax(qreal(2), qreal(radiusBase * 1.61803399)); // the golden ratio
     const int width = qCeil(100 / (2 * halfPeriod)) * (2 * halfPeriod);
-    const int radius = qFloor(radiusBase);
+    const auto radius = qFloor(radiusBase);
 
     QPainterPath path;
 
@@ -6207,12 +6207,12 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
     pixmap = QPixmap(width, radius * 2);
     pixmap.fill(Qt::transparent);
     {
-        QPen wavePen = pen;
+        auto wavePen = pen;
         wavePen.setCapStyle(Qt::SquareCap);
 
         // This is to protect against making the line too fat, as happens on OS X
         // due to it having a rather thick width for the regular underline.
-        const qreal maxPenWidth = .8 * radius;
+        const auto maxPenWidth = .8 * radius;
         if (wavePen.widthF() > maxPenWidth)
             wavePen.setWidth(maxPenWidth);
 
@@ -6237,10 +6237,10 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
         && !(flags & (QTextItem::StrikeOut | QTextItem::Overline)))
         return;
 
-    const QPen oldPen = painter->pen();
-    const QBrush oldBrush = painter->brush();
+    const auto oldPen = painter->pen();
+    const auto oldBrush = painter->brush();
     painter->setBrush(Qt::NoBrush);
-    QPen pen = oldPen;
+    auto pen = oldPen;
     pen.setStyle(Qt::SolidLine);
     pen.setWidthF(fe->lineThickness().toReal());
     pen.setCapStyle(Qt::FlatCap);
@@ -6253,13 +6253,13 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     if (wasCompatiblePainting)
         painter->setRenderHint(QPainter::Qt4CompatiblePainting, false);
 
-    const qreal underlineOffset = fe->underlinePosition().toReal();
+    const auto underlineOffset = fe->underlinePosition().toReal();
     // deliberately ceil the offset to avoid the underline coming too close to
     // the text above it.
-    const qreal underlinePos = pos.y() + qCeil(underlineOffset) + 0.5;
+    const auto underlinePos = pos.y() + qCeil(underlineOffset) + 0.5;
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
-        QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
+        auto theme = QGuiApplicationPrivate::platformTheme();
         if (theme)
             underlineStyle = QTextCharFormat::UnderlineStyle(theme->themeHint(QPlatformTheme::SpellCheckUnderlineStyle).toInt());
     }
@@ -6268,19 +6268,19 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
         painter->save();
         painter->translate(0, pos.y() + 1);
 
-        QColor uc = charFormat.underlineColor();
+        auto uc = charFormat.underlineColor();
         if (uc.isValid())
             pen.setColor(uc);
 
         // Adapt wave to underlineOffset or pen width, whatever is larger, to make it work on all platforms
-        const QPixmap wave = generateWavyPixmap(qMax(underlineOffset, pen.widthF()), pen);
-        const int descent = (int) fe->descent().toReal();
+        const auto wave = generateWavyPixmap(qMax(underlineOffset, pen.widthF()), pen);
+        const auto descent = (int) fe->descent().toReal();
 
         painter->setBrushOrigin(painter->brushOrigin().x(), 0);
         painter->fillRect(pos.x(), 0, qCeil(width), qMin(wave.height(), descent), wave);
         painter->restore();
     } else if (underlineStyle != QTextCharFormat::NoUnderline) {
-        QColor uc = charFormat.underlineColor();
+        auto uc = charFormat.underlineColor();
         if (uc.isValid())
             pen.setColor(uc);
 
@@ -6297,7 +6297,7 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     pen.setColor(oldPen.color());
 
     if (flags & QTextItem::StrikeOut) {
-        QLineF strikeOutLine = line;
+        auto strikeOutLine = line;
         strikeOutLine.translate(0., - fe->ascent().toReal() / 3.);
         painter->setPen(pen);
         if (textEngine)
@@ -6307,7 +6307,7 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     }
 
     if (flags & QTextItem::Overline) {
-        QLineF overline = line;
+        auto overline = line;
         overline.translate(0., - fe->ascent().toReal());
         painter->setPen(pen);
         if (textEngine)
@@ -6334,8 +6334,8 @@ Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t
     QFixed leftMost;
     QFixed rightMost;
     QFixed baseLine;
-    for (int i=0; i<glyphCount; ++i) {
-        glyph_metrics_t gm = fontEngine->boundingBox(glyphArray[i]);
+    for (auto i=0; i<glyphCount; ++i) {
+        auto gm = fontEngine->boundingBox(glyphArray[i]);
         if (i == 0 || leftMost > positions[i].x)
             leftMost = positions[i].x;
 
@@ -6350,7 +6350,7 @@ Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t
             rightMost = positions[i].x + gm.xoff;
     }
 
-    QFixed width = rightMost - leftMost;
+    auto width = rightMost - leftMost;
     QTextItem::RenderFlags flags = 0;
 
     if (font.underline())
@@ -6398,15 +6398,15 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
     if (q->pen().style() == Qt::NoPen)
         return;
 
-    const QPainter::RenderHints oldRenderHints = state->renderHints;
+    const auto oldRenderHints = state->renderHints;
     if (!(state->renderHints & QPainter::Antialiasing) && state->matrix.type() >= QTransform::TxScale) {
         // draw antialias decoration (underline/overline/strikeout) with
         // transformed text
 
-        bool aa = true;
+        auto aa = true;
         const QTransform &m = state->matrix;
         if (state->matrix.type() < QTransform::TxShear) {
-            bool isPlain90DegreeRotation =
+            auto isPlain90DegreeRotation =
                 (qFuzzyIsNull(m.m11())
                  && qFuzzyIsNull(m.m12() - qreal(1))
                  && qFuzzyIsNull(m.m21() + qreal(1))
@@ -6437,19 +6437,19 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
     if (!ti.glyphs.numGlyphs) {
         // nothing to do
     } else if (ti.fontEngine->type() == QFontEngine::Multi) {
-        QFontEngineMulti *multi = static_cast<QFontEngineMulti *>(ti.fontEngine);
+        auto multi = static_cast<QFontEngineMulti *>(ti.fontEngine);
 
         const QGlyphLayout &glyphs = ti.glyphs;
         int which = glyphs.glyphs[0] >> 24;
 
-        qreal x = p.x();
-        qreal y = p.y();
+        auto x = p.x();
+        auto y = p.y();
 
         bool rtl = ti.flags & QTextItem::RightToLeft;
         if (rtl)
             x += ti.width.toReal();
 
-        int start = 0;
+        auto start = 0;
         int end, i;
         for (end = 0; end < ti.glyphs.numGlyphs; ++end) {
             const int e = glyphs.glyphs[end] >> 24;
@@ -6458,7 +6458,7 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
 
 
             multi->ensureEngineAt(which);
-            QTextItemInt ti2 = ti.midItem(multi->engine(which), start, end - start);
+            auto ti2 = ti.midItem(multi->engine(which), start, end - start);
             ti2.width = 0;
             // set the high byte to zero and calc the width
             for (i = start; i < end; ++i) {
@@ -6478,7 +6478,7 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
                 x += ti2.width.toReal();
 
             // reset the high byte for all glyphs and advance to the next sub-string
-            const int hi = which << 24;
+            const auto hi = which << 24;
             for (i = start; i < end; ++i) {
                 glyphs.glyphs[i] = hi | glyphs.glyphs[i];
             }
@@ -6489,7 +6489,7 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
         }
 
         multi->ensureEngineAt(which);
-        QTextItemInt ti2 = ti.midItem(multi->engine(which), start, end - start);
+        auto ti2 = ti.midItem(multi->engine(which), start, end - start);
         ti2.width = 0;
         // set the high byte to zero and calc the width
         for (i = start; i < end; ++i) {
@@ -6506,7 +6506,7 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
             engine->drawTextItem(QPointF(x,y), ti2);
 
         // reset the high byte for all glyphs
-        const int hi = which << 24;
+        const auto hi = which << 24;
         for (i = start; i < end; ++i)
             glyphs.glyphs[i] = hi | glyphs.glyphs[i];
 
@@ -6661,8 +6661,8 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
 
     qreal sw = pixmap.width();
     qreal sh = pixmap.height();
-    qreal sx = sp.x();
-    qreal sy = sp.y();
+    auto sx = sp.x();
+    auto sy = sp.y();
     if (sx < 0)
         sx = qRound(sw) - qRound(-sx) % qRound(sw);
     else
@@ -6695,7 +6695,7 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
         // If there is no rotation involved we have to make sure we use the
         // antialiased and not the aliased coordinate system by rounding the coordinates.
         if (d->state->matrix.type() <= QTransform::TxScale) {
-            const QPointF p = roundInDeviceCoordinates(r.topLeft(), d->state->matrix);
+            const auto p = roundInDeviceCoordinates(r.topLeft(), d->state->matrix);
 
             if (d->state->matrix.type() <= QTransform::TxTranslate) {
                 sx = qRound(sx);
@@ -6712,8 +6712,8 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
         return;
     }
 
-    qreal x = r.x();
-    qreal y = r.y();
+    auto x = r.x();
+    auto y = r.y();
     if (d->state->matrix.type() == QTransform::TxTranslate
         && !d->engine->hasFeature(QPaintEngine::PixmapTransform)) {
         x += d->state->matrix.dx();
@@ -6819,7 +6819,7 @@ void QPainter::eraseRect(const QRectF &r)
 
 static inline bool needsResolving(const QBrush &brush)
 {
-    Qt::BrushStyle s = brush.style();
+    auto s = brush.style();
     return ((s == Qt::LinearGradientPattern || s == Qt::RadialGradientPattern ||
              s == Qt::ConicalGradientPattern) &&
             brush.gradient()->coordinateMode() == QGradient::ObjectBoundingMode);
@@ -6888,15 +6888,15 @@ void QPainter::fillRect(const QRectF &r, const QBrush &brush)
         return;
 
     if (d->extended) {
-        const QGradient *g = brush.gradient();
+        auto g = brush.gradient();
         if (!g || g->coordinateMode() == QGradient::LogicalMode) {
             d->extended->fillRect(r, brush);
             return;
         }
     }
 
-    QPen oldPen = pen();
-    QBrush oldBrush = this->brush();
+    auto oldPen = pen();
+    auto oldBrush = this->brush();
     setPen(Qt::NoPen);
     if (brush.style() == Qt::SolidPattern) {
         d->colorBrush.setStyle(Qt::SolidPattern);
@@ -6926,15 +6926,15 @@ void QPainter::fillRect(const QRect &r, const QBrush &brush)
         return;
 
     if (d->extended) {
-        const QGradient *g = brush.gradient();
+        auto g = brush.gradient();
         if (!g || g->coordinateMode() == QGradient::LogicalMode) {
             d->extended->fillRect(r, brush);
             return;
         }
     }
 
-    QPen oldPen = pen();
-    QBrush oldBrush = this->brush();
+    auto oldPen = pen();
+    auto oldBrush = this->brush();
     setPen(Qt::NoPen);
     if (brush.style() == Qt::SolidPattern) {
         d->colorBrush.setStyle(Qt::SolidPattern);
@@ -7416,7 +7416,7 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     QRectF r(_r);
 
     bool dontclip  = (tf & Qt::TextDontClip);
-    bool wordwrap  = (tf & Qt::TextWordWrap) || (tf & Qt::TextWrapAnywhere);
+    auto wordwrap  = (tf & Qt::TextWordWrap) || (tf & Qt::TextWrapAnywhere);
     bool singleline = (tf & Qt::TextSingleLine);
     bool showmnemonic = (tf & Qt::TextShowMnemonic);
     bool hidemnmemonic = (tf & Qt::TextHideMnemonic);
@@ -7435,8 +7435,8 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
 
     tf = QGuiApplicationPrivate::visualAlignment(layout_direction, QFlag(tf));
 
-    bool isRightToLeft = layout_direction == Qt::RightToLeft;
-    bool expandtabs = ((tf & Qt::TextExpandTabs) &&
+    auto isRightToLeft = layout_direction == Qt::RightToLeft;
+    auto expandtabs = ((tf & Qt::TextExpandTabs) &&
                         (((tf & Qt::AlignLeft) && !isRightToLeft) ||
                           ((tf & Qt::AlignRight) && isRightToLeft)));
 
@@ -7446,15 +7446,15 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     uint maxUnderlines = 0;
 
     QFontMetricsF fm(fnt);
-    QString text = str;
-    int offset = 0;
+    auto text = str;
+    auto offset = 0;
 start_lengthVariant:
-    bool hasMoreLengthVariants = false;
+    auto hasMoreLengthVariants = false;
     // compatible behaviour to the old implementation. Replace
     // tabs by spaces
-    int old_offset = offset;
+    auto old_offset = offset;
     for (; offset < text.length(); offset++) {
-        QChar chr = text.at(offset);
+        auto chr = text.at(offset);
         if (chr == QLatin1Char('\r') || (singleline && chr == QLatin1Char('\n'))) {
             text[offset] = QLatin1Char(' ');
         } else if (chr == QLatin1Char('\n')) {
@@ -7475,12 +7475,12 @@ start_lengthVariant:
     }
 
     QVector<QTextLayout::FormatRange> underlineFormats;
-    int length = offset - old_offset;
+    auto length = offset - old_offset;
     if ((hidemnmemonic || showmnemonic) && maxUnderlines > 0) {
-        QChar *cout = text.data() + old_offset;
-        QChar *cout0 = cout;
-        QChar *cin = cout;
-        int l = length;
+        auto cout = text.data() + old_offset;
+        auto cout0 = cout;
+        auto cin = cout;
+        auto l = length;
         while (l) {
             if (*cin == QLatin1Char('&')) {
                 ++cin;
@@ -7519,7 +7519,7 @@ start_lengthVariant:
     qreal height = 0;
     qreal width = 0;
 
-    QString finalText = text.mid(old_offset, length);
+    auto finalText = text.mid(old_offset, length);
     QStackTextEngine engine(finalText, fnt);
     if (option) {
         engine.option = *option;
@@ -7531,7 +7531,7 @@ start_lengthVariant:
     if (engine.option.tabs().isEmpty() && ta) {
         QList<qreal> tabs;
         tabs.reserve(tabarraylen);
-        for (int i = 0; i < tabarraylen; i++)
+        for (auto i = 0; i < tabarraylen; i++)
             tabs.append(qreal(ta[i]));
         engine.option.setTabArray(tabs);
     }
@@ -7564,11 +7564,11 @@ start_lengthVariant:
         textLayout.engine()->ignoreBidi = bool(tf & Qt::TextDontPrint);
         textLayout.beginLayout();
 
-        qreal leading = fm.leading();
+        auto leading = fm.leading();
         height = -leading;
 
         while (1) {
-            QTextLine l = textLayout.createLine();
+            auto l = textLayout.createLine();
             if (!l.isValid())
                 break;
 
@@ -7598,7 +7598,7 @@ start_lengthVariant:
     else if (tf & Qt::AlignHCenter)
         xoff = (r.width() - width)/2;
 
-    QRectF bounds = QRectF(r.x() + xoff, r.y() + yoff, width, height);
+    auto bounds = QRectF(r.x() + xoff, r.y() + yoff, width, height);
 
     if (hasMoreLengthVariants && !(tf & Qt::TextLongestVariant) && !r.contains(bounds)) {
         offset++;
@@ -7608,19 +7608,19 @@ start_lengthVariant:
         *brect = bounds;
 
     if (!(tf & Qt::TextDontPrint)) {
-        bool restore = false;
+        auto restore = false;
         if (!dontclip && !r.contains(bounds)) {
             restore = true;
             painter->save();
             painter->setClipRect(r, Qt::IntersectClip);
         }
 
-        for (int i = 0; i < textLayout.lineCount(); i++) {
-            QTextLine line = textLayout.lineAt(i);
-            QTextEngine *eng = textLayout.engine();
+        for (auto i = 0; i < textLayout.lineCount(); i++) {
+            auto line = textLayout.lineAt(i);
+            auto eng = textLayout.engine();
             eng->enableDelayDecorations();
 
-            qreal advance = line.horizontalAdvance();
+            auto advance = line.horizontalAdvance();
             xoff = 0;
             if (tf & Qt::AlignRight) {
                 xoff = r.width() - advance -
@@ -8009,7 +8009,7 @@ QFont QPaintEngineState::font() const
 
 QMatrix QPaintEngineState::matrix() const
 {
-    const QPainterState *st = static_cast<const QPainterState *>(this);
+    auto st = static_cast<const QPainterState *>(this);
 
     return st->matrix.toAffine();
 }
@@ -8028,7 +8028,7 @@ QMatrix QPaintEngineState::matrix() const
 
 QTransform QPaintEngineState::transform() const
 {
-    const QPainterState *st = static_cast<const QPainterState *>(this);
+    auto st = static_cast<const QPainterState *>(this);
 
     return st->matrix;
 }
@@ -8351,11 +8351,11 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
     if (d->engine->isExtended()) {
         d->extended->drawPixmapFragments(fragments, fragmentCount, pixmap, hints);
     } else {
-        qreal oldOpacity = opacity();
-        QTransform oldTransform = transform();
+        auto oldOpacity = opacity();
+        auto oldTransform = transform();
 
-        for (int i = 0; i < fragmentCount; ++i) {
-            QTransform transform = oldTransform;
+        for (auto i = 0; i < fragmentCount; ++i) {
+            auto transform = oldTransform;
             qreal xOffset = 0;
             qreal yOffset = 0;
             if (fragments[i].rotation == 0) {
@@ -8368,8 +8368,8 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
             setOpacity(oldOpacity * fragments[i].opacity);
             setTransform(transform);
 
-            qreal w = fragments[i].scaleX * fragments[i].width;
-            qreal h = fragments[i].scaleY * fragments[i].height;
+            auto w = fragments[i].scaleX * fragments[i].width;
+            auto h = fragments[i].scaleY * fragments[i].height;
             QRectF sourceRect(fragments[i].sourceLeft, fragments[i].sourceTop,
                               fragments[i].width, fragments[i].height);
             drawPixmap(QRectF(-0.5 * w + xOffset, -0.5 * h + yOffset, w, h), pixmap, sourceRect);

@@ -52,8 +52,8 @@ QT_BEGIN_NAMESPACE
 QList<QPlatformCursor *> QPlatformCursorPrivate::getInstances()
 {
     QList<QPlatformCursor *> result;
-    for (const QScreen *screen : qAsConst(QGuiApplicationPrivate::screen_list)) {
-        if (QPlatformCursor *cursor = screen->handle()->cursor())
+    for (auto screen : qAsConst(QGuiApplicationPrivate::screen_list)) {
+        if (auto cursor = screen->handle()->cursor())
             result.push_back(cursor);
     }
     return result;
@@ -121,7 +121,7 @@ QPoint QPlatformCursor::pos() const
 
 void QPlatformCursor::setPos(const QPoint &pos)
 {
-    static bool firstCall = true;
+    static auto firstCall = true;
     if (firstCall) {
         firstCall = false;
         qWarning("This plugin does not support QCursor::setPos()"
@@ -429,7 +429,7 @@ static const uchar closedhandm_bits[] = {
 void QPlatformCursorImage::createSystemCursor(int id)
 {
     if (!systemCursorTableInit) {
-        for (int i = 0; i <= Qt::LastCursor; i++)
+        for (auto i = 0; i <= Qt::LastCursor; i++)
             systemCursorTable[i] = 0;
         systemCursorTableInit = true;
     }
@@ -606,19 +606,19 @@ void QPlatformCursorImage::set(const uchar *data, const uchar *mask,
     cursorImage.setColor(1, 0xffffffff);
     cursorImage.setColor(2, 0x00000000);
 
-    int bytesPerLine = (width + 7) / 8;
-    int p = 0;
+    auto bytesPerLine = (width + 7) / 8;
+    auto p = 0;
     int d, m;
 
-    int x = -1, w = 0;
+    auto x = -1, w = 0;
 
-    uchar *cursor_data = cursorImage.bits();
-    int bpl = cursorImage.bytesPerLine();
-    for (int i = 0; i < height; i++)
+    auto cursor_data = cursorImage.bits();
+    auto bpl = cursorImage.bytesPerLine();
+    for (auto i = 0; i < height; i++)
     {
-        for (int j = 0; j < bytesPerLine; j++, data++, mask++)
+        for (auto j = 0; j < bytesPerLine; j++, data++, mask++)
         {
-            for (int b = 0; b < 8 && j*8+b < width; b++)
+            for (auto b = 0; b < 8 && j*8+b < width; b++)
             {
                 d = *data & (1 << b);
                 m = *mask & (1 << b);

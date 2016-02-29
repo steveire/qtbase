@@ -139,7 +139,7 @@ bool QOpenGLFunctions_3_3_Core::initializeOpenGLFunctions()
     if ( isInitialized() )
         return true;
 
-    QOpenGLContext* context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
 
     // If owned by a context object make sure it is current.
     // Also check that current context is capable of resolving all needed functions
@@ -253,8 +253,8 @@ bool QOpenGLFunctions_3_3_Core::initializeOpenGLFunctions()
 bool QOpenGLFunctions_3_3_Core::isContextCompatible(QOpenGLContext *context)
 {
     Q_ASSERT(context);
-    QSurfaceFormat f = context->format();
-    const QPair<int, int> v = qMakePair(f.majorVersion(), f.minorVersion());
+    auto f = context->format();
+    const auto v = qMakePair(f.majorVersion(), f.minorVersion());
     if (v < qMakePair(3, 3))
         return false;
 

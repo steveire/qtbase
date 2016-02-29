@@ -84,7 +84,7 @@ void QPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     if (!bridges() || bridges()->isEmpty())
         return;
 
-    for (int i = 0; i < bridges()->count(); ++i)
+    for (auto i = 0; i < bridges()->count(); ++i)
         bridges()->at(i)->notifyAccessibilityUpdate(event);
 }
 
@@ -97,15 +97,15 @@ void QPlatformAccessibility::setRootObject(QObject *o)
     if (!o)
         return;
 
-    for (int i = 0; i < bridges()->count(); ++i) {
-        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
+    for (auto i = 0; i < bridges()->count(); ++i) {
+        auto iface = QAccessible::queryAccessibleInterface(o);
         bridges()->at(i)->setRootObject(iface);
     }
 }
 
 void QPlatformAccessibility::initialize()
 {
-    static bool isInit = false;
+    static auto isInit = false;
     if (isInit)
         return;
     isInit = true;      // ### not atomic
@@ -113,17 +113,17 @@ void QPlatformAccessibility::initialize()
     typedef QMultiMap<int, QString> PluginKeyMap;
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
-    const PluginKeyMap keyMap = bridgeloader()->keyMap();
+    const auto keyMap = bridgeloader()->keyMap();
     QAccessibleBridgePlugin *factory = 0;
-    int i = -1;
-    const PluginKeyMapConstIterator cend = keyMap.constEnd();
-    for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
+    auto i = -1;
+    const auto cend = keyMap.constEnd();
+    for (auto it = keyMap.constBegin(); it != cend; ++it) {
         if (it.key() != i) {
             i = it.key();
             factory = qobject_cast<QAccessibleBridgePlugin*>(bridgeloader()->instance(i));
         }
         if (factory)
-            if (QAccessibleBridge *bridge = factory->create(it.value()))
+            if (auto bridge = factory->create(it.value()))
                 bridges()->append(bridge);
     }
 }

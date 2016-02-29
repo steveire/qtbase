@@ -72,31 +72,31 @@ void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *
     if (dataArray.size() == 0)
         return;
 
-    const uchar *data = reinterpret_cast<const uchar *>(dataArray.constData());
+    auto data = reinterpret_cast<const uchar *>(dataArray.constData());
     if (QFontEngineQPF2::verifyHeader(data, dataArray.size())) {
-        QString fontName = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_FontName).toString();
-        int pixelSize = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_PixelSize).toInt();
-        QVariant weight = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_Weight);
-        QVariant style = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_Style);
-        QByteArray writingSystemBits = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_WritingSystems).toByteArray();
+        auto fontName = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_FontName).toString();
+        auto pixelSize = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_PixelSize).toInt();
+        auto weight = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_Weight);
+        auto style = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_Style);
+        auto writingSystemBits = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_WritingSystems).toByteArray();
 
         if (!fontName.isEmpty() && pixelSize) {
-            QFont::Weight fontWeight = QFont::Normal;
+            auto fontWeight = QFont::Normal;
             if (weight.type() == QVariant::Int || weight.type() == QVariant::UInt)
                 fontWeight = QFont::Weight(weight.toInt());
 
-            QFont::Style fontStyle = static_cast<QFont::Style>(style.toInt());
+            auto fontStyle = static_cast<QFont::Style>(style.toInt());
 
             QSupportedWritingSystems writingSystems;
-            for (int i = 0; i < writingSystemBits.count(); ++i) {
+            for (auto i = 0; i < writingSystemBits.count(); ++i) {
                 uchar currentByte = writingSystemBits.at(i);
-                for (int j = 0; j < 8; ++j) {
+                for (auto j = 0; j < 8; ++j) {
                     if (currentByte & 1)
                         writingSystems.setSupported(QFontDatabase::WritingSystem(i * 8 + j));
                     currentByte >>= 1;
                 }
             }
-            QFont::Stretch stretch = QFont::Unstretched;
+            auto stretch = QFont::Unstretched;
             registerFont(fontName,QString(),QString(),fontWeight,fontStyle,stretch,true,false,pixelSize,false,writingSystems,handle);
         }
     } else {
@@ -216,7 +216,7 @@ QSupportedWritingSystems::~QSupportedWritingSystems()
 void QSupportedWritingSystems::detach()
 {
     if (d->ref.load() != 1) {
-        QWritingSystemsPrivate *newd = new QWritingSystemsPrivate(d);
+        auto newd = new QWritingSystemsPrivate(d);
         if (!d->ref.deref())
             delete d;
         d = newd;
@@ -276,7 +276,7 @@ QPlatformFontDatabase::~QPlatformFontDatabase()
 */
 void QPlatformFontDatabase::populateFontDatabase()
 {
-    QString fontpath = fontDir();
+    auto fontpath = fontDir();
     if(!QFile::exists(fontpath)) {
         qWarning("QFontDatabase: Cannot find font directory '%s' - is Qt installed correctly?",
                  qPrintable(QDir::toNativeSeparators(fontpath)));
@@ -286,12 +286,12 @@ void QPlatformFontDatabase::populateFontDatabase()
     QDir dir(fontpath);
     dir.setNameFilters(QStringList() << QLatin1String("*.qpf2"));
     dir.refresh();
-    for (int i = 0; i < int(dir.count()); ++i) {
-        const QByteArray fileName = QFile::encodeName(dir.absoluteFilePath(dir[i]));
+    for (auto i = 0; i < int(dir.count()); ++i) {
+        const auto fileName = QFile::encodeName(dir.absoluteFilePath(dir[i]));
         QFile file(QString::fromLocal8Bit(fileName));
         if (file.open(QFile::ReadOnly)) {
-            const QByteArray fileData = file.readAll();
-            QByteArray *fileDataPtr = new QByteArray(fileData);
+            const auto fileData = file.readAll();
+            auto fileDataPtr = new QByteArray(fileData);
             registerQPF2Font(fileData, fileDataPtr);
         }
     }
@@ -335,8 +335,8 @@ QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine
 */
 QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
-    QByteArray *fileDataPtr = static_cast<QByteArray *>(handle);
-    QFontEngineQPF2 *engine = new QFontEngineQPF2(fontDef,*fileDataPtr);
+    auto fileDataPtr = static_cast<QByteArray *>(handle);
+    auto engine = new QFontEngineQPF2(fontDef,*fileDataPtr);
     //qDebug() << fontDef.pixelSize << fontDef.weight << fontDef.style << fontDef.stretch << fontDef.styleHint << fontDef.styleStrategy << fontDef.family;
     return engine;
 }
@@ -385,7 +385,7 @@ QStringList QPlatformFontDatabase::addApplicationFont(const QByteArray &fontData
 */
 void QPlatformFontDatabase::releaseHandle(void *handle)
 {
-    QByteArray *fileDataPtr = static_cast<QByteArray *>(handle);
+    auto fileDataPtr = static_cast<QByteArray *>(handle);
     delete fileDataPtr;
 }
 
@@ -394,7 +394,7 @@ void QPlatformFontDatabase::releaseHandle(void *handle)
 */
 QString QPlatformFontDatabase::fontDir() const
 {
-    QString fontpath = QString::fromLocal8Bit(qgetenv("QT_QPA_FONTDIR"));
+    auto fontpath = QString::fromLocal8Bit(qgetenv("QT_QPA_FONTDIR"));
     if (fontpath.isEmpty()) {
         fontpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);
         fontpath += QLatin1String("/fonts");
@@ -461,7 +461,7 @@ bool QPlatformFontDatabase::fontsAlwaysScalable() const
     QList<int> ret;
     static const quint8 standard[] =
         { 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72 };
-    static const int num_standards = int(sizeof standard / sizeof *standard);
+    static const auto num_standards = int(sizeof standard / sizeof *standard);
     ret.reserve(num_standards);
     std::copy(standard, standard + num_standards, std::back_inserter(ret));
     return ret;
@@ -469,9 +469,9 @@ bool QPlatformFontDatabase::fontsAlwaysScalable() const
 
 QFontEngine::SubpixelAntialiasingType QPlatformFontDatabase::subpixelAntialiasingTypeHint() const
 {
-    static int type = -1;
+    static auto type = -1;
     if (type == -1) {
-        if (QScreen *screen = QGuiApplication::primaryScreen())
+        if (auto screen = QGuiApplication::primaryScreen())
             type = screen->handle()->subpixelAntialiasingTypeHint();
     }
     return static_cast<QFontEngine::SubpixelAntialiasingType>(type);
@@ -546,11 +546,11 @@ QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromTrueTypeBits(q
 {
     QSupportedWritingSystems writingSystems;
 
-    bool hasScript = false;
-    for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
+    auto hasScript = false;
+    for (auto i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
         int bit = requiredUnicodeBits[i][0];
-        int index = bit/32;
-        int flag = 1 << (bit&31);
+        auto index = bit/32;
+        auto flag = 1 << (bit&31);
         if (bit != 126 && (unicodeRange[index] & flag)) {
             bit = requiredUnicodeBits[i][1];
             index = bit/32;

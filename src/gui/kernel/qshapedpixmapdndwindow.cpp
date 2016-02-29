@@ -74,7 +74,7 @@ void QShapedPixmapWindow::render()
 
     m_backingStore->beginPaint(rect);
 
-    QPaintDevice *device = m_backingStore->paintDevice();
+    auto device = m_backingStore->paintDevice();
 
     {
         QPainter p(device);

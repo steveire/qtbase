@@ -306,7 +306,7 @@ void QPagedPaintDevice::setMargins(const Margins &margins)
   */
 QPagedPaintDevice::Margins QPagedPaintDevice::margins() const
 {
-    QMarginsF margins = d->m_pageLayout.margins(QPageLayout::Millimeter);
+    auto margins = d->m_pageLayout.margins(QPageLayout::Millimeter);
     Margins result;
     result.left = margins.left();
     result.top = margins.top();

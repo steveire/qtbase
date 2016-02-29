@@ -260,7 +260,7 @@ float QQuaternion::lengthSquared() const
 QQuaternion QQuaternion::normalized() const
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp) +
                  double(zp) * double(zp) +
                  double(wp) * double(wp);
@@ -281,7 +281,7 @@ QQuaternion QQuaternion::normalized() const
 void QQuaternion::normalize()
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp) +
                  double(zp) * double(zp) +
                  double(wp) * double(wp);
@@ -409,9 +409,9 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
     // We normalize the result just in case the values are close
     // to zero, as suggested in the above FAQ.
     float a = (angle / 2.0f) * M_PI / 180.0f;
-    float s = std::sin(a);
-    float c = std::cos(a);
-    QVector3D ax = axis.normalized();
+    auto s = std::sin(a);
+    auto c = std::cos(a);
+    auto ax = axis.normalized();
     return QQuaternion(c, ax.x() * s, ax.y() * s, ax.z() * s).normalized();
 }
 
@@ -432,7 +432,7 @@ void QQuaternion::getAxisAndAngle(float *x, float *y, float *z, float *angle) co
     // The quaternion representing the rotation is
     //   q = cos(A/2)+sin(A/2)*(x*i+y*j+z*k)
 
-    float length = xp * xp + yp * yp + zp * zp;
+    auto length = xp * xp + yp * yp + zp * zp;
     if (!qFuzzyIsNull(length)) {
         *x = xp;
         *y = yp;
@@ -461,15 +461,15 @@ void QQuaternion::getAxisAndAngle(float *x, float *y, float *z, float *angle) co
 QQuaternion QQuaternion::fromAxisAndAngle
         (float x, float y, float z, float angle)
 {
-    float length = std::sqrt(x * x + y * y + z * z);
+    auto length = std::sqrt(x * x + y * y + z * z);
     if (!qFuzzyIsNull(length - 1.0f) && !qFuzzyIsNull(length)) {
         x /= length;
         y /= length;
         z /= length;
     }
     float a = (angle / 2.0f) * M_PI / 180.0f;
-    float s = std::sin(a);
-    float c = std::cos(a);
+    auto s = std::sin(a);
+    auto c = std::cos(a);
     return QQuaternion(c, x * s, y * s, z * s).normalized();
 }
 
@@ -515,17 +515,17 @@ void QQuaternion::getEulerAngles(float *pitch, float *yaw, float *roll) const
     // Algorithm from:
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q37
 
-    float xx = xp * xp;
-    float xy = xp * yp;
-    float xz = xp * zp;
-    float xw = xp * wp;
-    float yy = yp * yp;
-    float yz = yp * zp;
-    float yw = yp * wp;
-    float zz = zp * zp;
-    float zw = zp * wp;
+    auto xx = xp * xp;
+    auto xy = xp * yp;
+    auto xz = xp * zp;
+    auto xw = xp * wp;
+    auto yy = yp * yp;
+    auto yz = yp * zp;
+    auto yw = yp * wp;
+    auto zz = zp * zp;
+    auto zw = zp * wp;
 
-    const float lengthSquared = xx + yy + zz + wp * wp;
+    const auto lengthSquared = xx + yy + zz + wp * wp;
     if (!qFuzzyIsNull(lengthSquared - 1.0f) && !qFuzzyIsNull(lengthSquared)) {
         xx /= lengthSquared;
         xy /= lengthSquared; // same as (xp / length) * (yp / length)
@@ -581,19 +581,19 @@ QQuaternion QQuaternion::fromEulerAngles(float pitch, float yaw, float roll)
     yaw *= 0.5f;
     roll *= 0.5f;
 
-    const float c1 = std::cos(yaw);
-    const float s1 = std::sin(yaw);
-    const float c2 = std::cos(roll);
-    const float s2 = std::sin(roll);
-    const float c3 = std::cos(pitch);
-    const float s3 = std::sin(pitch);
-    const float c1c2 = c1 * c2;
-    const float s1s2 = s1 * s2;
+    const auto c1 = std::cos(yaw);
+    const auto s1 = std::sin(yaw);
+    const auto c2 = std::cos(roll);
+    const auto s2 = std::sin(roll);
+    const auto c3 = std::cos(pitch);
+    const auto s3 = std::sin(pitch);
+    const auto c1c2 = c1 * c2;
+    const auto s1s2 = s1 * s2;
 
-    const float w = c1c2 * c3 + s1s2 * s3;
-    const float x = c1c2 * s3 + s1s2 * c3;
-    const float y = s1 * c2 * c3 - c1 * s2 * s3;
-    const float z = c1 * s2 * c3 - s1 * c2 * s3;
+    const auto w = c1c2 * c3 + s1s2 * s3;
+    const auto x = c1c2 * s3 + s1s2 * c3;
+    const auto y = s1 * c2 * c3 - c1 * s2 * s3;
+    const auto z = c1 * s2 * c3 - s1 * c2 * s3;
 
     return QQuaternion(w, x, y, z);
 }
@@ -615,18 +615,18 @@ QMatrix3x3 QQuaternion::toRotationMatrix() const
 
     QMatrix3x3 rot3x3(Qt::Uninitialized);
 
-    const float f2x = xp + xp;
-    const float f2y = yp + yp;
-    const float f2z = zp + zp;
-    const float f2xw = f2x * wp;
-    const float f2yw = f2y * wp;
-    const float f2zw = f2z * wp;
-    const float f2xx = f2x * xp;
-    const float f2xy = f2x * yp;
-    const float f2xz = f2x * zp;
-    const float f2yy = f2y * yp;
-    const float f2yz = f2y * zp;
-    const float f2zz = f2z * zp;
+    const auto f2x = xp + xp;
+    const auto f2y = yp + yp;
+    const auto f2z = zp + zp;
+    const auto f2xw = f2x * wp;
+    const auto f2yw = f2y * wp;
+    const auto f2zw = f2z * wp;
+    const auto f2xx = f2x * xp;
+    const auto f2xy = f2x * yp;
+    const auto f2xz = f2x * zp;
+    const auto f2yy = f2y * yp;
+    const auto f2yz = f2y * zp;
+    const auto f2zz = f2z * zp;
 
     rot3x3(0, 0) = 1.0f - (f2yy + f2zz);
     rot3x3(0, 1) =         f2xy - f2zw;
@@ -659,24 +659,24 @@ QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
     float scalar;
     float axis[3];
 
-    const float trace = rot3x3(0, 0) + rot3x3(1, 1) + rot3x3(2, 2);
+    const auto trace = rot3x3(0, 0) + rot3x3(1, 1) + rot3x3(2, 2);
     if (trace > 0.00000001f) {
-        const float s = 2.0f * std::sqrt(trace + 1.0f);
+        const auto s = 2.0f * std::sqrt(trace + 1.0f);
         scalar = 0.25f * s;
         axis[0] = (rot3x3(2, 1) - rot3x3(1, 2)) / s;
         axis[1] = (rot3x3(0, 2) - rot3x3(2, 0)) / s;
         axis[2] = (rot3x3(1, 0) - rot3x3(0, 1)) / s;
     } else {
         static int s_next[3] = { 1, 2, 0 };
-        int i = 0;
+        auto i = 0;
         if (rot3x3(1, 1) > rot3x3(0, 0))
             i = 1;
         if (rot3x3(2, 2) > rot3x3(i, i))
             i = 2;
-        int j = s_next[i];
-        int k = s_next[j];
+        auto j = s_next[i];
+        auto k = s_next[j];
 
-        const float s = 2.0f * std::sqrt(rot3x3(i, i) - rot3x3(j, j) - rot3x3(k, k) + 1.0f);
+        const auto s = 2.0f * std::sqrt(rot3x3(i, i) - rot3x3(j, j) - rot3x3(k, k) + 1.0f);
         axis[i] = 0.25f * s;
         scalar = (rot3x3(k, j) - rot3x3(j, k)) / s;
         axis[j] = (rot3x3(j, i) + rot3x3(i, j)) / s;
@@ -774,11 +774,11 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
     const QVector3D v0(from.normalized());
     const QVector3D v1(to.normalized());
 
-    float d = QVector3D::dotProduct(v0, v1) + 1.0f;
+    auto d = QVector3D::dotProduct(v0, v1) + 1.0f;
 
     // if dest vector is close to the inverse of source vector, ANY axis of rotation is valid
     if (qFuzzyIsNull(d)) {
-        QVector3D axis = QVector3D::crossProduct(QVector3D(1.0f, 0.0f, 0.0f), v0);
+        auto axis = QVector3D::crossProduct(QVector3D(1.0f, 0.0f, 0.0f), v0);
         if (qFuzzyIsNull(axis.lengthSquared()))
             axis = QVector3D::crossProduct(QVector3D(0.0f, 1.0f, 0.0f), v0);
         axis.normalize();
@@ -925,7 +925,7 @@ QQuaternion QQuaternion::slerp
 
     // Determine the angle between the two quaternions.
     QQuaternion q2b(q2);
-    float dot = QQuaternion::dotProduct(q1, q2);
+    auto dot = QQuaternion::dotProduct(q1, q2);
     if (dot < 0.0f) {
         q2b = -q2b;
         dot = -dot;
@@ -933,11 +933,11 @@ QQuaternion QQuaternion::slerp
 
     // Get the scale factors.  If they are too small,
     // then revert to simple linear interpolation.
-    float factor1 = 1.0f - t;
-    float factor2 = t;
+    auto factor1 = 1.0f - t;
+    auto factor2 = t;
     if ((1.0f - dot) > 0.0000001) {
-        float angle = std::acos(dot);
-        float sinOfAngle = std::sin(angle);
+        auto angle = std::acos(dot);
+        auto sinOfAngle = std::sin(angle);
         if (sinOfAngle > 0.0000001) {
             factor1 = std::sin((1.0f - t) * angle) / sinOfAngle;
             factor2 = std::sin(t * angle) / sinOfAngle;
@@ -974,7 +974,7 @@ QQuaternion QQuaternion::nlerp
 
     // Determine the angle between the two quaternions.
     QQuaternion q2b(q2);
-    float dot = QQuaternion::dotProduct(q1, q2);
+    auto dot = QQuaternion::dotProduct(q1, q2);
     if (dot < 0.0f)
         q2b = -q2b;
 

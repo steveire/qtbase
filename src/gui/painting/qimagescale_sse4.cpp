@@ -49,8 +49,8 @@ using namespace QImageScale;
 
 inline static __m128i qt_qimageScaleAARGBA_helper(const unsigned int *pix, int xyap, int Cxy, int step, const __m128i vxyap, const __m128i vCxy)
 {
-    __m128i vpix = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*pix));
-    __m128i vx = _mm_mullo_epi32(vpix, vxyap);
+    auto vpix = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*pix));
+    auto vx = _mm_mullo_epi32(vpix, vxyap);
     int i;
     for (i = (1 << 14) - xyap; i > Cxy; i -= Cxy) {
         pix += step;
@@ -67,30 +67,30 @@ template<bool RGB>
 void qt_qimageScaleAARGBA_up_x_down_y_sse4(QImageScaleInfo *isi, unsigned int *dest,
                                            int dw, int dh, int dow, int sow)
 {
-    const unsigned int **ypoints = isi->ypoints;
-    int *xpoints = isi->xpoints;
-    int *xapoints = isi->xapoints;
-    int *yapoints = isi->yapoints;
+    auto ypoints = isi->ypoints;
+    auto xpoints = isi->xpoints;
+    auto xapoints = isi->xapoints;
+    auto yapoints = isi->yapoints;
 
-    const __m128i v256 = _mm_set1_epi32(256);
+    const auto v256 = _mm_set1_epi32(256);
 
     /* go through every scanline in the output buffer */
-    for (int y = 0; y < dh; y++) {
-        int Cy = yapoints[y] >> 16;
-        int yap = yapoints[y] & 0xffff;
-        const __m128i vCy = _mm_set1_epi32(Cy);
-        const __m128i vyap = _mm_set1_epi32(yap);
+    for (auto y = 0; y < dh; y++) {
+        auto Cy = yapoints[y] >> 16;
+        auto yap = yapoints[y] & 0xffff;
+        const auto vCy = _mm_set1_epi32(Cy);
+        const auto vyap = _mm_set1_epi32(yap);
 
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
-            __m128i vx = qt_qimageScaleAARGBA_helper(sptr, yap, Cy, sow, vyap, vCy);
+        auto dptr = dest + (y * dow);
+        for (auto x = 0; x < dw; x++) {
+            auto sptr = ypoints[y] + xpoints[x];
+            auto vx = qt_qimageScaleAARGBA_helper(sptr, yap, Cy, sow, vyap, vCy);
 
-            int xap = xapoints[x];
+            auto xap = xapoints[x];
             if (xap > 0) {
-                const __m128i vxap = _mm_set1_epi32(xap);
-                const __m128i vinvxap = _mm_sub_epi32(v256, vxap);
-                __m128i vr = qt_qimageScaleAARGBA_helper(sptr + 1, yap, Cy, sow, vyap, vCy);
+                const auto vxap = _mm_set1_epi32(xap);
+                const auto vinvxap = _mm_sub_epi32(v256, vxap);
+                auto vr = qt_qimageScaleAARGBA_helper(sptr + 1, yap, Cy, sow, vyap, vCy);
 
                 vx = _mm_mullo_epi32(vx, vinvxap);
                 vr = _mm_mullo_epi32(vr, vxap);
@@ -112,30 +112,30 @@ template<bool RGB>
 void qt_qimageScaleAARGBA_down_x_up_y_sse4(QImageScaleInfo *isi, unsigned int *dest,
                                            int dw, int dh, int dow, int sow)
 {
-    const unsigned int **ypoints = isi->ypoints;
-    int *xpoints = isi->xpoints;
-    int *xapoints = isi->xapoints;
-    int *yapoints = isi->yapoints;
+    auto ypoints = isi->ypoints;
+    auto xpoints = isi->xpoints;
+    auto xapoints = isi->xapoints;
+    auto yapoints = isi->yapoints;
 
-    const __m128i v256 = _mm_set1_epi32(256);
+    const auto v256 = _mm_set1_epi32(256);
 
     /* go through every scanline in the output buffer */
-    for (int y = 0; y < dh; y++) {
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            int Cx = xapoints[x] >> 16;
-            int xap = xapoints[x] & 0xffff;
-            const __m128i vCx = _mm_set1_epi32(Cx);
-            const __m128i vxap = _mm_set1_epi32(xap);
+    for (auto y = 0; y < dh; y++) {
+        auto dptr = dest + (y * dow);
+        for (auto x = 0; x < dw; x++) {
+            auto Cx = xapoints[x] >> 16;
+            auto xap = xapoints[x] & 0xffff;
+            const auto vCx = _mm_set1_epi32(Cx);
+            const auto vxap = _mm_set1_epi32(xap);
 
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
-            __m128i vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, vxap, vCx);
+            auto sptr = ypoints[y] + xpoints[x];
+            auto vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, vxap, vCx);
 
-            int yap = yapoints[y];
+            auto yap = yapoints[y];
             if (yap > 0) {
-                const __m128i vyap = _mm_set1_epi32(yap);
-                const __m128i vinvyap = _mm_sub_epi32(v256, vyap);
-                __m128i vr = qt_qimageScaleAARGBA_helper(sptr + sow, xap, Cx, 1, vxap, vCx);
+                const auto vyap = _mm_set1_epi32(yap);
+                const auto vinvyap = _mm_sub_epi32(v256, vyap);
+                auto vr = qt_qimageScaleAARGBA_helper(sptr + sow, xap, Cx, 1, vxap, vCx);
 
                 vx = _mm_mullo_epi32(vx, vinvyap);
                 vr = _mm_mullo_epi32(vr, vyap);
@@ -157,27 +157,27 @@ template<bool RGB>
 void qt_qimageScaleAARGBA_down_xy_sse4(QImageScaleInfo *isi, unsigned int *dest,
                                        int dw, int dh, int dow, int sow)
 {
-    const unsigned int **ypoints = isi->ypoints;
-    int *xpoints = isi->xpoints;
-    int *xapoints = isi->xapoints;
-    int *yapoints = isi->yapoints;
+    auto ypoints = isi->ypoints;
+    auto xpoints = isi->xpoints;
+    auto xapoints = isi->xapoints;
+    auto yapoints = isi->yapoints;
 
-    for (int y = 0; y < dh; y++) {
-        int Cy = yapoints[y] >> 16;
-        int yap = yapoints[y] & 0xffff;
-        const __m128i vCy = _mm_set1_epi32(Cy);
-        const __m128i vyap = _mm_set1_epi32(yap);
+    for (auto y = 0; y < dh; y++) {
+        auto Cy = yapoints[y] >> 16;
+        auto yap = yapoints[y] & 0xffff;
+        const auto vCy = _mm_set1_epi32(Cy);
+        const auto vyap = _mm_set1_epi32(yap);
 
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            const int Cx = xapoints[x] >> 16;
-            const int xap = xapoints[x] & 0xffff;
-            const __m128i vCx = _mm_set1_epi32(Cx);
-            const __m128i vxap = _mm_set1_epi32(xap);
+        auto dptr = dest + (y * dow);
+        for (auto x = 0; x < dw; x++) {
+            const auto Cx = xapoints[x] >> 16;
+            const auto xap = xapoints[x] & 0xffff;
+            const auto vCx = _mm_set1_epi32(Cx);
+            const auto vxap = _mm_set1_epi32(xap);
 
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
-            __m128i vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, vxap, vCx);
-            __m128i vr = _mm_mullo_epi32(_mm_srli_epi32(vx, 4), vyap);
+            auto sptr = ypoints[y] + xpoints[x];
+            auto vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, vxap, vCx);
+            auto vr = _mm_mullo_epi32(_mm_srli_epi32(vx, 4), vyap);
 
             int j;
             for (j = (1 << 14) - yap; j > Cy; j -= Cy) {

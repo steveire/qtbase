@@ -249,7 +249,7 @@ void QTouchDevicePrivate::registerDevice(const QTouchDevice *dev)
 void QTouchDevicePrivate::unregisterDevice(const QTouchDevice *dev)
 {
     QMutexLocker lock(&devicesMutex);
-    bool wasRemoved = deviceList()->removeOne(dev);
+    auto wasRemoved = deviceList()->removeOne(dev);
     if (wasRemoved && deviceList()->isEmpty())
         qRemovePostRoutine(cleanupDevicesList);
 }

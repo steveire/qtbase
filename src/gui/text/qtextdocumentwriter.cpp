@@ -141,7 +141,7 @@ QTextDocumentWriter::QTextDocumentWriter(QIODevice *device, const QByteArray &fo
 QTextDocumentWriter::QTextDocumentWriter(const QString &fileName, const QByteArray &format)
     : d(new QTextDocumentWriterPrivate(this))
 {
-    QFile *file = new QFile(fileName);
+    auto file = new QFile(fileName);
     d->device = file;
     d->deleteDevice = true;
     d->format = format;
@@ -237,7 +237,7 @@ void QTextDocumentWriter::setFileName (const QString &fileName)
 */
 QString QTextDocumentWriter::fileName () const
 {
-    QFile *file = qobject_cast<QFile *>(d->device);
+    auto file = qobject_cast<QFile *>(d->device);
     return file ? file->fileName() : QString();
 }
 
@@ -252,11 +252,11 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
     if (d->device && d->format.isEmpty()) {
         // if there's no format, see if device is a file, and if so, find
         // the file suffix
-        if (QFile *file = qobject_cast<QFile *>(d->device))
+        if (auto file = qobject_cast<QFile *>(d->device))
             suffix = QFileInfo(file->fileName()).suffix().toLower().toLatin1();
     }
 
-    QByteArray format = !d->format.isEmpty() ? d->format.toLower() : suffix;
+    auto format = !d->format.isEmpty() ? d->format.toLower() : suffix;
 
 #ifndef QT_NO_TEXTODFWRITER
     if (format == "odf" || format == "opendocumentformat" || format == "odt") {
@@ -308,7 +308,7 @@ bool QTextDocumentWriter::write(const QTextDocumentFragment &fragment)
 {
     if (fragment.d == 0)
         return false; // invalid fragment.
-    QTextDocument *doc = fragment.d->doc;
+    auto doc = fragment.d->doc;
     if (doc)
         return write(doc);
     return false;

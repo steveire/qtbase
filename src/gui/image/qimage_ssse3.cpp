@@ -50,32 +50,32 @@ QT_BEGIN_NAMESPACE
 // dst must be at least len * 4 bytes
 Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len)
 {
-    quint32 *const end = dst + len;
+    const auto end = dst + len;
 
     // Prologue, align dst to 16 bytes. The alignment is done on dst because it has 4 store()
     // for each 3 load() of src.
     const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;
-    const int prologLength = qMin(len, offsetToAlignOn16Bytes);
+    const auto prologLength = qMin(len, offsetToAlignOn16Bytes);
 
-    for (int i = 0; i < prologLength; ++i) {
+    for (auto i = 0; i < prologLength; ++i) {
         *dst++ = qRgb(src[0], src[1], src[2]);
         src += 3;
     }
 
     // Mask the 4 first colors of the RGB888 vector
-    const __m128i shuffleMask = _mm_set_epi8(char(0xff), 9, 10, 11, char(0xff), 6, 7, 8, char(0xff), 3, 4, 5, char(0xff), 0, 1, 2);
+    const auto shuffleMask = _mm_set_epi8(char(0xff), 9, 10, 11, char(0xff), 6, 7, 8, char(0xff), 3, 4, 5, char(0xff), 0, 1, 2);
 
     // Mask the 4 last colors of a RGB888 vector with an offset of 1 (so the last 3 bytes are RGB)
-    const __m128i shuffleMaskEnd = _mm_set_epi8(char(0xff), 13, 14, 15, char(0xff), 10, 11, 12, char(0xff), 7, 8, 9, char(0xff), 4, 5, 6);
+    const auto shuffleMaskEnd = _mm_set_epi8(char(0xff), 13, 14, 15, char(0xff), 10, 11, 12, char(0xff), 7, 8, 9, char(0xff), 4, 5, 6);
 
     // Mask to have alpha = 0xff
-    const __m128i alphaMask = _mm_set1_epi32(0xff000000);
+    const auto alphaMask = _mm_set1_epi32(0xff000000);
 
-    const __m128i *inVectorPtr = (const __m128i *)src;
-    __m128i *dstVectorPtr = (__m128i *)dst;
+    auto inVectorPtr = (const __m128i *)src;
+    auto dstVectorPtr = (__m128i *)dst;
 
-    const int simdRoundCount = (len - prologLength) / 16; // one iteration in the loop converts 16 pixels
-    for (int i = 0; i < simdRoundCount; ++i) {
+    const auto simdRoundCount = (len - prologLength) / 16; // one iteration in the loop converts 16 pixels
+    for (auto i = 0; i < simdRoundCount; ++i) {
         /*
          RGB888 has 5 pixels per vector, + 1 byte from the next pixel. The idea here is
          to load vectors of RGB888 and use palignr to select a vector out of two vectors.
@@ -86,16 +86,16 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, con
 
          The conversion itself is done with a byte permutation (pshufb).
          */
-        __m128i firstSrcVector = _mm_lddqu_si128(inVectorPtr);
-        __m128i outputVector = _mm_shuffle_epi8(firstSrcVector, shuffleMask);
+        auto firstSrcVector = _mm_lddqu_si128(inVectorPtr);
+        auto outputVector = _mm_shuffle_epi8(firstSrcVector, shuffleMask);
         _mm_store_si128(dstVectorPtr, _mm_or_si128(outputVector, alphaMask));
         ++inVectorPtr;
         ++dstVectorPtr;
 
         // There are 4 unused bytes left in srcVector, we need to load the next 16 bytes
         // and load the next input with palignr
-        __m128i secondSrcVector = _mm_lddqu_si128(inVectorPtr);
-        __m128i srcVector = _mm_alignr_epi8(secondSrcVector, firstSrcVector, 12);
+        auto secondSrcVector = _mm_lddqu_si128(inVectorPtr);
+        auto srcVector = _mm_alignr_epi8(secondSrcVector, firstSrcVector, 12);
         outputVector = _mm_shuffle_epi8(srcVector, shuffleMask);
         _mm_store_si128(dstVectorPtr, _mm_or_si128(outputVector, alphaMask));
         ++inVectorPtr;
@@ -132,10 +132,10 @@ void convert_RGB888_to_RGB32_ssse3(QImageData *dest, const QImageData *src, Qt::
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
-    const uchar *src_data = (uchar *) src->data;
-    quint32 *dest_data = (quint32 *) dest->data;
+    auto src_data = (uchar *) src->data;
+    auto dest_data = (quint32 *) dest->data;
 
-    for (int i = 0; i < src->height; ++i) {
+    for (auto i = 0; i < src->height; ++i) {
         qt_convert_rgb888_to_rgb32_ssse3(dest_data, src_data, src->width);
         src_data += src->bytes_per_line;
         dest_data = (quint32 *)((uchar*)dest_data + dest->bytes_per_line);

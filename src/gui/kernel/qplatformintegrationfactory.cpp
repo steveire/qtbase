@@ -62,7 +62,7 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platfor
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
-        if (QPlatformIntegration *ret = qLoadPlugin<QPlatformIntegration, QPlatformIntegrationPlugin>(directLoader(), platform, paramList, argc, argv))
+        if (auto ret = qLoadPlugin<QPlatformIntegration, QPlatformIntegrationPlugin>(directLoader(), platform, paramList, argc, argv))
             return ret;
     }
 #else
@@ -89,8 +89,8 @@ QStringList QPlatformIntegrationFactory::keys(const QString &platformPluginPath)
             const QString postFix = QStringLiteral(" (from ")
                                     + QDir::toNativeSeparators(platformPluginPath)
                                     + QLatin1Char(')');
-            const QStringList::iterator end = list.end();
-            for (QStringList::iterator it = list.begin(); it != end; ++it)
+            const auto end = list.end();
+            for (auto it = list.begin(); it != end; ++it)
                 (*it).append(postFix);
         }
     }

@@ -185,10 +185,10 @@ int QShortcutMap::addShortcut(QObject *owner, const QKeySequence &key, Qt::Short
 int QShortcutMap::removeShortcut(int id, QObject *owner, const QKeySequence &key)
 {
     Q_D(QShortcutMap);
-    int itemsRemoved = 0;
-    bool allOwners = (owner == 0);
-    bool allKeys = key.isEmpty();
-    bool allIds = id == 0;
+    auto itemsRemoved = 0;
+    auto allOwners = (owner == 0);
+    auto allKeys = key.isEmpty();
+    auto allIds = id == 0;
 
     // Special case, remove everything
     if (allOwners && allKeys && allIds) {
@@ -197,11 +197,11 @@ int QShortcutMap::removeShortcut(int id, QObject *owner, const QKeySequence &key
         return itemsRemoved;
     }
 
-    int i = d->sequences.size()-1;
+    auto i = d->sequences.size()-1;
     while (i>=0)
     {
         const QShortcutEntry &entry = d->sequences.at(i);
-        int entryId = entry.id;
+        auto entryId = entry.id;
         if ((allOwners || entry.owner == owner)
             && (allIds || entry.id == id)
             && (allKeys || entry.keyseq == key)) {
@@ -231,15 +231,15 @@ int QShortcutMap::removeShortcut(int id, QObject *owner, const QKeySequence &key
 int QShortcutMap::setShortcutEnabled(bool enable, int id, QObject *owner, const QKeySequence &key)
 {
     Q_D(QShortcutMap);
-    int itemsChanged = 0;
-    bool allOwners = (owner == 0);
-    bool allKeys = key.isEmpty();
-    bool allIds = id == 0;
+    auto itemsChanged = 0;
+    auto allOwners = (owner == 0);
+    auto allKeys = key.isEmpty();
+    auto allIds = id == 0;
 
-    int i = d->sequences.size()-1;
+    auto i = d->sequences.size()-1;
     while (i>=0)
     {
-        QShortcutEntry entry = d->sequences.at(i);
+        auto entry = d->sequences.at(i);
         if ((allOwners || entry.owner == owner)
             && (allIds || entry.id == id)
             && (allKeys || entry.keyseq == key)) {
@@ -269,15 +269,15 @@ int QShortcutMap::setShortcutEnabled(bool enable, int id, QObject *owner, const 
 int QShortcutMap::setShortcutAutoRepeat(bool on, int id, QObject *owner, const QKeySequence &key)
 {
     Q_D(QShortcutMap);
-    int itemsChanged = 0;
-    bool allOwners = (owner == 0);
-    bool allKeys = key.isEmpty();
-    bool allIds = id == 0;
+    auto itemsChanged = 0;
+    auto allOwners = (owner == 0);
+    auto allKeys = key.isEmpty();
+    auto allIds = id == 0;
 
-    int i = d->sequences.size()-1;
+    auto i = d->sequences.size()-1;
     while (i>=0)
     {
-        QShortcutEntry entry = d->sequences.at(i);
+        auto entry = d->sequences.at(i);
         if ((allOwners || entry.owner == owner)
             && (allIds || entry.id == id)
             && (allKeys || entry.keyseq == key)) {
@@ -331,7 +331,7 @@ bool QShortcutMap::tryShortcut(QKeyEvent *e)
     if (e->key() == Qt::Key_unknown)
         return false;
 
-    QKeySequence::SequenceMatch previousState = state();
+    auto previousState = state();
 
     switch (nextState(e)) {
     case QKeySequence::NoMatch:
@@ -346,7 +346,7 @@ bool QShortcutMap::tryShortcut(QKeyEvent *e)
     case QKeySequence::ExactMatch: {
         // Save number of identical matches before dispatching
         // to keep QShortcutMap and tryShortcut reentrant.
-        const int identicalMatches = d->identicals.count();
+        const auto identicalMatches = d->identicals.count();
         resetState();
         dispatchEvent(e);
         // If there are no identicals we've only found disabled shortcuts, and
@@ -372,7 +372,7 @@ QKeySequence::SequenceMatch QShortcutMap::nextState(QKeyEvent *e)
         e->key() <= Qt::Key_Alt)
         return d->currentState;
 
-    QKeySequence::SequenceMatch result = QKeySequence::NoMatch;
+    auto result = QKeySequence::NoMatch;
 
     // We start fresh each time..
     d->identicals.resize(0);
@@ -385,7 +385,7 @@ QKeySequence::SequenceMatch QShortcutMap::nextState(QKeyEvent *e)
     if (result == QKeySequence::NoMatch && e->modifiers() & Qt::ShiftModifier) {
         // If Shift + Key_Backtab, also try Shift + Qt::Key_Tab
         if (e->key() == Qt::Key_Backtab) {
-            QKeyEvent pe = QKeyEvent(e->type(), Qt::Key_Tab, e->modifiers(), e->text());
+            auto pe = QKeyEvent(e->type(), Qt::Key_Tab, e->modifiers(), e->text());
             result = find(&pe);
         }
     }
@@ -450,11 +450,11 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
     // Looking for new identicals, scrap old
     d->identicals.resize(0);
 
-    bool partialFound = false;
-    bool identicalDisabledFound = false;
+    auto partialFound = false;
+    auto identicalDisabledFound = false;
     QVector<QKeySequence> okEntries;
     int result = QKeySequence::NoMatch;
-    for (int i = d->newEntries.count()-1; i >= 0 ; --i) {
+    for (auto i = d->newEntries.count()-1; i >= 0 ; --i) {
         QShortcutEntry entry(d->newEntries.at(i)); // needed for searching
         const auto itEnd = d->sequences.constEnd();
         auto it = std::lower_bound(d->sequences.constBegin(), itEnd, entry);
@@ -539,20 +539,20 @@ void QShortcutMap::clearSequence(QVector<QKeySequence> &ksl)
 void QShortcutMap::createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl, int ignoredModifiers)
 {
     Q_D(QShortcutMap);
-    QList<int> possibleKeys = QKeyMapper::possibleKeys(e);
-    int pkTotal = possibleKeys.count();
+    auto possibleKeys = QKeyMapper::possibleKeys(e);
+    auto pkTotal = possibleKeys.count();
     if (!pkTotal)
         return;
 
-    int ssActual = d->currentSequences.count();
-    int ssTotal = qMax(1, ssActual);
+    auto ssActual = d->currentSequences.count();
+    auto ssTotal = qMax(1, ssActual);
     // Resize to possible permutations of the current sequence(s).
     ksl.resize(pkTotal * ssTotal);
 
-    int index = ssActual ? d->currentSequences.at(0).count() : 0;
-    for (int pkNum = 0; pkNum < pkTotal; ++pkNum) {
-        for (int ssNum = 0; ssNum < ssTotal; ++ssNum) {
-            int i = (pkNum * ssTotal) + ssNum;
+    auto index = ssActual ? d->currentSequences.at(0).count() : 0;
+    for (auto pkNum = 0; pkNum < pkTotal; ++pkNum) {
+        for (auto ssNum = 0; ssNum < ssTotal; ++ssNum) {
+            auto i = (pkNum * ssTotal) + ssNum;
             QKeySequence &curKsl = ksl[i];
             if (ssActual) {
                 const QKeySequence &curSeq = d->currentSequences.at(ssNum);
@@ -587,12 +587,12 @@ QKeySequence::SequenceMatch QShortcutMap::matches(const QKeySequence &seq1,
 
     // If equal in length, we have a potential ExactMatch sequence,
     // else we already know it can only be partial.
-    QKeySequence::SequenceMatch match = (userN == seqN
+    auto match = (userN == seqN
                                             ? QKeySequence::ExactMatch
                                             : QKeySequence::PartialMatch);
 
     for (uint i = 0; i < userN; ++i) {
-        int userKey = seq1[i],
+        auto userKey = seq1[i],
             sequenceKey = seq2[i];
         if ((userKey & Qt::Key_unknown) == Qt::Key_hyphen)
             userKey = (userKey & Qt::KeyboardModifierMask) | Qt::Key_Minus;
@@ -610,7 +610,7 @@ QKeySequence::SequenceMatch QShortcutMap::matches(const QKeySequence &seq1,
 */
 int QShortcutMap::translateModifiers(Qt::KeyboardModifiers modifiers)
 {
-    int result = 0;
+    auto result = 0;
     if (modifiers & Qt::ShiftModifier)
         result |= Qt::SHIFT;
     if (modifiers & Qt::ControlModifier)
@@ -647,7 +647,7 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
     }
     // Find next
     const QShortcutEntry *current = 0, *next = 0;
-    int i = 0, enabledShortcuts = 0;
+    auto i = 0, enabledShortcuts = 0;
     while(i < d->identicals.size()) {
         current = d->identicals.at(i);
         if (current->enabled || !next){

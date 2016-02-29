@@ -218,7 +218,7 @@ static inline QOpenGLTextureBlitterPrivate::ProgramIndex targetToProgramIndex(GL
 
 void QOpenGLTextureBlitterPrivate::prepareProgram(const QMatrix4x4 &vertexTransform)
 {
-    Program *program = &programs[targetToProgramIndex(currentTarget)];
+    auto program = &programs[targetToProgramIndex(currentTarget)];
 
     vertexBuffer.bind();
     program->glProgram->setAttributeBuffer(program->vertexCoordAttribPos, GL_FLOAT, 0, 3, 0);
@@ -250,7 +250,7 @@ void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
     TextureBinder binder(currentTarget, texture);
     prepareProgram(vertexTransform);
 
-    Program *program = &programs[targetToProgramIndex(currentTarget)];
+    auto program = &programs[targetToProgramIndex(currentTarget)];
     program->glProgram->setUniformValue(program->textureTransformUniformPos, textureTransform);
     program->textureMatrixUniformState = User;
 
@@ -264,7 +264,7 @@ void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
     TextureBinder binder(currentTarget, texture);
     prepareProgram(vertexTransform);
 
-    Program *program = &programs[targetToProgramIndex(currentTarget)];
+    auto program = &programs[targetToProgramIndex(currentTarget)];
     if (origin == QOpenGLTextureBlitter::OriginTopLeft) {
         if (program->textureMatrixUniformState != IdentityFlipped) {
             QMatrix3x3 flipped;
@@ -283,7 +283,7 @@ void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
 
 bool QOpenGLTextureBlitterPrivate::buildProgram(ProgramIndex idx, const char *vs, const char *fs)
 {
-    Program *p = &programs[idx];
+    auto p = &programs[idx];
 
     p->glProgram.reset(new QOpenGLShaderProgram);
 
@@ -321,7 +321,7 @@ QOpenGLTextureBlitter::~QOpenGLTextureBlitter()
 
 bool QOpenGLTextureBlitter::create()
 {
-    QOpenGLContext *currentContext = QOpenGLContext::currentContext();
+    auto currentContext = QOpenGLContext::currentContext();
     if (!currentContext)
         return false;
 
@@ -330,7 +330,7 @@ bool QOpenGLTextureBlitter::create()
     if (d->programs[QOpenGLTextureBlitterPrivate::TEXTURE_2D].glProgram)
         return true;
 
-    QSurfaceFormat format = currentContext->format();
+    auto format = currentContext->format();
     if (format.profile() == QSurfaceFormat::CoreProfile && format.version() >= qMakePair(3,2)) {
         if (!d->buildProgram(QOpenGLTextureBlitterPrivate::TEXTURE_2D, vertex_shader150, fragment_shader150))
             return false;
@@ -378,7 +378,7 @@ void QOpenGLTextureBlitter::destroy()
 
 bool QOpenGLTextureBlitter::supportsExternalOESTarget() const
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     return ctx && ctx->isOpenGLES() && ctx->hasExtension("GL_OES_EGL_image_external");
 }
 
@@ -390,7 +390,7 @@ void QOpenGLTextureBlitter::bind(GLenum target)
         d->vao->bind();
 
     d->currentTarget = target;
-    QOpenGLTextureBlitterPrivate::Program *p = &d->programs[targetToProgramIndex(target)];
+    auto p = &d->programs[targetToProgramIndex(target)];
     p->glProgram->bind();
 
     d->vertexBuffer.bind();
@@ -443,12 +443,12 @@ void QOpenGLTextureBlitter::blit(GLuint texture,
 QMatrix4x4 QOpenGLTextureBlitter::targetTransform(const QRectF &target,
                                                   const QRect &viewport)
 {
-    qreal x_scale = target.width() / viewport.width();
-    qreal y_scale = target.height() / viewport.height();
+    auto x_scale = target.width() / viewport.width();
+    auto y_scale = target.height() / viewport.height();
 
-    const QPointF relative_to_viewport = target.topLeft() - viewport.topLeft();
-    qreal x_translate = x_scale - 1 + ((relative_to_viewport.x() / viewport.width()) * 2);
-    qreal y_translate = -y_scale + 1 - ((relative_to_viewport.y() / viewport.height()) * 2);
+    const auto relative_to_viewport = target.topLeft() - viewport.topLeft();
+    auto x_translate = x_scale - 1 + ((relative_to_viewport.x() / viewport.width()) * 2);
+    auto y_translate = -y_scale + 1 - ((relative_to_viewport.y() / viewport.height()) * 2);
 
     QMatrix4x4 matrix;
     matrix(0,3) = x_translate;
@@ -464,12 +464,12 @@ QMatrix3x3 QOpenGLTextureBlitter::sourceTransform(const QRectF &subTexture,
                                                   const QSize &textureSize,
                                                   Origin origin)
 {
-    qreal x_scale = subTexture.width() / textureSize.width();
-    qreal y_scale = subTexture.height() / textureSize.height();
+    auto x_scale = subTexture.width() / textureSize.width();
+    auto y_scale = subTexture.height() / textureSize.height();
 
-    const QPointF topLeft = subTexture.topLeft();
-    qreal x_translate = topLeft.x() / textureSize.width();
-    qreal y_translate = topLeft.y() / textureSize.height();
+    const auto topLeft = subTexture.topLeft();
+    auto x_translate = topLeft.x() / textureSize.width();
+    auto y_translate = topLeft.y() / textureSize.height();
 
     if (origin == OriginTopLeft) {
         y_scale = -y_scale;

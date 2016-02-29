@@ -84,9 +84,9 @@ QStringList QGenericPluginFactory::keys()
     typedef QMultiMap<int, QString> PluginKeyMap;
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
-    const PluginKeyMap keyMap = loader()->keyMap();
-    const PluginKeyMapConstIterator cend = keyMap.constEnd();
-    for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it)
+    const auto keyMap = loader()->keyMap();
+    const auto cend = keyMap.constEnd();
+    for (auto it = keyMap.constBegin(); it != cend; ++it)
         if (!list.contains(it.value()))
             list += it.value();
     return list;

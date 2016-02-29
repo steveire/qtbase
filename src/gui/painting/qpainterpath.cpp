@@ -103,20 +103,20 @@ void qt_find_ellipse_coords(const QRectF &r, qreal angle, qreal length,
         return;
     }
 
-    qreal w2 = r.width() / 2;
-    qreal h2 = r.height() / 2;
+    auto w2 = r.width() / 2;
+    auto h2 = r.height() / 2;
 
     qreal angles[2] = { angle, angle + length };
     QPointF *points[2] = { startPoint, endPoint };
 
-    for (int i = 0; i < 2; ++i) {
+    for (auto i = 0; i < 2; ++i) {
         if (!points[i])
             continue;
 
-        qreal theta = angles[i] - 360 * qFloor(angles[i] / 360);
-        qreal t = theta / 90;
+        auto theta = angles[i] - 360 * qFloor(angles[i] / 360);
+        auto t = theta / 90;
         // truncate
-        int quadrant = int(t);
+        auto quadrant = int(t);
         t -= quadrant;
 
         t = qt_t_for_arc_angle(90 * t);
@@ -570,7 +570,7 @@ void QPainterPath::detach()
 */
 void QPainterPath::detach_helper()
 {
-    QPainterPathPrivate *data = new QPainterPathData(*d_func());
+    auto data = new QPainterPathData(*d_func());
     d_ptr.reset(data);
 }
 
@@ -579,7 +579,7 @@ void QPainterPath::detach_helper()
 */
 void QPainterPath::ensureData_helper()
 {
-    QPainterPathPrivate *data = new QPainterPathData;
+    auto data = new QPainterPathData;
     data->elements.reserve(16);
     QPainterPath::Element e = { 0, 0, QPainterPath::MoveToElement };
     data->elements << e;
@@ -597,7 +597,7 @@ void QPainterPath::ensureData_helper()
 QPainterPath &QPainterPath::operator=(const QPainterPath &other)
 {
     if (other.d_func() != d_func()) {
-        QPainterPathPrivate *data = other.d_func();
+        auto data = other.d_func();
         if (data)
             data->ref.ref();
         d_ptr.reset(data);
@@ -685,7 +685,7 @@ void QPainterPath::moveTo(const QPointF &p)
     ensureData();
     detach();
 
-    QPainterPathData *d = d_func();
+    auto d = d_func();
     Q_ASSERT(!d->elements.isEmpty());
 
     d->require_moveTo = false;
@@ -735,7 +735,7 @@ void QPainterPath::lineTo(const QPointF &p)
     ensureData();
     detach();
 
-    QPainterPathData *d = d_func();
+    auto d = d_func();
     Q_ASSERT(!d->elements.isEmpty());
     d->maybeMoveTo();
     if (p == QPointF(d->elements.last()))
@@ -795,7 +795,7 @@ void QPainterPath::cubicTo(const QPointF &c1, const QPointF &c2, const QPointF &
     ensureData();
     detach();
 
-    QPainterPathData *d = d_func();
+    auto d = d_func();
     Q_ASSERT(!d->elements.isEmpty());
 
 
@@ -928,10 +928,10 @@ void QPainterPath::arcTo(const QRectF &rect, qreal startAngle, qreal sweepLength
 
     int point_count;
     QPointF pts[15];
-    QPointF curve_start = qt_curves_for_arc(rect, startAngle, sweepLength, pts, &point_count);
+    auto curve_start = qt_curves_for_arc(rect, startAngle, sweepLength, pts, &point_count);
 
     lineTo(curve_start);
-    for (int i=0; i<point_count; i+=3) {
+    for (auto i=0; i<point_count; i+=3) {
         cubicTo(pts[i].x(), pts[i].y(),
                 pts[i+1].x(), pts[i+1].y(),
                 pts[i+2].x(), pts[i+2].y());
@@ -1031,7 +1031,7 @@ void QPainterPath::addRect(const QRectF &r)
     ensureData();
     detach();
 
-    bool first = d_func()->elements.size() < 2;
+    auto first = d_func()->elements.size() < 2;
 
     d_func()->elements.reserve(d_func()->elements.size() + 5);
     moveTo(r.x(), r.y());
@@ -1074,7 +1074,7 @@ void QPainterPath::addPolygon(const QPolygonF &polygon)
     d_func()->elements.reserve(d_func()->elements.size() + polygon.size());
 
     moveTo(polygon.first());
-    for (int i=1; i<polygon.size(); ++i) {
+    for (auto i=1; i<polygon.size(); ++i) {
         Element elm = { polygon.at(i).x(), polygon.at(i).y(), LineToElement };
         d_func()->elements << elm;
     }
@@ -1116,12 +1116,12 @@ void QPainterPath::addEllipse(const QRectF &boundingRect)
     detach();
 
     Q_D(QPainterPath);
-    bool first = d_func()->elements.size() < 2;
+    auto first = d_func()->elements.size() < 2;
     d->elements.reserve(d->elements.size() + 13);
 
     QPointF pts[12];
     int point_count;
-    QPointF start = qt_curves_for_arc(boundingRect, 0, -360, pts, &point_count);
+    auto start = qt_curves_for_arc(boundingRect, 0, -360, pts, &point_count);
 
     moveTo(start);
     cubicTo(pts[0], pts[1], pts[2]);           // 0 -> 270
@@ -1161,50 +1161,50 @@ void QPainterPath::addText(const QPointF &point, const QFont &f, const QString &
 
     QTextLayout layout(text, f);
     layout.setCacheEnabled(true);
-    QTextEngine *eng = layout.engine();
+    auto eng = layout.engine();
     layout.beginLayout();
-    QTextLine line = layout.createLine();
+    auto line = layout.createLine();
     Q_UNUSED(line);
     layout.endLayout();
     const QScriptLine &sl = eng->lines[0];
     if (!sl.length || !eng->layoutData)
         return;
 
-    int nItems = eng->layoutData->items.size();
+    auto nItems = eng->layoutData->items.size();
 
     qreal x(point.x());
     qreal y(point.y());
 
     QVarLengthArray<int> visualOrder(nItems);
     QVarLengthArray<uchar> levels(nItems);
-    for (int i = 0; i < nItems; ++i)
+    for (auto i = 0; i < nItems; ++i)
         levels[i] = eng->layoutData->items[i].analysis.bidiLevel;
     QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
 
-    for (int i = 0; i < nItems; ++i) {
-        int item = visualOrder[i];
+    for (auto i = 0; i < nItems; ++i) {
+        auto item = visualOrder[i];
         QScriptItem &si = eng->layoutData->items[item];
 
         if (si.analysis.flags < QScriptAnalysis::TabOrObject) {
-            QGlyphLayout glyphs = eng->shapedGlyphs(&si);
-            QFontEngine *fe = f.d->engineForScript(si.analysis.script);
+            auto glyphs = eng->shapedGlyphs(&si);
+            auto fe = f.d->engineForScript(si.analysis.script);
             Q_ASSERT(fe);
             fe->addOutlineToPath(x, y, glyphs, this,
                                  si.analysis.bidiLevel % 2
                                  ? QTextItem::RenderFlags(QTextItem::RightToLeft)
                                  : QTextItem::RenderFlags(0));
 
-            const qreal lw = fe->lineThickness().toReal();
+            const auto lw = fe->lineThickness().toReal();
             if (f.d->underline) {
-                qreal pos = fe->underlinePosition().toReal();
+                auto pos = fe->underlinePosition().toReal();
                 addRect(x, y + pos, si.width.toReal(), lw);
             }
             if (f.d->overline) {
-                qreal pos = fe->ascent().toReal() + 1;
+                auto pos = fe->ascent().toReal() + 1;
                 addRect(x, y - pos, si.width.toReal(), lw);
             }
             if (f.d->strikeOut) {
-                qreal pos = fe->ascent().toReal() / 3;
+                auto pos = fe->ascent().toReal() / 3;
                 addRect(x, y - pos, si.width.toReal(), lw);
             }
         }
@@ -1228,13 +1228,13 @@ void QPainterPath::addPath(const QPainterPath &other)
     ensureData();
     detach();
 
-    QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
+    auto d = reinterpret_cast<QPainterPathData *>(d_func());
     // Remove last moveto so we don't get multiple moveto's
     if (d->elements.last().type == MoveToElement)
         d->elements.remove(d->elements.size()-1);
 
     // Locate where our own current subpath will start after the other path is added.
-    int cStart = d->elements.size() + other.d_func()->cStart;
+    auto cStart = d->elements.size() + other.d_func()->cStart;
     d->elements += other.d_func()->elements;
     d->cStart = cStart;
 
@@ -1259,14 +1259,14 @@ void QPainterPath::connectPath(const QPainterPath &other)
     ensureData();
     detach();
 
-    QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
+    auto d = reinterpret_cast<QPainterPathData *>(d_func());
     // Remove last moveto so we don't get multiple moveto's
     if (d->elements.last().type == MoveToElement)
         d->elements.remove(d->elements.size()-1);
 
     // Locate where our own current subpath will start after the other path is added.
-    int cStart = d->elements.size() + other.d_func()->cStart;
-    int first = d->elements.size();
+    auto cStart = d->elements.size() + other.d_func()->cStart;
+    auto first = d->elements.size();
     d->elements += other.d_func()->elements;
 
     if (first != 0)
@@ -1294,9 +1294,9 @@ void QPainterPath::addRegion(const QRegion &region)
     ensureData();
     detach();
 
-    QVector<QRect> rects = region.rects();
+    auto rects = region.rects();
     d_func()->elements.reserve(rects.size() * 5);
-    for (int i=0; i<rects.size(); ++i)
+    for (auto i=0; i<rects.size(); ++i)
         addRect(rects.at(i));
 }
 
@@ -1382,28 +1382,28 @@ static QRectF qt_painterpath_bezier_extrema(const QBezier &b)
 
     // Update for the X extrema
     {
-        qreal ax = QT_BEZIER_A(b, x);
-        qreal bx = QT_BEZIER_B(b, x);
-        qreal cx = QT_BEZIER_C(b, x);
+        auto ax = QT_BEZIER_A(b, x);
+        auto bx = QT_BEZIER_B(b, x);
+        auto cx = QT_BEZIER_C(b, x);
         // specialcase quadratic curves to avoid div by zero
         if (qFuzzyIsNull(ax)) {
 
             // linear curves are covered by initialization.
             if (!qFuzzyIsNull(bx)) {
-                qreal t = -cx / bx;
+                auto t = -cx / bx;
                 QT_BEZIER_CHECK_T(b, t);
             }
 
         } else {
-            const qreal tx = bx * bx - 4 * ax * cx;
+            const auto tx = bx * bx - 4 * ax * cx;
 
             if (tx >= 0) {
-                qreal temp = qSqrt(tx);
-                qreal rcp = 1 / (2 * ax);
-                qreal t1 = (-bx + temp) * rcp;
+                auto temp = qSqrt(tx);
+                auto rcp = 1 / (2 * ax);
+                auto t1 = (-bx + temp) * rcp;
                 QT_BEZIER_CHECK_T(b, t1);
 
-                qreal t2 = (-bx - temp) * rcp;
+                auto t2 = (-bx - temp) * rcp;
                 QT_BEZIER_CHECK_T(b, t2);
             }
         }
@@ -1411,29 +1411,29 @@ static QRectF qt_painterpath_bezier_extrema(const QBezier &b)
 
     // Update for the Y extrema
     {
-        qreal ay = QT_BEZIER_A(b, y);
-        qreal by = QT_BEZIER_B(b, y);
-        qreal cy = QT_BEZIER_C(b, y);
+        auto ay = QT_BEZIER_A(b, y);
+        auto by = QT_BEZIER_B(b, y);
+        auto cy = QT_BEZIER_C(b, y);
 
         // specialcase quadratic curves to avoid div by zero
         if (qFuzzyIsNull(ay)) {
 
             // linear curves are covered by initialization.
             if (!qFuzzyIsNull(by)) {
-                qreal t = -cy / by;
+                auto t = -cy / by;
                 QT_BEZIER_CHECK_T(b, t);
             }
 
         } else {
-            const qreal ty = by * by - 4 * ay * cy;
+            const auto ty = by * by - 4 * ay * cy;
 
             if (ty > 0) {
-                qreal temp = qSqrt(ty);
-                qreal rcp = 1 / (2 * ay);
-                qreal t1 = (-by + temp) * rcp;
+                auto temp = qSqrt(ty);
+                auto rcp = 1 / (2 * ay);
+                auto t1 = (-by + temp) * rcp;
                 QT_BEZIER_CHECK_T(b, t1);
 
-                qreal t2 = (-by - temp) * rcp;
+                auto t2 = (-by - temp) * rcp;
                 QT_BEZIER_CHECK_T(b, t2);
             }
         }
@@ -1451,7 +1451,7 @@ QRectF QPainterPath::boundingRect() const
 {
     if (!d_ptr)
         return QRectF();
-    QPainterPathData *d = d_func();
+    auto d = d_func();
 
     if (d->dirtyBounds)
         computeBoundingRect();
@@ -1472,7 +1472,7 @@ QRectF QPainterPath::controlPointRect() const
 {
     if (!d_ptr)
         return QRectF();
-    QPainterPathData *d = d_func();
+    auto d = d_func();
 
     if (d->dirtyControlBounds)
         computeControlPointRect();
@@ -1514,7 +1514,7 @@ QPainterPath QPainterPath::toReversed() const
 
     rev.moveTo(d->elements.at(d->elements.size()-1).x, d->elements.at(d->elements.size()-1).y);
 
-    for (int i=d->elements.size()-1; i>=1; --i) {
+    for (auto i=d->elements.size()-1; i>=1; --i) {
         const QPainterPath::Element &elm = d->elements.at(i);
         const QPainterPath::Element &prev = d->elements.at(i-1);
         switch (elm.type) {
@@ -1565,7 +1565,7 @@ QList<QPolygonF> QPainterPath::toSubpathPolygons(const QTransform &matrix) const
         return flatCurves;
 
     QPolygonF current;
-    for (int i=0; i<elementCount(); ++i) {
+    for (auto i=0; i<elementCount(); ++i) {
         const QPainterPath::Element &e = d->elements.at(i);
         switch (e.type) {
         case QPainterPath::MoveToElement:
@@ -1581,7 +1581,7 @@ QList<QPolygonF> QPainterPath::toSubpathPolygons(const QTransform &matrix) const
         case QPainterPath::CurveToElement: {
             Q_ASSERT(d->elements.at(i+1).type == QPainterPath::CurveToDataElement);
             Q_ASSERT(d->elements.at(i+2).type == QPainterPath::CurveToDataElement);
-            QBezier bezier = QBezier::fromPoints(QPointF(d->elements.at(i-1).x, d->elements.at(i-1).y) * matrix,
+            auto bezier = QBezier::fromPoints(QPointF(d->elements.at(i-1).x, d->elements.at(i-1).y) * matrix,
                                        QPointF(e.x, e.y) * matrix,
                                        QPointF(d->elements.at(i+1).x, d->elements.at(i+1).y) * matrix,
                                                  QPointF(d->elements.at(i+2).x, d->elements.at(i+2).y) * matrix);
@@ -1636,15 +1636,15 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
 
     QList<QPolygonF> polys;
 
-    QList<QPolygonF> subpaths = toSubpathPolygons(matrix);
-    int count = subpaths.size();
+    auto subpaths = toSubpathPolygons(matrix);
+    auto count = subpaths.size();
 
     if (count == 0)
         return polys;
 
     QVector<QRectF> bounds;
     bounds.reserve(count);
-    for (int i=0; i<count; ++i)
+    for (auto i=0; i<count; ++i)
         bounds += subpaths.at(i).boundingRect();
 
 #ifdef QPP_FILLPOLYGONS_DEBUG
@@ -1657,11 +1657,11 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
     isects.resize(count);
 
     // find all intersections
-    for (int j=0; j<count; ++j) {
+    for (auto j=0; j<count; ++j) {
         if (subpaths.at(j).size() <= 2)
             continue;
-        QRectF cbounds = bounds.at(j);
-        for (int i=0; i<count; ++i) {
+        auto cbounds = bounds.at(j);
+        for (auto i=0; i<count; ++i) {
             if (cbounds.intersects(bounds.at(i))) {
                 isects[j] << i;
             }
@@ -1680,14 +1680,14 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
 #endif
 
     // flatten the sets of intersections
-    for (int i=0; i<count; ++i) {
+    for (auto i=0; i<count; ++i) {
         const QVector<int> &current_isects = isects.at(i);
-        for (int j=0; j<current_isects.size(); ++j) {
-            int isect_j = current_isects.at(j);
+        for (auto j=0; j<current_isects.size(); ++j) {
+            auto isect_j = current_isects.at(j);
             if (isect_j == i)
                 continue;
-            for (int k=0; k<isects[isect_j].size(); ++k) {
-                int isect_k = isects[isect_j][k];
+            for (auto k=0; k<isects[isect_j].size(); ++k) {
+                auto isect_k = isects[isect_j][k];
                 if (isect_k != i && !isects.at(i).contains(isect_k)) {
                     isects[i] += isect_k;
                 }
@@ -1708,11 +1708,11 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
 #endif
 
     // Join the intersected subpaths as rewinded polygons
-    for (int i=0; i<count; ++i) {
+    for (auto i=0; i<count; ++i) {
         const QVector<int> &subpath_list = isects[i];
         if (!subpath_list.isEmpty()) {
             QPolygonF buildUp;
-            for (int j=0; j<subpath_list.size(); ++j) {
+            for (auto j=0; j<subpath_list.size(); ++j) {
                 const QPolygonF &subpath = subpaths.at(subpath_list.at(j));
                 buildUp += subpath;
                 if (!subpath.isClosed())
@@ -1741,25 +1741,25 @@ static void qt_painterpath_isect_line(const QPointF &p1,
                                       const QPointF &pos,
                                       int *winding)
 {
-    qreal x1 = p1.x();
-    qreal y1 = p1.y();
-    qreal x2 = p2.x();
-    qreal y2 = p2.y();
-    qreal y = pos.y();
+    auto x1 = p1.x();
+    auto y1 = p1.y();
+    auto x2 = p2.x();
+    auto y2 = p2.y();
+    auto y = pos.y();
 
-    int dir = 1;
+    auto dir = 1;
 
     if (qFuzzyCompare(y1, y2)) {
         // ignore horizontal lines according to scan conversion rule
         return;
     } else if (y2 < y1) {
-        qreal x_tmp = x2; x2 = x1; x1 = x_tmp;
-        qreal y_tmp = y2; y2 = y1; y1 = y_tmp;
+        auto x_tmp = x2; x2 = x1; x1 = x_tmp;
+        auto y_tmp = y2; y2 = y1; y1 = y_tmp;
         dir = -1;
     }
 
     if (y >= y1 && y < y2) {
-        qreal x = x1 + ((x2 - x1) / (y2 - y1)) * (y - y1);
+        auto x = x1 + ((x2 - x1) / (y2 - y1)) * (y - y1);
 
         // count up the winding number if we're
         if (x<=pos.x()) {
@@ -1771,9 +1771,9 @@ static void qt_painterpath_isect_line(const QPointF &p1,
 static void qt_painterpath_isect_curve(const QBezier &bezier, const QPointF &pt,
                                        int *winding, int depth = 0)
 {
-    qreal y = pt.y();
-    qreal x = pt.x();
-    QRectF bounds = bezier.bounds();
+    auto y = pt.y();
+    auto x = pt.x();
+    auto bounds = bezier.bounds();
 
     // potential intersection, divide and try again...
     // Please note that a sideeffect of the bottom exclusion is that
@@ -1783,7 +1783,7 @@ static void qt_painterpath_isect_curve(const QBezier &bezier, const QPointF &pt,
 
         // hit lower limit... This is a rough threshold, but its a
         // tradeoff between speed and precision.
-        const qreal lower_bound = qreal(.001);
+        const auto lower_bound = qreal(.001);
         if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound)) {
             // We make the assumption here that the curve starts to
             // approximate a line after while (i.e. that it doesn't
@@ -1815,13 +1815,13 @@ bool QPainterPath::contains(const QPointF &pt) const
     if (isEmpty() || !controlPointRect().contains(pt))
         return false;
 
-    QPainterPathData *d = d_func();
+    auto d = d_func();
 
-    int winding_number = 0;
+    auto winding_number = 0;
 
     QPointF last_pt;
     QPointF last_start;
-    for (int i=0; i<d->elements.size(); ++i) {
+    for (auto i=0; i<d->elements.size(); ++i) {
         const Element &e = d->elements.at(i);
 
         switch (e.type) {
@@ -1867,17 +1867,17 @@ enum PainterDirections { Left, Right, Top, Bottom };
 static bool qt_painterpath_isect_line_rect(qreal x1, qreal y1, qreal x2, qreal y2,
                                            const QRectF &rect)
 {
-    qreal left = rect.left();
-    qreal right = rect.right();
-    qreal top = rect.top();
-    qreal bottom = rect.bottom();
+    auto left = rect.left();
+    auto right = rect.right();
+    auto top = rect.top();
+    auto bottom = rect.bottom();
 
     // clip the lines, after cohen-sutherland, see e.g. http://www.nondot.org/~sabre/graphpro/line6.html
-    int p1 = ((x1 < left) << Left)
+    auto p1 = ((x1 < left) << Left)
              | ((x1 > right) << Right)
              | ((y1 < top) << Top)
              | ((y1 > bottom) << Bottom);
-    int p2 = ((x2 < left) << Left)
+    auto p2 = ((x2 < left) << Left)
              | ((x2 > right) << Right)
              | ((y2 < top) << Top)
              | ((y2 > bottom) << Bottom);
@@ -1887,8 +1887,8 @@ static bool qt_painterpath_isect_line_rect(qreal x1, qreal y1, qreal x2, qreal y
         return false;
 
     if (p1 | p2) {
-        qreal dx = x2 - x1;
-        qreal dy = y2 - y1;
+        auto dx = x2 - x1;
+        auto dy = y2 - y1;
 
         // clip x coordinates
         if (x1 < left) {
@@ -1945,11 +1945,11 @@ static bool qt_painterpath_isect_line_rect(qreal x1, qreal y1, qreal x2, qreal y
 
 static bool qt_isect_curve_horizontal(const QBezier &bezier, qreal y, qreal x1, qreal x2, int depth = 0)
 {
-    QRectF bounds = bezier.bounds();
+    auto bounds = bezier.bounds();
 
     if (y >= bounds.top() && y < bounds.bottom()
         && bounds.right() >= x1 && bounds.left() < x2) {
-        const qreal lower_bound = qreal(.01);
+        const auto lower_bound = qreal(.01);
         if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound))
             return true;
 
@@ -1964,11 +1964,11 @@ static bool qt_isect_curve_horizontal(const QBezier &bezier, qreal y, qreal x1, 
 
 static bool qt_isect_curve_vertical(const QBezier &bezier, qreal x, qreal y1, qreal y2, int depth = 0)
 {
-    QRectF bounds = bezier.bounds();
+    auto bounds = bezier.bounds();
 
     if (x >= bounds.left() && x < bounds.right()
         && bounds.bottom() >= y1 && bounds.top() < y2) {
-        const qreal lower_bound = qreal(.01);
+        const auto lower_bound = qreal(.01);
         if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound))
             return true;
 
@@ -1988,7 +1988,7 @@ static bool qt_painterpath_check_crossing(const QPainterPath *path, const QRectF
 {
     QPointF last_pt;
     QPointF last_start;
-    for (int i=0; i<path->elementCount(); ++i) {
+    for (auto i=0; i<path->elementCount(); ++i) {
         const QPainterPath::Element &e = path->elementAt(i);
 
         switch (e.type) {
@@ -2013,7 +2013,7 @@ static bool qt_painterpath_check_crossing(const QPainterPath *path, const QRectF
             {
                 QPointF cp2 = path->elementAt(++i);
                 QPointF ep = path->elementAt(++i);
-                QBezier bezier = QBezier::fromPoints(last_pt, e, cp2, ep);
+                auto bezier = QBezier::fromPoints(last_pt, e, cp2, ep);
                 if (qt_isect_curve_horizontal(bezier, rect.top(), rect.left(), rect.right())
                     || qt_isect_curve_horizontal(bezier, rect.bottom(), rect.left(), rect.right())
                     || qt_isect_curve_vertical(bezier, rect.left(), rect.top(), rect.bottom())
@@ -2059,8 +2059,8 @@ bool QPainterPath::intersects(const QRectF &rect) const
     if (isEmpty())
         return false;
 
-    QRectF cp = controlPointRect();
-    QRectF rn = rect.normalized();
+    auto cp = controlPointRect();
+    auto rn = rect.normalized();
 
     // QRectF::intersects returns false if one of the rects is a null rect
     // which would happen for a painter path consisting of a vertical or
@@ -2079,7 +2079,7 @@ bool QPainterPath::intersects(const QRectF &rect) const
     Q_D(QPainterPath);
 
     // Check if the rectangle surounds any subpath...
-    for (int i=0; i<d->elements.size(); ++i) {
+    for (auto i=0; i<d->elements.size(); ++i) {
         const Element &e = d->elements.at(i);
         if (e.type == QPainterPath::MoveToElement && rect.contains(e))
             return true;
@@ -2099,12 +2099,12 @@ void QPainterPath::translate(qreal dx, qreal dy)
     if (!d_ptr || (dx == 0 && dy == 0))
         return;
 
-    int elementsLeft = d_ptr->elements.size();
+    auto elementsLeft = d_ptr->elements.size();
     if (elementsLeft <= 0)
         return;
 
     detach();
-    QPainterPath::Element *element = d_func()->elements.data();
+    auto element = d_func()->elements.data();
     Q_ASSERT(element);
     while (elementsLeft--) {
         element->x += dx;
@@ -2191,13 +2191,13 @@ bool QPainterPath::contains(const QRectF &rect) const
     // OddEvenFill the rect will never be contained if it surrounds a
     // subpath. (the case where two subpaths are completely identical
     // can be argued but we choose to neglect it).
-    for (int i=0; i<d->elements.size(); ++i) {
+    for (auto i=0; i<d->elements.size(); ++i) {
         const Element &e = d->elements.at(i);
         if (e.type == QPainterPath::MoveToElement && rect.contains(e)) {
             if (fillRule() == Qt::OddEvenFill)
                 return false;
 
-            bool stop = false;
+            auto stop = false;
             for (; !stop && i<d->elements.size(); ++i) {
                 const Element &el = d->elements.at(i);
                 switch (el.type) {
@@ -2243,7 +2243,7 @@ static inline bool epsilonCompare(const QPointF &a, const QPointF &b, const QSiz
 
 bool QPainterPath::operator==(const QPainterPath &path) const
 {
-    QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
+    auto d = reinterpret_cast<QPainterPathData *>(d_func());
     if (path.d_func() == d)
         return true;
     else if (!d || !path.d_func())
@@ -2253,13 +2253,13 @@ bool QPainterPath::operator==(const QPainterPath &path) const
     else if (d->elements.size() != path.d_func()->elements.size())
         return false;
 
-    const qreal qt_epsilon = sizeof(qreal) == sizeof(double) ? 1e-12 : qreal(1e-5);
+    const auto qt_epsilon = sizeof(qreal) == sizeof(double) ? 1e-12 : qreal(1e-5);
 
-    QSizeF epsilon = boundingRect().size();
+    auto epsilon = boundingRect().size();
     epsilon.rwidth() *= qt_epsilon;
     epsilon.rheight() *= qt_epsilon;
 
-    for (int i = 0; i < d->elements.size(); ++i)
+    for (auto i = 0; i < d->elements.size(); ++i)
         if (d->elements.at(i).type != path.d_func()->elements.at(i).type
             || !epsilonCompare(d->elements.at(i), path.d_func()->elements.at(i), epsilon))
             return false;
@@ -2398,7 +2398,7 @@ QDataStream &operator<<(QDataStream &s, const QPainterPath &p)
     }
 
     s << p.elementCount();
-    for (int i=0; i < p.d_func()->elements.size(); ++i) {
+    for (auto i=0; i < p.d_func()->elements.size(); ++i) {
         const QPainterPath::Element &e = p.d_func()->elements.at(i);
         s << int(e.type);
         s << double(e.x) << double(e.y);
@@ -2431,7 +2431,7 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
         p.d_func()->elements.clear();
     }
     p.d_func()->elements.reserve(p.d_func()->elements.size() + size);
-    for (int i=0; i<size; ++i) {
+    for (auto i=0; i<size; ++i) {
         int type;
         double x, y;
         s >> type;
@@ -2593,7 +2593,7 @@ QPainterPathStroker::~QPainterPathStroker()
 */
 QPainterPath QPainterPathStroker::createStroke(const QPainterPath &path) const
 {
-    QPainterPathStrokerPrivate *d = const_cast<QPainterPathStrokerPrivate *>(d_func());
+    auto d = const_cast<QPainterPathStrokerPrivate *>(d_func());
     QPainterPath stroke;
     if (path.isEmpty())
         return path;
@@ -2741,7 +2741,7 @@ void QPainterPathStroker::setDashPattern(Qt::PenStyle style)
 void QPainterPathStroker::setDashPattern(const QVector<qreal> &dashPattern)
 {
     d_func()->dashPattern.clear();
-    for (int i=0; i<dashPattern.size(); ++i)
+    for (auto i=0; i<dashPattern.size(); ++i)
         d_func()->dashPattern << qt_real_to_fixed(dashPattern.at(i));
 }
 
@@ -2790,12 +2790,12 @@ void QPainterPathStroker::setDashOffset(qreal offset)
 QPolygonF QPainterPath::toFillPolygon(const QTransform &matrix) const
 {
 
-    QList<QPolygonF> flats = toSubpathPolygons(matrix);
+    auto flats = toSubpathPolygons(matrix);
     QPolygonF polygon;
     if (flats.isEmpty())
         return polygon;
-    QPointF first = flats.first().first();
-    for (int i=0; i<flats.size(); ++i) {
+    auto first = flats.first().first();
+    for (auto i=0; i<flats.size(); ++i) {
         polygon += flats.at(i);
         if (!flats.at(i).isClosed())
             polygon += flats.at(i).first();
@@ -2830,7 +2830,7 @@ qreal QPainterPath::length() const
         return 0;
 
     qreal len = 0;
-    for (int i=1; i<d->elements.size(); ++i) {
+    for (auto i=1; i<d->elements.size(); ++i) {
         const Element &e = d->elements.at(i);
 
         switch (e.type) {
@@ -2843,7 +2843,7 @@ qreal QPainterPath::length() const
         }
         case CurveToElement:
         {
-            QBezier b = QBezier::fromPoints(d->elements.at(i-1),
+            auto b = QBezier::fromPoints(d->elements.at(i-1),
                                             e,
                                             d->elements.at(i+1),
                                             d->elements.at(i+2));
@@ -2872,12 +2872,12 @@ qreal QPainterPath::percentAtLength(qreal len) const
     if (isEmpty() || len <= 0)
         return 0;
 
-    qreal totalLength = length();
+    auto totalLength = length();
     if (len > totalLength)
         return 1;
 
     qreal curLen = 0;
-    for (int i=1; i<d->elements.size(); ++i) {
+    for (auto i=1; i<d->elements.size(); ++i) {
         const Element &e = d->elements.at(i);
 
         switch (e.type) {
@@ -2886,7 +2886,7 @@ qreal QPainterPath::percentAtLength(qreal len) const
         case LineToElement:
         {
             QLineF line(d->elements.at(i-1), e);
-            qreal llen = line.length();
+            auto llen = line.length();
             curLen += llen;
             if (curLen >= len) {
                 return len/totalLength ;
@@ -2896,16 +2896,16 @@ qreal QPainterPath::percentAtLength(qreal len) const
         }
         case CurveToElement:
         {
-            QBezier b = QBezier::fromPoints(d->elements.at(i-1),
+            auto b = QBezier::fromPoints(d->elements.at(i-1),
                                             e,
                                             d->elements.at(i+1),
                                             d->elements.at(i+2));
-            qreal blen = b.length();
-            qreal prevLen = curLen;
+            auto blen = b.length();
+            auto prevLen = curLen;
             curLen += blen;
 
             if (curLen >= len) {
-                qreal res = b.tAtLength(len - prevLen);
+                auto res = b.tAtLength(len - prevLen);
                 return (res * blen + prevLen)/totalLength;
             }
 
@@ -2927,10 +2927,10 @@ static inline QBezier bezierAtT(const QPainterPath &path, qreal t, qreal *starti
         return QBezier();
 
     qreal curLen = 0;
-    qreal totalLength = path.length();
+    auto totalLength = path.length();
 
-    const int lastElement = path.elementCount() - 1;
-    for (int i=0; i <= lastElement; ++i) {
+    const auto lastElement = path.elementCount() - 1;
+    for (auto i=0; i <= lastElement; ++i) {
         const QPainterPath::Element &e = path.elementAt(i);
 
         switch (e.type) {
@@ -2939,23 +2939,23 @@ static inline QBezier bezierAtT(const QPainterPath &path, qreal t, qreal *starti
         case QPainterPath::LineToElement:
         {
             QLineF line(path.elementAt(i-1), e);
-            qreal llen = line.length();
+            auto llen = line.length();
             curLen += llen;
             if (i == lastElement || curLen/totalLength >= t) {
                 *bezierLength = llen;
                 QPointF a = path.elementAt(i-1);
-                QPointF delta = e - a;
+                auto delta = e - a;
                 return QBezier::fromPoints(a, a + delta / 3, a + 2 * delta / 3, e);
             }
             break;
         }
         case QPainterPath::CurveToElement:
         {
-            QBezier b = QBezier::fromPoints(path.elementAt(i-1),
+            auto b = QBezier::fromPoints(path.elementAt(i-1),
                                             e,
                                             path.elementAt(i+1),
                                             path.elementAt(i+2));
-            qreal blen = b.length();
+            auto blen = b.length();
             curLen += blen;
 
             if (i + 2 == lastElement || curLen/totalLength >= t) {
@@ -2996,11 +2996,11 @@ QPointF QPainterPath::pointAtPercent(qreal t) const
     if (d_ptr->elements.size() == 1)
         return d_ptr->elements.at(0);
 
-    qreal totalLength = length();
+    auto totalLength = length();
     qreal curLen = 0;
     qreal bezierLen = 0;
-    QBezier b = bezierAtT(*this, t, &curLen, &bezierLen);
-    qreal realT = (totalLength * t - curLen) / bezierLen;
+    auto b = bezierAtT(*this, t, &curLen, &bezierLen);
+    auto realT = (totalLength * t - curLen) / bezierLen;
 
     return b.pointAt(qBound(qreal(0), realT, qreal(1)));
 }
@@ -3024,14 +3024,14 @@ qreal QPainterPath::angleAtPercent(qreal t) const
         return 0;
     }
 
-    qreal totalLength = length();
+    auto totalLength = length();
     qreal curLen = 0;
     qreal bezierLen = 0;
-    QBezier bez = bezierAtT(*this, t, &curLen, &bezierLen);
-    qreal realT = (totalLength * t - curLen) / bezierLen;
+    auto bez = bezierAtT(*this, t, &curLen, &bezierLen);
+    auto realT = (totalLength * t - curLen) / bezierLen;
 
-    qreal m1 = slopeAt(realT, bez.x1, bez.x2, bez.x3, bez.x4);
-    qreal m2 = slopeAt(realT, bez.y1, bez.y2, bez.y3, bez.y4);
+    auto m1 = slopeAt(realT, bez.x1, bez.x2, bez.x3, bez.x4);
+    auto m2 = slopeAt(realT, bez.y1, bez.y2, bez.y3, bez.y4);
 
     return QLineF(0, 0, m1, m2).angle();
 }
@@ -3053,14 +3053,14 @@ qreal QPainterPath::slopeAtPercent(qreal t) const
         return 0;
     }
 
-    qreal totalLength = length();
+    auto totalLength = length();
     qreal curLen = 0;
     qreal bezierLen = 0;
-    QBezier bez = bezierAtT(*this, t, &curLen, &bezierLen);
-    qreal realT = (totalLength * t - curLen) / bezierLen;
+    auto bez = bezierAtT(*this, t, &curLen, &bezierLen);
+    auto realT = (totalLength * t - curLen) / bezierLen;
 
-    qreal m1 = slopeAt(realT, bez.x1, bez.x2, bez.x3, bez.x4);
-    qreal m2 = slopeAt(realT, bez.y1, bez.y2, bez.y3, bez.y4);
+    auto m1 = slopeAt(realT, bez.x1, bez.x2, bez.x3, bez.x4);
+    auto m2 = slopeAt(realT, bez.y1, bez.y2, bez.y3, bez.y4);
     //tangent line
     qreal slope = 0;
 
@@ -3098,14 +3098,14 @@ qreal QPainterPath::slopeAtPercent(qreal t) const
 void QPainterPath::addRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
                                   Qt::SizeMode mode)
 {
-    QRectF r = rect.normalized();
+    auto r = rect.normalized();
 
     if (r.isNull())
         return;
 
     if (mode == Qt::AbsoluteSize) {
-        qreal w = r.width() / 2;
-        qreal h = r.height() / 2;
+        auto w = r.width() / 2;
+        auto h = r.height() / 2;
 
         if (w == 0) {
             xRadius = 0;
@@ -3130,17 +3130,17 @@ void QPainterPath::addRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadi
         return;
     }
 
-    qreal x = r.x();
-    qreal y = r.y();
-    qreal w = r.width();
-    qreal h = r.height();
-    qreal rxx2 = w*xRadius/100;
-    qreal ryy2 = h*yRadius/100;
+    auto x = r.x();
+    auto y = r.y();
+    auto w = r.width();
+    auto h = r.height();
+    auto rxx2 = w*xRadius/100;
+    auto ryy2 = h*yRadius/100;
 
     ensureData();
     detach();
 
-    bool first = d_func()->elements.size() < 2;
+    auto first = d_func()->elements.size() < 2;
 
     arcMoveTo(x, y, rxx2, ryy2, 180);
     arcTo(x, y, rxx2, ryy2, 180, -90);
@@ -3182,22 +3182,22 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
         return;
     }
 
-    QRectF rect = r.normalized();
+    auto rect = r.normalized();
 
     if (rect.isNull())
         return;
 
-    qreal x = rect.x();
-    qreal y = rect.y();
-    qreal w = rect.width();
-    qreal h = rect.height();
-    qreal rxx2 = w*xRnd/100;
-    qreal ryy2 = h*yRnd/100;
+    auto x = rect.x();
+    auto y = rect.y();
+    auto w = rect.width();
+    auto h = rect.height();
+    auto rxx2 = w*xRnd/100;
+    auto ryy2 = h*yRnd/100;
 
     ensureData();
     detach();
 
-    bool first = d_func()->elements.size() < 2;
+    auto first = d_func()->elements.size() < 2;
 
     arcMoveTo(x, y, rxx2, ryy2, 180);
     arcTo(x, y, rxx2, ryy2, 180, -90);
@@ -3400,7 +3400,7 @@ void QPainterPath::setDirty(bool dirty)
 
 void QPainterPath::computeBoundingRect() const
 {
-    QPainterPathData *d = d_func();
+    auto d = d_func();
     d->dirtyBounds = false;
     if (!d_ptr) {
         d->bounds = QRect();
@@ -3410,7 +3410,7 @@ void QPainterPath::computeBoundingRect() const
     qreal minx, maxx, miny, maxy;
     minx = maxx = d->elements.at(0).x;
     miny = maxy = d->elements.at(0).y;
-    for (int i=1; i<d->elements.size(); ++i) {
+    for (auto i=1; i<d->elements.size(); ++i) {
         const Element &e = d->elements.at(i);
 
         switch (e.type) {
@@ -3423,13 +3423,13 @@ void QPainterPath::computeBoundingRect() const
             break;
         case CurveToElement:
             {
-                QBezier b = QBezier::fromPoints(d->elements.at(i-1),
+                auto b = QBezier::fromPoints(d->elements.at(i-1),
                                                 e,
                                                 d->elements.at(i+1),
                                                 d->elements.at(i+2));
-                QRectF r = qt_painterpath_bezier_extrema(b);
-                qreal right = r.right();
-                qreal bottom = r.bottom();
+                auto r = qt_painterpath_bezier_extrema(b);
+                auto right = r.right();
+                auto bottom = r.bottom();
                 if (r.x() < minx) minx = r.x();
                 if (right > maxx) maxx = right;
                 if (r.y() < miny) miny = r.y();
@@ -3447,7 +3447,7 @@ void QPainterPath::computeBoundingRect() const
 
 void QPainterPath::computeControlPointRect() const
 {
-    QPainterPathData *d = d_func();
+    auto d = d_func();
     d->dirtyControlBounds = false;
     if (!d_ptr) {
         d->controlBounds = QRect();
@@ -3457,7 +3457,7 @@ void QPainterPath::computeControlPointRect() const
     qreal minx, maxx, miny, maxy;
     minx = maxx = d->elements.at(0).x;
     miny = maxy = d->elements.at(0).y;
-    for (int i=1; i<d->elements.size(); ++i) {
+    for (auto i=1; i<d->elements.size(); ++i) {
         const Element &e = d->elements.at(i);
         if (e.x > maxx) maxx = e.x;
         else if (e.x < minx) minx = e.x;
@@ -3472,7 +3472,7 @@ QDebug operator<<(QDebug s, const QPainterPath &p)
 {
     s.nospace() << "QPainterPath: Element count=" << p.elementCount() << endl;
     const char *types[] = {"MoveTo", "LineTo", "CurveTo", "CurveToData"};
-    for (int i=0; i<p.elementCount(); ++i) {
+    for (auto i=0; i<p.elementCount(); ++i) {
         s.nospace() << " -> " << types[p.elementAt(i).type] << "(x=" << p.elementAt(i).x << ", y=" << p.elementAt(i).y << ')' << endl;
 
     }

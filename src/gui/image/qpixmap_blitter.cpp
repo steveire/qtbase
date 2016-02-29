@@ -76,7 +76,7 @@ QBlittablePlatformPixmap::~QBlittablePlatformPixmap()
 QBlittable *QBlittablePlatformPixmap::blittable() const
 {
     if (!m_blittable) {
-        QBlittablePlatformPixmap *that = const_cast<QBlittablePlatformPixmap *>(this);
+        auto that = const_cast<QBlittablePlatformPixmap *>(this);
         that->m_blittable.reset(this->createBlittable(QSize(w, h), m_alpha));
     }
 
@@ -149,8 +149,8 @@ void QBlittablePlatformPixmap::fill(const QColor &color)
             m_alpha = true;
         }
 
-        uint pixel = qPremultiply(color.rgba());
-        const QPixelLayout *layout = &qPixelLayouts[blittable()->lock()->format()];
+        auto pixel = qPremultiply(color.rgba());
+        auto layout = &qPixelLayouts[blittable()->lock()->format()];
         Q_ASSERT(layout->convertFromARGB32PM);
         layout->convertFromARGB32PM(&pixel, &pixel, 1, layout, 0);
 
@@ -182,15 +182,15 @@ void QBlittablePlatformPixmap::fromImage(const QImage &image,
     m_devicePixelRatio = image.devicePixelRatio();
     resize(image.width(),image.height());
     markRasterOverlay(QRect(0,0,w,h));
-    QImage *thisImg = buffer();
+    auto thisImg = buffer();
 
-    QImage correctFormatPic = image;
+    auto correctFormatPic = image;
     if (correctFormatPic.format() != thisImg->format())
         correctFormatPic = correctFormatPic.convertToFormat(thisImg->format(), flags);
 
-    uchar *mem = thisImg->bits();
-    const uchar *bits = correctFormatPic.constBits();
-    int bytesCopied = 0;
+    auto mem = thisImg->bits();
+    auto bits = correctFormatPic.constBits();
+    auto bytesCopied = 0;
     while (bytesCopied < correctFormatPic.byteCount()) {
         memcpy(mem,bits,correctFormatPic.bytesPerLine());
         mem += thisImg->bytesPerLine();
@@ -212,7 +212,7 @@ void QBlittablePlatformPixmap::setDevicePixelRatio(qreal scaleFactor)
 QPaintEngine *QBlittablePlatformPixmap::paintEngine() const
 {
     if (!m_engine) {
-        QBlittablePlatformPixmap *that = const_cast<QBlittablePlatformPixmap *>(this);
+        auto that = const_cast<QBlittablePlatformPixmap *>(this);
         that->m_engine.reset(new QBlitterPaintEngine(that));
     }
     return m_engine.data();

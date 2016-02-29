@@ -59,7 +59,7 @@ void QLayoutPolicy::setControlType(ControlType type)
             etc.
     */
 
-    int i = 0;
+    auto i = 0;
     while (true) {
         if (type & (0x1 << i)) {
             bits.ctype = i;

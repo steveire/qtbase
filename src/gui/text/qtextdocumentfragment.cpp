@@ -67,28 +67,28 @@ QTextCopyHelper::QTextCopyHelper(const QTextCursor &_source, const QTextCursor &
 
 int QTextCopyHelper::convertFormatIndex(const QTextFormat &oldFormat, int objectIndexToSet)
 {
-    QTextFormat fmt = oldFormat;
+    auto fmt = oldFormat;
     if (objectIndexToSet != -1) {
         fmt.setObjectIndex(objectIndexToSet);
     } else if (fmt.objectIndex() != -1) {
-        int newObjectIndex = objectIndexMap.value(fmt.objectIndex(), -1);
+        auto newObjectIndex = objectIndexMap.value(fmt.objectIndex(), -1);
         if (newObjectIndex == -1) {
-            QTextFormat objFormat = src->formatCollection()->objectFormat(fmt.objectIndex());
+            auto objFormat = src->formatCollection()->objectFormat(fmt.objectIndex());
             Q_ASSERT(objFormat.objectIndex() == -1);
             newObjectIndex = formatCollection.createObjectIndex(objFormat);
             objectIndexMap.insert(fmt.objectIndex(), newObjectIndex);
         }
         fmt.setObjectIndex(newObjectIndex);
     }
-    int idx = formatCollection.indexForFormat(fmt);
+    auto idx = formatCollection.indexForFormat(fmt);
     Q_ASSERT(formatCollection.format(idx).type() == oldFormat.type());
     return idx;
 }
 
 int QTextCopyHelper::appendFragment(int pos, int endPos, int objectIndex)
 {
-    QTextDocumentPrivate::FragmentIterator fragIt = src->find(pos);
-    const QTextFragmentData * const frag = fragIt.value();
+    auto fragIt = src->find(pos);
+    const auto frag = fragIt.value();
 
     Q_ASSERT(objectIndex == -1
              || (frag->size_array[0] == 1 && src->formatCollection()->format(frag->format).objectIndex() != -1));
@@ -99,12 +99,12 @@ int QTextCopyHelper::appendFragment(int pos, int endPos, int objectIndex)
     else
        charFormatIndex = convertFormatIndex(frag->format, objectIndex);
 
-    const int inFragmentOffset = qMax(0, pos - fragIt.position());
-    int charsToCopy = qMin(int(frag->size_array[0] - inFragmentOffset), endPos - pos);
+    const auto inFragmentOffset = qMax(0, pos - fragIt.position());
+    auto charsToCopy = qMin(int(frag->size_array[0] - inFragmentOffset), endPos - pos);
 
-    QTextBlock nextBlock = src->blocksFind(pos + 1);
+    auto nextBlock = src->blocksFind(pos + 1);
 
-    int blockIdx = -2;
+    auto blockIdx = -2;
     if (nextBlock.position() == pos + 1) {
         blockIdx = convertFormatIndex(nextBlock.blockFormat());
     } else if (pos == 0 && insertPos == 0) {
@@ -123,19 +123,19 @@ int QTextCopyHelper::appendFragment(int pos, int endPos, int objectIndex)
         ++insertPos;
     } else {
         if (nextBlock.textList()) {
-            QTextBlock dstBlock = dst->blocksFind(insertPos);
+            auto dstBlock = dst->blocksFind(insertPos);
             if (!dstBlock.textList()) {
                 // insert a new text block with the block and char format from the
                 // source block to make sure that the following text fragments
                 // end up in a list as they should
-                int listBlockFormatIndex = convertFormatIndex(nextBlock.blockFormat());
-                int listCharFormatIndex = convertFormatIndex(nextBlock.charFormat());
+                auto listBlockFormatIndex = convertFormatIndex(nextBlock.blockFormat());
+                auto listCharFormatIndex = convertFormatIndex(nextBlock.charFormat());
                 dst->insertBlock(insertPos, listBlockFormatIndex, listCharFormatIndex);
                 ++insertPos;
             }
         }
         dst->insert(insertPos, txtToInsert, charFormatIndex);
-        const int userState = nextBlock.userState();
+        const auto userState = nextBlock.userState();
         if (userState != -1)
             dst->blocksFind(insertPos).setUserState(userState);
         insertPos += txtToInsert.length();
@@ -155,45 +155,45 @@ void QTextCopyHelper::appendFragments(int pos, int endPos)
 void QTextCopyHelper::copy()
 {
     if (cursor.hasComplexSelection()) {
-        QTextTable *table = cursor.currentTable();
+        auto table = cursor.currentTable();
         int row_start, col_start, num_rows, num_cols;
         cursor.selectedTableCells(&row_start, &num_rows, &col_start, &num_cols);
 
-        QTextTableFormat tableFormat = table->format();
+        auto tableFormat = table->format();
         tableFormat.setColumns(num_cols);
         tableFormat.clearColumnWidthConstraints();
-        const int objectIndex = dst->formatCollection()->createObjectIndex(tableFormat);
+        const auto objectIndex = dst->formatCollection()->createObjectIndex(tableFormat);
 
         Q_ASSERT(row_start != -1);
-        for (int r = row_start; r < row_start + num_rows; ++r) {
-            for (int c = col_start; c < col_start + num_cols; ++c) {
-                QTextTableCell cell = table->cellAt(r, c);
-                const int rspan = cell.rowSpan();
-                const int cspan = cell.columnSpan();
+        for (auto r = row_start; r < row_start + num_rows; ++r) {
+            for (auto c = col_start; c < col_start + num_cols; ++c) {
+                auto cell = table->cellAt(r, c);
+                const auto rspan = cell.rowSpan();
+                const auto cspan = cell.columnSpan();
                 if (rspan != 1) {
-                    int cr = cell.row();
+                    auto cr = cell.row();
                     if (cr != r)
                         continue;
                 }
                 if (cspan != 1) {
-                    int cc = cell.column();
+                    auto cc = cell.column();
                     if (cc != c)
                         continue;
                 }
 
                 // add the QTextBeginningOfFrame
-                QTextCharFormat cellFormat = cell.format();
+                auto cellFormat = cell.format();
                 if (r + rspan >= row_start + num_rows) {
                     cellFormat.setTableCellRowSpan(row_start + num_rows - r);
                 }
                 if (c + cspan >= col_start + num_cols) {
                     cellFormat.setTableCellColumnSpan(col_start + num_cols - c);
                 }
-                const int charFormatIndex = convertFormatIndex(cellFormat, objectIndex);
+                const auto charFormatIndex = convertFormatIndex(cellFormat, objectIndex);
 
-                int blockIdx = -2;
-                const int cellPos = cell.firstPosition();
-                QTextBlock block = src->blocksFind(cellPos);
+                auto blockIdx = -2;
+                const auto cellPos = cell.firstPosition();
+                auto block = src->blocksFind(cellPos);
                 if (block.position() == cellPos) {
                     blockIdx = convertFormatIndex(block.blockFormat());
                 }
@@ -210,7 +210,7 @@ void QTextCopyHelper::copy()
         }
 
         // add end of table
-        int end = table->lastPosition();
+        auto end = table->lastPosition();
         appendFragment(end, end+1, objectIndex);
     } else {
         appendFragments(cursor.selectionStart(), cursor.selectionEnd());
@@ -239,7 +239,7 @@ void QTextDocumentFragmentPrivate::insert(QTextCursor &_cursor) const
     if (_cursor.isNull())
         return;
 
-    QTextDocumentPrivate *destPieceTable = _cursor.d->priv;
+    auto destPieceTable = _cursor.d->priv;
     destPieceTable->beginEditBlock();
 
     QTextCursor sourceCursor(doc);
@@ -425,15 +425,15 @@ QTextHtmlImporter::QTextHtmlImporter(QTextDocument *_doc, const QString &_html, 
     cursor = QTextCursor(doc);
     wsm = QTextHtmlParserNode::WhiteSpaceNormal;
 
-    QString html = _html;
-    const int startFragmentPos = html.indexOf(QLatin1String("<!--StartFragment-->"));
+    auto html = _html;
+    const auto startFragmentPos = html.indexOf(QLatin1String("<!--StartFragment-->"));
     if (startFragmentPos != -1) {
         QString qt3RichTextHeader(QLatin1String("<meta name=\"qrichtext\" content=\"1\" />"));
 
         // Hack for Qt3
-        const bool hasQtRichtextMetaTag = html.contains(qt3RichTextHeader);
+        const auto hasQtRichtextMetaTag = html.contains(qt3RichTextHeader);
 
-        const int endFragmentPos = html.indexOf(QLatin1String("<!--EndFragment-->"));
+        const auto endFragmentPos = html.indexOf(QLatin1String("<!--EndFragment-->"));
         if (startFragmentPos < endFragmentPos)
             html = html.mid(startFragmentPos, endFragmentPos - startFragmentPos);
         else
@@ -489,12 +489,12 @@ void QTextHtmlImporter::import()
                 hasBlock = false;
             } else if (blockTagClosed && hasBlock) {
                 // when collapsing subsequent block tags we need to clear the block format
-                QTextBlockFormat blockFormat = currentNode->blockFormat;
+                auto blockFormat = currentNode->blockFormat;
                 blockFormat.setIndent(indent);
 
-                QTextBlockFormat oldFormat = cursor.blockFormat();
+                auto oldFormat = cursor.blockFormat();
                 if (oldFormat.hasProperty(QTextFormat::PageBreakPolicy)) {
-                    QTextFormat::PageBreakFlags pageBreak = oldFormat.pageBreakPolicy();
+                    auto pageBreak = oldFormat.pageBreakPolicy();
                     if (pageBreak == QTextFormat::PageBreak_AlwaysAfter)
                         /* We remove an empty paragrah that requested a page break after.
                            moving that request to the next paragraph means we also need to make
@@ -525,7 +525,7 @@ void QTextHtmlImporter::import()
             && !currentNode->text.isEmpty() && !currentNode->hasOnlyWhitespace()
             && currentNode->displayMode == QTextHtmlElement::DisplayInline) {
 
-            QTextBlockFormat block = currentNode->blockFormat;
+            auto block = currentNode->blockFormat;
             block.setIndent(indent);
 
             appendBlock(block, currentNode->charFormat);
@@ -534,7 +534,7 @@ void QTextHtmlImporter::import()
         }
 
         if (currentNode->isBlock()) {
-            QTextHtmlImporter::ProcessNodeResult result = processBlockNode();
+            auto result = processBlockNode();
             if (result == ContinueWithNextNode) {
                 continue;
             } else if (result == ContinueWithNextSibling) {
@@ -557,19 +557,19 @@ void QTextHtmlImporter::import()
 
 bool QTextHtmlImporter::appendNodeText()
 {
-    const int initialCursorPosition = cursor.position();
-    QTextCharFormat format = currentNode->charFormat;
+    const auto initialCursorPosition = cursor.position();
+    auto format = currentNode->charFormat;
 
     if(wsm == QTextHtmlParserNode::WhiteSpacePre || wsm == QTextHtmlParserNode::WhiteSpacePreWrap)
         compressNextWhitespace = PreserveWhiteSpace;
 
-    QString text = currentNode->text;
+    auto text = currentNode->text;
 
     QString textToInsert;
     textToInsert.reserve(text.size());
 
-    for (int i = 0; i < text.length(); ++i) {
-        QChar ch = text.at(i);
+    for (auto i = 0; i < text.length(); ++i) {
+        auto ch = text.at(i);
 
         if (ch.isSpace()
             && ch != QChar::Nbsp
@@ -608,10 +608,10 @@ bool QTextHtmlImporter::appendNodeText()
                 textToInsert.clear();
             }
 
-            QTextBlockFormat fmt = cursor.blockFormat();
+            auto fmt = cursor.blockFormat();
 
             if (fmt.hasProperty(QTextFormat::BlockBottomMargin)) {
-                QTextBlockFormat tmp = fmt;
+                auto tmp = fmt;
                 tmp.clearProperty(QTextFormat::BlockBottomMargin);
                 cursor.setBlockFormat(tmp);
             }
@@ -649,7 +649,7 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
     switch (currentNode->id) {
         case Html_body:
             if (currentNode->charFormat.background().style() != Qt::NoBrush) {
-                QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
+                auto fmt = doc->rootFrame()->frameFormat();
                 fmt.setBackground(currentNode->charFormat.background());
                 doc->rootFrame()->setFrameFormat(fmt);
                 const_cast<QTextHtmlParserNode *>(currentNode)->charFormat.clearProperty(QTextFormat::BackgroundBrush);
@@ -659,10 +659,10 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
 
         case Html_ol:
         case Html_ul: {
-            QTextListFormat::Style style = currentNode->listStyle;
+            auto style = currentNode->listStyle;
 
             if (currentNode->id == Html_ul && !currentNode->hasOwnListStyle && currentNode->parent) {
-                const QTextHtmlParserNode *n = &at(currentNode->parent);
+                auto n = &at(currentNode->parent);
                 while (n) {
                     if (n->id == Html_ul) {
                         style = nextListStyle(currentNode->listStyle);
@@ -694,14 +694,14 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
             compressNextWhitespace = RemoveWhiteSpace;
 
             // broken html: <ul>Text here<li>Foo
-            const QString simpl = currentNode->text.simplified();
+            const auto simpl = currentNode->text.simplified();
             if (simpl.isEmpty() || simpl.at(0).isSpace())
                 return ContinueWithNextNode;
             break;
         }
 
         case Html_table: {
-            Table t = scanTable(currentNodeIdx);
+            auto t = scanTable(currentNodeIdx);
             tables.append(t);
             hasBlock = false;
             compressNextWhitespace = RemoveWhiteSpace;
@@ -734,7 +734,7 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
         }
 
         case Html_hr: {
-            QTextBlockFormat blockFormat = currentNode->blockFormat;
+            auto blockFormat = currentNode->blockFormat;
             blockFormat.setTopMargin(topMargin(currentNodeIdx));
             blockFormat.setBottomMargin(bottomMargin(currentNodeIdx));
             blockFormat.setProperty(QTextFormat::BlockTrailingHorizontalRulerWidth, currentNode->width);
@@ -755,10 +755,10 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
 // returns true if a block tag was closed
 bool QTextHtmlImporter::closeTag()
 {
-    const QTextHtmlParserNode *closedNode = &at(currentNodeIdx - 1);
-    const int endDepth = depth(currentNodeIdx) - 1;
-    int depth = this->depth(currentNodeIdx - 1);
-    bool blockTagClosed = false;
+    auto closedNode = &at(currentNodeIdx - 1);
+    const auto endDepth = depth(currentNodeIdx) - 1;
+    auto depth = this->depth(currentNodeIdx - 1);
+    auto blockTagClosed = false;
 
     while (depth > endDepth) {
         Table *t = 0;
@@ -848,10 +848,10 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
 
     QVector<QTextLength> columnWidths;
 
-    int tableHeaderRowCount = 0;
+    auto tableHeaderRowCount = 0;
     QVector<int> rowNodes;
     rowNodes.reserve(at(tableNodeIdx).children.count());
-    for (int row : at(tableNodeIdx).children) {
+    for (auto row : at(tableNodeIdx).children) {
         switch (at(row).id) {
             case Html_tr:
                 rowNodes += row;
@@ -859,7 +859,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
             case Html_thead:
             case Html_tbody:
             case Html_tfoot:
-                for (int potentialRow : at(row).children) {
+                for (auto potentialRow : at(row).children) {
                     if (at(potentialRow).id == Html_tr) {
                         rowNodes += potentialRow;
                         if (at(row).id == Html_thead)
@@ -874,11 +874,11 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
     QVector<RowColSpanInfo> rowColSpans;
     QVector<RowColSpanInfo> rowColSpanForColumn;
 
-    int effectiveRow = 0;
-    for (int row : qAsConst(rowNodes)) {
-        int colsInRow = 0;
+    auto effectiveRow = 0;
+    for (auto row : qAsConst(rowNodes)) {
+        auto colsInRow = 0;
 
-        for (int cell : at(row).children) {
+        for (auto cell : at(row).children) {
             if (at(cell).isTableCell()) {
                 // skip all columns with spans from previous rows
                 while (colsInRow < rowColSpanForColumn.size()) {
@@ -892,7 +892,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
                 }
 
                 const QTextHtmlParserNode &c = at(cell);
-                const int currentColumn = colsInRow;
+                const auto currentColumn = colsInRow;
                 colsInRow += c.tableCellColSpan;
 
                 RowColSpanInfo spanInfo;
@@ -905,9 +905,9 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
 
                 columnWidths.resize(qMax(columnWidths.count(), colsInRow));
                 rowColSpanForColumn.resize(columnWidths.size());
-                for (int i = currentColumn; i < currentColumn + c.tableCellColSpan; ++i) {
+                for (auto i = currentColumn; i < currentColumn + c.tableCellColSpan; ++i) {
                     if (columnWidths.at(i).type() == QTextLength::VariableLength) {
-                        QTextLength w = c.width;
+                        auto w = c.width;
                         if (c.tableCellColSpan > 1 && w.type() != QTextLength::VariableLength)
                             w = QTextLength(w.type(), w.value(100.) / c.tableCellColSpan);
                         columnWidths[i] = w;
@@ -980,11 +980,11 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
 
         table.isTextFrame = true;
     } else {
-        const int oldPos = cursor.position();
-        QTextTable *textTable = cursor.insertTable(table.rows, table.columns, fmt.toTableFormat());
+        const auto oldPos = cursor.position();
+        auto textTable = cursor.insertTable(table.rows, table.columns, fmt.toTableFormat());
         table.frame = textTable;
 
-        for (int i = 0; i < rowColSpans.count(); ++i) {
+        for (auto i = 0; i < rowColSpans.count(); ++i) {
             const RowColSpanInfo &nfo = rowColSpans.at(i);
             textTable->mergeCells(nfo.row, nfo.col, nfo.rowSpan, nfo.colSpan);
         }
@@ -999,15 +999,15 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
 {
     QTextBlockFormat block;
     QTextCharFormat charFmt;
-    bool modifiedBlockFormat = true;
-    bool modifiedCharFormat = true;
+    auto modifiedBlockFormat = true;
+    auto modifiedCharFormat = true;
 
     if (currentNode->isTableCell() && !tables.isEmpty()) {
         Table &t = tables.last();
         if (!t.isTextFrame && !t.currentCell.atEnd()) {
-            QTextTableCell cell = t.currentCell.cell();
+            auto cell = t.currentCell.cell();
             if (cell.isValid()) {
-                QTextTableCellFormat fmt = cell.format().toTableCellFormat();
+                auto fmt = cell.format().toTableCellFormat();
                 if (topPadding(currentNodeIdx) >= 0)
                     fmt.setTopPadding(topPadding(currentNodeIdx));
                 if (bottomPadding(currentNodeIdx) >= 0)
@@ -1039,18 +1039,18 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
 
     // collapse
     {
-        qreal tm = qreal(topMargin(currentNodeIdx));
+        auto tm = qreal(topMargin(currentNodeIdx));
         if (tm > block.topMargin()) {
             block.setTopMargin(tm);
             modifiedBlockFormat = true;
         }
     }
 
-    int bottomMargin = this->bottomMargin(currentNodeIdx);
+    auto bottomMargin = this->bottomMargin(currentNodeIdx);
 
     // for list items we may want to collapse with the bottom margin of the
     // list.
-    const QTextHtmlParserNode *parentNode = currentNode->parent ? &at(currentNode->parent) : 0;
+    auto parentNode = currentNode->parent ? &at(currentNode->parent) : 0;
     if ((currentNode->id == Html_li || currentNode->id == Html_dt || currentNode->id == Html_dd)
         && parentNode
         && (parentNode->isListStart() || parentNode->id == Html_dl)

@@ -461,24 +461,24 @@ namespace {
             if (m_dirtyPen)
                 currentItem.color = m_currentColor;
 
-            QTransform matrix = m_untransformedCoordinates ? QTransform() : state->transform();
+            auto matrix = m_untransformedCoordinates ? QTransform() : state->transform();
             matrix.translate(position.x(), position.y());
 
             QVarLengthArray<glyph_t> glyphs;
             QVarLengthArray<QFixedPoint> positions;
             ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
-            int size = glyphs.size();
+            auto size = glyphs.size();
             Q_ASSERT(size == positions.size());
             currentItem.numGlyphs = size;
 
             m_glyphs.resize(m_glyphs.size() + size);
             m_positions.resize(m_glyphs.size());
 
-            glyph_t *glyphsDestination = m_glyphs.data() + currentItem.glyphOffset;
+            auto glyphsDestination = m_glyphs.data() + currentItem.glyphOffset;
             memcpy(glyphsDestination, glyphs.constData(), sizeof(glyph_t) * currentItem.numGlyphs);
 
-            QFixedPoint *positionsDestination = m_positions.data() + currentItem.positionOffset;
+            auto positionsDestination = m_positions.data() + currentItem.positionOffset;
             memcpy(positionsDestination, positions.constData(), sizeof(QFixedPoint) * currentItem.numGlyphs);
 
             m_items.append(currentItem);
@@ -601,7 +601,7 @@ namespace {
 
 void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
 {
-    bool preferRichText = textFormat == Qt::RichText
+    auto preferRichText = textFormat == Qt::RichText
                           || (textFormat == Qt::AutoText && Qt::mightBeRichText(text));
 
     if (!preferRichText) {
@@ -611,12 +611,12 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
         textLayout.setTextOption(textOption);
         textLayout.setCacheEnabled(true);
 
-        qreal leading = QFontMetricsF(font).leading();
-        qreal height = -leading;
+        auto leading = QFontMetricsF(font).leading();
+        auto height = -leading;
 
         textLayout.beginLayout();
         while (1) {
-            QTextLine line = textLayout.createLine();
+            auto line = textLayout.createLine();
             if (!line.isValid())
                 break;
 
@@ -633,7 +633,7 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
     } else {
         QTextDocument document;
 #ifndef QT_NO_CSSPARSER
-        QColor color = p->pen().color();
+        auto color = p->pen().color();
         document.setDefaultStyleSheet(QString::fromLatin1("body { color: #%1%2%3 }")
                                       .arg(QString::number(color.red(), 16), 2, QLatin1Char('0'))
                                       .arg(QString::number(color.green(), 16), 2, QLatin1Char('0'))
@@ -683,9 +683,9 @@ void QStaticTextPrivate::init()
         paintText(QPointF(0, 0), &painter);
     }
 
-    QVector<QStaticTextItem> deviceItems = device.items();
-    QVector<QFixedPoint> positions = device.positions();
-    QVector<glyph_t> glyphs = device.glyphs();
+    auto deviceItems = device.items();
+    auto positions = device.positions();
+    auto glyphs = device.glyphs();
 
     itemCount = deviceItems.size();
     items = new QStaticTextItem[itemCount];
@@ -696,7 +696,7 @@ void QStaticTextPrivate::init()
     positionPool = new QFixedPoint[positions.size()];
     memcpy(positionPool, positions.constData(), positions.size() * sizeof(QFixedPoint));
 
-    for (int i=0; i<itemCount; ++i) {
+    for (auto i=0; i<itemCount; ++i) {
         items[i] = deviceItems.at(i);
 
         items[i].glyphs = glyphPool + items[i].glyphOffset;

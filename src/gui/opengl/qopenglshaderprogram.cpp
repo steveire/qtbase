@@ -178,7 +178,7 @@ public:
     {
 #ifndef QT_OPENGL_ES_2
         if (!ctx->isOpenGLES()) {
-            QSurfaceFormat f = ctx->format();
+            auto f = ctx->format();
 
             // Geometry shaders require OpenGL >= 3.2
             if (shaderType & QOpenGLShader::Geometry)
@@ -226,7 +226,7 @@ QOpenGLShaderPrivate::~QOpenGLShaderPrivate()
 
 bool QOpenGLShaderPrivate::create()
 {
-    QOpenGLContext *context = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
+    auto context = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
     if (!context)
         return false;
     GLuint shader;
@@ -259,13 +259,13 @@ bool QOpenGLShaderPrivate::create()
 
 bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
 {
-    GLuint shader = shaderGuard ? shaderGuard->id() : 0;
+    auto shader = shaderGuard ? shaderGuard->id() : 0;
     if (!shader)
         return false;
 
     // Try to compile shader
     glfuncs->glCompileShader(shader);
-    GLint value = 0;
+    auto value = 0;
 
     // Get compilation status
     glfuncs->glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
@@ -273,7 +273,7 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
 
     if (!compiled) {
         // Compilation failed, try to provide some information about the failure
-        QString name = q->objectName();
+        auto name = q->objectName();
 
         const char *types[] = {
             "Fragment",
@@ -285,7 +285,7 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
             ""
         };
 
-        const char *type = types[6];
+        auto type = types[6];
         switch (shaderType) {
         case QOpenGLShader::Fragment:
             type = types[0]; break;
@@ -302,8 +302,8 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
         }
 
         // Get info and source code lengths
-        GLint infoLogLength = 0;
-        GLint sourceCodeLength = 0;
+        auto infoLogLength = 0;
+        auto sourceCodeLength = 0;
         char *logBuffer = 0;
         char *sourceCodeBuffer = 0;
 
@@ -431,7 +431,7 @@ static QVersionDirectivePosition findVersionDirectivePosition(const char *source
 {
     Q_ASSERT(source);
 
-    QString working = QString::fromUtf8(source);
+    auto working = QString::fromUtf8(source);
 
     // According to the GLSL spec the #version directive must not be
     // preceded by anything but whitespace and comments.
@@ -445,7 +445,7 @@ static QVersionDirectivePosition findVersionDirectivePosition(const char *source
         CommentEnding
     } state = Normal;
 
-    for (QChar *c = working.begin(); c != working.end(); ++c) {
+    for (auto c = working.begin(); c != working.end(); ++c) {
         switch (state) {
         case Normal:
             if (*c == QLatin1Char('/'))
@@ -485,13 +485,13 @@ static QVersionDirectivePosition findVersionDirectivePosition(const char *source
     }
 
     // Search for #version directive
-    int splitPosition = 0;
-    int linePosition = 1;
+    auto splitPosition = 0;
+    auto linePosition = 1;
 
     static const QRegularExpression pattern(QStringLiteral("^\\s*#\\s*version.*(\\n)?"),
                                             QRegularExpression::MultilineOption
                                             | QRegularExpression::OptimizeOnFirstUsageOption);
-    QRegularExpressionMatch match = pattern.match(working);
+    auto match = pattern.match(working);
     if (match.hasMatch()) {
         splitPosition = match.capturedEnd();
         linePosition += int(std::count(working.begin(), working.begin() + splitPosition, QLatin1Char('\n')));
@@ -518,7 +518,7 @@ bool QOpenGLShader::compileSourceCode(const char *source)
     // for line number changes in case of compiler errors.
 
     if (d->shaderGuard && d->shaderGuard->id() && source) {
-        const QVersionDirectivePosition versionDirectivePosition = findVersionDirectivePosition(source);
+        const auto versionDirectivePosition = findVersionDirectivePosition(source);
 
         QVarLengthArray<const char *, 5> sourceChunks;
         QVarLengthArray<GLint, 5> sourceChunkLengths;
@@ -531,9 +531,9 @@ bool QOpenGLShader::compileSourceCode(const char *source)
 
         // The precision qualifiers are useful on OpenGL/ES systems,
         // but usually not present on desktop systems.
-        QOpenGLContext *ctx = QOpenGLContext::currentContext();
-        const QSurfaceFormat currentSurfaceFormat = ctx->format();
-        QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(QOpenGLContext::currentContext());
+        auto ctx = QOpenGLContext::currentContext();
+        const auto currentSurfaceFormat = ctx->format();
+        auto ctx_d = QOpenGLContextPrivate::get(QOpenGLContext::currentContext());
         if (currentSurfaceFormat.renderableType() == QSurfaceFormat::OpenGL
                 || ctx_d->workaround_missingPrecisionQualifiers
 #ifdef QT_OPENGL_FORCE_SHADER_DEFINES
@@ -555,7 +555,7 @@ bool QOpenGLShader::compileSourceCode(const char *source)
         QByteArray lineDirective;
         // #line is rejected by some drivers:
         // "2.1 Mesa 8.1-devel (git-48a3d4e)" or "MESA 2.1 Mesa 8.1-devel"
-        const char *version = reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_VERSION));
+        auto version = reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_VERSION));
         if (!version || !strstr(version, "2.1 Mesa 8")) {
             // Append #line directive in order to compensate for text insertion
             lineDirective = QStringLiteral("#line %1\n").arg(versionDirectivePosition.line).toUtf8();
@@ -615,7 +615,7 @@ bool QOpenGLShader::compileSourceFile(const QString& fileName)
         return false;
     }
 
-    QByteArray contents = file.readAll();
+    auto contents = file.readAll();
     return compileSourceCode(contents.constData());
 }
 
@@ -627,15 +627,15 @@ bool QOpenGLShader::compileSourceFile(const QString& fileName)
 QByteArray QOpenGLShader::sourceCode() const
 {
     Q_D(const QOpenGLShader);
-    GLuint shader = d->shaderGuard ? d->shaderGuard->id() : 0;
+    auto shader = d->shaderGuard ? d->shaderGuard->id() : 0;
     if (!shader)
         return QByteArray();
-    GLint size = 0;
+    auto size = 0;
     d->glfuncs->glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &size);
     if (size <= 0)
         return QByteArray();
-    GLint len = 0;
-    char *source = new char [size];
+    auto len = 0;
+    auto source = new char [size];
     d->glfuncs->glGetShaderSource(shader, size, &len, source);
     QByteArray src(source);
     delete [] source;
@@ -728,7 +728,7 @@ QOpenGLShaderProgramPrivate::~QOpenGLShaderProgramPrivate()
 
 bool QOpenGLShaderProgramPrivate::hasShader(QOpenGLShader::ShaderType type) const
 {
-    for (QOpenGLShader *shader : shaders) {
+    for (auto shader : shaders) {
         if (shader->shaderType() == type)
             return true;
     }
@@ -781,14 +781,14 @@ bool QOpenGLShaderProgram::init()
     if ((d->programGuard && d->programGuard->id()) || d->inited)
         return true;
     d->inited = true;
-    QOpenGLContext *context = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
+    auto context = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
     if (!context)
         return false;
     d->glfuncs->initializeOpenGLFunctions();
 
 #ifndef QT_OPENGL_ES_2
     // Resolve OpenGL 4 functions for tessellation shader support
-    QSurfaceFormat format = context->format();
+    auto format = context->format();
     if (!context->isOpenGLES()
         && format.version() >= qMakePair<int, int>(4, 0)) {
         d->tessellationFuncs = context->versionFunctions<QOpenGLFunctions_4_0_Core>();
@@ -796,7 +796,7 @@ bool QOpenGLShaderProgram::init()
     }
 #endif
 
-    GLuint program = d->glfuncs->glCreateProgram();
+    auto program = d->glfuncs->glCreateProgram();
     if (!program) {
         qWarning() << "QOpenGLShaderProgram: could not create shader program";
         return false;
@@ -861,7 +861,7 @@ bool QOpenGLShaderProgram::addShaderFromSourceCode(QOpenGLShader::ShaderType typ
     Q_D(QOpenGLShaderProgram);
     if (!init())
         return false;
-    QOpenGLShader *shader = new QOpenGLShader(type, this);
+    auto shader = new QOpenGLShader(type, this);
     if (!shader->compileSourceCode(source)) {
         d->log = shader->log();
         delete shader;
@@ -929,7 +929,7 @@ bool QOpenGLShaderProgram::addShaderFromSourceFile
     Q_D(QOpenGLShaderProgram);
     if (!init())
         return false;
-    QOpenGLShader *shader = new QOpenGLShader(type, this);
+    auto shader = new QOpenGLShader(type, this);
     if (!shader->compileSourceFile(fileName)) {
         d->log = shader->log();
         delete shader;
@@ -986,7 +986,7 @@ void QOpenGLShaderProgram::removeAllShaders()
 {
     Q_D(QOpenGLShaderProgram);
     d->removingShaders = true;
-    for (QOpenGLShader *shader : qAsConst(d->shaders)) {
+    for (auto shader : qAsConst(d->shaders)) {
         if (d->programGuard && d->programGuard->id()
             && shader && shader->d_func()->shaderGuard)
         {
@@ -1018,7 +1018,7 @@ void QOpenGLShaderProgram::removeAllShaders()
 bool QOpenGLShaderProgram::link()
 {
     Q_D(QOpenGLShaderProgram);
-    GLuint program = d->programGuard ? d->programGuard->id() : 0;
+    auto program = d->programGuard ? d->programGuard->id() : 0;
     if (!program)
         return false;
 
@@ -1043,12 +1043,12 @@ bool QOpenGLShaderProgram::link()
     d->glfuncs->glGetProgramiv(program, GL_INFO_LOG_LENGTH, &value);
     d->log = QString();
     if (value > 1) {
-        char *logbuf = new char [value];
+        auto logbuf = new char [value];
         GLint len;
         d->glfuncs->glGetProgramInfoLog(program, value, &len, logbuf);
         d->log = QString::fromLatin1(logbuf);
         if (!d->linked) {
-            QString name = objectName();
+            auto name = objectName();
             if (name.isEmpty())
                 qWarning() << "QOpenGLShader::link:" << d->log;
             else
@@ -1095,7 +1095,7 @@ QString QOpenGLShaderProgram::log() const
 bool QOpenGLShaderProgram::bind()
 {
     Q_D(QOpenGLShaderProgram);
-    GLuint program = d->programGuard ? d->programGuard->id() : 0;
+    auto program = d->programGuard ? d->programGuard->id() : 0;
     if (!program)
         return false;
     if (!d->linked && !link())
@@ -1134,7 +1134,7 @@ void QOpenGLShaderProgram::release()
 GLuint QOpenGLShaderProgram::programId() const
 {
     Q_D(const QOpenGLShaderProgram);
-    GLuint id = d->programGuard ? d->programGuard->id() : 0;
+    auto id = d->programGuard ? d->programGuard->id() : 0;
     if (id)
         return id;
 
@@ -3209,7 +3209,7 @@ void QOpenGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4
 */
 int QOpenGLShaderProgram::maxGeometryOutputVertices() const
 {
-    GLint n = 0;
+    auto n = 0;
 #if defined(QT_OPENGL_3_2)
     Q_D(const QOpenGLShaderProgram);
     d->glfuncs->glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &n);
@@ -3256,7 +3256,7 @@ void QOpenGLShaderProgram::setPatchVertexCount(int count)
 */
 int QOpenGLShaderProgram::patchVertexCount() const
 {
-    int patchVertices = 0;
+    auto patchVertices = 0;
 #if defined(QT_OPENGL_4)
     Q_D(const QOpenGLShaderProgram);
     if (d->tessellationFuncs)
@@ -3285,14 +3285,14 @@ int QOpenGLShaderProgram::patchVertexCount() const
 void QOpenGLShaderProgram::setDefaultOuterTessellationLevels(const QVector<float> &levels)
 {
 #if defined(QT_OPENGL_4)
-    QVector<float> tessLevels = levels;
+    auto tessLevels = levels;
 
     // Ensure we have the required 4 outer tessellation levels
     // Use default of 1 for missing entries (same as spec)
-    const int argCount = 4;
+    const auto argCount = 4;
     if (tessLevels.size() < argCount) {
         tessLevels.reserve(argCount);
-        for (int i = tessLevels.size(); i < argCount; ++i)
+        for (auto i = tessLevels.size(); i < argCount; ++i)
             tessLevels.append(1.0f);
     }
 
@@ -3350,14 +3350,14 @@ QVector<float> QOpenGLShaderProgram::defaultOuterTessellationLevels() const
 void QOpenGLShaderProgram::setDefaultInnerTessellationLevels(const QVector<float> &levels)
 {
 #if defined(QT_OPENGL_4)
-    QVector<float> tessLevels = levels;
+    auto tessLevels = levels;
 
     // Ensure we have the required 2 inner tessellation levels
     // Use default of 1 for missing entries (same as spec)
-    const int argCount = 2;
+    const auto argCount = 2;
     if (tessLevels.size() < argCount) {
         tessLevels.reserve(argCount);
-        for (int i = tessLevels.size(); i < argCount; ++i)
+        for (auto i = tessLevels.size(); i < argCount; ++i)
             tessLevels.append(1.0f);
     }
 
@@ -3423,7 +3423,7 @@ bool QOpenGLShaderProgram::hasOpenGLShaderPrograms(QOpenGLContext *context)
 void QOpenGLShaderProgram::shaderDestroyed()
 {
     Q_D(QOpenGLShaderProgram);
-    QOpenGLShader *shader = qobject_cast<QOpenGLShader *>(sender());
+    auto shader = qobject_cast<QOpenGLShader *>(sender());
     if (shader && !d->removingShaders)
         removeShader(shader);
 }
@@ -3445,11 +3445,11 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
     if ((type & ~(Geometry | Vertex | Fragment | TessellationControl | TessellationEvaluation | Compute)) || type == 0)
         return false;
 
-    QSurfaceFormat format = context->format();
+    auto format = context->format();
     if (type == Geometry) {
 #ifndef QT_OPENGL_ES_2
         // Geometry shaders require OpenGL 3.2 or newer
-        QSurfaceFormat format = context->format();
+        auto format = context->format();
         return (!context->isOpenGLES())
             && (format.version() >= qMakePair<int, int>(3, 2));
 #else

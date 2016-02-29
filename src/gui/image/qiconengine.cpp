@@ -301,7 +301,7 @@ QString QIconEngine::iconName() const
  */
 bool QIconEngine::isNull() const
 {
-    bool isNull = false;
+    auto isNull = false;
     const_cast<QIconEngine *>(this)->virtual_hook(QIconEngine::IsNullHook, &isNull);
     return isNull;
 }

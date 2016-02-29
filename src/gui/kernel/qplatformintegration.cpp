@@ -451,7 +451,7 @@ QList<int> QPlatformIntegration::possibleKeys(const QKeyEvent *) const
 */
 void QPlatformIntegration::screenAdded(QPlatformScreen *ps, bool isPrimary)
 {
-    QScreen *screen = new QScreen(ps);
+    auto screen = new QScreen(ps);
 
     if (isPrimary) {
         QGuiApplicationPrivate::screen_list.prepend(screen);
@@ -472,7 +472,7 @@ void QPlatformIntegration::screenAdded(QPlatformScreen *ps, bool isPrimary)
 
 void QPlatformIntegration::removeScreen(QScreen *screen)
 {
-    const bool wasPrimary = (!QGuiApplicationPrivate::screen_list.isEmpty() && QGuiApplicationPrivate::screen_list[0] == screen);
+    const auto wasPrimary = (!QGuiApplicationPrivate::screen_list.isEmpty() && QGuiApplicationPrivate::screen_list[0] == screen);
     QGuiApplicationPrivate::screen_list.removeOne(screen);
 
     if (wasPrimary && qGuiApp && !QGuiApplicationPrivate::screen_list.isEmpty())
@@ -489,7 +489,7 @@ void QPlatformIntegration::removeScreen(QScreen *screen)
 */
 void QPlatformIntegration::destroyScreen(QPlatformScreen *screen)
 {
-    QScreen *qScreen = screen->screen();
+    auto qScreen = screen->screen();
     removeScreen(qScreen);
     delete qScreen;
     delete screen;
@@ -504,8 +504,8 @@ void QPlatformIntegration::destroyScreen(QPlatformScreen *screen)
 
 void QPlatformIntegration::setPrimaryScreen(QPlatformScreen *newPrimary)
 {
-    QScreen* newPrimaryScreen = newPrimary->screen();
-    int idx = QGuiApplicationPrivate::screen_list.indexOf(newPrimaryScreen);
+    auto newPrimaryScreen = newPrimary->screen();
+    auto idx = QGuiApplicationPrivate::screen_list.indexOf(newPrimaryScreen);
     Q_ASSERT(idx >= 0);
     if (idx == 0)
         return;

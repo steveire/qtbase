@@ -134,7 +134,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
     const QByteArray &format)
 {
-    QByteArray form = format.toLower();
+    auto form = format.toLower();
     QByteArray suffix;
     QImageIOHandler *handler = 0;
 
@@ -142,19 +142,19 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
     typedef QMultiMap<int, QString> PluginKeyMap;
 
     // check if any plugins can write the image
-    QFactoryLoader *l = loader();
-    const PluginKeyMap keyMap = l->keyMap();
-    int suffixPluginIndex = -1;
+    auto l = loader();
+    const auto keyMap = l->keyMap();
+    auto suffixPluginIndex = -1;
 #endif
 
     if (device && format.isEmpty()) {
         // if there's no format, see if \a device is a file, and if so, find
         // the file suffix and find support for that format among our plugins.
         // this allows plugins to override our built-in handlers.
-        if (QFile *file = qobject_cast<QFile *>(device)) {
+        if (auto file = qobject_cast<QFile *>(device)) {
             if (!(suffix = QFileInfo(file->fileName()).suffix().toLower().toLatin1()).isEmpty()) {
 #ifndef QT_NO_IMAGEFORMATPLUGIN
-                const int index = keyMap.key(QString::fromLatin1(suffix), -1);
+                const auto index = keyMap.key(QString::fromLatin1(suffix), -1);
                 if (index != -1)
                     suffixPluginIndex = index;
 #endif
@@ -162,15 +162,15 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
         }
     }
 
-    QByteArray testFormat = !form.isEmpty() ? form : suffix;
+    auto testFormat = !form.isEmpty() ? form : suffix;
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
     if (suffixPluginIndex != -1) {
         // when format is missing, check if we can find a plugin for the
         // suffix.
-        const int index = keyMap.key(QString::fromLatin1(suffix), -1);
+        const auto index = keyMap.key(QString::fromLatin1(suffix), -1);
         if (index != -1) {
-            QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(index));
+            auto plugin = qobject_cast<QImageIOPlugin *>(l->instance(index));
             if (plugin && (plugin->capabilities(device, suffix) & QImageIOPlugin::CanWrite))
                 handler = plugin->create(device, suffix);
         }
@@ -218,9 +218,9 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
     if (!testFormat.isEmpty()) {
-        const int keyCount = keyMap.size();
-        for (int i = 0; i < keyCount; ++i) {
-            QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(i));
+        const auto keyCount = keyMap.size();
+        for (auto i = 0; i < keyCount; ++i) {
+            auto plugin = qobject_cast<QImageIOPlugin *>(l->instance(i));
             if (plugin && (plugin->capabilities(device, testFormat) & QImageIOPlugin::CanWrite)) {
                 delete handler;
                 handler = plugin->create(device, testFormat);
@@ -342,7 +342,7 @@ QImageWriter::QImageWriter(QIODevice *device, const QByteArray &format)
 QImageWriter::QImageWriter(const QString &fileName, const QByteArray &format)
     : d(new QImageWriterPrivate(this))
 {
-    QFile *file = new QFile(fileName);
+    auto file = new QFile(fileName);
     d->device = file;
     d->deleteDevice = true;
     d->format = format;
@@ -442,7 +442,7 @@ void QImageWriter::setFileName(const QString &fileName)
 */
 QString QImageWriter::fileName() const
 {
-    QFile *file = qobject_cast<QFile *>(d->device);
+    auto file = qobject_cast<QFile *>(d->device);
     return file ? file->fileName() : QString();
 }
 
@@ -719,9 +719,9 @@ void QImageWriter::setText(const QString &key, const QString &text)
 */
 bool QImageWriter::canWrite() const
 {
-    if (QFile *file = qobject_cast<QFile *>(d->device)) {
-        const bool remove = !file->isOpen() && !file->exists();
-        const bool result = d->canWriteHelper();
+    if (auto file = qobject_cast<QFile *>(d->device)) {
+        const auto remove = !file->isOpen() && !file->exists();
+        const auto result = d->canWriteHelper();
         if (!result && remove)
             file->remove();
         return result;
@@ -746,7 +746,7 @@ bool QImageWriter::write(const QImage &image)
     if (!canWrite())
         return false;
 
-    QImage img = image;
+    auto img = image;
     if (d->handler->supportsOption(QImageIOHandler::Quality))
         d->handler->setOption(QImageIOHandler::Quality, d->quality);
     if (d->handler->supportsOption(QImageIOHandler::CompressionRatio))
@@ -768,7 +768,7 @@ bool QImageWriter::write(const QImage &image)
 
     if (!d->handler->write(img))
         return false;
-    if (QFile *file = qobject_cast<QFile *>(d->device))
+    if (auto file = qobject_cast<QFile *>(d->device))
         file->flush();
     return true;
 }
@@ -830,17 +830,17 @@ void supportedImageHandlerFormats(QFactoryLoader *loader,
     typedef QMultiMap<int, QString> PluginKeyMap;
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
-    const PluginKeyMap keyMap = loader->keyMap();
-    const PluginKeyMapConstIterator cend = keyMap.constEnd();
-    int i = -1;
+    const auto keyMap = loader->keyMap();
+    const auto cend = keyMap.constEnd();
+    auto i = -1;
     QImageIOPlugin *plugin = 0;
     result->reserve(result->size() + keyMap.size());
-    for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
+    for (auto it = keyMap.constBegin(); it != cend; ++it) {
         if (it.key() != i) {
             i = it.key();
             plugin = qobject_cast<QImageIOPlugin *>(loader->instance(i));
         }
-        const QByteArray key = it.value().toLatin1();
+        const auto key = it.value().toLatin1();
         if (plugin && (plugin->capabilities(0, key) & cap) != 0)
             result->append(key);
     }
@@ -850,16 +850,16 @@ void supportedImageHandlerMimeTypes(QFactoryLoader *loader,
                                     QImageIOPlugin::Capability cap,
                                     QList<QByteArray> *result)
 {
-    QList<QJsonObject> metaDataList = loader->metaData();
+    auto metaDataList = loader->metaData();
 
-    const int pluginCount = metaDataList.size();
-    for (int i = 0; i < pluginCount; ++i) {
-        const QJsonObject metaData = metaDataList.at(i).value(QStringLiteral("MetaData")).toObject();
-        const QJsonArray keys = metaData.value(QStringLiteral("Keys")).toArray();
-        const QJsonArray mimeTypes = metaData.value(QStringLiteral("MimeTypes")).toArray();
-        QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(loader->instance(i));
-        const int keyCount = keys.size();
-        for (int k = 0; k < keyCount; ++k) {
+    const auto pluginCount = metaDataList.size();
+    for (auto i = 0; i < pluginCount; ++i) {
+        const auto metaData = metaDataList.at(i).value(QStringLiteral("MetaData")).toObject();
+        const auto keys = metaData.value(QStringLiteral("Keys")).toArray();
+        const auto mimeTypes = metaData.value(QStringLiteral("MimeTypes")).toArray();
+        auto plugin = qobject_cast<QImageIOPlugin *>(loader->instance(i));
+        const auto keyCount = keys.size();
+        for (auto k = 0; k < keyCount; ++k) {
             if (plugin && (plugin->capabilities(0, keys.at(k).toString().toLatin1()) & cap) != 0)
                 result->append(mimeTypes.at(k).toString().toLatin1());
         }

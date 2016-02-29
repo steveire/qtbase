@@ -272,15 +272,15 @@ static quint32 permissionsToMode(QFile::Permissions perms)
 
 static QDateTime readMSDosDate(const uchar *src)
 {
-    uint dosDate = readUInt(src);
+    auto dosDate = readUInt(src);
     quint64 uDate;
     uDate = (quint64)(dosDate >> 16);
     uint tm_mday = (uDate & 0x1f);
     uint tm_mon =  ((uDate & 0x1E0) >> 5);
     uint tm_year = (((uDate & 0x0FE00) >> 9) + 1980);
-    uint tm_hour = ((dosDate & 0xF800) >> 11);
-    uint tm_min =  ((dosDate & 0x7E0) >> 5);
-    uint tm_sec =  ((dosDate & 0x1f) << 1);
+    auto tm_hour = ((dosDate & 0xF800) >> 11);
+    auto tm_min =  ((dosDate & 0x7E0) >> 5);
+    auto tm_sec =  ((dosDate & 0x1f) << 1);
 
     return QDateTime(QDate(tm_year, tm_mon, tm_mday), QTime(tm_hour, tm_min, tm_sec));
 }
@@ -444,9 +444,9 @@ public:
 QZipReader::FileInfo QZipPrivate::fillFileInfo(int index) const
 {
     QZipReader::FileInfo fileInfo;
-    FileHeader header = fileHeaders.at(index);
-    quint32 mode = readUInt(header.h.external_file_attributes);
-    const HostOS hostOS = HostOS(readUShort(header.h.version_made) >> 8);
+    auto header = fileHeaders.at(index);
+    auto mode = readUInt(header.h.external_file_attributes);
+    const auto hostOS = HostOS(readUShort(header.h.version_made) >> 8);
     switch (hostOS) {
     case HostUnix:
         mode = (mode >> 16) & 0xffff;
@@ -488,9 +488,9 @@ QZipReader::FileInfo QZipPrivate::fillFileInfo(int index) const
         return fileInfo; // we don't support anything else
     }
 
-    ushort general_purpose_bits = readUShort(header.h.general_purpose_bits);
+    auto general_purpose_bits = readUShort(header.h.general_purpose_bits);
     // if bit 11 is set, the filename and comment fields must be encoded using UTF-8
-    const bool inUtf8 = (general_purpose_bits & Utf8Names) != 0;
+    const auto inUtf8 = (general_purpose_bits & Utf8Names) != 0;
     fileInfo.filePath = inUtf8 ? QString::fromUtf8(header.file_name) : QString::fromLocal8Bit(header.file_name);
     fileInfo.crc = readUInt(header.h.crc_32);
     fileInfo.size = readUInt(header.h.uncompressed_size);
@@ -579,9 +579,9 @@ void QZipReaderPrivate::scanFiles()
     }
 
     // find EndOfDirectory header
-    int i = 0;
-    int start_of_directory = -1;
-    int num_dir_entries = 0;
+    auto i = 0;
+    auto start_of_directory = -1;
+    auto num_dir_entries = 0;
     EndOfDirectory eod;
     while (start_of_directory == -1) {
         const int pos = device->size() - int(sizeof(EndOfDirectory)) - i;
@@ -661,7 +661,7 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
     device->seek(start_of_directory);
 
     // don't compress small files
-    QZipWriter::CompressionPolicy compression = compressionPolicy;
+    auto compression = compressionPolicy;
     if (compressionPolicy == QZipWriter::AutoCompress) {
         if (contents.length() < 64)
             compression = QZipWriter::NeverCompress;
@@ -676,7 +676,7 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
     writeUShort(header.h.version_needed, ZIP_VERSION);
     writeUInt(header.h.uncompressed_size, contents.length());
     writeMSDosDate(header.h.last_mod_file, QDateTime::currentDateTime());
-    QByteArray data = contents;
+    auto data = contents;
     if (compression == QZipWriter::AlwaysCompress) {
         writeUShort(header.h.compression_method, CompressionMethodDeflated);
 
@@ -712,7 +712,7 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
     ushort general_purpose_bits = Utf8Names; // always use utf-8
     writeUShort(header.h.general_purpose_bits, general_purpose_bits);
 
-    const bool inUtf8 = (general_purpose_bits & Utf8Names) != 0;
+    const auto inUtf8 = (general_purpose_bits & Utf8Names) != 0;
     header.file_name = inUtf8 ? fileName.toUtf8() : fileName.toLocal8Bit();
     if (header.file_name.size() > 0xffff) {
         qWarning("QZip: Filename is too long, chopping it to 65535 bytes");
@@ -728,7 +728,7 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
     writeUShort(header.h.version_made, HostUnix << 8);
     //uchar internal_file_attributes[2];
     //uchar external_file_attributes[4];
-    quint32 mode = permissionsToMode(permissions);
+    auto mode = permissionsToMode(permissions);
     switch (type) {
     case Symlink:
         mode |= UnixFileAttributes::SymLink;
@@ -749,7 +749,7 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
 
     fileHeaders.append(header);
 
-    LocalFileHeader h = header.h.toLocalHeader();
+    auto h = header.h.toLocalHeader();
     device->write((const char *)&h, sizeof(LocalFileHeader));
     device->write(header.file_name);
     device->write(data);
@@ -883,7 +883,7 @@ bool QZipReader::isReadable() const
 */
 bool QZipReader::exists() const
 {
-    QFile *f = qobject_cast<QFile*> (d->device);
+    auto f = qobject_cast<QFile*> (d->device);
     if (f == 0)
         return true;
     return f->exists();
@@ -896,9 +896,9 @@ QVector<QZipReader::FileInfo> QZipReader::fileInfoList() const
 {
     d->scanFiles();
     QVector<FileInfo> files;
-    const int numFileHeaders = d->fileHeaders.size();
+    const auto numFileHeaders = d->fileHeaders.size();
     files.reserve(numFileHeaders);
-    for (int i = 0; i < numFileHeaders; ++i)
+    for (auto i = 0; i < numFileHeaders; ++i)
         files.append(d->fillFileInfo(i));
     return files;
 
@@ -942,15 +942,15 @@ QByteArray QZipReader::fileData(const QString &fileName) const
     if (i == d->fileHeaders.size())
         return QByteArray();
 
-    FileHeader header = d->fileHeaders.at(i);
+    auto header = d->fileHeaders.at(i);
 
-    ushort version_needed = readUShort(header.h.version_needed);
+    auto version_needed = readUShort(header.h.version_needed);
     if (version_needed > ZIP_VERSION) {
         qWarning("QZip: .ZIP specification version %d implementationis needed to extract the data.", version_needed);
         return QByteArray();
     }
 
-    ushort general_purpose_bits = readUShort(header.h.general_purpose_bits);
+    auto general_purpose_bits = readUShort(header.h.general_purpose_bits);
     int compressed_size = readUInt(header.h.compressed_size);
     int uncompressed_size = readUInt(header.h.uncompressed_size);
     int start = readUInt(header.h.offset_local_header);
@@ -971,7 +971,7 @@ QByteArray QZipReader::fileData(const QString &fileName) const
     }
 
     //qDebug("file at %lld", d->device->pos());
-    QByteArray compressed = d->device->read(compressed_size);
+    auto compressed = d->device->read(compressed_size);
     if (compression_method == CompressionMethodStored) {
         // no compression
         compressed.truncate(uncompressed_size);
@@ -1021,7 +1021,7 @@ bool QZipReader::extractAll(const QString &destinationDir) const
     QDir baseDir(destinationDir);
 
     // create directories first
-    const QVector<FileInfo> allFiles = fileInfoList();
+    const auto allFiles = fileInfoList();
     for (const FileInfo &fi : allFiles) {
         const QString absPath = destinationDir + QDir::separator() + fi.filePath;
         if (fi.isDir) {
@@ -1036,7 +1036,7 @@ bool QZipReader::extractAll(const QString &destinationDir) const
     for (const FileInfo &fi : allFiles) {
         const QString absPath = destinationDir + QDir::separator() + fi.filePath;
         if (fi.isSymLink) {
-            QString destination = QFile::decodeName(fileData(fi.filePath));
+            auto destination = QFile::decodeName(fileData(fi.filePath));
             if (destination.isEmpty())
                 return false;
             QFileInfo linkFi(absPath);
@@ -1176,7 +1176,7 @@ bool QZipWriter::isWritable() const
 */
 bool QZipWriter::exists() const
 {
-    QFile *f = qobject_cast<QFile*> (d->device);
+    auto f = qobject_cast<QFile*> (d->device);
     if (f == 0)
         return true;
     return f->exists();
@@ -1285,8 +1285,8 @@ void QZipWriter::addFile(const QString &fileName, const QByteArray &data)
 void QZipWriter::addFile(const QString &fileName, QIODevice *device)
 {
     Q_ASSERT(device);
-    QIODevice::OpenMode mode = device->openMode();
-    bool opened = false;
+    auto mode = device->openMode();
+    auto opened = false;
     if ((mode & QIODevice::ReadOnly) == 0) {
         opened = true;
         if (! device->open(QIODevice::ReadOnly)) {
@@ -1335,7 +1335,7 @@ void QZipWriter::close()
     //qDebug("QZip::close writing directory, %d entries", d->fileHeaders.size());
     d->device->seek(d->start_of_directory);
     // write new directory
-    for (int i = 0; i < d->fileHeaders.size(); ++i) {
+    for (auto i = 0; i < d->fileHeaders.size(); ++i) {
         const FileHeader &header = d->fileHeaders.at(i);
         d->device->write((const char *)&header.h, sizeof(CentralFileHeader));
         d->device->write(header.file_name);

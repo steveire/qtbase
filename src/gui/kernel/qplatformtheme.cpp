@@ -514,8 +514,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant(800);
     case MouseDoubleClickDistance:
         {
-            bool ok = false;
-            const int dist = qEnvironmentVariableIntValue("QT_DBL_CLICK_DIST", &ok);
+            auto ok = false;
+            const auto dist = qEnvironmentVariableIntValue("QT_DBL_CLICK_DIST", &ok);
             return QVariant(ok ? dist : 5);
         }
     case WheelScrollLines:
@@ -604,19 +604,19 @@ struct ByStandardKey {
  */
 QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) const
 {
-    const uint platform = QPlatformThemePrivate::currentKeyPlatforms();
+    const auto platform = QPlatformThemePrivate::currentKeyPlatforms();
     QList <QKeySequence> list;
 
-    std::pair<const QKeyBinding *, const QKeyBinding *> range =
+    auto range =
         std::equal_range(QPlatformThemePrivate::keyBindings,
                          QPlatformThemePrivate::keyBindings + QPlatformThemePrivate::numberOfKeyBindings,
                          key, ByStandardKey());
 
-    for (const QKeyBinding *it = range.first; it < range.second; ++it) {
+    for (auto it = range.first; it < range.second; ++it) {
         if (!(it->platform & platform))
             continue;
 
-        uint shortcut =
+        auto shortcut =
 #if defined(Q_OS_MACX)
             maybeSwapShortcut(it->shortcut);
 #else
@@ -691,9 +691,9 @@ QString QPlatformTheme::defaultStandardButtonText(int button)
 QString QPlatformTheme::removeMnemonics(const QString &original)
 {
     QString returnText(original.size(), 0);
-    int finalDest = 0;
-    int currPos = 0;
-    int l = original.length();
+    auto finalDest = 0;
+    auto currPos = 0;
+    auto l = original.length();
     while (l) {
         if (original.at(currPos) == QLatin1Char('&')
             && (l == 1 || original.at(currPos + 1) != QLatin1Char('&'))) {
@@ -706,7 +706,7 @@ QString QPlatformTheme::removeMnemonics(const QString &original)
                    original.at(currPos + 2) != QLatin1Char('&') &&
                    original.at(currPos + 3) == QLatin1Char(')')) {
             /* remove mnemonics its format is "\s*(&X)" */
-            int n = 0;
+            auto n = 0;
             while (finalDest > n && returnText.at(finalDest - n - 1).isSpace())
                 ++n;
             finalDest -= n;
@@ -726,7 +726,7 @@ QString QPlatformTheme::removeMnemonics(const QString &original)
 unsigned QPlatformThemePrivate::currentKeyPlatforms()
 {
     const uint keyboardScheme = QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::KeyboardScheme).toInt();
-    unsigned result = 1u << keyboardScheme;
+    auto result = 1u << keyboardScheme;
     if (keyboardScheme == QPlatformTheme::KdeKeyboardScheme
         || keyboardScheme == QPlatformTheme::GnomeKeyboardScheme
         || keyboardScheme == QPlatformTheme::CdeKeyboardScheme)

@@ -366,7 +366,7 @@ void QPen::detach()
     if (d->ref.load() == 1)
         return;
 
-    QPenData *x = new QPenData(*static_cast<QPenData *>(d));
+    auto x = new QPenData(*static_cast<QPenData *>(d));
     if (!d->ref.deref())
         delete d;
     x->ref.store(1);
@@ -443,7 +443,7 @@ void QPen::setStyle(Qt::PenStyle s)
         return;
     detach();
     d->style = s;
-    QPenData *dd = static_cast<QPenData *>(d);
+    auto dd = static_cast<QPenData *>(d);
     dd->dashPattern.clear();
     dd->dashOffset = 0;
 }
@@ -455,7 +455,7 @@ void QPen::setStyle(Qt::PenStyle s)
  */
 QVector<qreal> QPen::dashPattern() const
 {
-    QPenData *dd = static_cast<QPenData *>(d);
+    auto dd = static_cast<QPenData *>(d);
     if (d->style == Qt::SolidLine || d->style == Qt::NoPen) {
         return QVector<qreal>();
     } else if (dd->dashPattern.isEmpty()) {
@@ -523,7 +523,7 @@ void QPen::setDashPattern(const QVector<qreal> &pattern)
         return;
     detach();
 
-    QPenData *dd = static_cast<QPenData *>(d);
+    auto dd = static_cast<QPenData *>(d);
     dd->dashPattern = pattern;
     d->style = Qt::CustomDashLine;
 
@@ -541,7 +541,7 @@ void QPen::setDashPattern(const QVector<qreal> &pattern)
 */
 qreal QPen::dashOffset() const
 {
-    QPenData *dd = static_cast<QPenData *>(d);
+    auto dd = static_cast<QPenData *>(d);
     return dd->dashOffset;
 }
 /*!
@@ -567,7 +567,7 @@ void QPen::setDashOffset(qreal offset)
     if (qFuzzyCompare(offset, static_cast<QPenData *>(d)->dashOffset))
         return;
     detach();
-    QPenData *dd = static_cast<QPenData *>(d);
+    auto dd = static_cast<QPenData *>(d);
     dd->dashOffset = offset;
     if (d->style != Qt::CustomDashLine) {
         dd->dashPattern = dashPattern();
@@ -583,7 +583,7 @@ void QPen::setDashOffset(qreal offset)
 */
 qreal QPen::miterLimit() const
 {
-    const QPenData *dd = static_cast<QPenData *>(d);
+    auto dd = static_cast<QPenData *>(d);
     return dd->miterLimit;
 }
 
@@ -606,7 +606,7 @@ qreal QPen::miterLimit() const
 void QPen::setMiterLimit(qreal limit)
 {
     detach();
-    QPenData *dd = static_cast<QPenData *>(d);
+    auto dd = static_cast<QPenData *>(d);
     dd->miterLimit = limit;
 }
 
@@ -817,7 +817,7 @@ bool QPen::isSolid() const
 
 bool QPen::isCosmetic() const
 {
-    QPenData *dd = static_cast<QPenData *>(d);
+    auto dd = static_cast<QPenData *>(d);
     return (dd->cosmetic == true) || d->width == 0;
 }
 
@@ -832,7 +832,7 @@ bool QPen::isCosmetic() const
 void QPen::setCosmetic(bool cosmetic)
 {
     detach();
-    QPenData *dd = static_cast<QPenData *>(d);
+    auto dd = static_cast<QPenData *>(d);
     dd->cosmetic = cosmetic;
 }
 
@@ -860,8 +860,8 @@ void QPen::setCosmetic(bool cosmetic)
 
 bool QPen::operator==(const QPen &p) const
 {
-    QPenData *dd = static_cast<QPenData *>(d);
-    QPenData *pdd = static_cast<QPenData *>(p.d);
+    auto dd = static_cast<QPenData *>(d);
+    auto pdd = static_cast<QPenData *>(p.d);
     return (p.d == d)
         || (p.d->style == d->style
             && p.d->capStyle == d->capStyle
@@ -905,7 +905,7 @@ bool QPen::isDetached()
 
 QDataStream &operator<<(QDataStream &s, const QPen &p)
 {
-    QPenData *dd = static_cast<QPenData *>(p.d);
+    auto dd = static_cast<QPenData *>(p.d);
     if (s.version() < 3) {
         s << (quint8)p.style();
     } else if (s.version() < QDataStream::Qt_4_3) {
@@ -928,9 +928,9 @@ QDataStream &operator<<(QDataStream &s, const QPen &p)
             // ensure that we write doubles here instead of streaming the pattern
             // directly; otherwise, platforms that redefine qreal might generate
             // data that cannot be read on other platforms.
-            QVector<qreal> pattern = p.dashPattern();
+            auto pattern = p.dashPattern();
             s << quint32(pattern.size());
-            for (int i = 0; i < pattern.size(); ++i)
+            for (auto i = 0; i < pattern.size(); ++i)
                 s << double(pattern.at(i));
         }
         if (s.version() >= 9)
@@ -961,8 +961,8 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
     double miterLimit = 2;
     QVector<qreal> dashPattern;
     double dashOffset = 0;
-    bool cosmetic = false;
-    bool defaultWidth = false;
+    auto cosmetic = false;
+    auto defaultWidth = false;
     if (s.version() < QDataStream::Qt_4_3) {
         quint8 style8;
         s >> style8;
@@ -1004,7 +1004,7 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
     }
 
     p.detach();
-    QPenData *dd = static_cast<QPenData *>(p.d);
+    auto dd = static_cast<QPenData *>(p.d);
     dd->width = width;
     dd->brush = brush;
     dd->style = Qt::PenStyle(style & Qt::MPenStyle);

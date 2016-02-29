@@ -264,16 +264,16 @@ QClipboard::~QClipboard()
 */
 QString QClipboard::text(QString &subtype, Mode mode) const
 {
-    const QMimeData *const data = mimeData(mode);
+    const auto data = mimeData(mode);
     if (!data)
         return QString();
 
-    const QStringList formats = data->formats();
+    const auto formats = data->formats();
     if (subtype.isEmpty()) {
         if (formats.contains(QLatin1String("text/plain")))
             subtype = QLatin1String("plain");
         else {
-            for (int i = 0; i < formats.size(); ++i)
+            for (auto i = 0; i < formats.size(); ++i)
                 if (formats.at(i).startsWith(QLatin1String("text/"))) {
                     subtype = formats.at(i).mid(5);
                     break;
@@ -285,10 +285,10 @@ QString QClipboard::text(QString &subtype, Mode mode) const
         return QString();
     }
 
-    const QByteArray rawData = data->data(QLatin1String("text/") + subtype);
+    const auto rawData = data->data(QLatin1String("text/") + subtype);
 
 #ifndef QT_NO_TEXTCODEC
-    QTextCodec* codec = QTextCodec::codecForMib(106); // utf-8 is default
+    auto codec = QTextCodec::codecForMib(106); // utf-8 is default
     if (subtype == QLatin1String("html"))
         codec = QTextCodec::codecForHtml(rawData, codec);
     else
@@ -314,7 +314,7 @@ QString QClipboard::text(QString &subtype, Mode mode) const
 */
 QString QClipboard::text(Mode mode) const
 {
-    const QMimeData *data = mimeData(mode);
+    auto data = mimeData(mode);
     return data ? data->text() : QString();
 }
 
@@ -332,7 +332,7 @@ QString QClipboard::text(Mode mode) const
 */
 void QClipboard::setText(const QString &text, Mode mode)
 {
-    QMimeData *data = new QMimeData;
+    auto data = new QMimeData;
     data->setText(text);
     setMimeData(data, mode);
 }
@@ -352,7 +352,7 @@ void QClipboard::setText(const QString &text, Mode mode)
 */
 QImage QClipboard::image(Mode mode) const
 {
-    const QMimeData *data = mimeData(mode);
+    auto data = mimeData(mode);
     if (!data)
         return QImage();
     return qvariant_cast<QImage>(data->imageData());
@@ -375,7 +375,7 @@ QImage QClipboard::image(Mode mode) const
 */
 void QClipboard::setImage(const QImage &image, Mode mode)
 {
-    QMimeData *data = new QMimeData;
+    auto data = new QMimeData;
     data->setImageData(image);
     setMimeData(data, mode);
 }
@@ -397,7 +397,7 @@ void QClipboard::setImage(const QImage &image, Mode mode)
 */
 QPixmap QClipboard::pixmap(Mode mode) const
 {
-    const QMimeData *data = mimeData(mode);
+    auto data = mimeData(mode);
     return data ? qvariant_cast<QPixmap>(data->imageData()) : QPixmap();
 }
 
@@ -416,7 +416,7 @@ QPixmap QClipboard::pixmap(Mode mode) const
 */
 void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
 {
-    QMimeData *data = new QMimeData;
+    auto data = new QMimeData;
     data->setImageData(pixmap);
     setMimeData(data, mode);
 }
@@ -442,7 +442,7 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
 */
 const QMimeData* QClipboard::mimeData(Mode mode) const
 {
-    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
+    auto clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     if (!clipboard->supportsMode(mode)) return 0;
     return clipboard->mimeData(mode);
 }
@@ -468,7 +468,7 @@ const QMimeData* QClipboard::mimeData(Mode mode) const
 */
 void QClipboard::setMimeData(QMimeData* src, Mode mode)
 {
-    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
+    auto clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     if (!clipboard->supportsMode(mode)) {
         if (src != 0) {
             qWarning("Data set on unsupported clipboard mode. QMimeData object will be deleted.");
@@ -552,7 +552,7 @@ bool QClipboard::ownsFindBuffer() const
 */
 bool QClipboard::supportsMode(Mode mode) const
 {
-    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
+    auto clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     return clipboard->supportsMode(mode);
 }
 
@@ -564,7 +564,7 @@ bool QClipboard::supportsMode(Mode mode) const
 */
 bool QClipboard::ownsMode(Mode mode) const
 {
-    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
+    auto clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     return clipboard->ownsMode(mode);
 }
 

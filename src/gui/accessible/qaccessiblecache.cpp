@@ -63,8 +63,8 @@ QAccessibleCache *QAccessibleCache::instance()
 */
 QAccessible::Id QAccessibleCache::acquireId() const
 {
-    static const QAccessible::Id FirstId = QAccessible::Id(INT_MAX) + 1;
-    static QAccessible::Id lastUsedId = FirstId;
+    static const auto FirstId = QAccessible::Id(INT_MAX) + 1;
+    static auto lastUsedId = FirstId;
 
     while (idToInterface.contains(lastUsedId)) {
         // (wrap back when when we reach UINT_MAX - 1)
@@ -92,8 +92,8 @@ QAccessible::Id QAccessibleCache::insert(QObject *object, QAccessibleInterface *
     Q_ASSERT(!objectToId.contains(object));
     Q_ASSERT_X(!idToInterface.values().contains(iface), "", "Accessible interface inserted into cache twice!");
 
-    QAccessible::Id id = acquireId();
-    QObject *obj = iface->object();
+    auto id = acquireId();
+    auto obj = iface->object();
     Q_ASSERT(object == obj);
     if (obj) {
         objectToId.insert(obj, id);
@@ -105,7 +105,7 @@ QAccessible::Id QAccessibleCache::insert(QObject *object, QAccessibleInterface *
 
 void QAccessibleCache::objectDestroyed(QObject* obj)
 {
-    QAccessible::Id id = objectToId.value(obj);
+    auto id = objectToId.value(obj);
     if (id) {
         Q_ASSERT_X(idToInterface.contains(id), "", "QObject with accessible interface deleted, where interface not in cache!");
         deleteInterface(id, obj);
@@ -114,7 +114,7 @@ void QAccessibleCache::objectDestroyed(QObject* obj)
 
 void QAccessibleCache::deleteInterface(QAccessible::Id id, QObject *obj)
 {
-    QAccessibleInterface *iface = idToInterface.take(id);
+    auto iface = idToInterface.take(id);
     if (!obj)
         obj = iface->object();
     if (obj)

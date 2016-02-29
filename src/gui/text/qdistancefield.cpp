@@ -74,12 +74,12 @@ inline void fillLine(qint32 *, int, int, int, qint32, qint32)
 template <>
 inline void fillLine<Clip, LeftToRight>(qint32 *line, int width, int lx, int rx, qint32 d, qint32 dd)
 {
-    int fromX = qMax(0, lx >> 8);
-    int toX = qMin(width, rx >> 8);
-    int x = toX - fromX;
+    auto fromX = qMax(0, lx >> 8);
+    auto toX = qMin(width, rx >> 8);
+    auto x = toX - fromX;
     if (x <= 0)
         return;
-    qint32 val = d + (((fromX << 8) + 0xff - lx) * dd >> 8);
+    auto val = d + (((fromX << 8) + 0xff - lx) * dd >> 8);
     line += fromX;
     do {
         *line = abs(val) < abs(*line) ? val : *line;
@@ -91,12 +91,12 @@ inline void fillLine<Clip, LeftToRight>(qint32 *line, int width, int lx, int rx,
 template <>
 inline void fillLine<Clip, RightToLeft>(qint32 *line, int width, int lx, int rx, qint32 d, qint32 dd)
 {
-    int fromX = qMax(0, lx >> 8);
-    int toX = qMin(width, rx >> 8);
-    int x = toX - fromX;
+    auto fromX = qMax(0, lx >> 8);
+    auto toX = qMin(width, rx >> 8);
+    auto x = toX - fromX;
     if (x <= 0)
         return;
-    qint32 val = d + (((toX << 8) + 0xff - rx) * dd >> 8);
+    auto val = d + (((toX << 8) + 0xff - rx) * dd >> 8);
     line += toX;
     do {
         val -= dd;
@@ -108,12 +108,12 @@ inline void fillLine<Clip, RightToLeft>(qint32 *line, int width, int lx, int rx,
 template <>
 inline void fillLine<NoClip, LeftToRight>(qint32 *line, int, int lx, int rx, qint32 d, qint32 dd)
 {
-    int fromX = lx >> 8;
-    int toX = rx >> 8;
-    int x = toX - fromX;
+    auto fromX = lx >> 8;
+    auto toX = rx >> 8;
+    auto x = toX - fromX;
     if (x <= 0)
         return;
-    qint32 val = d + ((~lx & 0xff) * dd >> 8);
+    auto val = d + ((~lx & 0xff) * dd >> 8);
     line += fromX;
     do {
         *line = abs(val) < abs(*line) ? val : *line;
@@ -125,12 +125,12 @@ inline void fillLine<NoClip, LeftToRight>(qint32 *line, int, int lx, int rx, qin
 template <>
 inline void fillLine<NoClip, RightToLeft>(qint32 *line, int, int lx, int rx, qint32 d, qint32 dd)
 {
-    int fromX = lx >> 8;
-    int toX = rx >> 8;
-    int x = toX - fromX;
+    auto fromX = lx >> 8;
+    auto toX = rx >> 8;
+    auto x = toX - fromX;
     if (x <= 0)
         return;
-    qint32 val = d + ((~rx & 0xff) * dd >> 8);
+    auto val = d + ((~rx & 0xff) * dd >> 8);
     line += toX;
     do {
         val -= dd;
@@ -145,9 +145,9 @@ inline void fillLines(qint32 *bits, int width, int height, int upperY, int lower
 {
     Q_UNUSED(height);
     Q_ASSERT(upperY < lowerY);
-    int y = lowerY - upperY;
+    auto y = lowerY - upperY;
     if (vDir == TopDown) {
-        qint32 *line = bits + upperY * width;
+        auto line = bits + upperY * width;
         do {
             fillLine<clip, hDir>(line, width, lx, rx, d, ddx);
             lx += ldx;
@@ -156,7 +156,7 @@ inline void fillLines(qint32 *bits, int width, int height, int upperY, int lower
             line += width;
         } while (--y);
     } else {
-        qint32 *line = bits + lowerY * width;
+        auto line = bits + lowerY * width;
         do {
             lx -= ldx;
             d -= ddy;
@@ -171,15 +171,15 @@ template <FillClip clip>
 void drawTriangle(qint32 *bits, int width, int height, const QPoint *center,
                   const QPoint *v1, const QPoint *v2, qint32 value)
 {
-    const int y1 = clip == Clip ? qBound(0, v1->y() >> 8, height) : v1->y() >> 8;
-    const int y2 = clip == Clip ? qBound(0, v2->y() >> 8, height) : v2->y() >> 8;
-    const int yC = clip == Clip ? qBound(0, center->y() >> 8, height) : center->y() >> 8;
+    const auto y1 = clip == Clip ? qBound(0, v1->y() >> 8, height) : v1->y() >> 8;
+    const auto y2 = clip == Clip ? qBound(0, v2->y() >> 8, height) : v2->y() >> 8;
+    const auto yC = clip == Clip ? qBound(0, center->y() >> 8, height) : center->y() >> 8;
 
-    const int v1Frac = clip == Clip ? (y1 << 8) + 0xff - v1->y() : ~v2->y() & 0xff;
-    const int v2Frac = clip == Clip ? (y2 << 8) + 0xff - v2->y() : ~v1->y() & 0xff;
-    const int centerFrac = clip == Clip ? (yC << 8) + 0xff - center->y() : ~center->y() & 0xff;
+    const auto v1Frac = clip == Clip ? (y1 << 8) + 0xff - v1->y() : ~v2->y() & 0xff;
+    const auto v2Frac = clip == Clip ? (y2 << 8) + 0xff - v2->y() : ~v1->y() & 0xff;
+    const auto centerFrac = clip == Clip ? (yC << 8) + 0xff - center->y() : ~center->y() & 0xff;
 
-    int dx1 = 0, x1 = 0, dx2 = 0, x2 = 0;
+    auto dx1 = 0, x1 = 0, dx2 = 0, x2 = 0;
     qint32 dd1, d1, dd2, d2;
     if (v1->y() != center->y()) {
         dx1 = ((v1->x() - center->x()) << 8) / (v1->y() - center->y());
@@ -190,9 +190,9 @@ void drawTriangle(qint32 *bits, int width, int height, const QPoint *center,
         x2 = center->x() + centerFrac * (v2->x() - center->x()) / (v2->y() - center->y());
     }
 
-    const qint32 div = (v2->x() - center->x()) * (v1->y() - center->y())
+    const auto div = (v2->x() - center->x()) * (v1->y() - center->y())
                      - (v2->y() - center->y()) * (v1->x() - center->x());
-    const qint32 dd = div ? qint32((qint64(value * (v1->y() - v2->y())) << 8) / div) : 0;
+    const auto dd = div ? qint32((qint64(value * (v1->y() - v2->y())) << 8) / div) : 0;
 
     if (y2 < yC) {
         if (y1 < yC) {
@@ -225,7 +225,7 @@ void drawTriangle(qint32 *bits, int width, int height, const QPoint *center,
         } else {
             // y2 < yC <= y1
             // Center to the right.
-            int dx = ((v1->x() - v2->x()) << 8) / (v1->y() - v2->y());
+            auto dx = ((v1->x() - v2->x()) << 8) / (v1->y() - v2->y());
             int xUp, xDn;
             xUp = xDn = v2->x() + (clip == Clip ? (yC << 8) + 0xff - v2->y()
                                                 : (center->y() | 0xff) - v2->y())
@@ -240,7 +240,7 @@ void drawTriangle(qint32 *bits, int width, int height, const QPoint *center,
         if (y1 < yC) {
             // y1 < yC <= y2
             // Center to the left.
-            int dx = ((v1->x() - v2->x()) << 8) / (v1->y() - v2->y());
+            auto dx = ((v1->x() - v2->x()) << 8) / (v1->y() - v2->y());
             int xUp, xDn;
             xUp = xDn = v1->x() + (clip == Clip ? (yC << 8) + 0xff - v1->y()
                                                 : (center->y() | 0xff) - v1->y())
@@ -303,20 +303,20 @@ void drawRectangle(qint32 *bits, int width, int height,
     Q_ASSERT(ext2->x() - center2->x() == center2->x() - int2->x());
     Q_ASSERT(ext2->y() - center2->y() == center2->y() - int2->y());
 
-    const int yc1 = clip == Clip ? qBound(0, center1->y() >> 8, height) : center1->y() >> 8;
-    const int yc2 = clip == Clip ? qBound(0, center2->y() >> 8, height) : center2->y() >> 8;
-    const int yi1 = clip == Clip ? qBound(0, int1->y() >> 8, height) : int1->y() >> 8;
-    const int yi2 = clip == Clip ? qBound(0, int2->y() >> 8, height) : int2->y() >> 8;
-    const int ye1 = clip == Clip ? qBound(0, ext1->y() >> 8, height) : ext1->y() >> 8;
-    const int ye2 = clip == Clip ? qBound(0, ext2->y() >> 8, height) : ext2->y() >> 8;
+    const auto yc1 = clip == Clip ? qBound(0, center1->y() >> 8, height) : center1->y() >> 8;
+    const auto yc2 = clip == Clip ? qBound(0, center2->y() >> 8, height) : center2->y() >> 8;
+    const auto yi1 = clip == Clip ? qBound(0, int1->y() >> 8, height) : int1->y() >> 8;
+    const auto yi2 = clip == Clip ? qBound(0, int2->y() >> 8, height) : int2->y() >> 8;
+    const auto ye1 = clip == Clip ? qBound(0, ext1->y() >> 8, height) : ext1->y() >> 8;
+    const auto ye2 = clip == Clip ? qBound(0, ext2->y() >> 8, height) : ext2->y() >> 8;
 
-    const int center1Frac = clip == Clip ? (yc1 << 8) + 0xff - center1->y() : ~center1->y() & 0xff;
-    const int center2Frac = clip == Clip ? (yc2 << 8) + 0xff - center2->y() : ~center2->y() & 0xff;
-    const int int1Frac = clip == Clip ? (yi1 << 8) + 0xff - int1->y() : ~int1->y() & 0xff;
-    const int ext1Frac = clip == Clip ? (ye1 << 8) + 0xff - ext1->y() : ~ext1->y() & 0xff;
+    const auto center1Frac = clip == Clip ? (yc1 << 8) + 0xff - center1->y() : ~center1->y() & 0xff;
+    const auto center2Frac = clip == Clip ? (yc2 << 8) + 0xff - center2->y() : ~center2->y() & 0xff;
+    const auto int1Frac = clip == Clip ? (yi1 << 8) + 0xff - int1->y() : ~int1->y() & 0xff;
+    const auto ext1Frac = clip == Clip ? (ye1 << 8) + 0xff - ext1->y() : ~ext1->y() & 0xff;
 
-    int dxC = 0, dxE = 0; // cap slope, edge slope
-    qint32 ddC = 0;
+    auto dxC = 0, dxE = 0; // cap slope, edge slope
+    auto ddC = 0;
     if (ext1->y() != int1->y()) {
         dxC = ((ext1->x() - int1->x()) << 8) / (ext1->y() - int1->y());
         ddC = (extValue << 9) / (ext1->y() - int1->y());
@@ -324,14 +324,14 @@ void drawRectangle(qint32 *bits, int width, int height,
     if (ext1->y() != ext2->y())
         dxE = ((ext1->x() - ext2->x()) << 8) / (ext1->y() - ext2->y());
 
-    const qint32 div = (ext1->x() - int1->x()) * (ext2->y() - int1->y())
+    const auto div = (ext1->x() - int1->x()) * (ext2->y() - int1->y())
                      - (ext1->y() - int1->y()) * (ext2->x() - int1->x());
-    const qint32 dd = div ? qint32((qint64(extValue * (ext2->y() - ext1->y())) << 9) / div) : 0;
+    const auto dd = div ? qint32((qint64(extValue * (ext2->y() - ext1->y())) << 9) / div) : 0;
 
     int xe1, xe2, xc1, xc2;
     qint32 d;
 
-    qint32 intValue = -extValue;
+    auto intValue = -extValue;
 
     if (center2->x() < center1->x()) {
         // Leaning to the right. '/'
@@ -436,47 +436,47 @@ static void drawPolygons(qint32 *bits, int width, int height, const QPoint *vert
     Q_ASSERT(indexCount != 0);
     Q_ASSERT(height <= 128);
     QVarLengthArray<quint8, 16> scans[128];
-    int first = 0;
-    for (int i = 1; i < indexCount; ++i) {
-        quint32 idx1 = indices[i - 1];
-        quint32 idx2 = indices[i];
+    auto first = 0;
+    for (auto i = 1; i < indexCount; ++i) {
+        auto idx1 = indices[i - 1];
+        auto idx2 = indices[i];
         Q_ASSERT(idx1 != quint32(-1));
         if (idx2 == quint32(-1)) {
             idx2 = indices[first];
             Q_ASSERT(idx2 != quint32(-1));
             first = ++i;
         }
-        const QPoint *v1 = &vertices[idx1];
-        const QPoint *v2 = &vertices[idx2];
+        auto v1 = &vertices[idx1];
+        auto v2 = &vertices[idx2];
         if (v2->y() < v1->y())
             qSwap(v1, v2);
-        int fromY = qMax(0, v1->y() >> 8);
-        int toY = qMin(height, v2->y() >> 8);
+        auto fromY = qMax(0, v1->y() >> 8);
+        auto toY = qMin(height, v2->y() >> 8);
         if (fromY >= toY)
             continue;
-        int dx = ((v2->x() - v1->x()) << 8) / (v2->y() - v1->y());
-        int x = v1->x() + ((fromY << 8) + 0xff - v1->y()) * (v2->x() - v1->x()) / (v2->y() - v1->y());
-        for (int y = fromY; y < toY; ++y) {
-            quint32 c = quint32(x >> 8);
+        auto dx = ((v2->x() - v1->x()) << 8) / (v2->y() - v1->y());
+        auto x = v1->x() + ((fromY << 8) + 0xff - v1->y()) * (v2->x() - v1->x()) / (v2->y() - v1->y());
+        for (auto y = fromY; y < toY; ++y) {
+            auto c = quint32(x >> 8);
             if (c < quint32(width))
                 scans[y].append(quint8(c));
             x += dx;
         }
     }
-    for (int i = 0; i < height; ++i) {
-        quint8 *scanline = scans[i].data();
-        int size = scans[i].size();
-        for (int j = 1; j < size; ++j) {
-            int k = j;
-            quint8 value = scanline[k];
+    for (auto i = 0; i < height; ++i) {
+        auto scanline = scans[i].data();
+        auto size = scans[i].size();
+        for (auto j = 1; j < size; ++j) {
+            auto k = j;
+            auto value = scanline[k];
             for (; k != 0 && value < scanline[k - 1]; --k)
                 scanline[k] = scanline[k - 1];
             scanline[k] = value;
         }
-        qint32 *line = bits + i * width;
-        int j = 0;
+        auto line = bits + i * width;
+        auto j = 0;
         for (; j + 1 < size; j += 2) {
-            for (quint8 x = scanline[j]; x < scanline[j + 1]; ++x)
+            for (auto x = scanline[j]; x < scanline[j + 1]; ++x)
                 line[x] = value;
         }
         if (j < size) {
@@ -496,8 +496,8 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
         return;
     }
 
-    int imgWidth = data->width;
-    int imgHeight = data->height;
+    auto imgWidth = data->width;
+    auto imgHeight = data->height;
 
     QTransform transform;
     transform.translate(offs, offs);
@@ -507,18 +507,18 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
     QDataBuffer<QPoint> pathVertices(0);
     qSimplifyPath(path, pathVertices, pathIndices, transform);
 
-    const qint32 interiorColor = -0x7f80; // 8:8 signed format, -127.5
-    const qint32 exteriorColor = 0x7f80; // 8:8 signed format, 127.5
+    const auto interiorColor = -0x7f80; // 8:8 signed format, -127.5
+    const auto exteriorColor = 0x7f80; // 8:8 signed format, 127.5
 
     QScopedArrayPointer<qint32> bits(new qint32[imgWidth * imgHeight]);
-    for (int i = 0; i < imgWidth * imgHeight; ++i)
+    for (auto i = 0; i < imgWidth * imgHeight; ++i)
         bits[i] = exteriorColor;
 
-    const qreal angleStep = qreal(15 * 3.141592653589793238 / 180);
+    const auto angleStep = qreal(15 * 3.141592653589793238 / 180);
     const QPoint rotation(qRound(qCos(angleStep) * 0x4000),
                           qRound(qSin(angleStep) * 0x4000)); // 2:14 signed
 
-    const quint32 *indices = pathIndices.data();
+    auto indices = pathIndices.data();
     QVarLengthArray<QPoint> normals;
     QVarLengthArray<QPoint> vertices;
     QVarLengthArray<bool> isConvex;
@@ -527,7 +527,7 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
     drawPolygons(bits.data(), imgWidth, imgHeight, pathVertices.data(),
                  indices, pathIndices.size(), interiorColor);
 
-    int index = 0;
+    auto index = 0;
 
     while (index < pathIndices.size()) {
         normals.clear();
@@ -535,14 +535,14 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
         needsClipping.clear();
 
         // Find end of polygon.
-        int end = index;
+        auto end = index;
         while (indices[end] != quint32(-1))
             ++end;
 
         // Calculate vertex normals.
-        for (int next = index, prev = end - 1; next < end; prev = next++) {
-            quint32 fromVertexIndex = indices[prev];
-            quint32 toVertexIndex = indices[next];
+        for (auto next = index, prev = end - 1; next < end; prev = next++) {
+            auto fromVertexIndex = indices[prev];
+            auto toVertexIndex = indices[next];
 
             const QPoint &from = pathVertices.at(fromVertexIndex);
             const QPoint &to = pathVertices.at(toVertexIndex);
@@ -550,7 +550,7 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
             QPoint n(to.y() - from.y(), from.x() - to.x());
             if (n.x() == 0 && n.y() == 0)
                 continue;
-            int scale = qRound((offs << 16) / qSqrt(qreal(n.x() * n.x() + n.y() * n.y()))); // 8:16
+            auto scale = qRound((offs << 16) / qSqrt(qreal(n.x() * n.x() + n.y() * n.y()))); // 8:16
             n.rx() = n.x() * scale >> 8;
             n.ry() = n.y() * scale >> 8;
             normals.append(n);
@@ -561,18 +561,18 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
         }
 
         isConvex.resize(normals.count());
-        for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
+        for (auto next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
             isConvex[prev] = normals.at(prev).x() * normals.at(next).y()
                            - normals.at(prev).y() * normals.at(next).x() < 0;
         }
 
         // Draw quads.
-        for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
-            QPoint n = normals.at(next);
-            QPoint intPrev = vertices.at(prev);
-            QPoint extPrev = vertices.at(prev);
-            QPoint intNext = vertices.at(next);
-            QPoint extNext = vertices.at(next);
+        for (auto next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
+            auto n = normals.at(next);
+            auto intPrev = vertices.at(prev);
+            auto extPrev = vertices.at(prev);
+            auto intNext = vertices.at(next);
+            auto extNext = vertices.at(next);
 
             extPrev.rx() -= n.x();
             extPrev.ry() -= n.y();
@@ -596,7 +596,7 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
             }
 
             if (isConvex.at(prev)) {
-                QPoint p = extPrev;
+                auto p = extPrev;
                 if (needsClipping[prev]) {
                     for (;;) {
                         QPoint rn((n.x() * rotation.x() - n.y() * rotation.y()) >> 14,
@@ -637,7 +637,7 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
                     }
                 }
             } else {
-                QPoint p = intPrev;
+                auto p = intPrev;
                 if (needsClipping[prev]) {
                     for (;;) {
                         QPoint rn((n.x() * rotation.x() + n.y() * rotation.y()) >> 14,
@@ -683,10 +683,10 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
         index = end + 1;
     }
 
-    const qint32 *inLine = bits.data();
-    uchar *outLine = data->data;
-    for (int y = 0; y < imgHeight; ++y) {
-        for (int x = 0; x < imgWidth; ++x, ++inLine, ++outLine)
+    auto inLine = bits.data();
+    auto outLine = data->data;
+    for (auto y = 0; y < imgHeight; ++y) {
+        for (auto x = 0; x < imgWidth; ++x, ++inLine, ++outLine)
             *outLine = uchar((0x7f80 - *inLine) >> 8);
     }
 }
@@ -696,14 +696,14 @@ static bool imageHasNarrowOutlines(const QImage &im)
     if (im.isNull())
         return false;
 
-    int minHThick = 999;
-    int minVThick = 999;
+    auto minHThick = 999;
+    auto minVThick = 999;
 
-    int thick = 0;
-    bool in = false;
-    int y = (im.height() + 1) / 2;
-    for (int x = 0; x < im.width(); ++x) {
-        int a = qAlpha(im.pixel(x, y));
+    auto thick = 0;
+    auto in = false;
+    auto y = (im.height() + 1) / 2;
+    for (auto x = 0; x < im.width(); ++x) {
+        auto a = qAlpha(im.pixel(x, y));
         if (a > 127) {
             in = true;
             ++thick;
@@ -716,9 +716,9 @@ static bool imageHasNarrowOutlines(const QImage &im)
 
     thick = 0;
     in = false;
-    int x = (im.width() + 1) / 2;
-    for (int y = 0; y < im.height(); ++y) {
-        int a = qAlpha(im.pixel(x, y));
+    auto x = (im.width() + 1) / 2;
+    for (auto y = 0; y < im.height(); ++y) {
+        auto a = qAlpha(im.pixel(x, y));
         if (a > 127) {
             in = true;
             ++thick;
@@ -734,13 +734,13 @@ static bool imageHasNarrowOutlines(const QImage &im)
 
 bool qt_fontHasNarrowOutlines(QFontEngine *fontEngine)
 {
-    QFontEngine *fe = fontEngine->cloneWithSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
+    auto fe = fontEngine->cloneWithSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
     if (!fe)
         return false;
 
     QImage im;
 
-    const glyph_t glyph = fe->glyphIndex('O');
+    const auto glyph = fe->glyphIndex('O');
     if (glyph != 0)
         im = fe->alphaMapForGlyph(glyph, QFixed(), QTransform());
 
@@ -752,12 +752,12 @@ bool qt_fontHasNarrowOutlines(QFontEngine *fontEngine)
 
 bool qt_fontHasNarrowOutlines(const QRawFont &f)
 {
-    QRawFont font = f;
+    auto font = f;
     font.setPixelSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
     if (!font.isValid())
         return false;
 
-    QVector<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("O"));
+    auto glyphIndices = font.glyphIndexesForString(QLatin1String("O"));
     if (glyphIndices.isEmpty() || glyphIndices[0] == 0)
         return false;
 
@@ -786,7 +786,7 @@ QDistanceFieldData::~QDistanceFieldData()
 
 QDistanceFieldData *QDistanceFieldData::create(const QSize &size)
 {
-    QDistanceFieldData *data = new QDistanceFieldData;
+    auto data = new QDistanceFieldData;
 
     if (size.isValid()) {
         data->width = size.width();
@@ -801,10 +801,10 @@ QDistanceFieldData *QDistanceFieldData::create(const QSize &size)
 
 QDistanceFieldData *QDistanceFieldData::create(const QPainterPath &path, bool doubleResolution)
 {
-    int dfMargin = QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution);
-    int glyphWidth = qCeil(path.boundingRect().width() / QT_DISTANCEFIELD_SCALE(doubleResolution)) + dfMargin * 2;
+    auto dfMargin = QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution);
+    auto glyphWidth = qCeil(path.boundingRect().width() / QT_DISTANCEFIELD_SCALE(doubleResolution)) + dfMargin * 2;
 
-    QDistanceFieldData *data = create(QSize(glyphWidth, QT_DISTANCEFIELD_TILESIZE(doubleResolution)));
+    auto data = create(QSize(glyphWidth, QT_DISTANCEFIELD_TILESIZE(doubleResolution)));
 
     makeDistanceField(data,
                       path,
@@ -841,7 +841,7 @@ QDistanceField::QDistanceField(QFontEngine *fontEngine, glyph_t glyph, bool doub
 
 QDistanceField::QDistanceField(const QPainterPath &path, glyph_t glyph, bool doubleResolution)
 {
-    QPainterPath dfPath = path;
+    auto dfPath = path;
     dfPath.translate(-dfPath.boundingRect().topLeft());
     dfPath.setFillRule(Qt::WindingFill);
 
@@ -867,10 +867,10 @@ glyph_t QDistanceField::glyph() const
 
 void QDistanceField::setGlyph(const QRawFont &font, glyph_t glyph, bool doubleResolution)
 {
-    QRawFont renderFont = font;
+    auto renderFont = font;
     renderFont.setPixelSize(QT_DISTANCEFIELD_BASEFONTSIZE(doubleResolution) * QT_DISTANCEFIELD_SCALE(doubleResolution));
 
-    QPainterPath path = renderFont.pathForGlyph(glyph);
+    auto path = renderFont.pathForGlyph(glyph);
     path.translate(-path.boundingRect().topLeft());
     path.setFillRule(Qt::WindingFill);
 
@@ -908,13 +908,13 @@ QDistanceField QDistanceField::copy(const QRect &r) const
     if (r.isNull())
         return QDistanceField(new QDistanceFieldData(*d));
 
-    int x = r.x();
-    int y = r.y();
-    int w = r.width();
-    int h = r.height();
+    auto x = r.x();
+    auto y = r.y();
+    auto w = r.width();
+    auto h = r.height();
 
-    int dx = 0;
-    int dy = 0;
+    auto dx = 0;
+    auto dy = 0;
     if (w <= 0 || h <= 0)
         return QDistanceField();
 
@@ -934,20 +934,20 @@ QDistanceField QDistanceField::copy(const QRect &r) const
         }
     }
 
-    int pixels_to_copy = qMax(w - dx, 0);
+    auto pixels_to_copy = qMax(w - dx, 0);
     if (x > d->width)
         pixels_to_copy = 0;
     else if (pixels_to_copy > d->width - x)
         pixels_to_copy = d->width - x;
-    int lines_to_copy = qMax(h - dy, 0);
+    auto lines_to_copy = qMax(h - dy, 0);
     if (y > d->height)
         lines_to_copy = 0;
     else if (lines_to_copy > d->height - y)
         lines_to_copy = d->height - y;
 
-    const uchar *src = d->data + x + y * d->width;
-    uchar *dest = df.d->data + dx + dy * df.d->width;
-    for (int i = 0; i < lines_to_copy; ++i) {
+    auto src = d->data + x + y * d->width;
+    auto dest = df.d->data + dx + dy * df.d->width;
+    for (auto i = 0; i < lines_to_copy; ++i) {
         memcpy(dest, src, pixels_to_copy);
         src += d->width;
         dest += df.d->width;
@@ -1011,11 +1011,11 @@ QImage QDistanceField::toImage(QImage::Format format) const
         return image;
 
     if (image.depth() == 8) {
-        for (int y = 0; y < d->height; ++y)
+        for (auto y = 0; y < d->height; ++y)
             memcpy(image.scanLine(y), scanLine(y), d->width);
     } else {
-        for (int y = 0; y < d->height; ++y) {
-            for (int x = 0; x < d->width; ++x) {
+        for (auto y = 0; y < d->height; ++y) {
+            for (auto x = 0; x < d->width; ++x) {
                 uint alpha = *(d->data + x + y * d->width);
                 image.setPixel(x, y, alpha << 24);
             }

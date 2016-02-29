@@ -74,30 +74,30 @@ QPainterState *QEmulationPaintEngine::createState(QPainterState *orig) const
 
 void QEmulationPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
-    QPainterState *s = state();
+    auto s = state();
 
     if (s->bgMode == Qt::OpaqueMode) {
-        Qt::BrushStyle style = brush.style();
+        auto style = brush.style();
         if ((style >= Qt::Dense1Pattern && style <= Qt::DiagCrossPattern) || (style == Qt::TexturePattern ))
             real_engine->fill(path, s->bgBrush);
     }
 
-    Qt::BrushStyle style = qbrush_style(brush);
+    auto style = qbrush_style(brush);
     if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
-        const QGradient *g = brush.gradient();
+        auto g = brush.gradient();
 
         if (g->coordinateMode() > QGradient::LogicalMode) {
             if (g->coordinateMode() == QGradient::StretchToDeviceMode) {
-                QBrush copy = brush;
-                QTransform mat = copy.transform();
+                auto copy = brush;
+                auto mat = copy.transform();
                 mat.scale(real_engine->painter()->device()->width(), real_engine->painter()->device()->height());
                 copy.setTransform(mat);
                 real_engine->fill(path, copy);
                 return;
             } else if (g->coordinateMode() == QGradient::ObjectBoundingMode) {
-                QBrush copy = brush;
-                QTransform mat = copy.transform();
-                QRectF r = path.controlPointRect();
+                auto copy = brush;
+                auto mat = copy.transform();
+                auto r = path.controlPointRect();
                 mat.translate(r.x(), r.y());
                 mat.scale(r.width(), r.height());
                 copy.setTransform(mat);
@@ -112,32 +112,32 @@ void QEmulationPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 
 void QEmulationPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 {
-    QPainterState *s = state();
+    auto s = state();
 
     if (s->bgMode == Qt::OpaqueMode && pen.style() > Qt::SolidLine) {
-        QPen bgPen = pen;
+        auto bgPen = pen;
         bgPen.setBrush(s->bgBrush);
         bgPen.setStyle(Qt::SolidLine);
         real_engine->stroke(path, bgPen);
     }
 
-    QBrush brush = pen.brush();
-    QPen copy = pen;
-    Qt::BrushStyle style = qbrush_style(brush);
+    auto brush = pen.brush();
+    auto copy = pen;
+    auto style = qbrush_style(brush);
     if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
-        const QGradient *g = brush.gradient();
+        auto g = brush.gradient();
 
         if (g->coordinateMode() > QGradient::LogicalMode) {
             if (g->coordinateMode() == QGradient::StretchToDeviceMode) {
-                QTransform mat = brush.transform();
+                auto mat = brush.transform();
                 mat.scale(real_engine->painter()->device()->width(), real_engine->painter()->device()->height());
                 brush.setTransform(mat);
                 copy.setBrush(brush);
                 real_engine->stroke(path, copy);
                 return;
             } else if (g->coordinateMode() == QGradient::ObjectBoundingMode) {
-                QTransform mat = brush.transform();
-                QRectF r = path.controlPointRect();
+                auto mat = brush.transform();
+                auto r = path.controlPointRect();
                 mat.translate(r.x(), r.y());
                 mat.scale(r.width(), r.height());
                 brush.setTransform(mat);
@@ -171,15 +171,15 @@ void QEmulationPaintEngine::drawTextItem(const QPointF &p, const QTextItem &text
         fillBGRect(rect);
     }
 
-    QPainterState *s = state();
-    Qt::BrushStyle style = qbrush_style(s->pen.brush());
+    auto s = state();
+    auto style = qbrush_style(s->pen.brush());
     if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern)
     {
-        QPen savedPen = s->pen;
-        QGradient g = *s->pen.brush().gradient();
+        auto savedPen = s->pen;
+        auto g = *s->pen.brush().gradient();
 
         if (g.coordinateMode() > QGradient::LogicalMode) {
-            QTransform mat = s->pen.brush().transform();
+            auto mat = s->pen.brush().transform();
             if (g.coordinateMode() == QGradient::StretchToDeviceMode) {
                 mat.scale(real_engine->painter()->device()->width(), real_engine->painter()->device()->height());
             } else if (g.coordinateMode() == QGradient::ObjectBoundingMode) {

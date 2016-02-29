@@ -481,7 +481,7 @@ static bool cleanupAdded = false;
 
 static QPlatformAccessibility *platformAccessibility()
 {
-    QPlatformIntegration *pfIntegration = QGuiApplicationPrivate::platformIntegration();
+    auto pfIntegration = QGuiApplicationPrivate::platformIntegration();
     return pfIntegration ? pfIntegration->accessibility() : 0;
 }
 
@@ -499,7 +499,7 @@ static QPlatformAccessibility *platformAccessibility()
 */
 void QAccessible::cleanup()
 {
-    if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
+    if (auto pfAccessibility = platformAccessibility())
         pfAccessibility->cleanup();
 }
 
@@ -671,19 +671,19 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
     if (!object)
         return 0;
 
-    if (Id id = QAccessibleCache::instance()->objectToId.value(object))
+    if (auto id = QAccessibleCache::instance()->objectToId.value(object))
         return QAccessibleCache::instance()->interfaceForId(id);
 
     // Create a QAccessibleInterface for the object class. Start by the most
     // derived class and walk up the class hierarchy.
-    const QMetaObject *mo = object->metaObject();
+    auto mo = object->metaObject();
     while (mo) {
         const QString cn = QLatin1String(mo->className());
 
         // Check if the class has a InterfaceFactory installed.
-        for (int i = qAccessibleFactories()->count(); i > 0; --i) {
+        for (auto i = qAccessibleFactories()->count(); i > 0; --i) {
             InterfaceFactory factory = qAccessibleFactories()->at(i - 1);
-            if (QAccessibleInterface *iface = factory(cn, object)) {
+            if (auto iface = factory(cn, object)) {
                 QAccessibleCache::instance()->insert(object, iface);
                 Q_ASSERT(QAccessibleCache::instance()->objectToId.contains(object));
                 return iface;
@@ -693,7 +693,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         // no entry in the cache try to create it using the plugin loader.
         if (!qAccessiblePlugins()->contains(cn)) {
             QAccessiblePlugin *factory = 0; // 0 means "no plugin found". This is cached as well.
-            const int index = loader()->indexOf(cn);
+            const auto index = loader()->indexOf(cn);
             if (index != -1)
                 factory = qobject_cast<QAccessiblePlugin *>(loader()->instance(index));
             qAccessiblePlugins()->insert(cn, factory);
@@ -701,9 +701,9 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
 
         // At this point the cache should contain a valid factory pointer or 0:
         Q_ASSERT(qAccessiblePlugins()->contains(cn));
-        QAccessiblePlugin *factory = qAccessiblePlugins()->value(cn);
+        auto factory = qAccessiblePlugins()->value(cn);
         if (factory) {
-            QAccessibleInterface *result = factory->create(cn, object);
+            auto result = factory->create(cn, object);
             if (result) {   // Need this condition because of QDesktopScreenWidget
                 QAccessibleCache::instance()->insert(object, result);
                 Q_ASSERT(QAccessibleCache::instance()->objectToId.contains(object));
@@ -714,7 +714,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
     }
 
     if (object == qApp) {
-        QAccessibleInterface *appInterface = new QAccessibleApplication;
+        auto appInterface = new QAccessibleApplication;
         QAccessibleCache::instance()->insert(object, appInterface);
         Q_ASSERT(QAccessibleCache::instance()->objectToId.contains(qApp));
         return appInterface;
@@ -758,7 +758,7 @@ void QAccessible::deleteAccessibleInterface(Id id)
 */
 QAccessible::Id QAccessible::uniqueId(QAccessibleInterface *iface)
 {
-    Id id = QAccessibleCache::instance()->idToInterface.key(iface);
+    auto id = QAccessibleCache::instance()->idToInterface.key(iface);
     if (!id)
         id = registerAccessibleInterface(iface);
     return id;
@@ -788,7 +788,7 @@ QAccessibleInterface *QAccessible::accessibleInterface(Id id)
 */
 bool QAccessible::isActive()
 {
-    if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
+    if (auto pfAccessibility = platformAccessibility())
         return pfAccessibility->isActive();
     return false;
 }
@@ -798,7 +798,7 @@ bool QAccessible::isActive()
 */
 void QAccessible::setActive(bool active)
 {
-    for (int i = 0; i < qAccessibleActivationObservers()->count() ;++i)
+    for (auto i = 0; i < qAccessibleActivationObservers()->count() ;++i)
         qAccessibleActivationObservers()->at(i)->accessibilityActiveChanged(active);
 }
 
@@ -824,7 +824,7 @@ void QAccessible::setRootObject(QObject *object)
         return;
     }
 
-    if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
+    if (auto pfAccessibility = platformAccessibility())
         pfAccessibility->setRootObject(object);
 }
 
@@ -855,7 +855,7 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
     // during construction of widgets. If you see cases where the
     // cache seems wrong, this call is "to blame", but the code that
     // caches dynamic data should be updated to handle change events.
-    QAccessibleInterface *iface = event->accessibleInterface();
+    auto iface = event->accessibleInterface();
     if (isActive() && iface) {
         if (event->type() == QAccessible::TableModelChanged) {
             if (iface->tableInterface())
@@ -868,7 +868,7 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
         }
     }
 
-    if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
+    if (auto pfAccessibility = platformAccessibility())
         pfAccessibility->notifyAccessibilityUpdate(event);
 }
 
@@ -892,12 +892,12 @@ QPair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCursor &
 {
     Q_ASSERT(!offsetCursor.isNull());
 
-    QTextCursor endCursor = offsetCursor;
+    auto endCursor = offsetCursor;
     endCursor.movePosition(QTextCursor::End);
-    int characterCount = endCursor.position();
+    auto characterCount = endCursor.position();
 
     QPair<int, int> result;
-    QTextCursor cursor = offsetCursor;
+    auto cursor = offsetCursor;
     switch (boundaryType) {
     case CharBoundary:
         result.first = cursor.position();
@@ -918,12 +918,12 @@ QPair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCursor &
         result.first = cursor.position();
         cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
         result.second = cursor.position();
-        QString blockText = cursor.selectedText();
-        const int offsetWithinBlockText = offsetCursor.position() - result.first;
+        auto blockText = cursor.selectedText();
+        const auto offsetWithinBlockText = offsetCursor.position() - result.first;
         QTextBoundaryFinder sentenceFinder(QTextBoundaryFinder::Sentence, blockText);
         sentenceFinder.setPosition(offsetWithinBlockText);
-        int prevBoundary = offsetWithinBlockText;
-        int nextBoundary = offsetWithinBlockText;
+        auto prevBoundary = offsetWithinBlockText;
+        auto nextBoundary = offsetWithinBlockText;
         if (!(sentenceFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem))
             prevBoundary = sentenceFinder.toPreviousBoundary();
         nextBoundary = sentenceFinder.toNextBoundary();
@@ -1367,7 +1367,7 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 {
     if (!m_object)
         return m_uniqueId;
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
+    auto iface = QAccessible::queryAccessibleInterface(m_object);
     if (!iface)
         return 0;
     if (m_child != -1)
@@ -1760,12 +1760,12 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
     if (m_object == 0)
         return QAccessible::accessibleInterface(m_uniqueId);
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
+    auto iface = QAccessible::queryAccessibleInterface(m_object);
     if (!iface || !iface->isValid())
         return 0;
 
     if (m_child >= 0) {
-        QAccessibleInterface *child = iface->child(m_child);
+        auto child = iface->child(m_child);
         if (child) {
             iface = child;
         } else {
@@ -1838,14 +1838,14 @@ const char *qAccessibleRoleString(QAccessible::Role role)
 {
     if (role >= QAccessible::UserRole)
          role = QAccessible::UserRole;
-    static int roleEnum = QAccessible::staticMetaObject.indexOfEnumerator("Role");
+    static auto roleEnum = QAccessible::staticMetaObject.indexOfEnumerator("Role");
     return QAccessible::staticMetaObject.enumerator(roleEnum).valueToKey(role);
 }
 
 /*! \internal */
 const char *qAccessibleEventString(QAccessible::Event event)
 {
-    static int eventEnum = QAccessible::staticMetaObject.indexOfEnumerator("Event");
+    static auto eventEnum = QAccessible::staticMetaObject.indexOfEnumerator("Event");
     return QAccessible::staticMetaObject.enumerator(eventEnum).valueToKey(event);
 }
 
@@ -1875,7 +1875,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
             d << "obj=" << iface->object();
         }
         QStringList stateStrings;
-        QAccessible::State st = iface->state();
+        auto st = iface->state();
         if (st.focusable)
             stateStrings << QLatin1String("focusable");
         if (st.focused)
@@ -1911,7 +1911,7 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
     }
     d << " event=" << qAccessibleEventString(ev.type());
     if (ev.type() == QAccessible::StateChanged) {
-        QAccessible::State changed = static_cast<const QAccessibleStateChangeEvent*>(&ev)->changedStates();
+        auto changed = static_cast<const QAccessibleStateChangeEvent*>(&ev)->changedStates();
         d << "State changed:";
         if (changed.disabled) d << "disabled";
         if (changed.selected) d << "selected";
@@ -2058,7 +2058,7 @@ static QString textLineBoundary(int beforeAtAfter, const QString &text, int offs
 {
     Q_ASSERT(beforeAtAfter >= -1 && beforeAtAfter <= 1);
     Q_ASSERT(*startOffset == -1 && *endOffset == -1);
-    int length = text.length();
+    auto length = text.length();
     Q_ASSERT(offset >= 0 && offset <= length);
 
     // move offset into the right range (if asking for line before or after
@@ -2104,7 +2104,7 @@ static QString textLineBoundary(int beforeAtAfter, const QString &text, int offs
 QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                                    int *startOffset, int *endOffset) const
 {
-    const QString txt = text(0, characterCount());
+    const auto txt = text(0, characterCount());
 
     if (offset == -1)
         offset = txt.length();
@@ -2114,7 +2114,7 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
         return QString();
 
     // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
-    QTextBoundaryFinder::BoundaryType type = QTextBoundaryFinder::Grapheme;
+    auto type = QTextBoundaryFinder::Grapheme;
     switch (boundaryType) {
     case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
@@ -2178,7 +2178,7 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
 QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                                   int *startOffset, int *endOffset) const
 {
-    const QString txt = text(0, characterCount());
+    const auto txt = text(0, characterCount());
 
     if (offset == -1)
         offset = txt.length();
@@ -2188,7 +2188,7 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
         return QString();
 
     // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
-    QTextBoundaryFinder::BoundaryType type = QTextBoundaryFinder::Grapheme;
+    auto type = QTextBoundaryFinder::Grapheme;
     switch (boundaryType) {
     case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
@@ -2216,7 +2216,7 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     boundary.setPosition(offset);
 
     while (true) {
-        int toNext = boundary.toNextBoundary();
+        auto toNext = boundary.toNextBoundary();
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
         if (toNext < 0 || toNext >= txt.length())
@@ -2226,7 +2226,7 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     *startOffset = boundary.position();
 
     while (true) {
-        int toNext = boundary.toNextBoundary();
+        auto toNext = boundary.toNextBoundary();
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
         if (toNext < 0 || toNext >= txt.length())
@@ -2263,7 +2263,7 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
 QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                                int *startOffset, int *endOffset) const
 {
-    const QString txt = text(0, characterCount());
+    const auto txt = text(0, characterCount());
 
     if (offset == -1)
         offset = txt.length();
@@ -2276,7 +2276,7 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
         return QString();
 
     // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
-    QTextBoundaryFinder::BoundaryType type = QTextBoundaryFinder::Grapheme;
+    auto type = QTextBoundaryFinder::Grapheme;
     switch (boundaryType) {
     case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;

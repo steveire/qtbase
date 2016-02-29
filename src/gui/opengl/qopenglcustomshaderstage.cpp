@@ -88,7 +88,7 @@ bool QOpenGLCustomShaderStage::setOnPainter(QPainter* p)
     if (d->m_manager)
         qWarning("Custom shader is already set on a painter");
 
-    QOpenGL2PaintEngineEx *engine = static_cast<QOpenGL2PaintEngineEx*>(p->paintEngine());
+    auto engine = static_cast<QOpenGL2PaintEngineEx*>(p->paintEngine());
     d->m_manager = QOpenGL2PaintEngineExPrivate::shaderManagerForEngine(engine);
     Q_ASSERT(d->m_manager);
 
@@ -102,7 +102,7 @@ void QOpenGLCustomShaderStage::removeFromPainter(QPainter* p)
     if (p->paintEngine()->type() != QPaintEngine::OpenGL2)
         return;
 
-    QOpenGL2PaintEngineEx *engine = static_cast<QOpenGL2PaintEngineEx*>(p->paintEngine());
+    auto engine = static_cast<QOpenGL2PaintEngineEx*>(p->paintEngine());
     d->m_manager = QOpenGL2PaintEngineExPrivate::shaderManagerForEngine(engine);
     Q_ASSERT(d->m_manager);
 

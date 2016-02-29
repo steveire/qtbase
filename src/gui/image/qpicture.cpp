@@ -294,7 +294,7 @@ bool QPicture::load(QIODevice *dev, const char *format)
     }
 
     detach();
-    QByteArray a = dev->readAll();
+    auto a = dev->readAll();
 
     d_func()->pictb.setData(a);                        // set byte array in buffer
     return d_func()->checkFormat();
@@ -322,7 +322,7 @@ bool QPicture::save(const QString &fileName, const char *format)
     if(format) {
 #ifndef QT_NO_PICTUREIO
         QPictureIO io(fileName, format);
-        bool result = io.write();
+        auto result = io.write();
         if (result) {
             operator=(io.picture());
         } else if (format)
@@ -358,7 +358,7 @@ bool QPicture::save(QIODevice *dev, const char *format)
     if(format) {
 #ifndef QT_NO_PICTUREIO
         QPictureIO io(dev, format);
-        bool result = io.write();
+        auto result = io.write();
         if (result) {
             operator=(io.picture());
         } else if (format)
@@ -512,7 +512,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
     QMatrix     wmatrix;
     QTransform  matrix;
 
-    QTransform worldMatrix = painter->transform();
+    auto worldMatrix = painter->transform();
     worldMatrix.scale(qreal(painter->device()->logicalDpiX()) / qreal(qt_defaultDpiX()),
                       qreal(painter->device()->logicalDpiY()) / qreal(qt_defaultDpiY()));
     painter->setTransform(worldMatrix);
@@ -696,7 +696,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
                 qreal justificationWidth;
                 s >> justificationWidth;
 
-                int flags = Qt::TextSingleLine | Qt::TextDontClip | Qt::TextForceLeftToRight;
+                auto flags = Qt::TextSingleLine | Qt::TextDontClip | Qt::TextForceLeftToRight;
 
                 QSizeF size(1, 1);
                 if (justificationWidth > 0) {
@@ -936,7 +936,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
 int QPicture::metric(PaintDeviceMetric m) const
 {
     int val;
-    QRect brect = boundingRect();
+    auto brect = boundingRect();
     switch (m) {
         case PdmWidth:
             val = brect.width();
@@ -1084,7 +1084,7 @@ bool QPicturePrivate::checkFormat()
     int cs_start = sizeof(quint32);                // pos of checksum word
     int data_start = cs_start + sizeof(quint16);
     quint16 cs,ccs;
-    QByteArray buf = pictb.buffer();        // pointer to data
+    auto buf = pictb.buffer();        // pointer to data
 
     s >> cs;                                // read checksum
     ccs = (quint16) qChecksum(buf.constData() + data_start, buf.size() - data_start);
@@ -1225,9 +1225,9 @@ QList<QByteArray> QPicture::inputFormats()
 static QStringList qToStringList(const QList<QByteArray> &arr)
 {
     QStringList list;
-    const int count = arr.count();
+    const auto count = arr.count();
     list.reserve(count);
-    for (int i = 0; i < count; ++i)
+    for (auto i = 0; i < count; ++i)
         list.append(QString::fromLatin1(arr.at(i)));
     return list;
 }
@@ -1422,10 +1422,10 @@ void qt_init_picture_plugins()
     static QFactoryLoader loader(QPictureFormatInterface_iid,
                                  QStringLiteral("/pictureformats"));
 
-    const PluginKeyMap keyMap = loader.keyMap();
-    const PluginKeyMapConstIterator cend = keyMap.constEnd();
-    for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
-        if (QPictureFormatPlugin *format = qobject_cast<QPictureFormatPlugin*>(loader.instance(it.key())))
+    const auto keyMap = loader.keyMap();
+    const auto cend = keyMap.constEnd();
+    for (auto it = keyMap.constBegin(); it != cend; ++it) {
+        if (auto format = qobject_cast<QPictureFormatPlugin*>(loader.instance(it.key())))
             format->installIOHandler(it.value());
     }
 }
@@ -1433,7 +1433,7 @@ void qt_init_picture_plugins()
 static void cleanup()
 {
     // make sure that picture handlers are delete before plugin manager
-    if (QPHList *list = pictureHandlers()) {
+    if (auto list = pictureHandlers()) {
         qDeleteAll(*list);
         list->clear();
     }
@@ -1451,8 +1451,8 @@ static QPictureHandler *get_picture_handler(const char *format)
 {                                                // get pointer to handler
     qt_init_picture_handlers();
     qt_init_picture_plugins();
-    if (QPHList *list = pictureHandlers()) {
-        for (int i = 0; i < list->size(); ++i) {
+    if (auto list = pictureHandlers()) {
+        for (auto i = 0; i < list->size(); ++i) {
             if (list->at(i)->format == format)
                 return list->at(i);
         }
@@ -1507,7 +1507,7 @@ void QPictureIO::defineIOHandler(const char *format,
                                  picture_io_handler writePicture)
 {
     qt_init_picture_handlers();
-    if (QPHList *list = pictureHandlers()) {
+    if (auto list = pictureHandlers()) {
         QPictureHandler *p;
         p = new QPictureHandler(format, header, QByteArray(flags), readPicture, writePicture);
         list->prepend(p);
@@ -1757,7 +1757,7 @@ QByteArray QPictureIO::pictureFormat(const QString &fileName)
 QByteArray QPictureIO::pictureFormat(QIODevice *d)
 {
     // if you change this change the documentation for defineIOHandler()
-    const int buflen = 14;
+    const auto buflen = 14;
 
     char buf[buflen];
     char buf2[buflen];
@@ -1772,14 +1772,14 @@ QByteArray QPictureIO::pictureFormat(QIODevice *d)
 
     memcpy(buf2, buf, buflen);
 
-    for (int n = 0; n < rdlen; n++)
+    for (auto n = 0; n < rdlen; n++)
         if (buf[n] == '\0')
             buf[n] = '\001';
     if (rdlen > 0) {
         buf[rdlen - 1] = '\0';
-        QString bufStr = QString::fromLatin1(buf);
-        if (QPHList *list = pictureHandlers()) {
-            for (int i = 0; i < list->size(); ++i) {
+        auto bufStr = QString::fromLatin1(buf);
+        if (auto list = pictureHandlers()) {
+            for (auto i = 0; i < list->size(); ++i) {
                 if (list->at(i)->header.indexIn(bufStr) != -1) { // try match with headers
                     format = list->at(i)->format;
                     break;
@@ -1802,9 +1802,9 @@ QList<QByteArray> QPictureIO::inputFormats()
     qt_init_picture_handlers();
     qt_init_picture_plugins();
 
-    if (QPHList *list = pictureHandlers()) {
-        for (int i = 0; i < list->size(); ++i) {
-            QPictureHandler *p = list->at(i);
+    if (auto list = pictureHandlers()) {
+        for (auto i = 0; i < list->size(); ++i) {
+            auto p = list->at(i);
             if (p->read_picture && !p->obsolete  && !result.contains(p->format))
                 result.append(p->format);
         }
@@ -1824,9 +1824,9 @@ QList<QByteArray> QPictureIO::outputFormats()
     qt_init_picture_plugins();
 
     QList<QByteArray> result;
-    if (QPHList *list = pictureHandlers()) {
-        for (int i = 0; i < list->size(); ++i) {
-            QPictureHandler *p = list->at(i);
+    if (auto list = pictureHandlers()) {
+        for (auto i = 0; i < list->size(); ++i) {
+            auto p = list->at(i);
             if (p->write_picture && !p->obsolete && !result.contains(p->format))
                 result.append(p->format);
         }
@@ -1928,7 +1928,7 @@ bool QPictureIO::write()
 {
     if (d->frmt.isEmpty())
         return false;
-    QPictureHandler *h = get_picture_handler(d->frmt);
+    auto h = get_picture_handler(d->frmt);
     if (!h || !h->write_picture) {
         qWarning("QPictureIO::write: No such picture format handler: %s",
                  format());
@@ -1937,8 +1937,8 @@ bool QPictureIO::write()
     QFile file;
     if (!d->iodev && !d->fname.isEmpty()) {
         file.setFileName(d->fname);
-        bool translate = h->text_mode==QPictureHandler::TranslateInOut;
-        QIODevice::OpenMode fmode = translate ? QIODevice::WriteOnly | QIODevice::Text : QIODevice::OpenMode(QIODevice::WriteOnly);
+        auto translate = h->text_mode==QPictureHandler::TranslateInOut;
+        auto fmode = translate ? QIODevice::WriteOnly | QIODevice::Text : QIODevice::OpenMode(QIODevice::WriteOnly);
         if (!file.open(fmode))                // couldn't create file
             return false;
         d->iodev = &file;

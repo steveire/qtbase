@@ -63,8 +63,8 @@ typedef const GLubyte * (QOPENGLF_APIENTRYP qt_glGetStringi)(GLenum, GLuint);
 
 QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    QOpenGLFunctions *funcs = ctx->functions();
+    auto ctx = QOpenGLContext::currentContext();
+    auto funcs = ctx->functions();
     const char *extensionStr = 0;
 
     if (ctx->isOpenGLES() || ctx->format().majorVersion() < 3)
@@ -72,7 +72,7 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
 
     if (extensionStr) {
         QByteArray ba(extensionStr);
-        QList<QByteArray> extensions = ba.split(' ');
+        auto extensions = ba.split(' ');
         m_extensions = extensions.toSet();
     } else {
 #ifdef QT_OPENGL_3
@@ -85,11 +85,11 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
             if (!glGetStringi)
                 return;
 
-            GLint numExtensions = 0;
+            auto numExtensions = 0;
             funcs->glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
 
-            for (int i = 0; i < numExtensions; ++i) {
-                const char *str = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
+            for (auto i = 0; i < numExtensions; ++i) {
+                auto str = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
                 m_extensions.insert(str);
             }
         }
@@ -158,7 +158,7 @@ typedef QJsonArray::ConstIterator JsonArrayConstIt;
 
 static inline bool contains(const QJsonArray &haystack, unsigned needle)
 {
-    for (JsonArrayConstIt it = haystack.constBegin(), cend = haystack.constEnd(); it != cend; ++it) {
+    for (auto it = haystack.constBegin(), cend = haystack.constEnd(); it != cend; ++it) {
         if (needle == it->toString().toUInt(Q_NULLPTR, /* base */ 0))
             return true;
     }
@@ -167,7 +167,7 @@ static inline bool contains(const QJsonArray &haystack, unsigned needle)
 
 static inline bool contains(const QJsonArray &haystack, const QString &needle)
 {
-    for (JsonArrayConstIt it = haystack.constBegin(), cend = haystack.constEnd(); it != cend; ++it) {
+    for (auto it = haystack.constBegin(), cend = haystack.constEnd(); it != cend; ++it) {
         if (needle == it->toString())
             return true;
     }
@@ -215,9 +215,9 @@ VersionTerm VersionTerm::fromJson(const QJsonValue &v)
     VersionTerm result;
     if (!v.isObject())
         return result;
-    const QJsonObject o = v.toObject();
+    const auto o = v.toObject();
     result.number = QVersionNumber::fromString(o.value(valueKey()).toString());
-    const QString opS = o.value(opKey()).toString();
+    const auto opS = o.value(opKey()).toString();
     for (size_t i = 0; i < sizeof(operators) / sizeof(operators[0]); ++i) {
         if (opS == QLatin1String(operators[i])) {
             result.op = static_cast<Operator>(i);
@@ -291,7 +291,7 @@ OsTypeTerm OsTypeTerm::fromJson(const QJsonValue &v)
     OsTypeTerm result;
     if (!v.isObject())
         return result;
-    const QJsonObject o = v.toObject();
+    const auto o = v.toObject();
     result.type = o.value(typeKey()).toString();
     result.versionTerm = VersionTerm::fromJson(o.value(versionKey()));
     result.release = o.value(releaseKey()).toArray();
@@ -333,33 +333,33 @@ static bool matches(const QJsonObject &object,
                     const QString &osRelease,
                     const QOpenGLConfig::Gpu &gpu)
 {
-    const OsTypeTerm os = OsTypeTerm::fromJson(object.value(osKey()));
+    const auto os = OsTypeTerm::fromJson(object.value(osKey()));
     if (!os.isNull() && !os.matches(osName, kernelVersion, osRelease))
         return false;
 
-    const QJsonValue exceptionsV = object.value(exceptionsKey());
+    const auto exceptionsV = object.value(exceptionsKey());
     if (exceptionsV.isArray()) {
-        const QJsonArray exceptionsA = exceptionsV.toArray();
-        for (JsonArrayConstIt it = exceptionsA.constBegin(), cend = exceptionsA.constEnd(); it != cend; ++it) {
+        const auto exceptionsA = exceptionsV.toArray();
+        for (auto it = exceptionsA.constBegin(), cend = exceptionsA.constEnd(); it != cend; ++it) {
             if (matches(it->toObject(), osName, kernelVersion, osRelease, gpu))
                 return false;
         }
     }
 
-    const QJsonValue vendorV = object.value(vendorIdKey());
+    const auto vendorV = object.value(vendorIdKey());
     if (vendorV.isString()) {
         if (gpu.vendorId != vendorV.toString().toUInt(Q_NULLPTR, /* base */ 0))
             return false;
     } else {
         if (object.contains(glVendorKey())) {
-            const QByteArray glVendorV = object.value(glVendorKey()).toString().toUtf8();
+            const auto glVendorV = object.value(glVendorKey()).toString().toUtf8();
             if (!gpu.glVendor.contains(glVendorV))
                 return false;
         }
     }
 
     if (gpu.deviceId) {
-        const QJsonValue deviceIdV = object.value(deviceIdKey());
+        const auto deviceIdV = object.value(deviceIdKey());
         switch (deviceIdV.type()) {
         case QJsonValue::Array:
             if (!contains(deviceIdV.toArray(), gpu.deviceId))
@@ -375,7 +375,7 @@ static bool matches(const QJsonObject &object,
         }
     }
     if (!gpu.driverVersion.isNull()) {
-        const QJsonValue driverVersionV = object.value(driverVersionKey());
+        const auto driverVersionV = object.value(driverVersionKey());
         switch (driverVersionV.type()) {
         case QJsonValue::Object:
             if (!VersionTerm::fromJson(driverVersionV).matches(gpu.driverVersion))
@@ -392,7 +392,7 @@ static bool matches(const QJsonObject &object,
     }
 
     if (!gpu.driverDescription.isEmpty()) {
-        const QJsonValue driverDescriptionV = object.value(driverDescriptionKey());
+        const auto driverDescriptionV = object.value(driverDescriptionKey());
         if (driverDescriptionV.isString()) {
             if (!gpu.driverDescription.contains(driverDescriptionV.toString().toUtf8()))
                 return false;
@@ -412,21 +412,21 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
 {
     result->clear();
     errorMessage->clear();
-    const QJsonValue entriesV = doc.object().value(QStringLiteral("entries"));
+    const auto entriesV = doc.object().value(QStringLiteral("entries"));
     if (!entriesV.isArray()) {
         *errorMessage = QLatin1String("No entries read.");
         return false;
     }
 
-    const QJsonArray entriesA = entriesV.toArray();
-    for (JsonArrayConstIt eit = entriesA.constBegin(), ecend = entriesA.constEnd(); eit != ecend; ++eit) {
+    const auto entriesA = entriesV.toArray();
+    for (auto eit = entriesA.constBegin(), ecend = entriesA.constEnd(); eit != ecend; ++eit) {
         if (eit->isObject()) {
-            const QJsonObject object = eit->toObject();
+            const auto object = eit->toObject();
             if (matches(object, osName, kernelVersion, osRelease, gpu)) {
-                const QJsonValue featuresListV = object.value(featuresKey());
+                const auto featuresListV = object.value(featuresKey());
                 if (featuresListV.isArray()) {
-                    const QJsonArray featuresListA = featuresListV.toArray();
-                    for (JsonArrayConstIt fit = featuresListA.constBegin(), fcend = featuresListA.constEnd(); fit != fcend; ++fit)
+                    const auto featuresListA = featuresListV.toArray();
+                    for (auto fit = featuresListA.constBegin(), fcend = featuresListA.constEnd(); fit != fcend; ++fit)
                         result->insert(fit->toString());
                 }
             }
@@ -445,9 +445,9 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
     result->clear();
     errorMessage->clear();
     QJsonParseError error;
-    const QJsonDocument document = QJsonDocument::fromJson(jsonAsciiData, &error);
+    const auto document = QJsonDocument::fromJson(jsonAsciiData, &error);
     if (document.isNull()) {
-        const int lineNumber = 1 + jsonAsciiData.left(error.offset).count('\n');
+        const auto lineNumber = 1 + jsonAsciiData.left(error.offset).count('\n');
         QTextStream str(errorMessage);
         str << "Failed to parse data: \"" << error.errorString()
             << "\" at line " << lineNumber << " (offset: "
@@ -473,7 +473,7 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
             << file.errorString();
         return false;
     }
-    const bool success = readGpuFeatures(gpu, osName, kernelVersion, osRelease, file.readAll(), result, errorMessage);
+    const auto success = readGpuFeatures(gpu, osName, kernelVersion, osRelease, file.readAll(), result, errorMessage);
     if (!success) {
         errorMessage->prepend(QLatin1String("Error reading \"")
                               + QDir::toNativeSeparators(fileName)
@@ -520,7 +520,7 @@ QSet<QString> QOpenGLConfig::gpuFeatures(const Gpu &gpu, const QString &fileName
 
 QOpenGLConfig::Gpu QOpenGLConfig::Gpu::fromContext()
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     QScopedPointer<QOpenGLContext> tmpContext;
     QScopedPointer<QOffscreenSurface> tmpSurface;
     if (!ctx) {
@@ -537,7 +537,7 @@ QOpenGLConfig::Gpu QOpenGLConfig::Gpu::fromContext()
 
     QOpenGLConfig::Gpu gpu;
     ctx = QOpenGLContext::currentContext();
-    const GLubyte *p = ctx->functions()->glGetString(GL_VENDOR);
+    auto p = ctx->functions()->glGetString(GL_VENDOR);
     if (p)
         gpu.glVendor = QByteArray(reinterpret_cast<const char *>(p));
 
@@ -546,8 +546,8 @@ QOpenGLConfig::Gpu QOpenGLConfig::Gpu::fromContext()
 
 Q_GUI_EXPORT std::set<QByteArray> *qgpu_features(const QString &filename)
 {
-    const QSet<QString> features = QOpenGLConfig::gpuFeatures(QOpenGLConfig::Gpu::fromContext(), filename);
-    std::set<QByteArray> *result = new std::set<QByteArray>;
+    const auto features = QOpenGLConfig::gpuFeatures(QOpenGLConfig::Gpu::fromContext(), filename);
+    auto result = new std::set<QByteArray>;
     for (const QString &feature : features)
         result->insert(feature.toUtf8());
     return result;

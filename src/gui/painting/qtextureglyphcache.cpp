@@ -58,12 +58,12 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
     // Test 12 different subpixel positions since it factors into 3*4 so it gives
     // the coverage we need.
 
-    const int NumSubpixelPositions = 12;
+    const auto NumSubpixelPositions = 12;
 
     QImage images[NumSubpixelPositions];
-    int numImages = 0;
-    for (int i = 0; i < NumSubpixelPositions; ++i) {
-        QImage img = textureMapForGlyph(glyph, QFixed::fromReal(i / 12.0));
+    auto numImages = 0;
+    for (auto i = 0; i < NumSubpixelPositions; ++i) {
+        auto img = textureMapForGlyph(glyph, QFixed::fromReal(i / 12.0));
 
         if (numImages == 0) {
             QPainterPath path;
@@ -76,8 +76,8 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
 
             images[numImages++] = qMove(img);
         } else {
-            bool found = false;
-            for (int j = 0; j < numImages; ++j) {
+            auto found = false;
+            for (auto j = 0; j < numImages; ++j) {
                 if (images[j] == img) {
                     found = true;
                     break;
@@ -100,15 +100,15 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 #endif
 
     m_current_fontengine = fontEngine;
-    const int padding = glyphPadding();
-    const int paddingDoubled = padding * 2;
+    const auto padding = glyphPadding();
+    const auto paddingDoubled = padding * 2;
 
-    bool supportsSubPixelPositions = fontEngine->supportsSubPixelPositions();
+    auto supportsSubPixelPositions = fontEngine->supportsSubPixelPositions();
     if (fontEngine->m_subPixelPositionCount == 0) {
         if (!supportsSubPixelPositions) {
             fontEngine->m_subPixelPositionCount = 1;
         } else {
-            int i = 0;
+            auto i = 0;
             while (fontEngine->m_subPixelPositionCount == 0 && i < numGlyphs)
                 fontEngine->m_subPixelPositionCount = calculateSubPixelPositionCount(glyphs[i++]);
         }
@@ -120,15 +120,15 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     }
 
     QHash<GlyphAndSubPixelPosition, Coord> listItemCoordinates;
-    int rowHeight = 0;
+    auto rowHeight = 0;
 
     // check each glyph for its metrics and get the required rowHeight.
-    for (int i=0; i < numGlyphs; ++i) {
-        const glyph_t glyph = glyphs[i];
+    for (auto i=0; i < numGlyphs; ++i) {
+        const auto glyph = glyphs[i];
 
         QFixed subPixelPosition;
         if (supportsSubPixelPositions) {
-            QFixed x = positions != 0 ? positions[i].x : QFixed();
+            auto x = positions != 0 ? positions[i].x : QFixed();
             subPixelPosition = fontEngine->subPixelPositionForX(x);
         }
 
@@ -137,7 +137,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         if (listItemCoordinates.contains(GlyphAndSubPixelPosition(glyph, subPixelPosition)))
             continue;
 
-        glyph_metrics_t metrics = fontEngine->alphaMapBoundingBox(glyph, subPixelPosition, m_transform, m_format);
+        auto metrics = fontEngine->alphaMapBoundingBox(glyph, subPixelPosition, m_transform, m_format);
 
 #ifdef CACHE_DEBUG
         printf("(%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f\n",
@@ -150,8 +150,8 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                metrics.y.toReal());
 #endif
         GlyphAndSubPixelPosition key(glyph, subPixelPosition);
-        int glyph_width = metrics.width.ceil().toInt();
-        int glyph_height = metrics.height.ceil().toInt();
+        auto glyph_width = metrics.width.ceil().toInt();
+        auto glyph_height = metrics.height.ceil().toInt();
         if (glyph_height == 0 || glyph_width == 0) {
             // Avoid multiple calls to boundingBox() for non-printable characters
             Coord c = { 0, 0, 0, 0, 0, 0 };
@@ -184,15 +184,15 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     }
 
     // now actually use the coords and paint the wanted glyps into cache.
-    QHash<GlyphAndSubPixelPosition, Coord>::iterator iter = listItemCoordinates.begin();
-    int requiredWidth = m_w;
+    auto iter = listItemCoordinates.begin();
+    auto requiredWidth = m_w;
     while (iter != listItemCoordinates.end()) {
-        Coord c = iter.value();
+        auto c = iter.value();
 
         m_currentRowHeight = qMax(m_currentRowHeight, c.h);
 
         if (m_cx + c.w + padding > requiredWidth) {
-            int new_width = requiredWidth*2;
+            auto new_width = requiredWidth*2;
             while (new_width < m_cx + c.w + padding)
                 new_width *= 2;
             if (new_width <= maxTextureWidth()) {
@@ -228,12 +228,12 @@ void QTextureGlyphCache::fillInPendingGlyphs()
     if (!hasPendingGlyphs())
         return;
 
-    int requiredHeight = m_h;
-    int requiredWidth = m_w; // Use a minimum size to avoid a lot of initial reallocations
+    auto requiredHeight = m_h;
+    auto requiredWidth = m_w; // Use a minimum size to avoid a lot of initial reallocations
     {
-        QHash<GlyphAndSubPixelPosition, Coord>::iterator iter = m_pendingGlyphs.begin();
+        auto iter = m_pendingGlyphs.begin();
         while (iter != m_pendingGlyphs.end()) {
-            Coord c = iter.value();
+            auto c = iter.value();
             requiredHeight = qMax(requiredHeight, c.y + c.h);
             requiredWidth = qMax(requiredWidth, c.x + c.w);
             ++iter;
@@ -248,9 +248,9 @@ void QTextureGlyphCache::fillInPendingGlyphs()
     }
 
     {
-        QHash<GlyphAndSubPixelPosition, Coord>::iterator iter = m_pendingGlyphs.begin();
+        auto iter = m_pendingGlyphs.begin();
         while (iter != m_pendingGlyphs.end()) {
-            GlyphAndSubPixelPosition key = iter.key();
+            auto key = iter.key();
             fillTexture(iter.value(), key.glyph, key.subPixelPosition);
 
             ++iter;
@@ -308,7 +308,7 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
 
 void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subPixelPosition)
 {
-    QImage mask = textureMapForGlyph(g, subPixelPosition);
+    auto mask = textureMapForGlyph(g, subPixelPosition);
 
 #ifdef CACHE_DEBUG
     printf("fillTexture of %dx%d at %d,%d in the cache of %dx%d\n", c.w, c.h, c.x, c.y, m_image.width(), m_image.height());
@@ -336,50 +336,50 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
             mask = mask.convertToFormat(QImage::Format_Mono);
         }
 
-        int mw = qMin(mask.width(), c.w);
-        int mh = qMin(mask.height(), c.h);
-        uchar *d = m_image.bits();
-        int dbpl = m_image.bytesPerLine();
+        auto mw = qMin(mask.width(), c.w);
+        auto mh = qMin(mask.height(), c.h);
+        auto d = m_image.bits();
+        auto dbpl = m_image.bytesPerLine();
 
-        for (int y = 0; y < c.h; ++y) {
-            uchar *dest = d + (c.y + y) *dbpl + c.x/8;
+        for (auto y = 0; y < c.h; ++y) {
+            auto dest = d + (c.y + y) *dbpl + c.x/8;
 
             if (y < mh) {
-                const uchar *src = mask.constScanLine(y);
-                for (int x = 0; x < c.w/8; ++x) {
+                auto src = mask.constScanLine(y);
+                for (auto x = 0; x < c.w/8; ++x) {
                     if (x < (mw+7)/8)
                         dest[x] = src[x];
                     else
                         dest[x] = 0;
                 }
             } else {
-                for (int x = 0; x < c.w/8; ++x)
+                for (auto x = 0; x < c.w/8; ++x)
                     dest[x] = 0;
             }
         }
     } else { // A8
-        int mw = qMin(mask.width(), c.w);
-        int mh = qMin(mask.height(), c.h);
-        uchar *d = m_image.bits();
-        int dbpl = m_image.bytesPerLine();
+        auto mw = qMin(mask.width(), c.w);
+        auto mh = qMin(mask.height(), c.h);
+        auto d = m_image.bits();
+        auto dbpl = m_image.bytesPerLine();
 
         if (mask.depth() == 1) {
-            for (int y = 0; y < c.h; ++y) {
-                uchar *dest = d + (c.y + y) *dbpl + c.x;
+            for (auto y = 0; y < c.h; ++y) {
+                auto dest = d + (c.y + y) *dbpl + c.x;
                 if (y < mh) {
-                    const uchar *src = mask.constScanLine(y);
-                    for (int x = 0; x < c.w; ++x) {
+                    auto src = mask.constScanLine(y);
+                    for (auto x = 0; x < c.w; ++x) {
                         if (x < mw)
                             dest[x] = (src[x >> 3] & (1 << (7 - (x & 7)))) > 0 ? 255 : 0;
                     }
                 }
             }
         } else if (mask.depth() == 8) {
-            for (int y = 0; y < c.h; ++y) {
-                uchar *dest = d + (c.y + y) *dbpl + c.x;
+            for (auto y = 0; y < c.h; ++y) {
+                auto dest = d + (c.y + y) *dbpl + c.x;
                 if (y < mh) {
-                    const uchar *src = mask.constScanLine(y);
-                    for (int x = 0; x < c.w; ++x) {
+                    auto src = mask.constScanLine(y);
+                    for (auto x = 0; x < c.w; ++x) {
                         if (x < mw)
                             dest[x] = src[x];
                     }

@@ -128,18 +128,18 @@ void QPlatformOpenGLContext::setContext(QOpenGLContext *context)
 
 bool QPlatformOpenGLContext::parseOpenGLVersion(const QByteArray &versionString, int &major, int &minor)
 {
-    bool majorOk = false;
-    bool minorOk = false;
-    QList<QByteArray> parts = versionString.split(' ');
+    auto majorOk = false;
+    auto minorOk = false;
+    auto parts = versionString.split(' ');
     if (versionString.startsWith(QByteArrayLiteral("OpenGL ES"))) {
         if (parts.size() >= 3) {
-            QList<QByteArray> versionParts = parts.at(2).split('.');
+            auto versionParts = parts.at(2).split('.');
             if (versionParts.size() >= 2) {
                 major = versionParts.at(0).toInt(&majorOk);
                 minor = versionParts.at(1).toInt(&minorOk);
                 // Nexus 6 has "OpenGL ES 3.0V@95.0 (GIT@I86da836d38)"
                 if (!minorOk)
-                    if (int idx = versionParts.at(1).indexOf('V'))
+                    if (auto idx = versionParts.at(1).indexOf('V'))
                         minor = versionParts.at(1).left(idx).toInt(&minorOk);
             } else {
                 qWarning("Unrecognized OpenGL ES version");
@@ -150,7 +150,7 @@ bool QPlatformOpenGLContext::parseOpenGLVersion(const QByteArray &versionString,
         }
     } else {
         // Not OpenGL ES, but regular OpenGL, the version numbers are first in the string
-        QList<QByteArray> versionParts = parts.at(0).split('.');
+        auto versionParts = parts.at(0).split('.');
         if (versionParts.size() >= 2) {
             major = versionParts.at(0).toInt(&majorOk);
             minor = versionParts.at(1).toInt(&minorOk);

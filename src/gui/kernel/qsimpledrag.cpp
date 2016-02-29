@@ -69,9 +69,9 @@ QT_BEGIN_NAMESPACE
 
 static QWindow* topLevelAt(const QPoint &pos)
 {
-    QWindowList list = QGuiApplication::topLevelWindows();
-    for (int i = list.count()-1; i >= 0; --i) {
-        QWindow *w = list.at(i);
+    auto list = QGuiApplication::topLevelWindows();
+    for (auto i = list.count()-1; i >= 0; --i) {
+        auto w = list.at(i);
         if (w->isVisible() && w->geometry().contains(pos) && !qobject_cast<QShapedPixmapWindow*>(w))
             return w;
     }
@@ -142,7 +142,7 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
         case QEvent::KeyPress:
         case QEvent::KeyRelease:
         {
-            QKeyEvent *ke = static_cast<QKeyEvent *>(e);
+            auto ke = static_cast<QKeyEvent *>(e);
             if (ke->key() == Qt::Key_Escape && e->type() == QEvent::KeyPress) {
                 cancel();
                 disableEventFilter();
@@ -154,14 +154,14 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
 
         case QEvent::MouseMove:
         {
-            QPoint nativePosition = getNativeMousePos(e, o);
+            auto nativePosition = getNativeMousePos(e, o);
             move(nativePosition);
             return true; // Eat all mouse move events
         }
         case QEvent::MouseButtonRelease:
             disableEventFilter();
             if (canDrop()) {
-                QPoint nativePosition = getNativeMousePos(e, o);
+                auto nativePosition = getNativeMousePos(e, o);
                 drop(nativePosition);
             } else {
                 cancel();
@@ -282,7 +282,7 @@ void  QBasicDrag::exitDndEventLoop()
 void QBasicDrag::updateCursor(Qt::DropAction action)
 {
 #ifndef QT_NO_CURSOR
-    Qt::CursorShape cursorShape = Qt::ForbiddenCursor;
+    auto cursorShape = Qt::ForbiddenCursor;
     if (canDrop()) {
         switch (action) {
         case Qt::CopyAction:
@@ -297,8 +297,8 @@ void QBasicDrag::updateCursor(Qt::DropAction action)
         }
     }
 
-    QCursor *cursor = QGuiApplication::overrideCursor();
-    QPixmap pixmap = m_drag->dragCursor(action);
+    auto cursor = QGuiApplication::overrideCursor();
+    auto pixmap = m_drag->dragCursor(action);
     if (!cursor) {
         QGuiApplication::changeOverrideCursor((pixmap.isNull()) ? QCursor(cursorShape) : QCursor(pixmap));
     } else {
@@ -344,7 +344,7 @@ void QSimpleDrag::startDrag()
     QBasicDrag::startDrag();
     m_current_window = topLevelAt(QCursor::pos());
     if (m_current_window) {
-        QPlatformDragQtResponse response = QWindowSystemInterface::handleDrag(m_current_window, drag()->mimeData(), QCursor::pos(), drag()->supportedActions());
+        auto response = QWindowSystemInterface::handleDrag(m_current_window, drag()->mimeData(), QCursor::pos(), drag()->supportedActions());
         setCanDrop(response.isAccepted());
         updateCursor(response.acceptedAction());
     } else {
@@ -367,12 +367,12 @@ void QSimpleDrag::move(const QPoint &globalPos)
 {
     //### not high-DPI aware
     moveShapedPixmapWindow(globalPos);
-    QWindow *window = topLevelAt(globalPos);
+    auto window = topLevelAt(globalPos);
     if (!window)
         return;
 
-    const QPoint pos = globalPos - window->geometry().topLeft();
-    const QPlatformDragQtResponse qt_response =
+    const auto pos = globalPos - window->geometry().topLeft();
+    const auto qt_response =
         QWindowSystemInterface::handleDrag(window, drag()->mimeData(), pos, drag()->supportedActions());
 
     updateCursor(qt_response.acceptedAction());
@@ -384,12 +384,12 @@ void QSimpleDrag::drop(const QPoint &globalPos)
     //### not high-DPI aware
 
     QBasicDrag::drop(globalPos);
-    QWindow *window = topLevelAt(globalPos);
+    auto window = topLevelAt(globalPos);
     if (!window)
         return;
 
-    const QPoint pos = globalPos - window->geometry().topLeft();
-    const QPlatformDropQtResponse response =
+    const auto pos = globalPos - window->geometry().topLeft();
+    const auto response =
             QWindowSystemInterface::handleDrop(window, drag()->mimeData(),pos, drag()->supportedActions());
     if (response.isAccepted()) {
         setExecutedDropAction(response.acceptedAction());

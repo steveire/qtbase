@@ -138,7 +138,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     m_object->d_func()->target = 0;
 
     QGuiApplicationPrivate::instance()->notifyDragStarted(o);
-    const Qt::DropAction result = m_platformDrag->drag(m_object);
+    const auto result = m_platformDrag->drag(m_object);
     m_object = 0;
     if (!m_platformDrag->ownsDragObject())
         o->deleteLater();
@@ -152,17 +152,17 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 static QStringList imageReadMimeFormats()
 {
     QStringList formats;
-    QList<QByteArray> imageFormats = QImageReader::supportedImageFormats();
-    const int numImageFormats = imageFormats.size();
+    auto imageFormats = QImageReader::supportedImageFormats();
+    const auto numImageFormats = imageFormats.size();
     formats.reserve(numImageFormats);
-    for (int i = 0; i < numImageFormats; ++i) {
+    for (auto i = 0; i < numImageFormats; ++i) {
         QString format = QLatin1String("image/");
         format += QString::fromLatin1(imageFormats.at(i).toLower());
         formats.append(format);
     }
 
     //put png at the front because it is best
-    int pngIndex = formats.indexOf(QLatin1String("image/png"));
+    auto pngIndex = formats.indexOf(QLatin1String("image/png"));
     if (pngIndex != -1 && pngIndex != 0)
         formats.move(pngIndex, 0);
 
@@ -173,17 +173,17 @@ static QStringList imageReadMimeFormats()
 static QStringList imageWriteMimeFormats()
 {
     QStringList formats;
-    QList<QByteArray> imageFormats = QImageWriter::supportedImageFormats();
-    const int numImageFormats = imageFormats.size();
+    auto imageFormats = QImageWriter::supportedImageFormats();
+    const auto numImageFormats = imageFormats.size();
     formats.reserve(numImageFormats);
-    for (int i = 0; i < numImageFormats; ++i) {
+    for (auto i = 0; i < numImageFormats; ++i) {
         QString format = QLatin1String("image/");
         format += QString::fromLatin1(imageFormats.at(i).toLower());
         formats.append(format);
     }
 
     //put png at the front because it is best
-    int pngIndex = formats.indexOf(QLatin1String("image/png"));
+    auto pngIndex = formats.indexOf(QLatin1String("image/png"));
     if (pngIndex != -1 && pngIndex != 0)
         formats.move(pngIndex, 0);
 
@@ -201,10 +201,10 @@ QInternalMimeData::~QInternalMimeData()
 
 bool QInternalMimeData::hasFormat(const QString &mimeType) const
 {
-    bool foundFormat = hasFormat_sys(mimeType);
+    auto foundFormat = hasFormat_sys(mimeType);
     if (!foundFormat && mimeType == QLatin1String("application/x-qt-image")) {
-        QStringList imageFormats = imageReadMimeFormats();
-        for (int i = 0; i < imageFormats.size(); ++i) {
+        auto imageFormats = imageReadMimeFormats();
+        for (auto i = 0; i < imageFormats.size(); ++i) {
             if ((foundFormat = hasFormat_sys(imageFormats.at(i))))
                 break;
         }
@@ -214,10 +214,10 @@ bool QInternalMimeData::hasFormat(const QString &mimeType) const
 
 QStringList QInternalMimeData::formats() const
 {
-    QStringList realFormats = formats_sys();
+    auto realFormats = formats_sys();
     if (!realFormats.contains(QLatin1String("application/x-qt-image"))) {
-        QStringList imageFormats = imageReadMimeFormats();
-        for (int i = 0; i < imageFormats.size(); ++i) {
+        auto imageFormats = imageReadMimeFormats();
+        for (auto i = 0; i < imageFormats.size(); ++i) {
             if (realFormats.contains(imageFormats.at(i))) {
                 realFormats += QLatin1String("application/x-qt-image");
                 break;
@@ -229,12 +229,12 @@ QStringList QInternalMimeData::formats() const
 
 QVariant QInternalMimeData::retrieveData(const QString &mimeType, QVariant::Type type) const
 {
-    QVariant data = retrieveData_sys(mimeType, type);
+    auto data = retrieveData_sys(mimeType, type);
     if (mimeType == QLatin1String("application/x-qt-image")) {
         if (data.isNull() || (data.type() == QVariant::ByteArray && data.toByteArray().isEmpty())) {
             // try to find an image
-            QStringList imageFormats = imageReadMimeFormats();
-            for (int i = 0; i < imageFormats.size(); ++i) {
+            auto imageFormats = imageReadMimeFormats();
+            for (auto i = 0; i < imageFormats.size(); ++i) {
                 data = retrieveData_sys(imageFormats.at(i), type);
                 if (data.isNull() || (data.type() == QVariant::ByteArray && data.toByteArray().isEmpty()))
                     continue;
@@ -248,9 +248,9 @@ QVariant QInternalMimeData::retrieveData(const QString &mimeType, QVariant::Type
 
     } else if (mimeType == QLatin1String("application/x-color") && data.type() == QVariant::ByteArray) {
         QColor c;
-        QByteArray ba = data.toByteArray();
+        auto ba = data.toByteArray();
         if (ba.size() == 8) {
-            ushort * colBuf = (ushort *)ba.data();
+            auto colBuf = (ushort *)ba.data();
             c.setRgbF(qreal(colBuf[0]) / qreal(0xFFFF),
                       qreal(colBuf[1]) / qreal(0xFFFF),
                       qreal(colBuf[2]) / qreal(0xFFFF),
@@ -261,7 +261,7 @@ QVariant QInternalMimeData::retrieveData(const QString &mimeType, QVariant::Type
         }
     } else if (data.type() != type && data.type() == QVariant::ByteArray) {
         // try to use mime data's internal conversion stuf.
-        QInternalMimeData *that = const_cast<QInternalMimeData *>(this);
+        auto that = const_cast<QInternalMimeData *>(this);
         that->setData(mimeType, data.toByteArray());
         data = QMimeData::retrieveData(mimeType, type);
         that->clear();
@@ -277,11 +277,11 @@ bool QInternalMimeData::canReadData(const QString &mimeType)
 // helper functions for rendering mimedata to the system, this is needed because QMimeData is in core.
 QStringList QInternalMimeData::formatsHelper(const QMimeData *data)
 {
-    QStringList realFormats = data->formats();
+    auto realFormats = data->formats();
     if (realFormats.contains(QLatin1String("application/x-qt-image"))) {
         // add all supported image formats
-        QStringList imageFormats = imageWriteMimeFormats();
-        for (int i = 0; i < imageFormats.size(); ++i) {
+        auto imageFormats = imageWriteMimeFormats();
+        for (auto i = 0; i < imageFormats.size(); ++i) {
             if (!realFormats.contains(imageFormats.at(i)))
                 realFormats.append(imageFormats.at(i));
         }
@@ -292,12 +292,12 @@ QStringList QInternalMimeData::formatsHelper(const QMimeData *data)
 bool QInternalMimeData::hasFormatHelper(const QString &mimeType, const QMimeData *data)
 {
 
-    bool foundFormat = data->hasFormat(mimeType);
+    auto foundFormat = data->hasFormat(mimeType);
     if (!foundFormat) {
         if (mimeType == QLatin1String("application/x-qt-image")) {
             // check all supported image formats
-            QStringList imageFormats = imageWriteMimeFormats();
-            for (int i = 0; i < imageFormats.size(); ++i) {
+            auto imageFormats = imageWriteMimeFormats();
+            for (auto i = 0; i < imageFormats.size(); ++i) {
                 if ((foundFormat = data->hasFormat(imageFormats.at(i))))
                     break;
             }
@@ -324,8 +324,8 @@ QByteArray QInternalMimeData::renderDataHelper(const QString &mimeType, const QM
            data[3]: opacity
         */
         ba.resize(8);
-        ushort * colBuf = (ushort *)ba.data();
-        QColor c = qvariant_cast<QColor>(data->colorData());
+        auto colBuf = (ushort *)ba.data();
+        auto c = qvariant_cast<QColor>(data->colorData());
         colBuf[0] = ushort(c.redF() * 0xFFFF);
         colBuf[1] = ushort(c.greenF() * 0xFFFF);
         colBuf[2] = ushort(c.blueF() * 0xFFFF);
@@ -334,13 +334,13 @@ QByteArray QInternalMimeData::renderDataHelper(const QString &mimeType, const QM
         ba = data->data(mimeType);
         if (ba.isEmpty()) {
             if (mimeType == QLatin1String("application/x-qt-image") && data->hasImage()) {
-                QImage image = qvariant_cast<QImage>(data->imageData());
+                auto image = qvariant_cast<QImage>(data->imageData());
                 QBuffer buf(&ba);
                 buf.open(QBuffer::WriteOnly);
                 // would there not be PNG ??
                 image.save(&buf, "PNG");
             } else if (mimeType.startsWith(QLatin1String("image/")) && data->hasImage()) {
-                QImage image = qvariant_cast<QImage>(data->imageData());
+                auto image = qvariant_cast<QImage>(data->imageData());
                 QBuffer buf(&ba);
                 buf.open(QBuffer::WriteOnly);
                 image.save(&buf, mimeType.mid(mimeType.indexOf(QLatin1Char('/')) + 1).toLatin1().toUpper());

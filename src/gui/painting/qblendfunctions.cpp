@@ -95,7 +95,7 @@ struct Blend_ARGB32_on_RGB16_SourceAlpha {
     inline void write(quint16 *dst, quint32 src) {
         const quint8 alpha = qAlpha(src);
         if (alpha) {
-            quint16 s = qConvertRgb32To16(src);
+            auto s = qConvertRgb32To16(src);
             if(alpha < 255)
                 s += BYTE_MUL_RGB16(*dst, 255 - alpha);
             *dst = s;
@@ -114,7 +114,7 @@ struct Blend_ARGB32_on_RGB16_SourceAndConstAlpha {
         src = BYTE_MUL(src, m_alpha);
         const quint8 alpha = qAlpha(src);
         if(alpha) {
-            quint16 s = qConvertRgb32To16(src);
+            auto s = qConvertRgb32To16(src);
             if(alpha < 255)
                 s += BYTE_MUL_RGB16(*dst, 255 - alpha);
             *dst = s;
@@ -194,7 +194,7 @@ void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
                 src += sbpl;
             }
         } else {
-            int length = w << 1;
+            auto length = w << 1;
             while (h--) {
                 memcpy(dst, src, length);
                 dst += dbpl;
@@ -202,12 +202,12 @@ void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
             }
         }
     } else if (const_alpha != 0) {
-        quint16 *d = (quint16 *) dst;
-        const quint16 *s = (const quint16 *) src;
+        auto d = (quint16 *) dst;
+        auto s = (const quint16 *) src;
         quint8 a = (255 * const_alpha) >> 8;
         quint8 ia = 255 - a;
         while (h--) {
-            for (int x=0; x<w; ++x) {
+            for (auto x=0; x<w; ++x) {
                 d[x] = BYTE_MUL_RGB16(s[x], a) + BYTE_MUL_RGB16(d[x], ia);
             }
             d = (quint16 *)(((uchar *) d) + dbpl);
@@ -222,15 +222,15 @@ void qt_blend_argb32_on_rgb16_const_alpha(uchar *destPixels, int dbpl,
                                           int w, int h,
                                           int const_alpha)
 {
-    quint16 *dst = (quint16 *) destPixels;
-    const quint32 *src = (const quint32 *) srcPixels;
+    auto dst = (quint16 *) destPixels;
+    auto src = (const quint32 *) srcPixels;
 
     const_alpha = (const_alpha * 255) >> 8;
-    for (int y=0; y<h; ++y) {
-        for (int i = 0; i < w; ++i) {
-            uint s = src[i];
+    for (auto y=0; y<h; ++y) {
+        for (auto i = 0; i < w; ++i) {
+            auto s = src[i];
             s = BYTE_MUL(s, const_alpha);
-            int alpha = qAlpha(s);
+            auto alpha = qAlpha(s);
             s = qConvertRgb32To16(s);
             s += BYTE_MUL_RGB16(dst[i], 255 - alpha);
             dst[i] = s;
@@ -250,37 +250,37 @@ static void qt_blend_argb32_on_rgb16(uchar *destPixels, int dbpl,
         return;
     }
 
-    quint16 *dst = (quint16 *) destPixels;
-    const quint32 *src = (const quint32 *) srcPixels;
+    auto dst = (quint16 *) destPixels;
+    auto src = (const quint32 *) srcPixels;
 
-    for (int y=0; y<h; ++y) {
-        for (int x=0; x<w; ++x) {
+    for (auto y=0; y<h; ++y) {
+        for (auto x=0; x<w; ++x) {
 
-            quint32 spix = src[x];
-            quint32 alpha = spix >> 24;
+            auto spix = src[x];
+            auto alpha = spix >> 24;
 
             if (alpha == 255) {
                 dst[x] = qConvertRgb32To16(spix);
             } else if (alpha != 0) {
                 quint32 dpix = dst[x];
 
-                quint32 sia = 255 - alpha;
+                auto sia = 255 - alpha;
 
-                quint32 sr = (spix >> 8) & 0xf800;
-                quint32 sg = (spix >> 5) & 0x07e0;
-                quint32 sb = (spix >> 3) & 0x001f;
+                auto sr = (spix >> 8) & 0xf800;
+                auto sg = (spix >> 5) & 0x07e0;
+                auto sb = (spix >> 3) & 0x001f;
 
-                quint32 dr = (dpix & 0x0000f800);
-                quint32 dg = (dpix & 0x000007e0);
-                quint32 db = (dpix & 0x0000001f);
+                auto dr = (dpix & 0x0000f800);
+                auto dg = (dpix & 0x000007e0);
+                auto db = (dpix & 0x0000001f);
 
-                quint32 siar = dr * sia;
-                quint32 siag = dg * sia;
-                quint32 siab = db * sia;
+                auto siar = dr * sia;
+                auto siag = dg * sia;
+                auto siab = db * sia;
 
-                quint32 rr = sr + ((siar + (siar>>8) + (0x80 << 8)) >> 8);
-                quint32 rg = sg + ((siag + (siag>>8) + (0x80 << 3)) >> 8);
-                quint32 rb = sb + ((siab + (siab>>8) + (0x80 >> 3)) >> 8);
+                auto rr = sr + ((siar + (siar>>8) + (0x80 << 8)) >> 8);
+                auto rg = sg + ((siag + (siag>>8) + (0x80 << 3)) >> 8);
+                auto rb = sb + ((siab + (siab>>8) + (0x80 >> 3)) >> 8);
 
                 dst[x] = (rr & 0xf800)
                          | (rg & 0x07e0)
@@ -308,18 +308,18 @@ static void qt_blend_rgb32_on_rgb16(uchar *destPixels, int dbpl,
         return;
     }
 
-    const quint32 *src = (const quint32 *) srcPixels;
-    int srcExtraStride = (sbpl >> 2) - w;
+    auto src = (const quint32 *) srcPixels;
+    auto srcExtraStride = (sbpl >> 2) - w;
 
-    int dstJPL = dbpl / 2;
+    auto dstJPL = dbpl / 2;
 
-    quint16 *dst = (quint16 *) destPixels;
-    quint16 *dstEnd = dst + dstJPL * h;
+    auto dst = (quint16 *) destPixels;
+    auto dstEnd = dst + dstJPL * h;
 
-    int dstExtraStride = dstJPL - w;
+    auto dstExtraStride = dstJPL - w;
 
     while (dst < dstEnd) {
-        const quint32 *srcEnd = src + w;
+        auto srcEnd = src + w;
         while (src < srcEnd) {
             *dst = qConvertRgb32To16(*src);
             ++dst;
@@ -347,12 +347,12 @@ static void qt_blend_argb32_on_argb32(uchar *destPixels, int dbpl,
     fflush(stdout);
 #endif
 
-    const uint *src = (const uint *) srcPixels;
-    uint *dst = (uint *) destPixels;
+    auto src = (const uint *) srcPixels;
+    auto dst = (uint *) destPixels;
     if (const_alpha == 256) {
-        for (int y=0; y<h; ++y) {
-            for (int x=0; x<w; ++x) {
-                uint s = src[x];
+        for (auto y=0; y<h; ++y) {
+            for (auto x=0; x<w; ++x) {
+                auto s = src[x];
                 if (s >= 0xff000000)
                     dst[x] = s;
                 else if (s != 0)
@@ -363,9 +363,9 @@ static void qt_blend_argb32_on_argb32(uchar *destPixels, int dbpl,
         }
     } else if (const_alpha != 0) {
         const_alpha = (const_alpha * 255) >> 8;
-        for (int y=0; y<h; ++y) {
-            for (int x=0; x<w; ++x) {
-                uint s = BYTE_MUL(src[x], const_alpha);
+        for (auto y=0; y<h; ++y) {
+            for (auto x=0; x<w; ++x) {
+                auto s = BYTE_MUL(src[x], const_alpha);
                 dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
             }
             dst = (quint32 *)(((uchar *) dst) + dbpl);
@@ -391,10 +391,10 @@ void qt_blend_rgb32_on_rgb32(uchar *destPixels, int dbpl,
         return;
     }
 
-    const uint *src = (const uint *) srcPixels;
-    uint *dst = (uint *) destPixels;
-    int len = w * 4;
-    for (int y=0; y<h; ++y) {
+    auto src = (const uint *) srcPixels;
+    auto dst = (uint *) destPixels;
+    auto len = w * 4;
+    for (auto y=0; y<h; ++y) {
         memcpy(dst, src, len);
         dst = (quint32 *)(((uchar *) dst) + dbpl);
         src = (const quint32 *)(((const uchar *) src) + sbpl);

@@ -377,10 +377,10 @@ QRect QMatrix::mapRect(const QRect &rect) const
 {
     QRect result;
     if (_m12 == 0.0F && _m21 == 0.0F) {
-        int x = qRound(_m11*rect.x() + _dx);
-        int y = qRound(_m22*rect.y() + _dy);
-        int w = qRound(_m11*rect.width());
-        int h = qRound(_m22*rect.height());
+        auto x = qRound(_m11*rect.x() + _dx);
+        auto y = qRound(_m22*rect.y() + _dy);
+        auto w = qRound(_m11*rect.width());
+        auto h = qRound(_m22*rect.height());
         if (w < 0) {
             w = -w;
             x -= w;
@@ -395,10 +395,10 @@ QRect QMatrix::mapRect(const QRect &rect) const
         qreal x0, y0;
         qreal x, y;
         MAPDOUBLE(rect.left(), rect.top(), x0, y0);
-        qreal xmin = x0;
-        qreal ymin = y0;
-        qreal xmax = x0;
-        qreal ymax = y0;
+        auto xmin = x0;
+        auto ymin = y0;
+        auto xmax = x0;
+        auto ymax = y0;
         MAPDOUBLE(rect.right() + 1, rect.top(), x, y);
         xmin = qMin(xmin, x);
         ymin = qMin(ymin, y);
@@ -442,10 +442,10 @@ QRectF QMatrix::mapRect(const QRectF &rect) const
 {
     QRectF result;
     if (_m12 == 0.0F && _m21 == 0.0F) {
-        qreal x = _m11*rect.x() + _dx;
-        qreal y = _m22*rect.y() + _dy;
-        qreal w = _m11*rect.width();
-        qreal h = _m22*rect.height();
+        auto x = _m11*rect.x() + _dx;
+        auto y = _m22*rect.y() + _dy;
+        auto w = _m11*rect.width();
+        auto h = _m22*rect.height();
         if (w < 0) {
             w = -w;
             x -= w;
@@ -459,10 +459,10 @@ QRectF QMatrix::mapRect(const QRectF &rect) const
         qreal x0, y0;
         qreal x, y;
         MAPDOUBLE(rect.x(), rect.y(), x0, y0);
-        qreal xmin = x0;
-        qreal ymin = y0;
-        qreal xmax = x0;
-        qreal ymax = y0;
+        auto xmin = x0;
+        auto ymin = y0;
+        auto xmax = x0;
+        auto ymax = y0;
         MAPDOUBLE(rect.x() + rect.width(), rect.y(), x, y);
         xmin = qMin(xmin, x);
         ymin = qMin(ymin, y);
@@ -529,8 +529,8 @@ QPoint QMatrix::map(const QPoint &p) const
 */
 QPointF QMatrix::map(const QPointF &point) const
 {
-    qreal fx = point.x();
-    qreal fy = point.y();
+    auto fx = point.x();
+    auto fy = point.y();
     return QPointF(_m11*fx + _m21*fy + _dx, _m12*fx + _m22*fy + _dy);
 }
 
@@ -606,11 +606,11 @@ QLine QMatrix::map(const QLine &line) const
 
 QPolygon QMatrix::map(const QPolygon &a) const
 {
-    int size = a.size();
+    auto size = a.size();
     int i;
     QPolygon p(size);
-    const QPoint *da = a.constData();
-    QPoint *dp = p.data();
+    auto da = a.constData();
+    auto dp = p.data();
     for(i = 0; i < size; i++) {
         MAPINT(da[i].x(), da[i].y(), dp[i].rx(), dp[i].ry());
     }
@@ -627,11 +627,11 @@ QPolygon QMatrix::map(const QPolygon &a) const
 */
 QPolygonF QMatrix::map(const QPolygonF &a) const
 {
-    int size = a.size();
+    auto size = a.size();
     int i;
     QPolygonF p(size);
-    const QPointF *da = a.constData();
-    QPointF *dp = p.data();
+    auto da = a.constData();
+    auto dp = p.data();
     for(i = 0; i < size; i++) {
         MAPDOUBLE(da[i].xp, da[i].yp, dp[i].xp, dp[i].yp);
     }
@@ -679,7 +679,7 @@ QRegion QMatrix::map(const QRegion &r) const
         return copy;
     }
 
-    QPainterPath p = map(qt_regionToPath(r));
+    auto p = map(qt_regionToPath(r));
     return p.toFillPolygon().toPolygon();
 }
 
@@ -704,7 +704,7 @@ QPainterPath QMatrix::map(const QPainterPath &path) const
     if (path.isEmpty())
         return QPainterPath();
 
-    QPainterPath copy = path;
+    auto copy = path;
 
     // Translate or identity
     if (_m11 == 1.0 && _m22 == 1.0 && _m12 == 0.0 && _m21 == 0.0) {
@@ -712,7 +712,7 @@ QPainterPath QMatrix::map(const QPainterPath &path) const
         // Translate
         if (_dx != 0.0 || _dy != 0.0) {
             copy.detach();
-            for (int i=0; i<path.elementCount(); ++i) {
+            for (auto i=0; i<path.elementCount(); ++i) {
                 QPainterPath::Element &e = copy.d_ptr->elements[i];
                 e.x += _dx;
                 e.y += _dy;
@@ -722,9 +722,9 @@ QPainterPath QMatrix::map(const QPainterPath &path) const
     // Full xform
     } else {
         copy.detach();
-        for (int i=0; i<path.elementCount(); ++i) {
+        for (auto i=0; i<path.elementCount(); ++i) {
             QPainterPath::Element &e = copy.d_ptr->elements[i];
-            qreal fx = e.x, fy = e.y;
+            auto fx = e.x, fy = e.y;
             e.x = _m11*fx + _m21*fy + _dx;
             e.y =  _m12*fx + _m22*fy + _dy;
         }
@@ -760,8 +760,8 @@ QPolygon QMatrix::mapToPolygon(const QRect &rect) const
     if (_m12 == 0.0F && _m21 == 0.0F) {
         x[0] = _m11*rect.x() + _dx;
         y[0] = _m22*rect.y() + _dy;
-        qreal w = _m11*rect.width();
-        qreal h = _m22*rect.height();
+        auto w = _m11*rect.width();
+        auto h = _m22*rect.height();
         if (w < 0) {
             w = -w;
             x[0] -= w;
@@ -865,10 +865,10 @@ QMatrix &QMatrix::scale(qreal sx, qreal sy)
 
 QMatrix &QMatrix::shear(qreal sh, qreal sv)
 {
-    qreal tm11 = sv*_m21;
-    qreal tm12 = sv*_m22;
-    qreal tm21 = sh*_m11;
-    qreal tm22 = sh*_m12;
+    auto tm11 = sv*_m21;
+    auto tm12 = sv*_m22;
+    auto tm21 = sh*_m11;
+    auto tm22 = sh*_m12;
     _m11 += tm11;
     _m12 += tm12;
     _m21 += tm21;
@@ -904,14 +904,14 @@ QMatrix &QMatrix::rotate(qreal a)
     else if (a == 180.)
         cosa = -1.;
     else{
-        qreal b = deg2rad*a;                        // convert to radians
+        auto b = deg2rad*a;                        // convert to radians
         sina = qSin(b);               // fast and convenient
         cosa = qCos(b);
     }
-    qreal tm11 = cosa*_m11 + sina*_m21;
-    qreal tm12 = cosa*_m12 + sina*_m22;
-    qreal tm21 = -sina*_m11 + cosa*_m21;
-    qreal tm22 = -sina*_m12 + cosa*_m22;
+    auto tm11 = cosa*_m11 + sina*_m21;
+    auto tm12 = cosa*_m12 + sina*_m22;
+    auto tm21 = -sina*_m11 + cosa*_m21;
+    auto tm22 = -sina*_m12 + cosa*_m22;
     _m11 = tm11; _m12 = tm12;
     _m21 = tm21; _m22 = tm22;
     return *this;
@@ -945,7 +945,7 @@ QMatrix &QMatrix::rotate(qreal a)
 
 QMatrix QMatrix::inverted(bool *invertible) const
 {
-    qreal dtr = determinant();
+    auto dtr = determinant();
     if (dtr == 0.0) {
         if (invertible)
             *invertible = false;                // singular matrix
@@ -954,7 +954,7 @@ QMatrix QMatrix::inverted(bool *invertible) const
     else {                                        // invertible matrix
         if (invertible)
             *invertible = true;
-        qreal dinv = 1.0/dtr;
+        auto dinv = 1.0/dtr;
         return QMatrix((_m22*dinv),        (-_m12*dinv),
                        (-_m21*dinv), (_m11*dinv),
                        ((_m21*_dy - _m22*_dx)*dinv),
@@ -1028,13 +1028,13 @@ bool QMatrix::operator!=(const QMatrix &m) const
 
 QMatrix &QMatrix::operator *=(const QMatrix &m)
 {
-    qreal tm11 = _m11*m._m11 + _m12*m._m21;
-    qreal tm12 = _m11*m._m12 + _m12*m._m22;
-    qreal tm21 = _m21*m._m11 + _m22*m._m21;
-    qreal tm22 = _m21*m._m12 + _m22*m._m22;
+    auto tm11 = _m11*m._m11 + _m12*m._m21;
+    auto tm12 = _m11*m._m12 + _m12*m._m22;
+    auto tm21 = _m21*m._m11 + _m22*m._m21;
+    auto tm22 = _m21*m._m12 + _m22*m._m22;
 
-    qreal tdx  = _dx*m._m11  + _dy*m._m21 + m._dx;
-    qreal tdy =  _dx*m._m12  + _dy*m._m22 + m._dy;
+    auto tdx  = _dx*m._m11  + _dy*m._m21 + m._dx;
+    auto tdy =  _dx*m._m12  + _dy*m._m22 + m._dy;
 
     _m11 = tm11; _m12 = tm12;
     _m21 = tm21; _m22 = tm22;
@@ -1054,13 +1054,13 @@ QMatrix &QMatrix::operator *=(const QMatrix &m)
 
 QMatrix QMatrix::operator *(const QMatrix &m) const
 {
-    qreal tm11 = _m11*m._m11 + _m12*m._m21;
-    qreal tm12 = _m11*m._m12 + _m12*m._m22;
-    qreal tm21 = _m21*m._m11 + _m22*m._m21;
-    qreal tm22 = _m21*m._m12 + _m22*m._m22;
+    auto tm11 = _m11*m._m11 + _m12*m._m21;
+    auto tm12 = _m11*m._m12 + _m12*m._m22;
+    auto tm21 = _m21*m._m11 + _m22*m._m21;
+    auto tm22 = _m21*m._m12 + _m22*m._m22;
 
-    qreal tdx  = _dx*m._m11  + _dy*m._m21 + m._dx;
-    qreal tdy =  _dx*m._m12  + _dy*m._m22 + m._dy;
+    auto tdx  = _dx*m._m11  + _dy*m._m21 + m._dx;
+    auto tdy =  _dx*m._m12  + _dy*m._m22 + m._dy;
     return QMatrix(tm11, tm12, tm21, tm22, tdx, tdy, true);
 }
 

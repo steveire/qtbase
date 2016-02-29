@@ -53,9 +53,9 @@ void convert_ARGB_to_ARGB_PM_avx2(QImageData *dest, const QImageData *src, Qt::I
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
-    const uint *src_data = (uint *) src->data;
-    uint *dest_data = (uint *) dest->data;
-    for (int i = 0; i < src->height; ++i) {
+    auto src_data = (uint *) src->data;
+    auto dest_data = (uint *) dest->data;
+    for (auto i = 0; i < src->height; ++i) {
         qt_convertARGB32ToARGB32PM(dest_data, src_data, src->width);
         src_data += src->bytes_per_line >> 2;
         dest_data += dest->bytes_per_line >> 2;

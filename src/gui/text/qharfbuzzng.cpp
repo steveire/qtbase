@@ -308,7 +308,7 @@ _hb_qt_unicode_compose(hb_unicode_funcs_t * /*ufuncs*/,
 {
     // ### optimize
     QString s = QString::fromUcs4(&a, 1) + QString::fromUcs4(&b, 1);
-    QString normalized = s.normalized(QString::NormalizationForm_C);
+    auto normalized = s.normalized(QString::NormalizationForm_C);
 
     QStringIterator it(normalized);
     Q_ASSERT(it.hasNext()); // size>0
@@ -327,7 +327,7 @@ _hb_qt_unicode_decompose(hb_unicode_funcs_t * /*ufuncs*/,
     if (QChar::decompositionTag(ab) != QChar::Canonical) // !NFD
         return false;
 
-    QString normalized = QChar::decomposition(ab);
+    auto normalized = QChar::decomposition(ab);
     if (normalized.isEmpty())
         return false;
 
@@ -346,10 +346,10 @@ _hb_qt_unicode_decompose(hb_unicode_funcs_t * /*ufuncs*/,
         // Here's the ugly part: if ab decomposes to a single character and
         // that character decomposes again, we have to detect that and undo
         // the second part :-(
-        const QString recomposed = normalized.normalized(QString::NormalizationForm_C);
+        const auto recomposed = normalized.normalized(QString::NormalizationForm_C);
         QStringIterator jt(recomposed);
         Q_ASSERT(jt.hasNext()); // size>0
-        const hb_codepoint_t c = jt.next();
+        const auto c = jt.next();
         if (c != *a && c != ab) {
             *a = c;
             *b = 0;
@@ -364,7 +364,7 @@ _hb_qt_unicode_decompose(hb_unicode_funcs_t * /*ufuncs*/,
         *b = it.next();
     } while (it.hasNext());
     normalized.chop(QChar::requiresSurrogates(*b) ? 2 : 1);
-    const QString recomposed = normalized.normalized(QString::NormalizationForm_C);
+    const auto recomposed = normalized.normalized(QString::NormalizationForm_C);
     QStringIterator jt(recomposed);
     Q_ASSERT(jt.hasNext()); // size>0
     // We expect that recomposed has exactly one character now
@@ -378,7 +378,7 @@ _hb_qt_unicode_decompose_compatibility(hb_unicode_funcs_t * /*ufuncs*/,
                                        hb_codepoint_t *decomposed,
                                        void * /*user_data*/)
 {
-    const QString normalized = QChar::decomposition(u);
+    const auto normalized = QChar::decomposition(u);
 
     uint outlen = 0;
     QStringIterator it(normalized);
@@ -428,7 +428,7 @@ _hb_qt_font_get_glyph(hb_font_t * /*font*/, void *font_data,
                       hb_codepoint_t *glyph,
                       void * /*user_data*/)
 {
-    QFontEngine *fe = static_cast<QFontEngine *>(font_data);
+    auto fe = static_cast<QFontEngine *>(font_data);
     Q_ASSERT(fe);
 
     *glyph = fe->glyphIndex(unicode);
@@ -441,7 +441,7 @@ _hb_qt_font_get_glyph_h_advance(hb_font_t *font, void *font_data,
                                 hb_codepoint_t glyph,
                                 void * /*user_data*/)
 {
-    QFontEngine *fe = static_cast<QFontEngine *>(font_data);
+    auto fe = static_cast<QFontEngine *>(font_data);
     Q_ASSERT(fe);
 
     QFixed advance;
@@ -489,7 +489,7 @@ _hb_qt_font_get_glyph_h_kerning(hb_font_t *font, void *font_data,
                                 hb_codepoint_t first_glyph, hb_codepoint_t second_glyph,
                                 void * /*user_data*/)
 {
-    QFontEngine *fe = static_cast<QFontEngine *>(font_data);
+    auto fe = static_cast<QFontEngine *>(font_data);
     Q_ASSERT(fe);
 
     glyph_t glyphs[2] = { first_glyph, second_glyph };
@@ -520,10 +520,10 @@ _hb_qt_font_get_glyph_extents(hb_font_t * /*font*/, void *font_data,
                               hb_glyph_extents_t *extents,
                               void * /*user_data*/)
 {
-    QFontEngine *fe = static_cast<QFontEngine *>(font_data);
+    auto fe = static_cast<QFontEngine *>(font_data);
     Q_ASSERT(fe);
 
-    glyph_metrics_t gm = fe->boundingBox(glyph);
+    auto gm = fe->boundingBox(glyph);
 
     extents->x_bearing = gm.x.value();
     extents->y_bearing = gm.y.value();
@@ -539,7 +539,7 @@ _hb_qt_font_get_glyph_contour_point(hb_font_t * /*font*/, void *font_data,
                                     unsigned int point_index, hb_position_t *x, hb_position_t *y,
                                     void * /*user_data*/)
 {
-    QFontEngine *fe = static_cast<QFontEngine *>(font_data);
+    auto fe = static_cast<QFontEngine *>(font_data);
     Q_ASSERT(fe);
 
     QFixed xpos, ypos;
@@ -626,7 +626,7 @@ hb_font_funcs_t *hb_qt_get_font_funcs()
 static hb_blob_t *
 _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
 {
-    QFontEngine::FaceData *data = static_cast<QFontEngine::FaceData *>(user_data);
+    auto data = static_cast<QFontEngine::FaceData *>(user_data);
     Q_ASSERT(data);
 
     qt_get_font_table_func_t get_font_table = data->get_font_table;
@@ -636,7 +636,7 @@ _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
     if (Q_UNLIKELY(!get_font_table(data->user_data, tag, 0, &length)))
         return hb_blob_get_empty();
 
-    char *buffer = static_cast<char *>(malloc(length));
+    auto buffer = static_cast<char *>(malloc(length));
     Q_CHECK_PTR(buffer);
 
     if (Q_UNLIKELY(!get_font_table(data->user_data, tag, reinterpret_cast<uchar *>(buffer), &length)))
@@ -650,12 +650,12 @@ _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
 static inline hb_face_t *
 _hb_qt_face_create(QFontEngine *fe)
 {
-    QFontEngine::FaceData *data = static_cast<QFontEngine::FaceData *>(malloc(sizeof(QFontEngine::FaceData)));
+    auto data = static_cast<QFontEngine::FaceData *>(malloc(sizeof(QFontEngine::FaceData)));
     Q_CHECK_PTR(data);
     data->user_data = fe->faceData.user_data;
     data->get_font_table = fe->faceData.get_font_table;
 
-    hb_face_t *face = hb_face_create_for_tables(_hb_qt_reference_table, (void *)data, free);
+    auto face = hb_face_create_for_tables(_hb_qt_reference_table, (void *)data, free);
     if (Q_UNLIKELY(hb_face_is_immutable(face))) {
         hb_face_destroy(face);
         return NULL;
@@ -692,11 +692,11 @@ hb_face_t *hb_qt_face_get_for_engine(QFontEngine *fe)
 static inline hb_font_t *
 _hb_qt_font_create(QFontEngine *fe)
 {
-    hb_face_t *face = hb_qt_face_get_for_engine(fe);
+    auto face = hb_qt_face_get_for_engine(fe);
     if (Q_UNLIKELY(!face))
         return NULL;
 
-    hb_font_t *font = hb_font_create(face);
+    auto font = hb_font_create(face);
 
     if (Q_UNLIKELY(hb_font_is_immutable(font))) {
         hb_font_destroy(font);

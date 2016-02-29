@@ -173,13 +173,13 @@ bool QGlyphRun::operator==(const QGlyphRun &other) const
     }
 
     if (d->glyphIndexData != other.d->glyphIndexData) {
-        for (int i = 0; i < d->glyphIndexDataSize; ++i) {
+        for (auto i = 0; i < d->glyphIndexDataSize; ++i) {
             if (d->glyphIndexData[i] != other.d->glyphIndexData[i])
                return false;
         }
     }
     if (d->glyphPositionData != other.d->glyphPositionData) {
-        for (int i = 0; i < d->glyphPositionDataSize; ++i) {
+        for (auto i = 0; i < d->glyphPositionDataSize; ++i) {
             if (d->glyphPositionData[i] != other.d->glyphPositionData[i])
                return false;
         }
@@ -474,8 +474,8 @@ QRectF QGlyphRun::boundingRect() const
     qreal minX, minY, maxX, maxY;
     minX = minY = maxX = maxY = 0;
 
-    for (int i = 0, n = qMin(d->glyphIndexDataSize, d->glyphPositionDataSize); i < n; ++i) {
-        QRectF glyphRect = d->rawFont.boundingRect(d->glyphIndexData[i]);
+    for (auto i = 0, n = qMin(d->glyphIndexDataSize, d->glyphPositionDataSize); i < n; ++i) {
+        auto glyphRect = d->rawFont.boundingRect(d->glyphIndexData[i]);
         glyphRect.translate(d->glyphPositionData[i]);
 
         if (i == 0) {

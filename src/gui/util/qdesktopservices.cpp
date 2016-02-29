@@ -81,7 +81,7 @@ Q_GLOBAL_STATIC(QOpenUrlHandlerRegistry, handlerRegistry)
 
 void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
 {
-    HandlerHash::Iterator it = handlers.begin();
+    auto it = handlers.begin();
     while (it != handlers.end()) {
         if (it->receiver == handler) {
             it = handlers.erase(it);
@@ -181,15 +181,15 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
 */
 bool QDesktopServices::openUrl(const QUrl &url)
 {
-    QOpenUrlHandlerRegistry *registry = handlerRegistry();
+    auto registry = handlerRegistry();
     QMutexLocker locker(&registry->mutex);
-    static bool insideOpenUrlHandler = false;
+    static auto insideOpenUrlHandler = false;
 
     if (!insideOpenUrlHandler) {
-        QOpenUrlHandlerRegistry::HandlerHash::ConstIterator handler = registry->handlers.constFind(url.scheme());
+        auto handler = registry->handlers.constFind(url.scheme());
         if (handler != registry->handlers.constEnd()) {
             insideOpenUrlHandler = true;
-            bool result = QMetaObject::invokeMethod(handler->receiver, handler->name.constData(), Qt::DirectConnection, Q_ARG(QUrl, url));
+            auto result = QMetaObject::invokeMethod(handler->receiver, handler->name.constData(), Qt::DirectConnection, Q_ARG(QUrl, url));
             insideOpenUrlHandler = false;
             return result; // ### support bool slot return type
         }
@@ -197,11 +197,11 @@ bool QDesktopServices::openUrl(const QUrl &url)
     if (!url.isValid())
         return false;
 
-    QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
     if (!platformIntegration)
         return false;
 
-    QPlatformServices *platformServices = platformIntegration->services();
+    auto platformServices = platformIntegration->services();
     if (!platformServices) {
         qWarning("The platform plugin does not support services.");
         return false;
@@ -234,7 +234,7 @@ bool QDesktopServices::openUrl(const QUrl &url)
 */
 void QDesktopServices::setUrlHandler(const QString &scheme, QObject *receiver, const char *method)
 {
-    QOpenUrlHandlerRegistry *registry = handlerRegistry();
+    auto registry = handlerRegistry();
     QMutexLocker locker(&registry->mutex);
     if (!receiver) {
         registry->handlers.remove(scheme.toLower());
@@ -326,8 +326,8 @@ QString QDesktopServices::storageLocationImpl(QStandardPaths::StandardLocation t
         // Preserve Qt 4 compatibility:
         // * QCoreApplication::applicationName() must default to empty
         // * Unix data location is under the "data/" subdirectory
-        const QString compatAppName = qt_applicationName_noFallback();
-        const QString baseDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+        const auto compatAppName = qt_applicationName_noFallback();
+        const auto baseDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
         QString result = baseDir;
         if (!QCoreApplication::organizationName().isEmpty())

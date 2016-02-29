@@ -50,7 +50,7 @@ using namespace QCss;
 
 static QPen qPenFromStyle(const QBrush& b, qreal width, BorderStyle s)
 {
-    Qt::PenStyle ps = Qt::NoPen;
+    auto ps = Qt::NoPen;
 
     switch (s) {
     case BorderStyle_Dotted:
@@ -81,9 +81,9 @@ void qDrawRoundedCorners(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2,
                          const QSizeF& r1, const QSizeF& r2,
                          Edge edge, BorderStyle s, QBrush c)
 {
-    const qreal pw = (edge == TopEdge || edge == BottomEdge) ? y2-y1 : x2-x1;
+    const auto pw = (edge == TopEdge || edge == BottomEdge) ? y2-y1 : x2-x1;
     if (s == BorderStyle_Double) {
-        qreal wby3 = pw/3;
+        auto wby3 = pw/3;
         switch (edge) {
         case TopEdge:
         case BottomEdge:
@@ -111,7 +111,7 @@ void qDrawRoundedCorners(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2,
             s1 = BorderStyle_Outset;
             s2 = BorderStyle_Inset;
         }
-        int pwby2 = qRound(pw/2);
+        auto pwby2 = qRound(pw/2);
         switch (edge) {
         case TopEdge:
             qDrawRoundedCorners(p, x1, y1, x2, y1 + pwby2, r1, r2, TopEdge, s1, c);
@@ -137,9 +137,9 @@ void qDrawRoundedCorners(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2,
             c = c.color().lighter();
 
     p->save();
-    qreal pwby2 = pw/2;
+    auto pwby2 = pw/2;
     p->setBrush(Qt::NoBrush);
-    QPen pen = qPenFromStyle(c, pw, s);
+    auto pen = qPenFromStyle(c, pw, s);
     pen.setCapStyle(Qt::SquareCap); // this eliminates the offby1 errors that we might hit below
     p->setPen(pen);
     switch (edge) {
@@ -186,7 +186,7 @@ void qDrawEdge(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2, qreal dw1, q
                QCss::Edge edge, QCss::BorderStyle style, QBrush c)
 {
     p->save();
-    const qreal width = (edge == TopEdge || edge == BottomEdge) ? (y2-y1) : (x2-x1);
+    const auto width = (edge == TopEdge || edge == BottomEdge) ? (y2-y1) : (x2-x1);
 
     if (width <= 2 && style == BorderStyle_Double)
         style = BorderStyle_Solid;
@@ -243,9 +243,9 @@ void qDrawEdge(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2, qreal dw1, q
         break;
 
     case BorderStyle_Double: {
-        int wby3 = qRound(width/3);
-        int dw1by3 = qRound(dw1/3);
-        int dw2by3 = qRound(dw2/3);
+        auto wby3 = qRound(width/3);
+        auto dw1by3 = qRound(dw1/3);
+        auto dw2by3 = qRound(dw2/3);
         switch (edge) {
         case TopEdge:
             qDrawEdge(p, x1, y1, x2, y1 + wby3, dw1by3, dw2by3, TopEdge, BorderStyle_Solid, c);
@@ -282,8 +282,8 @@ void qDrawEdge(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2, qreal dw1, q
             s1 = BorderStyle_Outset;
             s2 = BorderStyle_Inset;
         }
-        int dw1by2 = qFloor(dw1/2), dw2by2 = qFloor(dw2/2);
-        int wby2 = qRound(width/2);
+        auto dw1by2 = qFloor(dw1/2), dw2by2 = qFloor(dw2/2);
+        auto wby2 = qRound(width/2);
         switch (edge) {
         case TopEdge:
             qDrawEdge(p, x1, y1, x2, y1 + wby2, dw1by2, dw2by2, TopEdge, s1, c);
@@ -331,8 +331,8 @@ void qNormalizeRadii(const QRect &br, const QSize *radii,
 // Determines if Edge e1 draws over Edge e2. Depending on this trapezoids or rectanges are drawn
 static bool paintsOver(const QCss::BorderStyle *styles, const QBrush *colors, QCss::Edge e1, QCss::Edge e2)
 {
-    QCss::BorderStyle s1 = styles[e1];
-    QCss::BorderStyle s2 = styles[e2];
+    auto s1 = styles[e1];
+    auto s2 = styles[e2];
 
     if (s2 == BorderStyle_None || colors[e2] == Qt::transparent)
         return true;
@@ -356,10 +356,10 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
     if (styles[BottomEdge] != BorderStyle_None && borders[BottomEdge] > 0) {
         qreal dw1 = (blr.width() || paintsOver(styles, colors, BottomEdge, LeftEdge)) ? 0 : borders[LeftEdge];
         qreal dw2 = (brr.width() || paintsOver(styles, colors, BottomEdge, RightEdge)) ? 0 : borders[RightEdge];
-        qreal x1 = br.x() + blr.width();
-        qreal y1 = br.y() + br.height() - borders[BottomEdge];
-        qreal x2 = br.x() + br.width() - brr.width();
-        qreal y2 = br.y() + br.height() ;
+        auto x1 = br.x() + blr.width();
+        auto y1 = br.y() + br.height() - borders[BottomEdge];
+        auto x2 = br.x() + br.width() - brr.width();
+        auto y2 = br.y() + br.height() ;
 
         qDrawEdge(p, x1, y1, x2, y2, dw1, dw2, BottomEdge, styles[BottomEdge], colors[BottomEdge]);
         if (blr.width() || brr.width())
@@ -368,10 +368,10 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
     if (styles[RightEdge] != BorderStyle_None && borders[RightEdge] > 0) {
         qreal dw1 = (trr.height() || paintsOver(styles, colors, RightEdge, TopEdge)) ? 0 : borders[TopEdge];
         qreal dw2 = (brr.height() || paintsOver(styles, colors, RightEdge, BottomEdge)) ? 0 : borders[BottomEdge];
-        qreal x1 = br.x() + br.width() - borders[RightEdge];
-        qreal y1 = br.y() + trr.height();
-        qreal x2 = br.x() + br.width();
-        qreal y2 = br.y() + br.height() - brr.height();
+        auto x1 = br.x() + br.width() - borders[RightEdge];
+        auto y1 = br.y() + trr.height();
+        auto x2 = br.x() + br.width();
+        auto y2 = br.y() + br.height() - brr.height();
 
         qDrawEdge(p, x1, y1, x2, y2, dw1, dw2, RightEdge, styles[RightEdge], colors[RightEdge]);
         if (trr.height() || brr.height())
@@ -380,10 +380,10 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
     if (styles[LeftEdge] != BorderStyle_None && borders[LeftEdge] > 0) {
         qreal dw1 = (tlr.height() || paintsOver(styles, colors, LeftEdge, TopEdge)) ? 0 : borders[TopEdge];
         qreal dw2 = (blr.height() || paintsOver(styles, colors, LeftEdge, BottomEdge)) ? 0 : borders[BottomEdge];
-        qreal x1 = br.x();
-        qreal y1 = br.y() + tlr.height();
-        qreal x2 = br.x() + borders[LeftEdge];
-        qreal y2 = br.y() + br.height() - blr.height();
+        auto x1 = br.x();
+        auto y1 = br.y() + tlr.height();
+        auto x2 = br.x() + borders[LeftEdge];
+        auto y2 = br.y() + br.height() - blr.height();
 
         qDrawEdge(p, x1, y1, x2, y2, dw1, dw2, LeftEdge, styles[LeftEdge], colors[LeftEdge]);
         if (tlr.height() || blr.height())
@@ -392,10 +392,10 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
     if (styles[TopEdge] != BorderStyle_None && borders[TopEdge] > 0) {
         qreal dw1 = (tlr.width() || paintsOver(styles, colors, TopEdge, LeftEdge)) ? 0 : borders[LeftEdge];
         qreal dw2 = (trr.width() || paintsOver(styles, colors, TopEdge, RightEdge)) ? 0 : borders[RightEdge];
-        qreal x1 = br.x() + tlr.width();
-        qreal y1 = br.y();
-        qreal x2 = br.left() + br.width() - trr.width();
-        qreal y2 = br.y() + borders[TopEdge];
+        auto x1 = br.x() + tlr.width();
+        auto y1 = br.y();
+        auto x2 = br.left() + br.width() - trr.width();
+        auto y2 = br.y() + borders[TopEdge];
 
         qDrawEdge(p, x1, y1, x2, y2, dw1, dw2, TopEdge, styles[TopEdge], colors[TopEdge]);
         if (tlr.width() || trr.width())

@@ -129,24 +129,24 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
                                                     const QRect &subRect)
 {
 #ifndef QT_NO_OPENGL
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (!ctx)
         return false;
 
     if (!(graphicsBuffer->isLocked() & QPlatformGraphicsBuffer::SWReadAccess))
         return false;
 
-    QSize size = graphicsBuffer->size();
+    auto size = graphicsBuffer->size();
 
     Q_ASSERT(subRect.isEmpty() || QRect(QPoint(0,0), size).contains(subRect));
 
     GLenum internalFormat = GL_RGBA;
     GLuint pixelType = GL_UNSIGNED_BYTE;
 
-    bool needsConversion = false;
-    bool swizzle = false;
-    bool premultiplied = false;
-    QImage::Format imageformat = QImage::toImageFormat(graphicsBuffer->format());
+    auto needsConversion = false;
+    auto swizzle = false;
+    auto premultiplied = false;
+    auto imageformat = QImage::toImageFormat(graphicsBuffer->format());
     QImage image(graphicsBuffer->data(), size.width(), size.height(), graphicsBuffer->bytesPerLine(), imageformat);
     if (graphicsBuffer->bytesPerLine() != (size.width() * 4)) {
         needsConversion = true;
@@ -194,9 +194,9 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
     if (needsConversion)
         image = image.convertToFormat(QImage::Format_RGBA8888);
 
-    QOpenGLFunctions *funcs = ctx->functions();
+    auto funcs = ctx->functions();
 
-    QRect rect = subRect;
+    auto rect = subRect;
     if (rect.isNull() || rect == QRect(QPoint(0,0),size)) {
         funcs->glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, size.width(), size.height(), 0, GL_RGBA, pixelType, image.constBits());
     } else {

@@ -94,7 +94,7 @@ QT_BEGIN_NAMESPACE
 
 bool QSurface::supportsOpenGL() const
 {
-    SurfaceType type = surfaceType();
+    auto type = surfaceType();
     return type == OpenGLSurface || type == RasterGLSurface;
 }
 
@@ -130,7 +130,7 @@ QSurface::QSurface(SurfaceClass type)
 QSurface::~QSurface()
 {
 #ifndef QT_NO_OPENGL
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (context && context->surface() == this)
         context->doneCurrent();
 #endif

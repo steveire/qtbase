@@ -431,7 +431,7 @@ void QAbstractTextDocumentLayout::registerHandler(int objectType, QObject *compo
 {
     Q_D(QAbstractTextDocumentLayout);
 
-    QTextObjectInterface *iface = qobject_cast<QTextObjectInterface *>(component);
+    auto iface = qobject_cast<QTextObjectInterface *>(component);
     if (!iface)
         return; // ### print error message on terminal?
 
@@ -468,7 +468,7 @@ QTextObjectInterface *QAbstractTextDocumentLayout::handlerForObject(int objectTy
 {
     Q_D(const QAbstractTextDocumentLayout);
 
-    QTextObjectHandler handler = d->handlers.value(objectType);
+    auto handler = d->handlers.value(objectType);
     if (!handler.component)
         return 0;
 
@@ -490,13 +490,13 @@ void QAbstractTextDocumentLayout::resizeInlineObject(QTextInlineObject item, int
 {
     Q_D(QAbstractTextDocumentLayout);
 
-    QTextCharFormat f = format.toCharFormat();
+    auto f = format.toCharFormat();
     Q_ASSERT(f.isValid());
-    QTextObjectHandler handler = d->handlers.value(f.objectType());
+    auto handler = d->handlers.value(f.objectType());
     if (!handler.component)
         return;
 
-    QSizeF s = handler.iface->intrinsicSize(document(), posInDocument, format);
+    auto s = handler.iface->intrinsicSize(document(), posInDocument, format);
     item.setWidth(s.width());
     item.setAscent(s.height());
     item.setDescent(0);
@@ -541,9 +541,9 @@ void QAbstractTextDocumentLayout::drawInlineObject(QPainter *p, const QRectF &re
     Q_UNUSED(item);
     Q_D(QAbstractTextDocumentLayout);
 
-    QTextCharFormat f = format.toCharFormat();
+    auto f = format.toCharFormat();
     Q_ASSERT(f.isValid());
-    QTextObjectHandler handler = d->handlers.value(f.objectType());
+    auto handler = d->handlers.value(f.objectType());
     if (!handler.component)
         return;
 
@@ -552,7 +552,7 @@ void QAbstractTextDocumentLayout::drawInlineObject(QPainter *p, const QRectF &re
 
 void QAbstractTextDocumentLayoutPrivate::_q_handlerDestroyed(QObject *obj)
 {
-    HandlerHash::Iterator it = handlers.begin();
+    auto it = handlers.begin();
     while (it != handlers.end())
         if ((*it).component == obj)
             it = handlers.erase(it);
@@ -567,7 +567,7 @@ void QAbstractTextDocumentLayoutPrivate::_q_handlerDestroyed(QObject *obj)
 */
 int QAbstractTextDocumentLayout::formatIndex(int pos)
 {
-    QTextDocumentPrivate *pieceTable = qobject_cast<QTextDocument *>(parent())->docHandle();
+    auto pieceTable = qobject_cast<QTextDocument *>(parent())->docHandle();
     return pieceTable->find(pos).value()->format;
 }
 
@@ -578,8 +578,8 @@ int QAbstractTextDocumentLayout::formatIndex(int pos)
 */
 QTextCharFormat QAbstractTextDocumentLayout::format(int pos)
 {
-    QTextDocumentPrivate *pieceTable = qobject_cast<QTextDocument *>(parent())->docHandle();
-    int idx = pieceTable->find(pos).value()->format;
+    auto pieceTable = qobject_cast<QTextDocument *>(parent())->docHandle();
+    auto idx = pieceTable->find(pos).value()->format;
     return pieceTable->formatCollection()->charFormat(idx);
 }
 
@@ -602,18 +602,18 @@ QTextDocument *QAbstractTextDocumentLayout::document() const
 */
 QString QAbstractTextDocumentLayout::anchorAt(const QPointF& pos) const
 {
-    int cursorPos = hitTest(pos, Qt::ExactHit);
+    auto cursorPos = hitTest(pos, Qt::ExactHit);
     if (cursorPos == -1)
         return QString();
 
     // compensate for preedit in the hit text block
-    QTextBlock block = document()->firstBlock();
+    auto block = document()->firstBlock();
     while (block.isValid()) {
-        QRectF blockBr = blockBoundingRect(block);
+        auto blockBr = blockBoundingRect(block);
         if (blockBr.contains(pos)) {
-            QTextLayout *layout = block.layout();
-            int relativeCursorPos = cursorPos - block.position();
-            const int preeditLength = layout ? layout->preeditAreaText().length() : 0;
+            auto layout = block.layout();
+            auto relativeCursorPos = cursorPos - block.position();
+            const auto preeditLength = layout ? layout->preeditAreaText().length() : 0;
             if (preeditLength > 0 && relativeCursorPos > layout->preeditAreaPosition())
                 cursorPos -= qMin(cursorPos - layout->preeditAreaPosition(), preeditLength);
             break;
@@ -621,9 +621,9 @@ QString QAbstractTextDocumentLayout::anchorAt(const QPointF& pos) const
         block = block.next();
     }
 
-    QTextDocumentPrivate *pieceTable = qobject_cast<const QTextDocument *>(parent())->docHandle();
-    QTextDocumentPrivate::FragmentIterator it = pieceTable->find(cursorPos);
-    QTextCharFormat fmt = pieceTable->formatCollection()->charFormat(it->format);
+    auto pieceTable = qobject_cast<const QTextDocument *>(parent())->docHandle();
+    auto it = pieceTable->find(cursorPos);
+    auto fmt = pieceTable->formatCollection()->charFormat(it->format);
     return fmt.anchorHref();
 }
 

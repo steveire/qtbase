@@ -93,9 +93,9 @@ QPixmap QPlatformScreen::grabWindow(WId window, int x, int y, int width, int hei
 */
 QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
 {
-    QWindowList list = QGuiApplication::topLevelWindows();
-    for (int i = list.size()-1; i >= 0; --i) {
-        QWindow *w = list[i];
+    auto list = QGuiApplication::topLevelWindows();
+    for (auto i = list.size()-1; i >= 0; --i) {
+        auto w = list[i];
         if (w->isVisible() && QHighDpi::toNativePixels(w->geometry(), w).contains(pos))
             return w;
     }
@@ -112,7 +112,7 @@ const QPlatformScreen *QPlatformScreen::screenForPosition(const QPoint &point) c
 {
     if (!geometry().contains(point)) {
         const auto screens = virtualSiblings();
-        for (const QPlatformScreen *screen : screens) {
+        for (auto screen : screens) {
             if (screen->geometry().contains(point))
                 return screen;
         }
@@ -155,7 +155,7 @@ QScreen *QPlatformScreen::screen() const
 */
 QSizeF QPlatformScreen::physicalSize() const
 {
-    static const int dpi = 100;
+    static const auto dpi = 100;
     return QSizeF(geometry().size()) / dpi * qreal(25.4);
 }
 
@@ -173,8 +173,8 @@ QSizeF QPlatformScreen::physicalSize() const
 */
 QDpi QPlatformScreen::logicalDpi() const
 {
-    QSizeF ps = physicalSize();
-    QSize s = geometry().size();
+    auto ps = physicalSize();
+    auto s = geometry().size();
 
     return QDpi(25.4 * s.width() / ps.width(),
                 25.4 * s.height() / ps.height());
@@ -330,17 +330,17 @@ QPlatformCursor *QPlatformScreen::cursor() const
 */
 void QPlatformScreen::resizeMaximizedWindows()
 {
-    QList<QWindow*> windows = QGuiApplication::allWindows();
+    auto windows = QGuiApplication::allWindows();
 
     // 'screen()' still has the old geometry info while 'this' has the new geometry info
-    const QRect oldGeometry = screen()->geometry();
-    const QRect oldAvailableGeometry = screen()->availableGeometry();
-    const QRect newGeometry = deviceIndependentGeometry();
-    const QRect newAvailableGeometry = QHighDpi::fromNative(availableGeometry(), QHighDpiScaling::factor(this), newGeometry.topLeft());
+    const auto oldGeometry = screen()->geometry();
+    const auto oldAvailableGeometry = screen()->availableGeometry();
+    const auto newGeometry = deviceIndependentGeometry();
+    const auto newAvailableGeometry = QHighDpi::fromNative(availableGeometry(), QHighDpiScaling::factor(this), newGeometry.topLeft());
 
     // make sure maximized and fullscreen windows are updated
-    for (int i = 0; i < windows.size(); ++i) {
-        QWindow *w = windows.at(i);
+    for (auto i = 0; i < windows.size(); ++i) {
+        auto w = windows.at(i);
 
         if (platformScreenForWindow(w) != this)
             continue;
@@ -358,7 +358,7 @@ static int log2(uint i)
     if (i == 0)
         return -1;
 
-    int result = 0;
+    auto result = 0;
     while (!(i & 1)) {
         ++result;
         i >>= 1;
@@ -376,10 +376,10 @@ int QPlatformScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation
     if (a == b)
         return 0;
 
-    int ia = log2(uint(a));
-    int ib = log2(uint(b));
+    auto ia = log2(uint(a));
+    auto ib = log2(uint(b));
 
-    int delta = ia - ib;
+    auto delta = ia - ib;
 
     if (delta < 0)
         delta = delta + 4;
@@ -398,7 +398,7 @@ QTransform QPlatformScreen::transformBetween(Qt::ScreenOrientation a, Qt::Screen
     if (a == b)
         return QTransform();
 
-    int angle = angleBetween(a, b);
+    auto angle = angleBetween(a, b);
 
     QTransform result;
     switch (angle) {
@@ -440,8 +440,8 @@ QRect QPlatformScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation
 
 QRect QPlatformScreen::deviceIndependentGeometry() const
 {
-    qreal scaleFactor = QHighDpiScaling::factor(this);
-    QRect nativeGeometry = geometry();
+    auto scaleFactor = QHighDpiScaling::factor(this);
+    auto nativeGeometry = geometry();
     return QRect(nativeGeometry.topLeft(), QHighDpi::fromNative(nativeGeometry.size(), scaleFactor));
 }
 
@@ -454,9 +454,9 @@ QRect QPlatformScreen::deviceIndependentGeometry() const
 */
 QPlatformScreen::SubpixelAntialiasingType QPlatformScreen::subpixelAntialiasingTypeHint() const
 {
-    static int type = -1;
+    static auto type = -1;
     if (type == -1) {
-        QByteArray env = qgetenv("QT_SUBPIXEL_AA_TYPE");
+        auto env = qgetenv("QT_SUBPIXEL_AA_TYPE");
         if (env == "RGB")
             type = QPlatformScreen::Subpixel_RGB;
         else if (env == "BGR")

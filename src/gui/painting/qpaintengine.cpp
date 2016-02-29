@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
 */
 qreal QTextItem::descent() const
 {
-    const QTextItemInt *ti = static_cast<const QTextItemInt *>(this);
+    auto ti = static_cast<const QTextItemInt *>(this);
     return ti->descent.toReal();
 }
 
@@ -93,7 +93,7 @@ qreal QTextItem::descent() const
 */
 qreal QTextItem::ascent() const
 {
-    const QTextItemInt *ti = static_cast<const QTextItemInt *>(this);
+    auto ti = static_cast<const QTextItemInt *>(this);
     return ti->ascent.toReal();
 }
 
@@ -104,7 +104,7 @@ qreal QTextItem::ascent() const
 */
 qreal QTextItem::width() const
 {
-    const QTextItemInt *ti = static_cast<const QTextItemInt *>(this);
+    auto ti = static_cast<const QTextItemInt *>(this);
     return ti->width.toReal();
 }
 
@@ -115,7 +115,7 @@ qreal QTextItem::width() const
 */
 QTextItem::RenderFlags QTextItem::renderFlags() const
 {
-    const QTextItemInt *ti = static_cast<const QTextItemInt *>(this);
+    auto ti = static_cast<const QTextItemInt *>(this);
     return ti->flags;
 }
 
@@ -126,7 +126,7 @@ QTextItem::RenderFlags QTextItem::renderFlags() const
 */
 QString QTextItem::text() const
 {
-    const QTextItemInt *ti = static_cast<const QTextItemInt *>(this);
+    auto ti = static_cast<const QTextItemInt *>(this);
     return QString(ti->chars, ti->num_chars);
 }
 
@@ -137,7 +137,7 @@ QString QTextItem::text() const
 */
 QFont QTextItem::font() const
 {
-    const QTextItemInt *ti = static_cast<const QTextItemInt *>(this);
+    auto ti = static_cast<const QTextItemInt *>(this);
     return ti->f ? *ti->f : QGuiApplication::font();
 }
 
@@ -328,7 +328,7 @@ void QPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonDra
     qt_polygon_recursion = this;
     Q_ASSERT(sizeof(QT_Point) == sizeof(QPoint));
     QVarLengthArray<QT_Point> p(pointCount);
-    for (int i = 0; i < pointCount; ++i) {
+    for (auto i = 0; i < pointCount; ++i) {
         p[i].x = qRound(points[i].x());
         p[i].y = qRound(points[i].y());
     }
@@ -355,7 +355,7 @@ void QPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDraw
     qt_polygon_recursion = this;
     Q_ASSERT(sizeof(QT_PointF) == sizeof(QPointF));
     QVarLengthArray<QT_PointF> p(pointCount);
-    for (int i=0; i<pointCount; ++i) {
+    for (auto i=0; i<pointCount; ++i) {
         p[i].x = points[i].x();
         p[i].y = points[i].y();
     }
@@ -431,15 +431,15 @@ void QPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDraw
 */
 void QPaintEngine::drawPoints(const QPointF *points, int pointCount)
 {
-    QPainter *p = painter();
+    auto p = painter();
     if (!p)
         return;
 
-    qreal penWidth = p->pen().widthF();
+    auto penWidth = p->pen().widthF();
     if (penWidth == 0)
         penWidth = 1;
 
-    bool ellipses = p->pen().capStyle() == Qt::RoundCap;
+    auto ellipses = p->pen().capStyle() == Qt::RoundCap;
 
     p->save();
 
@@ -452,8 +452,8 @@ void QPaintEngine::drawPoints(const QPointF *points, int pointCount)
     p->setBrush(p->pen().brush());
     p->setPen(Qt::NoPen);
 
-    for (int i=0; i<pointCount; ++i) {
-        QPointF pos = transform.map(points[i]);
+    for (auto i=0; i<pointCount; ++i) {
+        auto pos = transform.map(points[i]);
         QRectF rect(pos.x() - penWidth / 2, pos.y() - penWidth / 2, penWidth, penWidth);
 
         if (ellipses)
@@ -478,7 +478,7 @@ void QPaintEngine::drawPoints(const QPoint *points, int pointCount)
     Q_ASSERT(sizeof(QT_PointF) == sizeof(QPointF));
     QT_PointF fp[256];
     while (pointCount) {
-        int i = 0;
+        auto i = 0;
         while (i < pointCount && i < 256) {
             fp[i].x = points[i].x();
             fp[i].y = points[i].y();
@@ -505,7 +505,7 @@ void QPaintEngine::drawEllipse(const QRectF &rect)
     if (hasFeature(PainterPaths)) {
         drawPath(path);
     } else {
-        QPolygonF polygon = path.toFillPolygon();
+        auto polygon = path.toFillPolygon();
         drawPolygon(polygon.data(), polygon.size(), ConvexMode);
     }
 }
@@ -532,12 +532,12 @@ void qt_fill_tile(QPixmap *tile, const QPixmap &pixmap)
 {
     QPainter p(tile);
     p.drawPixmap(0, 0, pixmap);
-    int x = pixmap.width();
+    auto x = pixmap.width();
     while (x < tile->width()) {
         p.drawPixmap(x, 0, *tile, 0, 0, x, pixmap.height());
         x *= 2;
     }
-    int y = pixmap.height();
+    auto y = pixmap.height();
     while (y < tile->height()) {
         p.drawPixmap(0, y, *tile, 0, 0, tile->width(), y);
         y *= 2;
@@ -578,11 +578,11 @@ void qt_draw_tile(QPaintEngine *gc, qreal x, qreal y, qreal w, qreal h,
 */
 void QPaintEngine::drawTiledPixmap(const QRectF &rect, const QPixmap &pixmap, const QPointF &p)
 {
-    int sw = pixmap.width();
-    int sh = pixmap.height();
+    auto sw = pixmap.width();
+    auto sh = pixmap.height();
 
     if (sw*sh < 8192 && sw*sh < 16*rect.width()*rect.height()) {
-        int tw = sw, th = sh;
+        auto tw = sw, th = sh;
         while (tw*th < 32678 && tw < rect.width()/2)
             tw *= 2;
         while (tw*th < 32678 && th < rect.height()/2)
@@ -615,11 +615,11 @@ void QPaintEngine::drawImage(const QRectF &r, const QImage &image, const QRectF 
                              Qt::ImageConversionFlags flags)
 {
     QRectF baseSize(0, 0, image.width(), image.height());
-    QImage im = image;
+    auto im = image;
     if (baseSize != sr)
         im = im.copy(qFloor(sr.x()), qFloor(sr.y()),
                      qCeil(sr.width()), qCeil(sr.height()));
-    QPixmap pm = QPixmap::fromImage(im, flags);
+    auto pm = QPixmap::fromImage(im, flags);
     drawPixmap(r, pm, QRectF(QPointF(0, 0), pm.size()));
 }
 
@@ -771,7 +771,7 @@ void QPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 */
 void QPaintEngine::drawLines(const QLineF *lines, int lineCount)
 {
-    for (int i=0; i<lineCount; ++i) {
+    for (auto i=0; i<lineCount; ++i) {
         QPointF pts[2] = { lines[i].p1(), lines[i].p2() };
 
         if (pts[0] == pts[1]) {
@@ -805,7 +805,7 @@ void QPaintEngine::drawLines(const QLine *lines, int lineCount)
     Q_ASSERT(sizeof(LineF) == sizeof(QLineF));
     LineF fl[256];
     while (lineCount) {
-        int i = 0;
+        auto i = 0;
         while (i < lineCount && i < 256) {
             fl[i].p1.x = lines[i].x1();
             fl[i].p1.y = lines[i].y1();
@@ -838,7 +838,7 @@ void QPaintEngine::drawRects(const QRect *rects, int rectCount)
     Q_ASSERT(sizeof(RectF) == sizeof(QRectF));
     RectF fr[256];
     while (rectCount) {
-        int i = 0;
+        auto i = 0;
         while (i < rectCount && i < 256) {
             fr[i].x = rects[i].x();
             fr[i].y = rects[i].y();
@@ -862,7 +862,7 @@ void QPaintEngine::drawRects(const QRectF *rects, int rectCount)
     if (hasFeature(PainterPaths) &&
         !state->penNeedsResolving() &&
         !state->brushNeedsResolving()) {
-        for (int i=0; i<rectCount; ++i) {
+        for (auto i=0; i<rectCount; ++i) {
             QPainterPath path;
             path.addRect(rects[i]);
             if (path.isEmpty())
@@ -870,8 +870,8 @@ void QPaintEngine::drawRects(const QRectF *rects, int rectCount)
             drawPath(path);
         }
     } else {
-        for (int i=0; i<rectCount; ++i) {
-            QRectF rf = rects[i];
+        for (auto i=0; i<rectCount; ++i) {
+            auto rf = rects[i];
             QPointF pts[4] = { QPointF(rf.x(), rf.y()),
                                QPointF(rf.x() + rf.width(), rf.y()),
                                QPointF(rf.x() + rf.width(), rf.y() + rf.height()),
@@ -984,23 +984,23 @@ void QPaintEnginePrivate::drawBoxTextItem(const QPointF &p, const QTextItemInt &
         return;
 
     // any fixes here should probably also be done in QFontEngineBox::draw
-    const int size = qRound(ti.fontEngine->ascent());
+    const auto size = qRound(ti.fontEngine->ascent());
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix = QTransform::fromTranslate(p.x(), p.y() - size);
+    auto matrix = QTransform::fromTranslate(p.x(), p.y() - size);
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
     if (glyphs.size() == 0)
         return;
 
     QSize s(size - 3, size - 3);
 
-    QPainter *painter = q_func()->state->painter();
+    auto painter = q_func()->state->painter();
     painter->save();
     painter->setBrush(Qt::NoBrush);
-    QPen pen = painter->pen();
+    auto pen = painter->pen();
     pen.setWidthF(ti.fontEngine->lineThickness().toReal());
     painter->setPen(pen);
-    for (int k = 0; k < positions.size(); k++)
+    for (auto k = 0; k < positions.size(); k++)
         painter->drawRect(QRectF(positions[k].toPointF(), s));
     painter->restore();
 }

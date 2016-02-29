@@ -186,7 +186,7 @@ static QString bulletChar(QTextListFormat::Style style)
 void QTextOdfWriter::writeFrame(QXmlStreamWriter &writer, const QTextFrame *frame)
 {
     Q_ASSERT(frame);
-    const QTextTable *table = qobject_cast<const QTextTable*> (frame);
+    auto table = qobject_cast<const QTextTable*> (frame);
 
     if (table) { // Start a table.
         writer.writeStartElement(tableNS, QString::fromLatin1("table"));
@@ -196,17 +196,17 @@ void QTextOdfWriter::writeFrame(QXmlStreamWriter &writer, const QTextFrame *fram
         writer.writeStartElement(textNS, QString::fromLatin1("section"));
     }
 
-    QTextFrame::iterator iterator = frame->begin();
+    auto iterator = frame->begin();
     QTextFrame *child = 0;
 
-    int tableRow = -1;
+    auto tableRow = -1;
     while (! iterator.atEnd()) {
         if (iterator.currentFrame() && child != iterator.currentFrame())
             writeFrame(writer, iterator.currentFrame());
         else { // no frame, its a block
-            QTextBlock block = iterator.currentBlock();
+            auto block = iterator.currentBlock();
             if (table) {
-                QTextTableCell cell = table->cellAt(block.position());
+                auto cell = table->cellAt(block.position());
                 if (tableRow < cell.row()) {
                     if (tableRow >= 0)
                         writer.writeEndElement(); // close table row
@@ -239,7 +239,7 @@ void QTextOdfWriter::writeFrame(QXmlStreamWriter &writer, const QTextFrame *fram
 void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &block)
 {
     if (block.textList()) { // its a list-item
-        const int listLevel = block.textList()->format().indent();
+        const auto listLevel = block.textList()->format().indent();
         if (m_listStack.isEmpty() || m_listStack.top() != block.textList()) {
             // not the same list we were in.
             while (m_listStack.count() >= listLevel && !m_listStack.isEmpty() && m_listStack.top() != block.textList() ) { // we need to close tags
@@ -284,17 +284,17 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
     writer.writeStartElement(textNS, QString::fromLatin1("p"));
     writer.writeAttribute(textNS, QString::fromLatin1("style-name"), QString::fromLatin1("p%1")
         .arg(block.blockFormatIndex()));
-    for (QTextBlock::Iterator frag = block.begin(); !frag.atEnd(); ++frag) {
-        bool isHyperlink = frag.fragment().charFormat().hasProperty(QTextFormat::AnchorHref);
+    for (auto frag = block.begin(); !frag.atEnd(); ++frag) {
+        auto isHyperlink = frag.fragment().charFormat().hasProperty(QTextFormat::AnchorHref);
         if (isHyperlink) {
-            QString value = frag.fragment().charFormat().property(QTextFormat::AnchorHref).toString();
+            auto value = frag.fragment().charFormat().property(QTextFormat::AnchorHref).toString();
             writer.writeStartElement(textNS, QString::fromLatin1("a"));
             writer.writeAttribute(xlinkNS, QString::fromLatin1("href"), value);
         }
         writer.writeCharacters(QString()); // Trick to make sure that the span gets no linefeed in front of it.
         writer.writeStartElement(textNS, QString::fromLatin1("span"));
 
-        QString fragmentText = frag.fragment().text();
+        auto fragmentText = frag.fragment().text();
         if (fragmentText.length() == 1 && fragmentText[0] == 0xFFFC) { // its an inline character.
             writeInlineCharacter(writer, frag.fragment());
             writer.writeEndElement(); // span
@@ -303,20 +303,20 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
 
         writer.writeAttribute(textNS, QString::fromLatin1("style-name"), QString::fromLatin1("c%1")
             .arg(frag.fragment().charFormatIndex()));
-        bool escapeNextSpace = true;
-        int precedingSpaces = 0;
-        int exportedIndex = 0;
-        for (int i=0; i <= fragmentText.count(); ++i) {
+        auto escapeNextSpace = true;
+        auto precedingSpaces = 0;
+        auto exportedIndex = 0;
+        for (auto i=0; i <= fragmentText.count(); ++i) {
             QChar character = fragmentText[i];
-            bool isSpace = character.unicode() == ' ';
+            auto isSpace = character.unicode() == ' ';
 
             // find more than one space. -> <text:s text:c="2" />
             if (!isSpace && escapeNextSpace && precedingSpaces > 1) {
-                const bool startParag = exportedIndex == 0 && i == precedingSpaces;
+                const auto startParag = exportedIndex == 0 && i == precedingSpaces;
                 if (!startParag)
                     writer.writeCharacters(fragmentText.mid(exportedIndex, i - precedingSpaces + 1 - exportedIndex));
                 writer.writeEmptyElement(textNS, QString::fromLatin1("s"));
-                const int count = precedingSpaces - (startParag?0:1);
+                const auto count = precedingSpaces - (startParag?0:1);
                 if (count > 1)
                     writer.writeAttribute(textNS, QString::fromLatin1("c"), QString::number(count));
                 precedingSpaces = 0;
@@ -364,16 +364,16 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
         // don't do anything.
     }
     else if (fragment.charFormat().isImageFormat()) {
-        QTextImageFormat imageFormat = fragment.charFormat().toImageFormat();
+        auto imageFormat = fragment.charFormat().toImageFormat();
         writer.writeAttribute(drawNS, QString::fromLatin1("name"), imageFormat.name());
 
         // vvv  Copy pasted mostly from Qt =================
         QImage image;
-        QString name = imageFormat.name();
+        auto name = imageFormat.name();
         if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
             name.prepend(QLatin1String("qrc"));
-        QUrl url = QUrl(name);
-        const QVariant data = m_document->resource(QTextDocument::ImageResource, url);
+        auto url = QUrl(name);
+        const auto data = m_document->resource(QTextDocument::ImageResource, url);
         if (data.type() == QVariant::Image) {
             image = qvariant_cast<QImage>(data);
         } else if (data.type() == QVariant::ByteArray) {
@@ -393,13 +393,13 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
             QBuffer imageBytes;
             QImageWriter imageWriter(&imageBytes, "png");
             imageWriter.write(image);
-            QString filename = m_strategy->createUniqueImageName();
+            auto filename = m_strategy->createUniqueImageName();
             m_strategy->addFile(filename, QString::fromLatin1("image/png"), imageBytes.data());
 
             // get the width/height from the format.
-            qreal width = (imageFormat.hasProperty(QTextFormat::ImageWidth)) ? imageFormat.width() : image.width();
+            auto width = (imageFormat.hasProperty(QTextFormat::ImageWidth)) ? imageFormat.width() : image.width();
             writer.writeAttribute(svgNS, QString::fromLatin1("width"), pixelToPoint(width));
-            qreal height = (imageFormat.hasProperty(QTextFormat::ImageHeight)) ? imageFormat.height() : image.height();
+            auto height = (imageFormat.hasProperty(QTextFormat::ImageHeight)) ? imageFormat.height() : image.height();
             writer.writeAttribute(svgNS, QString::fromLatin1("height"), pixelToPoint(height));
 
             writer.writeStartElement(drawNS, QString::fromLatin1("image"));
@@ -414,11 +414,11 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
 void QTextOdfWriter::writeFormats(QXmlStreamWriter &writer, const QSet<int> &formats) const
 {
     writer.writeStartElement(officeNS, QString::fromLatin1("automatic-styles"));
-    QVector<QTextFormat> allStyles = m_document->allFormats();
+    auto allStyles = m_document->allFormats();
     QSetIterator<int> formatId(formats);
     while(formatId.hasNext()) {
-        int formatIndex = formatId.next();
-        QTextFormat textFormat = allStyles.at(formatIndex);
+        auto formatIndex = formatId.next();
+        auto textFormat = allStyles.at(formatIndex);
         switch (textFormat.type()) {
         case QTextFormat::CharFormat:
             if (textFormat.isTableCellFormat())
@@ -451,7 +451,7 @@ void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, QTextBlockFormat
     writer.writeStartElement(styleNS, QString::fromLatin1("paragraph-properties"));
 
     if (format.hasProperty(QTextFormat::BlockAlignment)) {
-        const Qt::Alignment alignment = format.alignment() & Qt::AlignHorizontal_Mask;
+        const auto alignment = format.alignment() & Qt::AlignHorizontal_Mask;
         QString value;
         if (alignment == Qt::AlignLeading)
             value = QString::fromLatin1("start");
@@ -489,16 +489,16 @@ void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, QTextBlockFormat
             writer.writeAttribute(foNS, QString::fromLatin1("break-after"), QString::fromLatin1("page"));
     }
     if (format.hasProperty(QTextFormat::BackgroundBrush)) {
-        QBrush brush = format.background();
+        auto brush = format.background();
         writer.writeAttribute(foNS, QString::fromLatin1("background-color"), brush.color().name());
     }
     if (format.hasProperty(QTextFormat::BlockNonBreakableLines))
         writer.writeAttribute(foNS, QString::fromLatin1("keep-together"),
                 format.nonBreakableLines() ? QString::fromLatin1("true") : QString::fromLatin1("false"));
     if (format.hasProperty(QTextFormat::TabPositions)) {
-        QList<QTextOption::Tab> tabs = format.tabPositions();
+        auto tabs = format.tabPositions();
         writer.writeStartElement(styleNS, QString::fromLatin1("tab-stops"));
-        QList<QTextOption::Tab>::Iterator iterator = tabs.begin();
+        auto iterator = tabs.begin();
         while(iterator != tabs.end()) {
             writer.writeEmptyElement(styleNS, QString::fromLatin1("tab-stop"));
             writer.writeAttribute(styleNS, QString::fromLatin1("position"), pixelToPoint(iterator->position) );
@@ -618,11 +618,11 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
         //   QString   anchorName () const  TODO
     }
     if (format.hasProperty(QTextFormat::ForegroundBrush)) {
-        QBrush brush = format.foreground();
+        auto brush = format.foreground();
         writer.writeAttribute(foNS, QString::fromLatin1("color"), brush.color().name());
     }
     if (format.hasProperty(QTextFormat::BackgroundBrush)) {
-        QBrush brush = format.background();
+        auto brush = format.background();
         writer.writeAttribute(foNS, QString::fromLatin1("background-color"), brush.color().name());
     }
 
@@ -634,7 +634,7 @@ void QTextOdfWriter::writeListFormat(QXmlStreamWriter &writer, QTextListFormat f
     writer.writeStartElement(textNS, QString::fromLatin1("list-style"));
     writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("L%1").arg(formatIndex));
 
-    QTextListFormat::Style style = format.style();
+    auto style = format.style();
     if (style == QTextListFormat::ListDecimal || style == QTextListFormat::ListLowerAlpha
             || style == QTextListFormat::ListUpperAlpha
             || style == QTextListFormat::ListLowerRoman
@@ -658,7 +658,7 @@ void QTextOdfWriter::writeListFormat(QXmlStreamWriter &writer, QTextListFormat f
     writer.writeAttribute(textNS, QString::fromLatin1("level"), QString::number(format.indent()));
     writer.writeEmptyElement(styleNS, QString::fromLatin1("list-level-properties"));
     writer.writeAttribute(foNS, QString::fromLatin1("text-align"), QString::fromLatin1("start"));
-    QString spacing = QString::fromLatin1("%1mm").arg(format.indent() * 8);
+    auto spacing = QString::fromLatin1("%1mm").arg(format.indent() * 8);
     writer.writeAttribute(textNS, QString::fromLatin1("space-before"), spacing);
     //writer.writeAttribute(textNS, QString::fromLatin1("min-label-width"), spacing);
 
@@ -702,7 +702,7 @@ void QTextOdfWriter::writeTableCellFormat(QXmlStreamWriter &writer, QTextTableCe
     writer.writeEmptyElement(styleNS, QString::fromLatin1("table-properties"));
 
 
-    qreal padding = format.topPadding();
+    auto padding = format.topPadding();
     if (padding > 0 && padding == format.bottomPadding()
         && padding == format.leftPadding() && padding == format.rightPadding()) {
         writer.writeAttribute(foNS, QString::fromLatin1("padding"), pixelToPoint(padding));
@@ -794,28 +794,28 @@ bool QTextOdfWriter::writeAll()
     writer.writeAttribute(officeNS, QString::fromLatin1("version"), QString::fromLatin1("1.2"));
 
     // add fragments. (for character formats)
-    QTextDocumentPrivate::FragmentIterator fragIt = m_document->docHandle()->begin();
+    auto fragIt = m_document->docHandle()->begin();
     QSet<int> formats;
     while (fragIt != m_document->docHandle()->end()) {
-        const QTextFragmentData * const frag = fragIt.value();
+        const auto frag = fragIt.value();
         formats << frag->format;
         ++fragIt;
     }
 
     // add blocks (for blockFormats)
     QTextDocumentPrivate::BlockMap &blocks = m_document->docHandle()->blockMap();
-    QTextDocumentPrivate::BlockMap::Iterator blockIt = blocks.begin();
+    auto blockIt = blocks.begin();
     while (blockIt != blocks.end()) {
-        const QTextBlockData * const block = blockIt.value();
+        const auto block = blockIt.value();
         formats << block->format;
         ++blockIt;
     }
 
     // add objects for lists, frames and tables
-    QVector<QTextFormat> allFormats = m_document->allFormats();
-    QList<int> copy = formats.toList();
-    for (QList<int>::Iterator iter = copy.begin(); iter != copy.end(); ++iter) {
-        QTextObject *object = m_document->objectForFormat(allFormats[*iter]);
+    auto allFormats = m_document->allFormats();
+    auto copy = formats.toList();
+    for (auto iter = copy.begin(); iter != copy.end(); ++iter) {
+        auto object = m_document->objectForFormat(allFormats[*iter]);
         if (object)
             formats << object->formatIndex();
     }
@@ -824,7 +824,7 @@ bool QTextOdfWriter::writeAll()
 
     writer.writeStartElement(officeNS, QString::fromLatin1("body"));
     writer.writeStartElement(officeNS, QString::fromLatin1("text"));
-    QTextFrame *rootFrame = m_document->rootFrame();
+    auto rootFrame = m_document->rootFrame();
     writeFrame(writer, rootFrame);
     writer.writeEndElement(); // text
     writer.writeEndElement(); // body

@@ -146,7 +146,7 @@ int QTextObject::formatIndex() const
 void QTextObject::setFormat(const QTextFormat &format)
 {
     Q_D(QTextObject);
-    int idx = d->pieceTable->formatCollection()->indexForFormat(format);
+    auto idx = d->pieceTable->formatCollection()->indexForFormat(format);
     d->pieceTable->changeObjectFormat(this, idx);
 }
 
@@ -209,7 +209,7 @@ QTextDocumentPrivate *QTextObject::docHandle() const
 
 void QTextBlockGroupPrivate::markBlocksDirty()
 {
-    for (int i = 0; i < blocks.count(); ++i) {
+    for (auto i = 0; i < blocks.count(); ++i) {
         const QTextBlock &block = blocks.at(i);
         pieceTable->documentChange(block.position(), block.length());
     }
@@ -254,7 +254,7 @@ QTextBlockGroup::~QTextBlockGroup()
 void QTextBlockGroup::blockInserted(const QTextBlock &block)
 {
     Q_D(QTextBlockGroup);
-    QTextBlockGroupPrivate::BlockList::Iterator it = std::lower_bound(d->blocks.begin(), d->blocks.end(), block);
+    auto it = std::lower_bound(d->blocks.begin(), d->blocks.end(), block);
     d->blocks.insert(it, block);
     d->markBlocksDirty();
 }
@@ -580,11 +580,11 @@ void QTextFramePrivate::remove_me()
     if (!parentFrame)
         return;
 
-    int index = parentFrame->d_func()->childFrames.indexOf(q);
+    auto index = parentFrame->d_func()->childFrames.indexOf(q);
 
     // iterator over all children and move them to the parent
-    for (int i = 0; i < childFrames.size(); ++i) {
-        QTextFrame *c = childFrames.at(i);
+    for (auto i = 0; i < childFrames.size(); ++i) {
+        auto c = childFrames.at(i);
         parentFrame->d_func()->childFrames.insert(index, c);
         c->d_func()->parentFrame = parentFrame;
         ++index;
@@ -627,7 +627,7 @@ void QTextFramePrivate::remove_me()
 */
 QTextFrame::iterator QTextFrame::begin() const
 {
-    const QTextDocumentPrivate *priv = docHandle();
+    auto priv = docHandle();
     int b = priv->blockMap().findNode(firstPosition());
     int e = priv->blockMap().findNode(lastPosition()+1);
     return iterator(const_cast<QTextFrame *>(this), b, b, e);
@@ -640,7 +640,7 @@ QTextFrame::iterator QTextFrame::begin() const
 */
 QTextFrame::iterator QTextFrame::end() const
 {
-    const QTextDocumentPrivate *priv = docHandle();
+    auto priv = docHandle();
     int b = priv->blockMap().findNode(firstPosition());
     int e = priv->blockMap().findNode(lastPosition()+1);
     return iterator(const_cast<QTextFrame *>(this), e, b, e);
@@ -731,10 +731,10 @@ QTextBlock QTextFrame::iterator::currentBlock() const
 */
 QTextFrame::iterator &QTextFrame::iterator::operator++()
 {
-    const QTextDocumentPrivate *priv = f->docHandle();
+    auto priv = f->docHandle();
     const QTextDocumentPrivate::BlockMap &map = priv->blockMap();
     if (cf) {
-        int end = cf->lastPosition() + 1;
+        auto end = cf->lastPosition() + 1;
         cb = map.findNode(end);
         cf = 0;
     } else if (cb) {
@@ -745,9 +745,9 @@ QTextFrame::iterator &QTextFrame::iterator::operator++()
         if (!f->d_func()->childFrames.isEmpty()) {
             int pos = map.position(cb);
             // check if we entered a frame
-            QTextDocumentPrivate::FragmentIterator frag = priv->find(pos-1);
+            auto frag = priv->find(pos-1);
             if (priv->buffer().at(frag->stringPosition) != QChar::ParagraphSeparator) {
-                QTextFrame *nf = qobject_cast<QTextFrame *>(priv->objectForFormat(frag->format));
+                auto nf = qobject_cast<QTextFrame *>(priv->objectForFormat(frag->format));
                 if (nf) {
                     if (priv->buffer().at(frag->stringPosition) == QTextBeginningOfFrame && nf != f) {
                         cf = nf;
@@ -769,10 +769,10 @@ QTextFrame::iterator &QTextFrame::iterator::operator++()
 */
 QTextFrame::iterator &QTextFrame::iterator::operator--()
 {
-    const QTextDocumentPrivate *priv = f->docHandle();
+    auto priv = f->docHandle();
     const QTextDocumentPrivate::BlockMap &map = priv->blockMap();
     if (cf) {
-        int start = cf->firstPosition() - 1;
+        auto start = cf->firstPosition() - 1;
         cb = map.findNode(start);
         cf = 0;
     } else {
@@ -781,9 +781,9 @@ QTextFrame::iterator &QTextFrame::iterator::operator--()
         if (cb != e) {
             int pos = map.position(cb);
             // check if we have to enter a frame
-            QTextDocumentPrivate::FragmentIterator frag = priv->find(pos-1);
+            auto frag = priv->find(pos-1);
             if (priv->buffer().at(frag->stringPosition) != QChar::ParagraphSeparator) {
-                QTextFrame *pf = qobject_cast<QTextFrame *>(priv->objectForFormat(frag->format));
+                auto pf = qobject_cast<QTextFrame *>(priv->objectForFormat(frag->format));
                 if (pf) {
                     if (priv->buffer().at(frag->stringPosition) == QTextBeginningOfFrame) {
                         Q_ASSERT(pf == f);
@@ -1078,7 +1078,7 @@ QTextLayout *QTextBlock::layout() const
     if (!p || !n)
         return 0;
 
-    const QTextBlockData *b = p->blockMap().fragment(n);
+    auto b = p->blockMap().fragment(n);
     if (!b->layout)
         b->layout = new QTextLayout(*this);
     return b->layout;
@@ -1096,7 +1096,7 @@ void QTextBlock::clearLayout()
     if (!p || !n)
         return;
 
-    const QTextBlockData *b = p->blockMap().fragment(n);
+    auto b = p->blockMap().fragment(n);
     if (b->layout)
         b->layout->clearLayout();
 }
@@ -1170,7 +1170,7 @@ int QTextBlock::charFormatIndex() const
 */
 Qt::LayoutDirection QTextBlock::textDirection() const
 {
-    Qt::LayoutDirection dir = blockFormat().layoutDirection();
+    auto dir = blockFormat().layoutDirection();
     if (dir != Qt::LayoutDirectionAuto)
         return dir;
 
@@ -1178,19 +1178,19 @@ Qt::LayoutDirection QTextBlock::textDirection() const
     if (dir != Qt::LayoutDirectionAuto)
         return dir;
 
-    const QString buffer = p->buffer();
+    const auto buffer = p->buffer();
 
-    const int pos = position();
-    QTextDocumentPrivate::FragmentIterator it = p->find(pos);
-    QTextDocumentPrivate::FragmentIterator end = p->find(pos + length() - 1); // -1 to omit the block separator char
+    const auto pos = position();
+    auto it = p->find(pos);
+    auto end = p->find(pos + length() - 1); // -1 to omit the block separator char
     for (; it != end; ++it) {
-        const QTextFragmentData * const frag = it.value();
-        const QChar *p = buffer.constData() + frag->stringPosition;
-        const QChar * const end = p + frag->size_array[0];
+        const auto frag = it.value();
+        auto p = buffer.constData() + frag->stringPosition;
+        const auto end = p + frag->size_array[0];
         while (p < end) {
             uint ucs4 = p->unicode();
             if (QChar::isHighSurrogate(ucs4) && p + 1 < end) {
-                ushort low = p[1].unicode();
+                auto low = p[1].unicode();
                 if (QChar::isLowSurrogate(low)) {
                     ucs4 = QChar::surrogateToUcs4(ucs4, low);
                     ++p;
@@ -1221,15 +1221,15 @@ QString QTextBlock::text() const
     if (!p || !n)
         return QString();
 
-    const QString buffer = p->buffer();
+    const auto buffer = p->buffer();
     QString text;
     text.reserve(length());
 
-    const int pos = position();
-    QTextDocumentPrivate::FragmentIterator it = p->find(pos);
-    QTextDocumentPrivate::FragmentIterator end = p->find(pos + length() - 1); // -1 to omit the block separator char
+    const auto pos = position();
+    auto it = p->find(pos);
+    auto end = p->find(pos + length() - 1); // -1 to omit the block separator char
     for (; it != end; ++it) {
-        const QTextFragmentData * const frag = it.value();
+        const auto frag = it.value();
         text += QString::fromRawData(buffer.constData() + frag->stringPosition, frag->size_array[0]);
     }
 
@@ -1251,17 +1251,17 @@ QVector<QTextLayout::FormatRange> QTextBlock::textFormats() const
     if (!p || !n)
         return formats;
 
-    const QTextFormatCollection *formatCollection = p->formatCollection();
+    auto formatCollection = p->formatCollection();
 
-    int start = 0;
-    int cur = start;
-    int format = -1;
+    auto start = 0;
+    auto cur = start;
+    auto format = -1;
 
-    const int pos = position();
-    QTextDocumentPrivate::FragmentIterator it = p->find(pos);
-    QTextDocumentPrivate::FragmentIterator end = p->find(pos + length() - 1); // -1 to omit the block separator char
+    const auto pos = position();
+    auto it = p->find(pos);
+    auto end = p->find(pos + length() - 1); // -1 to omit the block separator char
     for (; it != end; ++it) {
-        const QTextFragmentData * const frag = it.value();
+        const auto frag = it.value();
         if (format != it.value()->format) {
             if (cur - start > 0) {
                 QTextLayout::FormatRange range;
@@ -1305,8 +1305,8 @@ QTextList *QTextBlock::textList() const
     if (!isValid())
         return 0;
 
-    const QTextBlockFormat fmt = blockFormat();
-    QTextObject *obj = p->document()->objectForFormat(fmt);
+    const auto fmt = blockFormat();
+    auto obj = p->document()->objectForFormat(fmt);
     return qobject_cast<QTextList *>(obj);
 }
 
@@ -1321,7 +1321,7 @@ QTextBlockUserData *QTextBlock::userData() const
     if (!p || !n)
         return 0;
 
-    const QTextBlockData *b = p->blockMap().fragment(n);
+    auto b = p->blockMap().fragment(n);
     return b->userData;
 }
 
@@ -1355,7 +1355,7 @@ void QTextBlock::setUserData(QTextBlockUserData *data)
     if (!p || !n)
         return;
 
-    const QTextBlockData *b = p->blockMap().fragment(n);
+    auto b = p->blockMap().fragment(n);
     if (data != b->userData)
         delete b->userData;
     b->userData = data;
@@ -1371,7 +1371,7 @@ int QTextBlock::userState() const
     if (!p || !n)
         return -1;
 
-    const QTextBlockData *b = p->blockMap().fragment(n);
+    auto b = p->blockMap().fragment(n);
     return b->userState;
 }
 
@@ -1386,7 +1386,7 @@ void QTextBlock::setUserState(int state)
     if (!p || !n)
         return;
 
-    const QTextBlockData *b = p->blockMap().fragment(n);
+    auto b = p->blockMap().fragment(n);
     b->userState = state;
 }
 
@@ -1402,7 +1402,7 @@ int QTextBlock::revision() const
     if (!p || !n)
         return -1;
 
-    const QTextBlockData *b = p->blockMap().fragment(n);
+    auto b = p->blockMap().fragment(n);
     return b->revision;
 }
 
@@ -1418,7 +1418,7 @@ void QTextBlock::setRevision(int rev)
     if (!p || !n)
         return;
 
-    const QTextBlockData *b = p->blockMap().fragment(n);
+    auto b = p->blockMap().fragment(n);
     b->revision = rev;
 }
 
@@ -1434,7 +1434,7 @@ bool QTextBlock::isVisible() const
     if (!p || !n)
         return true;
 
-    const QTextBlockData *b = p->blockMap().fragment(n);
+    auto b = p->blockMap().fragment(n);
     return !b->hidden;
 }
 
@@ -1450,7 +1450,7 @@ void QTextBlock::setVisible(bool visible)
     if (!p || !n)
         return;
 
-    const QTextBlockData *b = p->blockMap().fragment(n);
+    auto b = p->blockMap().fragment(n);
     b->hidden = !visible;
 }
 
@@ -1526,8 +1526,8 @@ QTextBlock::iterator QTextBlock::begin() const
     if (!p || !n)
         return iterator();
 
-    int pos = position();
-    int len = length() - 1; // exclude the fragment that holds the paragraph separator
+    auto pos = position();
+    auto len = length() - 1; // exclude the fragment that holds the paragraph separator
     int b = p->fragmentMap().findNode(pos);
     int e = p->fragmentMap().findNode(pos+len);
     return iterator(p, b, e, b);
@@ -1544,8 +1544,8 @@ QTextBlock::iterator QTextBlock::end() const
     if (!p || !n)
         return iterator();
 
-    int pos = position();
-    int len = length() - 1; // exclude the fragment that holds the paragraph separator
+    auto pos = position();
+    auto len = length() - 1; // exclude the fragment that holds the paragraph separator
     int b = p->fragmentMap().findNode(pos);
     int e = p->fragmentMap().findNode(pos+len);
     return iterator(p, b, e, e);
@@ -1590,8 +1590,8 @@ QTextBlock QTextBlock::previous() const
 */
 QTextFragment QTextBlock::iterator::fragment() const
 {
-    int ne = n;
-    int formatIndex = p->fragmentMap().fragment(n)->format;
+    auto ne = n;
+    auto formatIndex = p->fragmentMap().fragment(n)->format;
     do {
         ne = p->fragmentMap().next(ne);
     } while (ne != e && p->fragmentMap().fragment(ne)->format == formatIndex);
@@ -1606,8 +1606,8 @@ QTextFragment QTextBlock::iterator::fragment() const
 
 QTextBlock::iterator &QTextBlock::iterator::operator++()
 {
-    int ne = n;
-    int formatIndex = p->fragmentMap().fragment(n)->format;
+    auto ne = n;
+    auto formatIndex = p->fragmentMap().fragment(n)->format;
     do {
         ne = p->fragmentMap().next(ne);
     } while (ne != e && p->fragmentMap().fragment(ne)->format == formatIndex);
@@ -1627,8 +1627,8 @@ QTextBlock::iterator &QTextBlock::iterator::operator--()
     if (n == b)
         return *this;
 
-    int formatIndex = p->fragmentMap().fragment(n)->format;
-    int last = n;
+    auto formatIndex = p->fragmentMap().fragment(n)->format;
+    auto last = n;
 
     while (n != b && p->fragmentMap().fragment(n)->format != formatIndex) {
         last = n;
@@ -1748,8 +1748,8 @@ QList<QGlyphRun> QTextFragment::glyphRuns(int pos, int len) const
 
     int blockNode = p->blockMap().findNode(position());
 
-    const QTextBlockData *blockData = p->blockMap().fragment(blockNode);
-    QTextLayout *layout = blockData->layout;
+    auto blockData = p->blockMap().fragment(blockNode);
+    auto layout = blockData->layout;
 
     int blockPosition = p->blockMap().position(blockNode);
     if (pos < 0)
@@ -1760,8 +1760,8 @@ QList<QGlyphRun> QTextFragment::glyphRuns(int pos, int len) const
         return QList<QGlyphRun>();
 
     QList<QGlyphRun> ret;
-    for (int i=0; i<layout->lineCount(); ++i) {
-        QTextLine textLine = layout->lineAt(i);
+    for (auto i=0; i<layout->lineCount(); ++i) {
+        auto textLine = layout->lineAt(i);
         ret += textLine.glyphRuns(pos, len);
     }
 
@@ -1790,8 +1790,8 @@ int QTextFragment::length() const
     if (!p || !n)
         return 0;
 
-    int len = 0;
-    int f = n;
+    auto len = 0;
+    auto f = n;
     while (f != ne) {
         len += p->fragmentMap().size(f);
         f = p->fragmentMap().next(f);
@@ -1807,7 +1807,7 @@ bool QTextFragment::contains(int position) const
 {
     if (!p || !n)
         return false;
-    int pos = this->position();
+    auto pos = this->position();
     return position >= pos && position < pos + length();
 }
 
@@ -1820,7 +1820,7 @@ QTextCharFormat QTextFragment::charFormat() const
 {
     if (!p || !n)
         return QTextCharFormat();
-    const QTextFragmentData *data = p->fragmentMap().fragment(n);
+    auto data = p->fragmentMap().fragment(n);
     return p->formatCollection()->charFormat(data->format);
 }
 
@@ -1834,7 +1834,7 @@ int QTextFragment::charFormatIndex() const
 {
     if (!p || !n)
         return -1;
-    const QTextFragmentData *data = p->fragmentMap().fragment(n);
+    auto data = p->fragmentMap().fragment(n);
     return data->format;
 }
 
@@ -1849,10 +1849,10 @@ QString QTextFragment::text() const
         return QString();
 
     QString result;
-    QString buffer = p->buffer();
-    int f = n;
+    auto buffer = p->buffer();
+    auto f = n;
     while (f != ne) {
-        const QTextFragmentData * const frag = p->fragmentMap().fragment(f);
+        const auto frag = p->fragmentMap().fragment(f);
         result += QString(buffer.constData() + frag->stringPosition, frag->size_array[0]);
         f = p->fragmentMap().next(f);
     }

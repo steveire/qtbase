@@ -397,7 +397,7 @@ static int numDigits(qlonglong n)
 static qlonglong pow10(int exp)
 {
     qlonglong result = 1;
-    for (int i = 0; i < exp; ++i)
+    for (auto i = 0; i < exp; ++i)
         result *= 10;
     return result;
 }
@@ -423,7 +423,7 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
         return Intermediate;
 
     bool ok, overflow;
-    qlonglong entered = QLocaleData::bytearrayToLongLong(buff.constData(), 10, &ok, &overflow);
+    auto entered = QLocaleData::bytearrayToLongLong(buff.constData(), 10, &ok, &overflow);
     if (overflow || !ok)
         return Invalid;
 
@@ -450,7 +450,7 @@ void QIntValidator::fixup(QString &input) const
         return;
     }
     bool ok, overflow;
-    qlonglong entered = QLocaleData::bytearrayToLongLong(buff.constData(), 10, &ok, &overflow);
+    auto entered = QLocaleData::bytearrayToLongLong(buff.constData(), 10, &ok, &overflow);
     if (ok && !overflow)
         input = locale().toString(entered);
 }
@@ -464,7 +464,7 @@ void QIntValidator::fixup(QString &input) const
 
 void QIntValidator::setRange(int bottom, int top)
 {
-    bool rangeChanged = false;
+    auto rangeChanged = false;
     if (b != bottom) {
         b = bottom;
         rangeChanged = true;
@@ -652,7 +652,7 @@ QValidator::State QDoubleValidator::validate(QString & input, int &) const
 {
     Q_D(const QDoubleValidator);
 
-    QLocaleData::NumberMode numMode = QLocaleData::DoubleStandardMode;
+    auto numMode = QLocaleData::DoubleStandardMode;
     switch (d->notation) {
         case StandardNotation:
             numMode = QLocaleData::DoubleStandardMode;
@@ -682,8 +682,8 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
     if (q->t < 0 && buff.startsWith('+'))
         return QValidator::Invalid;
 
-    bool ok = false;
-    double i = buff.toDouble(&ok); // returns 0.0 if !ok
+    auto ok = false;
+    auto i = buff.toDouble(&ok); // returns 0.0 if !ok
     if (i == qt_qnan())
         return QValidator::Invalid;
     if (!ok)
@@ -693,9 +693,9 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
         return QValidator::Acceptable;
 
     if (notation == QDoubleValidator::StandardNotation) {
-        double max = qMax(qAbs(q->b), qAbs(q->t));
+        auto max = qMax(qAbs(q->b), qAbs(q->t));
         if (max < LLONG_MAX) {
-            qlonglong n = pow10(numDigits(qlonglong(max))) - 1;
+            auto n = pow10(numDigits(qlonglong(max))) - 1;
             if (qAbs(i) > n)
                 return QValidator::Invalid;
         }
@@ -714,7 +714,7 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
 
 void QDoubleValidator::setRange(double minimum, double maximum, int decimals)
 {
-    bool rangeChanged = false;
+    auto rangeChanged = false;
     if (b != minimum) {
         b = minimum;
         rangeChanged = true;
@@ -889,7 +889,7 @@ QRegExpValidator::~QRegExpValidator()
 
 QValidator::State QRegExpValidator::validate(QString &input, int& pos) const
 {
-    QRegExp copy = r;
+    auto copy = r;
     if (copy.exactMatch(input)) {
         return Acceptable;
     } else {
@@ -1023,7 +1023,7 @@ QValidator::State QRegularExpressionValidator::validate(QString &input, int &pos
     if (d->origRe.pattern().isEmpty())
         return Acceptable;
 
-    const QRegularExpressionMatch m = d->usedRe.match(input, 0, QRegularExpression::PartialPreferCompleteMatch);
+    const auto m = d->usedRe.match(input, 0, QRegularExpression::PartialPreferCompleteMatch);
     if (m.hasMatch()) {
         return Acceptable;
     } else if (input.isEmpty() || m.hasPartialMatch()) {

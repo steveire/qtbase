@@ -130,7 +130,7 @@ public:
     {
         qAddPostRoutine(qt_cleanup_brush_pattern_image_cache);
         for (int style = Qt::Dense1Pattern; style <= Qt::DiagCrossPattern; ++style) {
-            int i = style - Qt::Dense1Pattern;
+            auto i = style - Qt::Dense1Pattern;
             m_images[i][0] = QImage(qt_patternForBrush(style, 0), 8, 8, 1, QImage::Format_MonoLSB);
             m_images[i][1] = QImage(qt_patternForBrush(style, 1), 8, 8, 1, QImage::Format_MonoLSB);
         }
@@ -147,7 +147,7 @@ public:
 
     void cleanup() {
         for (int style = Qt::Dense1Pattern; style <= Qt::DiagCrossPattern; ++style) {
-            int i = style - Qt::Dense1Pattern;
+            auto i = style - Qt::Dense1Pattern;
             m_images[i][0] = QImage();
             m_images[i][1] = QImage();
         }
@@ -226,7 +226,7 @@ bool Q_GUI_EXPORT qHasPixmapTexture(const QBrush& brush)
 {
     if (brush.style() != Qt::TexturePattern)
         return false;
-    QTexturedBrushData *tx_data = static_cast<QTexturedBrushData *>(brush.d.data());
+    auto tx_data = static_cast<QTexturedBrushData *>(brush.d.data());
     return tx_data->m_has_pixmap_texture;
 }
 
@@ -562,7 +562,7 @@ QBrush::QBrush(const QGradient &gradient)
     };
 
     init(QColor(), enum_table[gradient.type()]);
-    QGradientBrushData *grad = static_cast<QGradientBrushData *>(d.data());
+    auto grad = static_cast<QGradientBrushData *>(d.data());
     grad->gradient = gradient;
 }
 
@@ -588,9 +588,9 @@ void QBrush::detach(Qt::BrushStyle newStyle)
     QScopedPointer<QBrushData> x;
     switch(newStyle) {
     case Qt::TexturePattern: {
-        QTexturedBrushData *tbd = new QTexturedBrushData;
+        auto tbd = new QTexturedBrushData;
         if (d->style == Qt::TexturePattern) {
-            QTexturedBrushData *data = static_cast<QTexturedBrushData *>(d.data());
+            auto data = static_cast<QTexturedBrushData *>(d.data());
             if (data->m_has_pixmap_texture)
                 tbd->setPixmap(data->pixmap());
             else
@@ -758,7 +758,7 @@ void QBrush::setTexture(const QPixmap &pixmap)
 {
     if (!pixmap.isNull()) {
         detach(Qt::TexturePattern);
-        QTexturedBrushData *data = static_cast<QTexturedBrushData *>(d.data());
+        auto data = static_cast<QTexturedBrushData *>(d.data());
         data->setPixmap(pixmap);
     } else {
         detach(Qt::NoBrush);
@@ -806,7 +806,7 @@ void QBrush::setTextureImage(const QImage &image)
 {
     if (!image.isNull()) {
         detach(Qt::TexturePattern);
-        QTexturedBrushData *data = static_cast<QTexturedBrushData *>(d.data());
+        auto data = static_cast<QTexturedBrushData *>(d.data());
         data->setImage(image);
     } else {
         detach(Qt::NoBrush);
@@ -830,13 +830,13 @@ const QGradient *QBrush::gradient() const
 Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush)
 {
     if (brush.style() == Qt::RadialGradientPattern) {
-        const QGradient *g = brush.gradient();
-        const QRadialGradient *rg = static_cast<const QRadialGradient *>(g);
+        auto g = brush.gradient();
+        auto rg = static_cast<const QRadialGradient *>(g);
 
         if (!qFuzzyIsNull(rg->focalRadius()))
             return true;
 
-        QPointF delta = rg->focalPoint() - rg->center();
+        auto delta = rg->focalPoint() - rg->center();
         if (delta.x() * delta.x() + delta.y() * delta.y() > rg->radius() * rg->radius())
             return true;
     }
@@ -858,7 +858,7 @@ Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush)
 
 bool QBrush::isOpaque() const
 {
-    bool opaqueColor = d->color.alpha() == 255;
+    auto opaqueColor = d->color.alpha() == 255;
 
     // Test awfully simple case first
     if (d->style == Qt::SolidPattern)
@@ -870,8 +870,8 @@ bool QBrush::isOpaque() const
     if (d->style == Qt::LinearGradientPattern
         || d->style == Qt::RadialGradientPattern
         || d->style == Qt::ConicalGradientPattern) {
-        QGradientStops stops = gradient()->stops();
-        for (int i=0; i<stops.size(); ++i)
+        auto stops = gradient()->stops();
+        for (auto i=0; i<stops.size(); ++i)
             if (stops.at(i).second.alpha() != 255)
                 return false;
         return true;
@@ -990,8 +990,8 @@ bool QBrush::operator==(const QBrush &b) const
     case Qt::RadialGradientPattern:
     case Qt::ConicalGradientPattern:
         {
-            const QGradientBrushData *d1 = static_cast<QGradientBrushData *>(d.data());
-            const QGradientBrushData *d2 = static_cast<QGradientBrushData *>(b.d.data());
+            auto d1 = static_cast<QGradientBrushData *>(d.data());
+            auto d2 = static_cast<QGradientBrushData *>(b.d.data());
             return d1->gradient == d2->gradient;
         }
     default:
@@ -1050,8 +1050,8 @@ QDebug operator<<(QDebug dbg, const QBrush &b)
 
 QDataStream &operator<<(QDataStream &s, const QBrush &b)
 {
-    quint8 style = (quint8) b.style();
-    bool gradient_style = false;
+    auto style = (quint8) b.style();
+    auto gradient_style = false;
 
     if (style == Qt::LinearGradientPattern || style == Qt::RadialGradientPattern
         || style == Qt::ConicalGradientPattern)
@@ -1067,8 +1067,8 @@ QDataStream &operator<<(QDataStream &s, const QBrush &b)
         else
             s << b.texture();
     } else if (s.version() >= QDataStream::Qt_4_0 && gradient_style) {
-        const QGradient *gradient = b.gradient();
-        int type_as_int = int(gradient->type());
+        auto gradient = b.gradient();
+        auto type_as_int = int(gradient->type());
         s << type_as_int;
         if (s.version() >= QDataStream::Qt_4_3) {
             s << int(gradient->spread());
@@ -1084,9 +1084,9 @@ QDataStream &operator<<(QDataStream &s, const QBrush &b)
             // ensure that we write doubles here instead of streaming the stops
             // directly; otherwise, platforms that redefine qreal might generate
             // data that cannot be read on other platforms.
-            QVector<QGradientStop> stops = gradient->stops();
+            auto stops = gradient->stops();
             s << quint32(stops.size());
-            for (int i = 0; i < stops.size(); ++i) {
+            for (auto i = 0; i < stops.size(); ++i) {
                 const QGradientStop &stop = stops.at(i);
                 s << QPair<double, QColor>(double(stop.first), stop.second);
             }
@@ -1143,9 +1143,9 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
         int type_as_int;
         QGradient::Type type;
         QGradientStops stops;
-        QGradient::CoordinateMode cmode = QGradient::LogicalMode;
-        QGradient::Spread spread = QGradient::PadSpread;
-        QGradient::InterpolationMode imode = QGradient::ColorInterpolation;
+        auto cmode = QGradient::LogicalMode;
+        auto spread = QGradient::PadSpread;
+        auto imode = QGradient::ColorInterpolation;
 
         s >> type_as_int;
         type = QGradient::Type(type_as_int);
@@ -1408,7 +1408,7 @@ void QGradient::setColorAt(qreal pos, const QColor &color)
         return;
     }
 
-    int index = 0;
+    auto index = 0;
     if (!qIsNaN(pos))
         while (index < m_stops.size() && m_stops.at(index).first < pos) ++index;
 
@@ -1430,7 +1430,7 @@ void QGradient::setColorAt(qreal pos, const QColor &color)
 void QGradient::setStops(const QGradientStops &stops)
 {
     m_stops.clear();
-    for (int i=0; i<stops.size(); ++i)
+    for (auto i=0; i<stops.size(); ++i)
         setColorAt(stops.at(i).first, stops.at(i).second);
 }
 
@@ -1819,7 +1819,7 @@ static QPointF qt_radial_gradient_adapt_focal_point(const QPointF &center,
     // We have a one pixel buffer zone to avoid numerical instability on the
     // circle border
     //### this is hacky because technically we should adjust based on current matrix
-    const qreal compensated_radius = radius - radius * qreal(0.001);
+    const auto compensated_radius = radius - radius * qreal(0.001);
     QLineF line(center, focalPoint);
     if (line.length() > (compensated_radius))
         line.setLength(compensated_radius);
@@ -1846,7 +1846,7 @@ QRadialGradient::QRadialGradient(const QPointF &center, qreal radius, const QPoi
     m_data.radial.cy = center.y();
     m_data.radial.cradius = radius;
 
-    QPointF adapted_focal = qt_radial_gradient_adapt_focal_point(center, radius, focalPoint);
+    auto adapted_focal = qt_radial_gradient_adapt_focal_point(center, radius, focalPoint);
     m_data.radial.fx = adapted_focal.x();
     m_data.radial.fy = adapted_focal.y();
 }
@@ -1889,7 +1889,7 @@ QRadialGradient::QRadialGradient(qreal cx, qreal cy, qreal radius, qreal fx, qre
     m_data.radial.cy = cy;
     m_data.radial.cradius = radius;
 
-    QPointF adapted_focal = qt_radial_gradient_adapt_focal_point(QPointF(cx, cy),
+    auto adapted_focal = qt_radial_gradient_adapt_focal_point(QPointF(cx, cy),
                                                                  radius,
                                                                  QPointF(fx, fy));
 

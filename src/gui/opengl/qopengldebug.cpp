@@ -1186,7 +1186,7 @@ void QOpenGLDebugLoggerPrivate::handleMessage(GLenum source,
 
     QOpenGLDebugMessage message;
 
-    QOpenGLDebugMessagePrivate *messagePrivate = message.d.data();
+    auto messagePrivate = message.d.data();
     messagePrivate->source = qt_messageSourceFromGL(source);
     messagePrivate->type = qt_messageTypeFromGL(type);
     messagePrivate->id = id;
@@ -1271,14 +1271,14 @@ void QOpenGLDebugLoggerPrivate::controlDebugMessages(QOpenGLDebugMessage::Source
     CONVERT_TO_GL_DEBUG_MESSAGE_CONTROL_PARAMETERS(Severity, severities, glSeverities)
 #undef CONVERT_TO_GL_DEBUG_MESSAGE_CONTROL_PARAMETERS
 
-    const GLsizei idCount = ids.count();
+    const auto idCount = ids.count();
     // The GL_KHR_debug extension says that if idCount is 0, idPtr must be ignored.
     // Unfortunately, some bugged drivers do NOT ignore it, so pass NULL in case.
-    const GLuint * const idPtr = idCount ? ids.constData() : 0;
+    const auto idPtr = idCount ? ids.constData() : 0;
 
-    for (GLenum source : glSources)
-        for (GLenum type : glTypes)
-            for (GLenum severity : glSeverities)
+    for (auto source : glSources)
+        for (auto type : glTypes)
+            for (auto severity : glSeverities)
                 glDebugMessageControl(source, type, severity, idCount, idPtr, GLboolean(enable));
 }
 
@@ -1301,7 +1301,7 @@ static void QOPENGLF_APIENTRY qt_opengl_debug_callback(GLenum source,
                                                        const GLchar *rawMessage,
                                                        const GLvoid *userParam)
 {
-    QOpenGLDebugLoggerPrivate *loggerPrivate = static_cast<QOpenGLDebugLoggerPrivate *>(const_cast<GLvoid *>(userParam));
+    auto loggerPrivate = static_cast<QOpenGLDebugLoggerPrivate *>(const_cast<GLvoid *>(userParam));
     loggerPrivate->handleMessage(source, type, id, severity, length, rawMessage);
 }
 }
@@ -1347,7 +1347,7 @@ QOpenGLDebugLogger::~QOpenGLDebugLogger()
 */
 bool QOpenGLDebugLogger::initialize()
 {
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("QOpenGLDebugLogger::initialize(): no current OpenGL context found.");
         return false;
@@ -1472,7 +1472,7 @@ void QOpenGLDebugLogger::startLogging(QOpenGLDebugLogger::LoggingMode loggingMod
 
     d->glDebugMessageCallback(&qt_opengl_debug_callback, d);
 
-    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+    auto funcs = QOpenGLContext::currentContext()->functions();
     d->debugWasEnabled = funcs->glIsEnabled(GL_DEBUG_OUTPUT);
     d->syncDebugWasEnabled = funcs->glIsEnabled(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
@@ -1510,7 +1510,7 @@ void QOpenGLDebugLogger::stopLogging()
 
     d->glDebugMessageCallback(d->oldDebugCallbackFunction, d->oldDebugCallbackParameter);
 
-    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+    auto funcs = QOpenGLContext::currentContext()->functions();
     if (!d->debugWasEnabled)
         funcs->glDisable(GL_DEBUG_OUTPUT);
 
@@ -1554,10 +1554,10 @@ void QOpenGLDebugLogger::logMessage(const QOpenGLDebugMessage &debugMessage)
         return;
     }
 
-    const GLenum source = qt_messageSourceToGL(debugMessage.source());
-    const GLenum type = qt_messageTypeToGL(debugMessage.type());
-    const GLenum severity = qt_messageSeverityToGL(debugMessage.severity());
-    QByteArray rawMessage = debugMessage.message().toUtf8();
+    const auto source = qt_messageSourceToGL(debugMessage.source());
+    const auto type = qt_messageTypeToGL(debugMessage.type());
+    const auto severity = qt_messageSeverityToGL(debugMessage.severity());
+    auto rawMessage = debugMessage.message().toUtf8();
     rawMessage.append('\0');
 
     if (rawMessage.length() > d->maxMessageLength) {
@@ -1610,7 +1610,7 @@ void QOpenGLDebugLogger::pushGroup(const QString &name, GLuint id, QOpenGLDebugM
         return;
     }
 
-    QByteArray rawName = name.toUtf8();
+    auto rawName = name.toUtf8();
     rawName.append('\0');
     if (rawName.length() > d->maxMessageLength) {
         qWarning("QOpenGLDebugLogger::pushGroup(): group name too long, truncating it\n"
@@ -1772,11 +1772,11 @@ QList<QOpenGLDebugMessage> QOpenGLDebugLogger::loggedMessages() const
                                                messageLengths,
                                                messagesBuffer.data());
 
-        const char *messagesBufferPtr = messagesBuffer.constData();
+        auto messagesBufferPtr = messagesBuffer.constData();
         for (GLuint i = 0; i < messagesRead; ++i) {
             QOpenGLDebugMessage message;
 
-            QOpenGLDebugMessagePrivate *messagePrivate = message.d.data();
+            auto messagePrivate = message.d.data();
             messagePrivate->source = qt_messageSourceFromGL(messageSources[i]);
             messagePrivate->type = qt_messageTypeFromGL(messageTypes[i]);
             messagePrivate->id = messageIds[i];

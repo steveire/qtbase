@@ -234,12 +234,12 @@ QBitmap QBitmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
     if (image.isNull())
         return QBitmap();
 
-    QImage img = image.convertToFormat(QImage::Format_MonoLSB, flags);
+    auto img = image.convertToFormat(QImage::Format_MonoLSB, flags);
 
     // make sure image.color(0) == Qt::color0 (white)
     // and image.color(1) == Qt::color1 (black)
-    const QRgb c0 = QColor(Qt::black).rgb();
-    const QRgb c1 = QColor(Qt::white).rgb();
+    const auto c0 = QColor(Qt::black).rgb();
+    const auto c1 = QColor(Qt::white).rgb();
     if (img.color(0) == c0 && img.color(1) == c1) {
         img.invertPixels();
         img.setColor(0, c1);
@@ -274,8 +274,8 @@ QBitmap QBitmap::fromData(const QSize &size, const uchar *bits, QImage::Format m
 
     // Need to memcpy each line separatly since QImage is 32bit aligned and
     // this data is only byte aligned...
-    int bytesPerLine = (size.width() + 7) / 8;
-    for (int y = 0; y < size.height(); ++y)
+    auto bytesPerLine = (size.width() + 7) / 8;
+    for (auto y = 0; y < size.height(); ++y)
         memcpy(image.scanLine(y), bits + bytesPerLine * y, bytesPerLine);
     return QBitmap::fromImage(image);
 }

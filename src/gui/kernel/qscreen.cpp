@@ -115,19 +115,19 @@ QScreen::~QScreen()
     if (QGuiApplication::closingDown())
         return;
 
-    QScreen *primaryScreen = QGuiApplication::primaryScreen();
+    auto primaryScreen = QGuiApplication::primaryScreen();
     if (this == primaryScreen)
         return;
 
-    bool movingFromVirtualSibling = primaryScreen && primaryScreen->handle()->virtualSiblings().contains(handle());
+    auto movingFromVirtualSibling = primaryScreen && primaryScreen->handle()->virtualSiblings().contains(handle());
 
     // Move any leftover windows to the primary screen
     const auto allWindows = QGuiApplication::allWindows();
-    for (QWindow *window : allWindows) {
+    for (auto window : allWindows) {
         if (!window->isTopLevel() || window->screen() != this)
             continue;
 
-        const bool wasVisible = window->isVisible();
+        const auto wasVisible = window->isVisible();
         window->setScreen(primaryScreen);
 
         // Re-show window if moved from a virtual sibling screen. Otherwise
@@ -225,8 +225,8 @@ qreal QScreen::physicalDotsPerInchY() const
 */
 qreal QScreen::physicalDotsPerInch() const
 {
-    QSize sz = size();
-    QSizeF psz = physicalSize();
+    auto sz = size();
+    auto psz = physicalSize();
     return ((sz.height() / psz.height()) + (sz.width() / psz.width())) * qreal(25.4 * 0.5);
 }
 
@@ -277,7 +277,7 @@ qreal QScreen::logicalDotsPerInchY() const
 qreal QScreen::logicalDotsPerInch() const
 {
     Q_D(const QScreen);
-    QDpi dpi = QHighDpiScaling::isActive() ? QHighDpiScaling::logicalDpi() : d->logicalDpi;
+    auto dpi = QHighDpiScaling::isActive() ? QHighDpiScaling::logicalDpi() : d->logicalDpi;
     return (dpi.first + dpi.second) * qreal(0.5);
 }
 
@@ -364,10 +364,10 @@ QRect QScreen::availableGeometry() const
 QList<QScreen *> QScreen::virtualSiblings() const
 {
     Q_D(const QScreen);
-    const QList<QPlatformScreen *> platformScreens = d->platformScreen->virtualSiblings();
+    const auto platformScreens = d->platformScreen->virtualSiblings();
     QList<QScreen *> screens;
     screens.reserve(platformScreens.count());
-    for (QPlatformScreen *platformScreen : platformScreens)
+    for (auto platformScreen : platformScreens)
         screens << platformScreen->screen();
     return screens;
 }
@@ -401,7 +401,7 @@ QRect QScreen::virtualGeometry() const
 {
     QRect result;
     const auto screens = virtualSiblings();
-    for (QScreen *screen : screens)
+    for (auto screen : screens)
         result |= screen->geometry();
     return result;
 }
@@ -435,7 +435,7 @@ QRect QScreen::availableVirtualGeometry() const
 {
     QRect result;
     const auto screens = virtualSiblings();
-    for (QScreen *screen : screens)
+    for (auto screen : screens)
         result |= screen->availableGeometry();
     return result;
 }
@@ -687,7 +687,7 @@ void QScreenPrivate::updatePrimaryOrientation()
 
 QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
 {
-    const QPlatformScreen *platformScreen = handle();
+    auto platformScreen = handle();
     if (!platformScreen) {
         qWarning("invoked with handle==0");
         return QPixmap();

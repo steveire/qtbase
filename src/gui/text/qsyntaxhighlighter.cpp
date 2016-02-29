@@ -71,7 +71,7 @@ public:
     inline void rehighlight(QTextCursor &cursor, QTextCursor::MoveOperation operation) {
         inReformatBlocks = true;
         cursor.beginEditBlock();
-        int from = cursor.position();
+        auto from = cursor.position();
         cursor.movePosition(operation);
         reformatBlocks(from, 0, cursor.position() - from);
         cursor.endEditBlock();
@@ -94,14 +94,14 @@ public:
 
 void QSyntaxHighlighterPrivate::applyFormatChanges()
 {
-    bool formatsChanged = false;
+    auto formatsChanged = false;
 
-    QTextLayout *layout = currentBlock.layout();
+    auto layout = currentBlock.layout();
 
-    QVector<QTextLayout::FormatRange> ranges = layout->formats();
+    auto ranges = layout->formats();
 
-    const int preeditAreaStart = layout->preeditAreaPosition();
-    const int preeditAreaLength = layout->preeditAreaText().length();
+    const auto preeditAreaStart = layout->preeditAreaPosition();
+    const auto preeditAreaLength = layout->preeditAreaText().length();
 
     if (preeditAreaLength != 0) {
         auto isOutsidePreeditArea = [=](const QTextLayout::FormatRange &range) {
@@ -119,7 +119,7 @@ void QSyntaxHighlighterPrivate::applyFormatChanges()
         formatsChanged = true;
     }
 
-    int i = 0;
+    auto i = 0;
     while (i < formatChanges.count()) {
         QTextLayout::FormatRange r;
 
@@ -165,21 +165,21 @@ void QSyntaxHighlighterPrivate::reformatBlocks(int from, int charsRemoved, int c
 {
     rehighlightPending = false;
 
-    QTextBlock block = doc->findBlock(from);
+    auto block = doc->findBlock(from);
     if (!block.isValid())
         return;
 
     int endPosition;
-    QTextBlock lastBlock = doc->findBlock(from + charsAdded + (charsRemoved > 0 ? 1 : 0));
+    auto lastBlock = doc->findBlock(from + charsAdded + (charsRemoved > 0 ? 1 : 0));
     if (lastBlock.isValid())
         endPosition = lastBlock.position() + lastBlock.length();
     else
         endPosition = doc->docHandle()->length();
 
-    bool forceHighlightOfNextBlock = false;
+    auto forceHighlightOfNextBlock = false;
 
     while (block.isValid() && (block.position() < endPosition || forceHighlightOfNextBlock)) {
-        const int stateBeforeHighlight = block.userState();
+        const auto stateBeforeHighlight = block.userState();
 
         reformatBlock(block);
 
@@ -298,7 +298,7 @@ QSyntaxHighlighter::QSyntaxHighlighter(QObject *parent)
     : QObject(*new QSyntaxHighlighterPrivate, parent)
 {
     if (parent->inherits("QTextEdit")) {
-        QTextDocument *doc = parent->property("document").value<QTextDocument *>();
+        auto doc = parent->property("document").value<QTextDocument *>();
         if (doc)
             setDocument(doc);
     }
@@ -336,7 +336,7 @@ void QSyntaxHighlighter::setDocument(QTextDocument *doc)
 
         QTextCursor cursor(d->doc);
         cursor.beginEditBlock();
-        for (QTextBlock blk = d->doc->begin(); blk.isValid(); blk = blk.next())
+        for (auto blk = d->doc->begin(); blk.isValid(); blk = blk.next())
             blk.layout()->clearFormats();
         cursor.endEditBlock();
     }
@@ -389,7 +389,7 @@ void QSyntaxHighlighter::rehighlightBlock(const QTextBlock &block)
     if (!d->doc || !block.isValid() || block.document() != d->doc)
         return;
 
-    const bool rehighlightPending = d->rehighlightPending;
+    const auto rehighlightPending = d->rehighlightPending;
 
     QTextCursor cursor(block);
     d->rehighlight(cursor, QTextCursor::EndOfBlock);
@@ -463,8 +463,8 @@ void QSyntaxHighlighter::setFormat(int start, int count, const QTextCharFormat &
     if (start < 0 || start >= d->formatChanges.count())
         return;
 
-    const int end = qMin(start + count, d->formatChanges.count());
-    for (int i = start; i < end; ++i)
+    const auto end = qMin(start + count, d->formatChanges.count());
+    for (auto i = start; i < end; ++i)
         d->formatChanges[i] = format;
 }
 
@@ -531,7 +531,7 @@ int QSyntaxHighlighter::previousBlockState() const
     if (!d->currentBlock.isValid())
         return -1;
 
-    const QTextBlock previous = d->currentBlock.previous();
+    const auto previous = d->currentBlock.previous();
     if (!previous.isValid())
         return -1;
 

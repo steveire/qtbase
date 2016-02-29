@@ -110,8 +110,8 @@ QOpenGLTextureCache *QOpenGLTextureCache::cacheForContext(QOpenGLContext *contex
 
 void QOpenGLTextureCacheWrapper::cleanupTexturesForCacheKey(qint64 key)
 {
-    QList<QOpenGLSharedResource *> resources = qt_texture_caches()->m_resource.resources();
-    for (QList<QOpenGLSharedResource *>::iterator it = resources.begin(); it != resources.end(); ++it)
+    auto resources = qt_texture_caches()->m_resource.resources();
+    for (auto it = resources.begin(); it != resources.end(); ++it)
         static_cast<QOpenGLTextureCache *>(*it)->invalidate(key);
 }
 
@@ -135,18 +135,18 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QPixmap &
     if (pixmap.isNull())
         return 0;
     QMutexLocker locker(&m_mutex);
-    qint64 key = pixmap.cacheKey();
+    auto key = pixmap.cacheKey();
 
     // A QPainter is active on the image - take the safe route and replace the texture.
     if (!pixmap.paintingActive()) {
-        QOpenGLCachedTexture *entry = m_cache.object(key);
+        auto entry = m_cache.object(key);
         if (entry && entry->options() == options) {
             context->functions()->glBindTexture(GL_TEXTURE_2D, entry->id());
             return entry->id();
         }
     }
 
-    GLuint id = bindTexture(context, key, pixmap.toImage(), options);
+    auto id = bindTexture(context, key, pixmap.toImage(), options);
     if (id > 0)
         QImagePixmapCleanupHooks::enableCleanupHooks(pixmap);
 
@@ -158,18 +158,18 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &i
     if (image.isNull())
         return 0;
     QMutexLocker locker(&m_mutex);
-    qint64 key = image.cacheKey();
+    auto key = image.cacheKey();
 
     // A QPainter is active on the image - take the safe route and replace the texture.
     if (!image.paintingActive()) {
-        QOpenGLCachedTexture *entry = m_cache.object(key);
+        auto entry = m_cache.object(key);
         if (entry && entry->options() == options) {
             context->functions()->glBindTexture(GL_TEXTURE_2D, entry->id());
             return entry->id();
         }
     }
 
-    QImage img = image;
+    auto img = image;
     if (!context->functions()->hasOpenGLFeature(QOpenGLFunctions::NPOTTextures)) {
         // Scale the pixmap if needed. GL textures needs to have the
         // dimensions 2^n+2(border) x 2^m+2(border), unless we're using GL
@@ -181,7 +181,7 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &i
         }
     }
 
-    GLuint id = bindTexture(context, key, img, options);
+    auto id = bindTexture(context, key, img, options);
     if (id > 0)
         QImagePixmapCleanupHooks::enableCleanupHooks(image);
 
@@ -191,7 +191,7 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &i
 GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, BindOptions options)
 {
     GLuint id;
-    QOpenGLFunctions *funcs = context->functions();
+    auto funcs = context->functions();
     funcs->glGenTextures(1, &id);
     funcs->glBindTexture(GL_TEXTURE_2D, id);
 
@@ -199,8 +199,8 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, con
     GLenum externalFormat;
     GLenum internalFormat;
     GLuint pixelType;
-    QImage::Format targetFormat = QImage::Format_Invalid;
-    const bool isOpenGL12orBetter = !context->isOpenGLES() && (context->format().majorVersion() >= 2 || context->format().minorVersion() >= 2);
+    auto targetFormat = QImage::Format_Invalid;
+    const auto isOpenGL12orBetter = !context->isOpenGLES() && (context->format().majorVersion() >= 2 || context->format().minorVersion() >= 2);
 
     switch (image.format()) {
     case QImage::Format_RGB32:
@@ -344,7 +344,7 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, con
 
     funcs->glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, tx.width(), tx.height(), 0, externalFormat, pixelType, const_cast<const QImage &>(tx).bits());
 
-    int cost = tx.width() * tx.height() * tx.depth() / (1024 * 8);
+    auto cost = tx.width() * tx.height() * tx.depth() / (1024 * 8);
     m_cache.insert(key, new QOpenGLCachedTexture(id, options, context), cost);
 
     return id;

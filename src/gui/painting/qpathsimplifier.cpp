@@ -106,7 +106,7 @@ struct Fraction
 inline unsigned int gcd(unsigned int x, unsigned int y)
 {
     while (y != 0) {
-        unsigned int z = y;
+        auto z = y;
         y = x % y;
         x = z;
     }
@@ -121,7 +121,7 @@ Fraction fraction(unsigned int n, unsigned int d) {
         result.numerator = 0;
         result.denominator = 1;
     } else {
-        unsigned int g = gcd(n, d);
+        auto g = gcd(n, d);
         result.numerator = n / g;
         result.denominator = d / g;
     }
@@ -176,13 +176,13 @@ IntersectionPoint intersectionPoint(const QPoint &u1, const QPoint &u2,
 {
     IntersectionPoint result = {{0, {0, 0}}, {0, {0, 0}}};
 
-    QPoint u = u2 - u1;
-    QPoint v = v2 - v1;
-    int d1 = cross(u, v1 - u1);
-    int d2 = cross(u, v2 - u1);
-    int det = d2 - d1;
-    int d3 = cross(v, u1 - v1);
-    int d4 = d3 - det; //qCross(v, u2 - v1);
+    auto u = u2 - u1;
+    auto v = v2 - v1;
+    auto d1 = cross(u, v1 - u1);
+    auto d2 = cross(u, v2 - u1);
+    auto det = d2 - d1;
+    auto d3 = cross(v, u1 - v1);
+    auto d4 = d3 - det; //qCross(v, u2 - v1);
 
     // Check that the math is correct.
     Q_ASSERT(d4 == cross(v, u2 - v1));
@@ -434,7 +434,7 @@ inline PathSimplifier::ElementAllocator::ElementAllocator()
 inline PathSimplifier::ElementAllocator::~ElementAllocator()
 {
     while (blocks) {
-        ElementBlock *block = blocks;
+        auto block = blocks;
         blocks = blocks->next;
         free(block);
     }
@@ -455,7 +455,7 @@ inline PathSimplifier::Element *PathSimplifier::ElementAllocator::newElement()
     Q_ASSERT(blocks);
     if (blocks->firstFree < blocks->blockSize)
         return &blocks->elements[blocks->firstFree++];
-    ElementBlock *oldBlock = blocks;
+    auto oldBlock = blocks;
     blocks = (ElementBlock *)malloc(sizeof(ElementBlock) + (oldBlock->blockSize - 1) * sizeof(Element));
     blocks->blockSize = oldBlock->blockSize;
     blocks->next = oldBlock;
@@ -473,7 +473,7 @@ inline bool PathSimplifier::Event::operator < (const Event &other) const
 
 inline void PathSimplifier::Element::flip()
 {
-    for (int i = 0; i < (degree + 1) >> 1; ++i) {
+    for (auto i = 0; i < (degree + 1) >> 1; ++i) {
         Q_ASSERT(degree >= Line && degree <= Cubic);
         Q_ASSERT(i >= 0 && i < degree);
         qSwap(indices[i], indices[degree - i]);
@@ -501,19 +501,19 @@ PathSimplifier::PathSimplifier(const QVectorPath &path, QDataBuffer<QPoint> &ver
 void PathSimplifier::initElements(const QVectorPath &path, const QTransform &matrix)
 {
     m_hints = path.hints();
-    int pathElementCount = path.elementCount();
+    auto pathElementCount = path.elementCount();
     if (pathElementCount == 0)
         return;
     m_elements.reserve(2 * pathElementCount);
     m_elementAllocator.allocate(2 * pathElementCount);
     m_points->reserve(2 * pathElementCount);
-    const QPainterPath::ElementType *e = path.elements();
-    const qreal *p = path.points();
+    auto e = path.elements();
+    auto p = path.points();
     if (e) {
         qreal x, y;
         quint32 moveToIndex = 0;
         quint32 previousIndex = 0;
-        for (int i = 0; i < pathElementCount; ++i, ++e, p += 2) {
+        for (auto i = 0; i < pathElementCount; ++i, ++e, p += 2) {
             switch (*e) {
             case QPainterPath::MoveToElement:
                 {
@@ -521,7 +521,7 @@ void PathSimplifier::initElements(const QVectorPath &path, const QTransform &mat
                         const QPoint &from = m_points->at(previousIndex);
                         const QPoint &to = m_points->at(moveToIndex);
                         if (from != to) {
-                            Element *element = m_elementAllocator.newElement();
+                            auto element = m_elementAllocator.newElement();
                             element->degree = Element::Line;
                             element->indices[0] = previousIndex;
                             element->indices[1] = moveToIndex;
@@ -543,7 +543,7 @@ void PathSimplifier::initElements(const QVectorPath &path, const QTransform &mat
                     QPoint to(qRound(x * Q_FIXED_POINT_SCALE), qRound(y * Q_FIXED_POINT_SCALE));
                     const QPoint &from = m_points->last();
                     if (to != from) {
-                        Element *element = m_elementAllocator.newElement();
+                        auto element = m_elementAllocator.newElement();
                         element->degree = Element::Line;
                         element->indices[0] = previousIndex;
                         element->indices[1] = quint32(m_points->size());
@@ -561,19 +561,19 @@ void PathSimplifier::initElements(const QVectorPath &path, const QTransform &mat
                 Q_ASSERT(e[1] == QPainterPath::CurveToDataElement);
                 Q_ASSERT(e[2] == QPainterPath::CurveToDataElement);
                 {
-                    quint32 startPointIndex = previousIndex;
+                    auto startPointIndex = previousIndex;
                     matrix.map(p[4], p[5], &x, &y);
                     QPoint end(qRound(x * Q_FIXED_POINT_SCALE), qRound(y * Q_FIXED_POINT_SCALE));
                     previousIndex = m_points->size();
                     m_points->add(end);
 
                     // See if this cubic bezier is really quadratic.
-                    qreal x1 = p[-2] + qreal(1.5) * (p[0] - p[-2]);
-                    qreal y1 = p[-1] + qreal(1.5) * (p[1] - p[-1]);
-                    qreal x2 = p[4] + qreal(1.5) * (p[2] - p[4]);
-                    qreal y2 = p[5] + qreal(1.5) * (p[3] - p[5]);
+                    auto x1 = p[-2] + qreal(1.5) * (p[0] - p[-2]);
+                    auto y1 = p[-1] + qreal(1.5) * (p[1] - p[-1]);
+                    auto x2 = p[4] + qreal(1.5) * (p[2] - p[4]);
+                    auto y2 = p[5] + qreal(1.5) * (p[3] - p[5]);
 
-                    Element *element = m_elementAllocator.newElement();
+                    auto element = m_elementAllocator.newElement();
                     if (qAbs(x1 - x2) < qreal(1e-3) && qAbs(y1 - y2) < qreal(1e-3)) {
                         // The bezier curve is quadratic.
                         matrix.map(x1, y1, &x, &y);
@@ -607,7 +607,7 @@ void PathSimplifier::initElements(const QVectorPath &path, const QTransform &mat
             const QPoint &from = m_points->at(previousIndex);
             const QPoint &to = m_points->at(moveToIndex);
             if (from != to) {
-                Element *element = m_elementAllocator.newElement();
+                auto element = m_elementAllocator.newElement();
                 element->degree = Element::Line;
                 element->indices[0] = previousIndex;
                 element->indices[1] = moveToIndex;
@@ -619,7 +619,7 @@ void PathSimplifier::initElements(const QVectorPath &path, const QTransform &mat
     } else {
         qreal x, y;
 
-        for (int i = 0; i < pathElementCount; ++i, p += 2) {
+        for (auto i = 0; i < pathElementCount; ++i, p += 2) {
             matrix.map(p[0], p[1], &x, &y);
             QPoint to(qRound(x * Q_FIXED_POINT_SCALE), qRound(y * Q_FIXED_POINT_SCALE));
             if (to != m_points->last())
@@ -632,11 +632,11 @@ void PathSimplifier::initElements(const QVectorPath &path, const QTransform &mat
         if (m_points->isEmpty())
             return;
 
-        quint32 prev = quint32(m_points->size() - 1);
-        for (int i = 0; i < m_points->size(); ++i) {
+        auto prev = quint32(m_points->size() - 1);
+        for (auto i = 0; i < m_points->size(); ++i) {
             QPoint &to = m_points->at(i);
             QPoint &from = m_points->at(prev);
-            Element *element = m_elementAllocator.newElement();
+            auto element = m_elementAllocator.newElement();
             element->degree = Element::Line;
             element->indices[0] = prev;
             element->indices[1] = quint32(i);
@@ -647,7 +647,7 @@ void PathSimplifier::initElements(const QVectorPath &path, const QTransform &mat
         }
     }
 
-    for (int i = 0; i < m_elements.size(); ++i)
+    for (auto i = 0; i < m_elements.size(); ++i)
         m_elements.at(i)->processed = false;
 }
 
@@ -655,19 +655,19 @@ void PathSimplifier::removeIntersections()
 {
     Q_ASSERT(!m_elements.isEmpty());
     QDataBuffer<Element *> elements(m_elements.size());
-    for (int i = 0; i < m_elements.size(); ++i)
+    for (auto i = 0; i < m_elements.size(); ++i)
         elements.add(m_elements.at(i));
     m_bvh.allocate(2 * m_elements.size());
     m_bvh.root = buildTree(elements.data(), elements.size());
 
     elements.reset();
-    for (int i = 0; i < m_elements.size(); ++i)
+    for (auto i = 0; i < m_elements.size(); ++i)
         elements.add(m_elements.at(i));
 
     while (!elements.isEmpty()) {
-        Element *element = elements.last();
+        auto element = elements.last();
         elements.pop_back();
-        BVHNode *node = element->bvhNode;
+        auto node = element->bvhNode;
         Q_ASSERT(node->type == BVHNode::Leaf);
         Q_ASSERT(node->element == element);
         if (!element->processed) {
@@ -683,8 +683,8 @@ void PathSimplifier::connectElements()
 {
     Q_ASSERT(!m_elements.isEmpty());
     QDataBuffer<Event> events(m_elements.size() * 2);
-    for (int i = 0; i < m_elements.size(); ++i) {
-        Element *element = m_elements.at(i);
+    for (auto i = 0; i < m_elements.size(); ++i) {
+        auto element = m_elements.at(i);
         element->next = element->previous = 0;
         element->winding = 0;
         element->edgeNode = 0;
@@ -707,14 +707,14 @@ void PathSimplifier::connectElements()
     if (!events.isEmpty())
         sortEvents(events.data(), events.size());
     while (!events.isEmpty()) {
-        const Event *event = &events.last();
-        QPoint eventPoint = event->point;
+        auto event = &events.last();
+        auto eventPoint = event->point;
 
         // Find all elements passing through the event point.
-        QPair<RBNode *, RBNode *> bounds = outerBounds(eventPoint);
+        auto bounds = outerBounds(eventPoint);
 
         // Special case: single element above and single element below event point.
-        int eventCount = events.size();
+        auto eventCount = events.size();
         if (event->type == Event::Lower && eventCount > 2) {
             QPair<RBNode *, RBNode *> range;
             range.first = bounds.first ? m_elementList.next(bounds.first)
@@ -722,12 +722,12 @@ void PathSimplifier::connectElements()
             range.second = bounds.second ? m_elementList.previous(bounds.second)
                                          : m_elementList.back(m_elementList.root);
 
-            const Event *event2 = &events.at(eventCount - 2);
-            const Event *event3 = &events.at(eventCount - 3);
+            auto event2 = &events.at(eventCount - 2);
+            auto event3 = &events.at(eventCount - 3);
             Q_ASSERT(event2->point == eventPoint); // There are always at least two events at a point.
             if (range.first == range.second && event2->type == Event::Upper && event3->point != eventPoint) {
-                Element *element = event->element;
-                Element *element2 = event2->element;
+                auto element = event->element;
+                auto element2 = event2->element;
                 element->edgeNode->data = event2->element;
                 element2->edgeNode = element->edgeNode;
                 element->edgeNode = 0;
@@ -738,7 +738,7 @@ void PathSimplifier::connectElements()
                 if (element2->pointingUp != element->pointingUp)
                     element2->flip();
                 element2->winding = element->winding;
-                int winding = element->winding;
+                auto winding = element->winding;
                 if (element->originallyPointingUp)
                     ++winding;
                 if (winding == 0 || winding == 1) {
@@ -757,12 +757,12 @@ void PathSimplifier::connectElements()
 
         // First, find the ones above the event point.
         if (m_elementList.root) {
-            RBNode *current = bounds.first ? m_elementList.next(bounds.first)
+            auto current = bounds.first ? m_elementList.next(bounds.first)
                                            : m_elementList.front(m_elementList.root);
             while (current != bounds.second) {
-                Element *element = current->data;
+                auto element = current->data;
                 Q_ASSERT(element->edgeNode == current);
-                int winding = element->winding;
+                auto winding = element->winding;
                 if (element->originallyPointingUp)
                     ++winding;
                 const QPoint &lower = m_points->at(element->lowerIndex());
@@ -774,13 +774,13 @@ void PathSimplifier::connectElements()
                     Q_ASSERT(m_points->at(element->upperIndex()) != eventPoint);
                     Q_ASSERT(element->degree == Element::Line);
                     // Split the line.
-                    Element *eventElement = event->element;
-                    int indexIndex = (event->type == Event::Upper) == eventElement->pointingUp
+                    auto eventElement = event->element;
+                    auto indexIndex = (event->type == Event::Upper) == eventElement->pointingUp
                                      ? eventElement->degree : 0;
-                    quint32 pointIndex = eventElement->indices[indexIndex];
+                    auto pointIndex = eventElement->indices[indexIndex];
                     Q_ASSERT(eventPoint == m_points->at(pointIndex));
 
-                    Element *upperElement = m_elementAllocator.newElement();
+                    auto upperElement = m_elementAllocator.newElement();
                     *upperElement = *element;
                     upperElement->lowerIndex() = element->upperIndex() = pointIndex;
                     upperElement->edgeNode = 0;
@@ -802,8 +802,8 @@ void PathSimplifier::connectElements()
             event = &events.last();
             if (event->type == Event::Upper) {
                 Q_ASSERT(event->point == m_points->at(event->element->upperIndex()));
-                RBNode *left = findElementLeftOf(event->element, bounds);
-                RBNode *node = m_elementList.newNode();
+                auto left = findElementLeftOf(event->element, bounds);
+                auto node = m_elementList.newNode();
                 node->data = event->element;
                 Q_ASSERT(event->element->edgeNode == 0);
                 event->element->edgeNode = node;
@@ -811,7 +811,7 @@ void PathSimplifier::connectElements()
             } else {
                 Q_ASSERT(event->type == Event::Lower);
                 Q_ASSERT(event->point == m_points->at(event->element->lowerIndex()));
-                Element *element = event->element;
+                auto element = event->element;
                 Q_ASSERT(element->edgeNode);
                 m_elementList.deleteNode(element->edgeNode);
                 Q_ASSERT(element->edgeNode == 0);
@@ -820,15 +820,15 @@ void PathSimplifier::connectElements()
         }
 
         if (m_elementList.root) {
-            RBNode *current = bounds.first ? m_elementList.next(bounds.first)
+            auto current = bounds.first ? m_elementList.next(bounds.first)
                                            : m_elementList.front(m_elementList.root);
-            int winding = bounds.first ? bounds.first->data->winding : 0;
+            auto winding = bounds.first ? bounds.first->data->winding : 0;
 
             // Calculate winding numbers and flip elements if necessary.
             while (current != bounds.second) {
-                Element *element = current->data;
+                auto element = current->data;
                 Q_ASSERT(element->edgeNode == current);
-                int ccw = winding & 1;
+                auto ccw = winding & 1;
                 Q_ASSERT(element->pointingUp == element->originallyPointingUp);
                 if (element->originallyPointingUp) {
                     --winding;
@@ -846,10 +846,10 @@ void PathSimplifier::connectElements()
             current = bounds.second ? m_elementList.previous(bounds.second)
                                     : m_elementList.back(m_elementList.root);
             while (current != bounds.first) {
-                Element *element = current->data;
+                auto element = current->data;
                 Q_ASSERT(element->edgeNode == current);
                 Q_ASSERT(m_points->at(element->upperIndex()) == eventPoint);
-                int winding = element->winding;
+                auto winding = element->winding;
                 if (element->originallyPointingUp)
                     ++winding;
                 if (winding == 0 || winding == 1)
@@ -860,16 +860,16 @@ void PathSimplifier::connectElements()
 
         if (!orderedElements.isEmpty()) {
             Q_ASSERT((orderedElements.size() & 1) == 0);
-            int i = 0;
-            Element *firstElement = orderedElements.at(0);
+            auto i = 0;
+            auto firstElement = orderedElements.at(0);
             if (m_points->at(firstElement->indices[0]) != eventPoint) {
                 orderedElements.append(firstElement);
                 i = 1;
             }
             for (; i < orderedElements.size(); i += 2) {
                 Q_ASSERT(i + 1 < orderedElements.size());
-                Element *next = orderedElements.at(i);
-                Element *previous = orderedElements.at(i + 1);
+                auto next = orderedElements.at(i);
+                auto previous = orderedElements.at(i + 1);
                 Q_ASSERT(next->previous == 0);
                 Q_ASSERT(previous->next == 0);
                 next->previous = previous;
@@ -889,10 +889,10 @@ void PathSimplifier::connectElements()
 
 void PathSimplifier::fillIndices()
 {
-    for (int i = 0; i < m_elements.size(); ++i)
+    for (auto i = 0; i < m_elements.size(); ++i)
         m_elements.at(i)->processed = false;
-    for (int i = 0; i < m_elements.size(); ++i) {
-        Element *element = m_elements.at(i);
+    for (auto i = 0; i < m_elements.size(); ++i) {
+        auto element = m_elements.at(i);
         if (element->processed || element->next == 0)
             continue;
         do {
@@ -933,14 +933,14 @@ void PathSimplifier::fillIndices()
 PathSimplifier::BVHNode *PathSimplifier::buildTree(Element **elements, int elementCount)
 {
     Q_ASSERT(elementCount > 0);
-    BVHNode *node = m_bvh.newNode();
+    auto node = m_bvh.newNode();
     if (elementCount == 1) {
-        Element *element = *elements;
+        auto element = *elements;
         element->bvhNode = node;
         node->type = BVHNode::Leaf;
         node->element = element;
         node->minimum = node->maximum = m_points->at(element->indices[0]);
-        for (int i = 1; i <= element->degree; ++i) {
+        for (auto i = 1; i <= element->degree; ++i) {
             const QPoint &p = m_points->at(element->indices[i]);
             node->minimum.rx() = qMin(node->minimum.x(), p.x());
             node->minimum.ry() = qMin(node->minimum.y(), p.y());
@@ -955,7 +955,7 @@ PathSimplifier::BVHNode *PathSimplifier::buildTree(Element **elements, int eleme
     QPoint minimum, maximum;
     minimum = maximum = elements[0]->middle;
 
-    for (int i = 1; i < elementCount; ++i) {
+    for (auto i = 1; i < elementCount; ++i) {
         const QPoint &p = elements[i]->middle;
         minimum.rx() = qMin(minimum.x(), p.x());
         minimum.ry() = qMin(minimum.y(), p.y());
@@ -972,8 +972,8 @@ PathSimplifier::BVHNode *PathSimplifier::buildTree(Element **elements, int eleme
         pivot = (maximum.y() + minimum.y()) >> 1;
     }
 
-    int lo = 0;
-    int hi = elementCount - 1;
+    auto lo = 0;
+    auto hi = elementCount - 1;
     while (lo < hi) {
         while (lo < hi && (&elements[lo]->middle.rx())[comp] <= pivot)
             ++lo;
@@ -992,8 +992,8 @@ PathSimplifier::BVHNode *PathSimplifier::buildTree(Element **elements, int eleme
     node->left = buildTree(elements, lo);
     node->right = buildTree(elements + lo, elementCount - lo);
 
-    const BVHNode *left = node->left;
-    const BVHNode *right = node->right;
+    auto left = node->left;
+    auto right = node->right;
     node->minimum.rx() = qMin(left->minimum.x(), right->minimum.x());
     node->minimum.ry() = qMin(left->minimum.y(), right->minimum.y());
     node->maximum.rx() = qMax(left->maximum.x(), right->maximum.x());
@@ -1014,11 +1014,11 @@ bool PathSimplifier::intersectNodes(QDataBuffer<Element *> &elements, BVHNode *e
     }
 
     Q_ASSERT(elementNode->type == BVHNode::Leaf);
-    Element *element = elementNode->element;
+    auto element = elementNode->element;
     Q_ASSERT(!element->processed);
 
     if (treeNode->type == BVHNode::Leaf) {
-        Element *nodeElement = treeNode->element;
+        auto nodeElement = treeNode->element;
         if (!nodeElement->processed)
             return false;
 
@@ -1033,7 +1033,7 @@ bool PathSimplifier::intersectNodes(QDataBuffer<Element *> &elements, BVHNode *e
             const QPoint &u2 = m_points->at(element->indices[1]);
             const QPoint &v1 = m_points->at(nodeElement->indices[0]);
             const QPoint &v2 = m_points->at(nodeElement->indices[1]);
-            IntersectionPoint intersection = intersectionPoint(u1, u2, v1, v2);
+            auto intersection = intersectionPoint(u1, u2, v1, v2);
             if (!intersection.isValid())
                 return false;
 
@@ -1054,9 +1054,9 @@ bool PathSimplifier::intersectNodes(QDataBuffer<Element *> &elements, BVHNode *e
             QVarLengthArray<QPoint, 12> axes;
             appendSeparatingAxes(axes, elementNode->element);
             appendSeparatingAxes(axes, treeNode->element);
-            for (int i = 0; i < axes.size(); ++i) {
-                QPair<int, int> range1 = calculateSeparatingAxisRange(axes.at(i), elementNode->element);
-                QPair<int, int> range2 = calculateSeparatingAxisRange(axes.at(i), treeNode->element);
+            for (auto i = 0; i < axes.size(); ++i) {
+                auto range1 = calculateSeparatingAxisRange(axes.at(i), elementNode->element);
+                auto range2 = calculateSeparatingAxisRange(axes.at(i), treeNode->element);
                 if (range1.first >= range2.second || range1.second <= range2.first) {
                     return false; // Separating axis found.
                 }
@@ -1092,13 +1092,13 @@ bool PathSimplifier::equalElements(const Element *e1, const Element *e2)
         return false;
 
     // Possibly equal and in the same direction.
-    bool equalSame = true;
-    for (int i = 0; i <= e1->degree; ++i)
+    auto equalSame = true;
+    for (auto i = 0; i <= e1->degree; ++i)
         equalSame &= m_points->at(e1->indices[i]) == m_points->at(e2->indices[i]);
 
     // Possibly equal and in opposite directions.
-    bool equalOpposite = true;
-    for (int i = 0; i <= e1->degree; ++i)
+    auto equalOpposite = true;
+    for (auto i = 0; i <= e1->degree; ++i)
         equalOpposite &= m_points->at(e1->indices[e1->degree - i]) == m_points->at(e2->indices[i]);
 
     return equalSame || equalOpposite;
@@ -1108,7 +1108,7 @@ bool PathSimplifier::splitLineAt(QDataBuffer<Element *> &elements, BVHNode *node
                                  quint32 pointIndex, bool processAgain)
 {
     Q_ASSERT(node->type == BVHNode::Leaf);
-    Element *element = node->element;
+    auto element = node->element;
     Q_ASSERT(element->degree == Element::Line);
     const QPoint &u = m_points->at(element->indices[0]);
     const QPoint &v = m_points->at(element->indices[1]);
@@ -1119,8 +1119,8 @@ bool PathSimplifier::splitLineAt(QDataBuffer<Element *> &elements, BVHNode *node
     if (processAgain)
         element->processed = false; // Needs to be processed again.
 
-    Element *first = node->element;
-    Element *second = m_elementAllocator.newElement();
+    auto first = node->element;
+    auto second = m_elementAllocator.newElement();
     *second = *first;
     first->indices[1] = second->indices[0] = pointIndex;
     first->middle.rx() = (u.x() + p.x()) >> 1;
@@ -1129,8 +1129,8 @@ bool PathSimplifier::splitLineAt(QDataBuffer<Element *> &elements, BVHNode *node
     second->middle.ry() = (v.y() + p.y()) >> 1;
     m_elements.add(second);
 
-    BVHNode *left = m_bvh.newNode();
-    BVHNode *right = m_bvh.newNode();
+    auto left = m_bvh.newNode();
+    auto right = m_bvh.newNode();
     left->type = right->type = BVHNode::Leaf;
     left->element = first;
     right->element = second;
@@ -1175,7 +1175,7 @@ void PathSimplifier::appendSeparatingAxes(QVarLengthArray<QPoint, 12> &axes, Ele
                 QPoint(u.y() - w.y(), w.x() - u.x()),
                 QPoint(v.y() - q.y(), q.x() - v.x())
             };
-            for (int i = 0; i < 6; ++i) {
+            for (auto i = 0; i < 6; ++i) {
                 if (ns[i].x() || ns[i].y())
                     axes.append(ns[i]);
             }
@@ -1191,7 +1191,7 @@ void PathSimplifier::appendSeparatingAxes(QVarLengthArray<QPoint, 12> &axes, Ele
                 QPoint(v.y() - w.y(), w.x() - v.x()),
                 QPoint(w.y() - u.y(), u.x() - w.x())
             };
-            for (int i = 0; i < 3; ++i) {
+            for (auto i = 0; i < 3; ++i) {
                 if (ns[i].x() || ns[i].y())
                     axes.append(ns[i]);
             }
@@ -1215,9 +1215,9 @@ void PathSimplifier::appendSeparatingAxes(QVarLengthArray<QPoint, 12> &axes, Ele
 QPair<int, int> PathSimplifier::calculateSeparatingAxisRange(const QPoint &axis, Element *element)
 {
     QPair<int, int> range(0x7fffffff, -0x7fffffff);
-    for (int i = 0; i <= element->degree; ++i) {
+    for (auto i = 0; i <= element->degree; ++i) {
         const QPoint &p = m_points->at(element->indices[i]);
-        int dist = dot(axis, p);
+        auto dist = dot(axis, p);
         range.first = qMin(range.first, dist);
         range.second = qMax(range.second, dist);
     }
@@ -1228,13 +1228,13 @@ void PathSimplifier::splitCurve(QDataBuffer<Element *> &elements, BVHNode *node)
 {
     Q_ASSERT(node->type == BVHNode::Leaf);
 
-    Element *first = node->element;
-    Element *second = m_elementAllocator.newElement();
+    auto first = node->element;
+    auto second = m_elementAllocator.newElement();
     *second = *first;
     m_elements.add(second);
     Q_ASSERT(first->degree > Element::Line);
 
-    bool accurate = true;
+    auto accurate = true;
     const QPoint &u = m_points->at(first->indices[0]);
     const QPoint &v = m_points->at(first->indices[1]);
     const QPoint &w = m_points->at(first->indices[2]);
@@ -1242,7 +1242,7 @@ void PathSimplifier::splitCurve(QDataBuffer<Element *> &elements, BVHNode *node)
     if (first->degree == Element::Quadratic) {
         QPoint pts[3];
         accurate = splitQuadratic(u, v, w, pts);
-        int pointIndex = m_points->size();
+        auto pointIndex = m_points->size();
         m_points->add(pts[1]);
         accurate &= setElementToQuadratic(first, first->indices[0], pts[0], pointIndex);
         accurate &= setElementToQuadratic(second, pointIndex, pts[2], second->indices[2]);
@@ -1251,7 +1251,7 @@ void PathSimplifier::splitCurve(QDataBuffer<Element *> &elements, BVHNode *node)
         const QPoint &q = m_points->at(first->indices[3]);
         QPoint pts[5];
         accurate = splitCubic(u, v, w, q, pts);
-        int pointIndex = m_points->size();
+        auto pointIndex = m_points->size();
         m_points->add(pts[2]);
         accurate &= setElementToCubic(first, first->indices[0], pts[0], pts[1], pointIndex);
         accurate &= setElementToCubic(second, pointIndex, pts[3], pts[4], second->indices[3]);
@@ -1260,8 +1260,8 @@ void PathSimplifier::splitCurve(QDataBuffer<Element *> &elements, BVHNode *node)
     if (!accurate)
         first->processed = second->processed = false; // Needs to be processed again.
 
-    BVHNode *left = m_bvh.newNode();
-    BVHNode *right = m_bvh.newNode();
+    auto left = m_bvh.newNode();
+    auto right = m_bvh.newNode();
     left->type = right->type = BVHNode::Leaf;
     left->element = first;
     right->element = second;
@@ -1269,14 +1269,14 @@ void PathSimplifier::splitCurve(QDataBuffer<Element *> &elements, BVHNode *node)
     left->minimum.rx() = left->minimum.ry() = right->minimum.rx() = right->minimum.ry() = INT_MAX;
     left->maximum.rx() = left->maximum.ry() = right->maximum.rx() = right->maximum.ry() = INT_MIN;
 
-    for (int i = 0; i <= first->degree; ++i) {
+    for (auto i = 0; i <= first->degree; ++i) {
         QPoint &p = m_points->at(first->indices[i]);
         left->minimum.rx() = qMin(left->minimum.x(), p.x());
         left->minimum.ry() = qMin(left->minimum.y(), p.y());
         left->maximum.rx() = qMax(left->maximum.x(), p.x());
         left->maximum.ry() = qMax(left->maximum.y(), p.y());
     }
-    for (int i = 0; i <= second->degree; ++i) {
+    for (auto i = 0; i <= second->degree; ++i) {
         QPoint &p = m_points->at(second->indices[i]);
         right->minimum.rx() = qMin(right->minimum.x(), p.x());
         right->minimum.ry() = qMin(right->minimum.y(), p.y());
@@ -1366,7 +1366,7 @@ void PathSimplifier::setElementToCubicAndSimplify(Element *element, quint32 poin
         return;
     }
 
-    bool intersecting = (u == q) || intersectionPoint(u, v, w, q).isValid();
+    auto intersecting = (u == q) || intersectionPoint(u, v, w, q).isValid();
     if (!intersecting) {
         // Insert bezier.
         element->degree = Element::Cubic;
@@ -1383,9 +1383,9 @@ void PathSimplifier::setElementToCubicAndSimplify(Element *element, quint32 poin
 
     QPoint pts[5];
     splitCubic(u, v, w, q, pts);
-    int pointIndex = m_points->size();
+    auto pointIndex = m_points->size();
     m_points->add(pts[2]);
-    Element *element2 = m_elementAllocator.newElement();
+    auto element2 = m_elementAllocator.newElement();
     m_elements.add(element2);
     setElementToCubicAndSimplify(element, pointIndex1, pts[0], pts[1], pointIndex);
     setElementToCubicAndSimplify(element2, pointIndex, pts[3], pts[4], pointIndex2);
@@ -1396,7 +1396,7 @@ PathSimplifier::RBNode *PathSimplifier::findElementLeftOf(const Element *element
 {
     if (!m_elementList.root)
         return 0;
-    RBNode *current = bounds.first;
+    auto current = bounds.first;
     Q_ASSERT(!current || !elementIsLeftOf(element, current->data));
     if (!current)
         current = m_elementList.front(m_elementList.root);
@@ -1420,7 +1420,7 @@ bool PathSimplifier::elementIsLeftOf(const Element *left, const Element *right)
         return true;
     if (leftU.x() > qMax(rightL.x(), rightU.x()))
         return false;
-    int d = pointDistanceFromLine(leftU, rightL, rightU);
+    auto d = pointDistanceFromLine(leftU, rightL, rightU);
     // d < 0: left, d > 0: right, d == 0: on top
     if (d == 0) {
         d = pointDistanceFromLine(leftL, rightL, rightU);
@@ -1441,18 +1441,18 @@ bool PathSimplifier::elementIsLeftOf(const Element *left, const Element *right)
 
 QPair<PathSimplifier::RBNode *, PathSimplifier::RBNode *> PathSimplifier::outerBounds(const QPoint &point)
 {
-    RBNode *current = m_elementList.root;
+    auto current = m_elementList.root;
     QPair<RBNode *, RBNode *> result(0, 0);
 
     while (current) {
-        const Element *element = current->data;
+        auto element = current->data;
         Q_ASSERT(element->edgeNode == current);
         const QPoint &v1 = m_points->at(element->lowerIndex());
         const QPoint &v2 = m_points->at(element->upperIndex());
         Q_ASSERT(point >= v2 && point <= v1);
         if (point == v1 || point == v2)
             break;
-        int d = pointDistanceFromLine(point, v1, v2);
+        auto d = pointDistanceFromLine(point, v1, v2);
         if (d == 0) {
             if (element->degree == Element::Line)
                 break;
@@ -1473,18 +1473,18 @@ QPair<PathSimplifier::RBNode *, PathSimplifier::RBNode *> PathSimplifier::outerB
     if (!current)
         return result;
 
-    RBNode *mid = current;
+    auto mid = current;
 
     current = mid->left;
     while (current) {
-        const Element *element = current->data;
+        auto element = current->data;
         Q_ASSERT(element->edgeNode == current);
         const QPoint &v1 = m_points->at(element->lowerIndex());
         const QPoint &v2 = m_points->at(element->upperIndex());
         Q_ASSERT(point >= v2 && point <= v1);
-        bool equal = (point == v1 || point == v2);
+        auto equal = (point == v1 || point == v2);
         if (!equal) {
-            int d = pointDistanceFromLine(point, v1, v2);
+            auto d = pointDistanceFromLine(point, v1, v2);
             Q_ASSERT(d >= 0);
             equal = (d == 0 && element->degree == Element::Line);
         }
@@ -1498,14 +1498,14 @@ QPair<PathSimplifier::RBNode *, PathSimplifier::RBNode *> PathSimplifier::outerB
 
     current = mid->right;
     while (current) {
-        const Element *element = current->data;
+        auto element = current->data;
         Q_ASSERT(element->edgeNode == current);
         const QPoint &v1 = m_points->at(element->lowerIndex());
         const QPoint &v2 = m_points->at(element->upperIndex());
         Q_ASSERT(point >= v2 && point <= v1);
-        bool equal = (point == v1 || point == v2);
+        auto equal = (point == v1 || point == v2);
         if (!equal) {
-            int d = pointDistanceFromLine(point, v1, v2);
+            auto d = pointDistanceFromLine(point, v1, v2);
             Q_ASSERT(d <= 0);
             equal = (d == 0 && element->degree == Element::Line);
         }
@@ -1523,8 +1523,8 @@ QPair<PathSimplifier::RBNode *, PathSimplifier::RBNode *> PathSimplifier::outerB
 inline bool PathSimplifier::flattenQuadratic(const QPoint &u, const QPoint &v, const QPoint &w)
 {
     QPoint deltas[2] = { v - u, w - v };
-    int d = qAbs(cross(deltas[0], deltas[1]));
-    int l = qAbs(deltas[0].x()) + qAbs(deltas[0].y()) + qAbs(deltas[1].x()) + qAbs(deltas[1].y());
+    auto d = qAbs(cross(deltas[0], deltas[1]));
+    auto l = qAbs(deltas[0].x()) + qAbs(deltas[0].y()) + qAbs(deltas[1].x()) + qAbs(deltas[1].y());
     return d < (Q_FIXED_POINT_SCALE * Q_FIXED_POINT_SCALE * 3 / 2) || l <= Q_FIXED_POINT_SCALE * 2;
 }
 
@@ -1532,9 +1532,9 @@ inline bool PathSimplifier::flattenCubic(const QPoint &u, const QPoint &v,
                                          const QPoint &w, const QPoint &q)
 {
     QPoint deltas[] = { v - u, w - v, q - w, q - u };
-    int d = qAbs(cross(deltas[0], deltas[1])) + qAbs(cross(deltas[1], deltas[2]))
+    auto d = qAbs(cross(deltas[0], deltas[1])) + qAbs(cross(deltas[1], deltas[2]))
             + qAbs(cross(deltas[0], deltas[3])) + qAbs(cross(deltas[3], deltas[2]));
-    int l = qAbs(deltas[0].x()) + qAbs(deltas[0].y()) + qAbs(deltas[1].x()) + qAbs(deltas[1].y())
+    auto l = qAbs(deltas[0].x()) + qAbs(deltas[0].y()) + qAbs(deltas[1].x()) + qAbs(deltas[1].y())
             + qAbs(deltas[2].x()) + qAbs(deltas[2].y());
     return d < (Q_FIXED_POINT_SCALE * Q_FIXED_POINT_SCALE * 3) || l <= Q_FIXED_POINT_SCALE * 2;
 }
@@ -1545,7 +1545,7 @@ inline bool PathSimplifier::splitQuadratic(const QPoint &u, const QPoint &v,
     result[0] = u + v;
     result[2] = v + w;
     result[1] = result[0] + result[2];
-    bool accurate = ((result[0].x() | result[0].y() | result[2].x() | result[2].y()) & 1) == 0
+    auto accurate = ((result[0].x() | result[0].y() | result[2].x() | result[2].y()) & 1) == 0
                     && ((result[1].x() | result[1].y()) & 3) == 0;
     result[0].rx() >>= 1;
     result[0].ry() >>= 1;
@@ -1565,7 +1565,7 @@ inline bool PathSimplifier::splitCubic(const QPoint &u, const QPoint &v,
     result[1] = result[0] + result[2];
     result[3] = result[2] + result[4];
     result[2] = result[1] + result[3];
-    bool accurate = ((result[0].x() | result[0].y() | result[4].x() | result[4].y()) & 1) == 0
+    auto accurate = ((result[0].x() | result[0].y() | result[4].x() | result[4].y()) & 1) == 0
                     && ((result[1].x() | result[1].y() | result[3].x() | result[3].y()) & 3) == 0
                     && ((result[2].x() | result[2].y()) & 7) == 0;
     result[0].rx() >>= 1;
@@ -1618,29 +1618,29 @@ void PathSimplifier::sortEvents(Event *events, int count)
 
     int minimum, maximum;
     minimum = maximum = events[0].point.y();
-    for (int i = 1; i < count; ++i) {
+    for (auto i = 1; i < count; ++i) {
         minimum = qMin(minimum, events[i].point.y());
         maximum = qMax(maximum, events[i].point.y());
     }
 
-    for (int i = 0; i < count; ++i) {
+    for (auto i = 0; i < count; ++i) {
         bins[i] = ((maximum - events[i].point.y()) << 8) / (maximum - minimum + 1);
         Q_ASSERT(bins[i] >= 0 && bins[i] < 0x100);
         ++counts[bins[i]];
     }
 
-    for (int i = 1; i < 0x100; ++i)
+    for (auto i = 1; i < 0x100; ++i)
         counts[i] += counts[i - 1];
     counts[0x100] = counts[0xff];
     Q_ASSERT(counts[0x100] == count);
 
-    for (int i = 0; i < count; ++i)
+    for (auto i = 0; i < count; ++i)
         buffer.at(--counts[bins[i]]) = events[i];
 
-    int j = 0;
-    for (int i = 0; i < 0x100; ++i) {
+    auto j = 0;
+    for (auto i = 0; i < 0x100; ++i) {
         for (; j < counts[i + 1]; ++j) {
-            int k = j;
+            auto k = j;
             while (k > 0 && (buffer.at(j) < events[k - 1])) {
                 events[k] = events[k - 1];
                 --k;

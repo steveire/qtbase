@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
 QPixmap qt_toRasterPixmap(const QImage &image)
 {
-    QPlatformPixmap *data =
+    auto data =
         new QRasterPlatformPixmap(image.depth() == 1
                            ? QPlatformPixmap::BitmapType
                            : QPlatformPixmap::PixmapType);
@@ -119,10 +119,10 @@ void QRasterPlatformPixmap::resize(int width, int height)
 bool QRasterPlatformPixmap::fromData(const uchar *buffer, uint len, const char *format,
                       Qt::ImageConversionFlags flags)
 {
-    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buffer), len);
+    auto a = QByteArray::fromRawData(reinterpret_cast<const char *>(buffer), len);
     QBuffer b(&a);
     b.open(QIODevice::ReadOnly);
-    QImage image = QImageReader(&b, format).read();
+    auto image = QImageReader(&b, format).read();
     if (image.isNull())
         return false;
 
@@ -133,7 +133,7 @@ bool QRasterPlatformPixmap::fromData(const uchar *buffer, uint len, const char *
 void QRasterPlatformPixmap::fromImage(const QImage &sourceImage,
                                   Qt::ImageConversionFlags flags)
 {
-    QImage image = sourceImage;
+    auto image = sourceImage;
     createPixmapForImage(image, flags, /* inplace = */false);
 }
 
@@ -147,7 +147,7 @@ void QRasterPlatformPixmap::fromImageReader(QImageReader *imageReader,
                                         Qt::ImageConversionFlags flags)
 {
     Q_UNUSED(flags);
-    QImage image = imageReader->read();
+    auto image = imageReader->read();
     if (image.isNull())
         return;
 
@@ -174,17 +174,17 @@ void QRasterPlatformPixmap::fill(const QColor &color)
     uint pixel;
 
     if (image.depth() == 1) {
-        int gray = qGray(color.rgba());
+        auto gray = qGray(color.rgba());
         // Pick the best approximate color in the image's colortable.
         if (qAbs(qGray(image.color(0)) - gray) < qAbs(qGray(image.color(1)) - gray))
             pixel = 0;
         else
             pixel = 1;
     } else if (image.depth() >= 15) {
-        int alpha = color.alpha();
+        auto alpha = color.alpha();
         if (alpha != 255) {
             if (!image.hasAlphaChannel()) {
-                QImage::Format toFormat = qt_alphaVersionForPainting(image.format());
+                auto toFormat = qt_alphaVersionForPainting(image.format());
                 if (!image.isNull() && qt_depthForFormat(image.format()) == qt_depthForFormat(toFormat)) {
                     image.detach();
                     image.d->format = toFormat;
@@ -194,7 +194,7 @@ void QRasterPlatformPixmap::fill(const QColor &color)
             }
         }
         pixel = qPremultiply(color.rgba());
-        const QPixelLayout *layout = &qPixelLayouts[image.format()];
+        auto layout = &qPixelLayouts[image.format()];
         layout->convertFromARGB32PM(&pixel, &pixel, 1, layout, 0);
     } else if (image.format() == QImage::Format_Alpha8) {
         pixel = qAlpha(color.rgba());
@@ -217,7 +217,7 @@ bool QRasterPlatformPixmap::hasAlphaChannel() const
 QImage QRasterPlatformPixmap::toImage() const
 {
     if (!image.isNull()) {
-        QImageData *data = const_cast<QImage &>(image).data_ptr();
+        auto data = const_cast<QImage &>(image).data_ptr();
         if (data->paintEngine && data->paintEngine->isActive()
             && data->paintEngine->paintDevice() == &image)
         {
@@ -233,8 +233,8 @@ QImage QRasterPlatformPixmap::toImage(const QRect &rect) const
     if (rect.isNull())
         return image;
 
-    QRect clipped = rect.intersected(QRect(0, 0, w, h));
-    const uint du = uint(d);
+    auto clipped = rect.intersected(QRect(0, 0, w, h));
+    const auto du = uint(d);
     if ((du % 8 == 0) && (((uint(clipped.x()) * du)) % 32 == 0)) {
         QImage newImage(image.scanLine(clipped.y()) + clipped.x() * (du / 8),
                       clipped.width(), clipped.height(),
@@ -253,7 +253,7 @@ QPaintEngine* QRasterPlatformPixmap::paintEngine() const
 
 int QRasterPlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
-    QImageData *d = image.d;
+    auto d = image.d;
     if (!d)
         return 0;
 
@@ -306,8 +306,8 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
                     ? QImage::Format_ARGB32_Premultiplied
                     : QImage::Format_RGB32;
         } else {
-            QImage::Format opaqueFormat = QNativeImage::systemFormat();
-            QImage::Format alphaFormat = qt_alphaVersionForPainting(opaqueFormat);
+            auto opaqueFormat = QNativeImage::systemFormat();
+            auto alphaFormat = qt_alphaVersionForPainting(opaqueFormat);
 
             if (!sourceImage.hasAlphaChannel()) {
                 format = opaqueFormat;

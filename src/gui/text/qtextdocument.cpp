@@ -88,7 +88,7 @@ bool Qt::mightBeRichText(const QString& text)
 {
     if (text.isEmpty())
         return false;
-    int start = 0;
+    auto start = 0;
 
     while (start < text.length() && text.at(start).isSpace())
         ++start;
@@ -111,7 +111,7 @@ bool Qt::mightBeRichText(const QString& text)
 
     if (text.mid(start, 5).toLower() == QLatin1String("<!doc"))
         return true;
-    int open = start;
+    auto open = start;
     while (open < text.length() && text.at(open) != QLatin1Char('<')
             && text.at(open) != QLatin1Char('\n')) {
         if (text.at(open) == QLatin1Char('&') &&  text.mid(open+1,3) == QLatin1String("lt;"))
@@ -119,10 +119,10 @@ bool Qt::mightBeRichText(const QString& text)
         ++open;
     }
     if (open < text.length() && text.at(open) == QLatin1Char('<')) {
-        const int close = text.indexOf(QLatin1Char('>'), open);
+        const auto close = text.indexOf(QLatin1Char('>'), open);
         if (close > -1) {
             QString tag;
-            for (int i = open+1; i < close; ++i) {
+            for (auto i = open+1; i < close; ++i) {
                 if (text[i].isDigit() || text[i].isLetter())
                     tag += text[i];
                 else if (!tag.isEmpty() && text[i].isSpace())
@@ -155,12 +155,12 @@ bool Qt::mightBeRichText(const QString& text)
 */
 QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
 {
-    int col = 0;
+    auto col = 0;
     QString rich;
     rich += QLatin1String("<p>");
-    for (int i = 0; i < plain.length(); ++i) {
+    for (auto i = 0; i < plain.length(); ++i) {
         if (plain[i] == QLatin1Char('\n')){
-            int c = 1;
+            auto c = 1;
             while (i+1 < plain.length() && plain[i+1] == QLatin1Char('\n')) {
                 i++;
                 c++;
@@ -335,10 +335,10 @@ QTextDocument::~QTextDocument()
 QTextDocument *QTextDocument::clone(QObject *parent) const
 {
     Q_D(const QTextDocument);
-    QTextDocument *doc = new QTextDocument(parent);
+    auto doc = new QTextDocument(parent);
     QTextCursor(doc).insertFragment(QTextDocumentFragment(this));
     doc->rootFrame()->setFrameFormat(rootFrame()->frameFormat());
-    QTextDocumentPrivate *priv = doc->d_func();
+    auto priv = doc->d_func();
     priv->title = d->title;
     priv->url = d->url;
     priv->pageSize = d->pageSize;
@@ -390,7 +390,7 @@ void QTextDocument::clear()
 void QTextDocument::undo(QTextCursor *cursor)
 {
     Q_D(QTextDocument);
-    const int pos = d->undoRedo(true);
+    const auto pos = d->undoRedo(true);
     if (cursor && pos >= 0) {
         *cursor = QTextCursor(this);
         cursor->setPosition(pos);
@@ -407,7 +407,7 @@ void QTextDocument::undo(QTextCursor *cursor)
 void QTextDocument::redo(QTextCursor *cursor)
 {
     Q_D(QTextDocument);
-    const int pos = d->undoRedo(false);
+    const auto pos = d->undoRedo(false);
     if (cursor && pos >= 0) {
         *cursor = QTextCursor(this);
         cursor->setPosition(pos);
@@ -698,7 +698,7 @@ void QTextDocument::drawContents(QPainter *p, const QRectF &rect)
 void QTextDocument::setTextWidth(qreal width)
 {
     Q_D(QTextDocument);
-    QSizeF sz = d->pageSize;
+    auto sz = d->pageSize;
     sz.setWidth(width);
     sz.setHeight(-1);
     setPageSize(sz);
@@ -720,7 +720,7 @@ qreal QTextDocument::textWidth() const
 */
 qreal QTextDocument::idealWidth() const
 {
-    if (QTextDocumentLayout *lout = qobject_cast<QTextDocumentLayout *>(documentLayout()))
+    if (auto lout = qobject_cast<QTextDocumentLayout *>(documentLayout()))
         return lout->idealWidth();
     return textWidth();
 }
@@ -743,8 +743,8 @@ void QTextDocument::setDocumentMargin(qreal margin)
     if (d->documentMargin != margin) {
         d->documentMargin = margin;
 
-        QTextFrame* root = rootFrame();
-        QTextFrameFormat format = root->frameFormat();
+        auto root = rootFrame();
+        auto format = root->frameFormat();
         format.setMargin(margin);
         root->setFrameFormat(format);
 
@@ -803,12 +803,12 @@ void QTextDocument::setIndentWidth(qreal width)
 void QTextDocument::adjustSize()
 {
     // Pull this private function in from qglobal.cpp
-    QFont f = defaultFont();
+    auto f = defaultFont();
     QFontMetrics fm(f);
-    int mw =  fm.width(QLatin1Char('x')) * 80;
-    int w = mw;
+    auto mw =  fm.width(QLatin1Char('x')) * 80;
+    auto w = mw;
     setTextWidth(w);
-    QSizeF size = documentLayout()->documentSize();
+    auto size = documentLayout()->documentSize();
     if (size.width() != 0) {
         w = qt_int_sqrt((uint)(5 * size.height() * size.width() / 3));
         setTextWidth(qMin(w, mw));
@@ -902,9 +902,9 @@ QChar QTextDocument::characterAt(int pos) const
     Q_D(const QTextDocument);
     if (pos < 0 || pos >= d->length())
         return QChar();
-    QTextDocumentPrivate::FragmentIterator fragIt = d->find(pos);
-    const QTextFragmentData * const frag = fragIt.value();
-    const int offsetInFragment = qMax(0, pos - fragIt.position());
+    auto fragIt = d->find(pos);
+    const auto frag = fragIt.value();
+    const auto offsetInFragment = qMax(0, pos - fragIt.position());
     return d->text.at(frag->stringPosition + offsetInFragment);
 }
 
@@ -1100,7 +1100,7 @@ QAbstractTextDocumentLayout *QTextDocument::documentLayout() const
 {
     Q_D(const QTextDocument);
     if (!d->lout) {
-        QTextDocument *that = const_cast<QTextDocument *>(this);
+        auto that = const_cast<QTextDocument *>(this);
         that->d_func()->setLayout(new QTextDocumentLayout(that));
     }
     return d->lout;
@@ -1156,10 +1156,10 @@ void QTextDocument::setMetaInformation(MetaInformation info, const QString &stri
 QString QTextDocument::toPlainText() const
 {
     Q_D(const QTextDocument);
-    QString txt = d->plainText();
+    auto txt = d->plainText();
 
-    QChar *uc = txt.data();
-    QChar *e = uc + txt.size();
+    auto uc = txt.data();
+    auto e = uc + txt.size();
 
     for (; uc != e; ++uc) {
         switch (uc->unicode()) {
@@ -1188,7 +1188,7 @@ QString QTextDocument::toPlainText() const
 void QTextDocument::setPlainText(const QString &text)
 {
     Q_D(QTextDocument);
-    bool previousState = d->isUndoRedoEnabled();
+    auto previousState = d->isUndoRedoEnabled();
     d->enableUndoRedo(false);
     d->beginEditBlock();
     d->clear();
@@ -1218,7 +1218,7 @@ void QTextDocument::setPlainText(const QString &text)
 void QTextDocument::setHtml(const QString &html)
 {
     Q_D(QTextDocument);
-    bool previousState = d->isUndoRedoEnabled();
+    auto previousState = d->isUndoRedoEnabled();
     d->enableUndoRedo(false);
     d->beginEditBlock();
     d->clear();
@@ -1257,10 +1257,10 @@ void QTextDocument::setHtml(const QString &html)
 static bool findInBlock(const QTextBlock &block, const QString &expression, int offset,
                         QTextDocument::FindFlags options, QTextCursor *cursor)
 {
-    QString text = block.text();
+    auto text = block.text();
     text.replace(QChar::Nbsp, QLatin1Char(' '));
-    Qt::CaseSensitivity sensitivity = options & QTextDocument::FindCaseSensitively ? Qt::CaseSensitive : Qt::CaseInsensitive;
-    int idx = -1;
+    auto sensitivity = options & QTextDocument::FindCaseSensitively ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    auto idx = -1;
 
     while (offset >= 0 && offset <= text.length()) {
         idx = (options & QTextDocument::FindBackward) ?
@@ -1269,8 +1269,8 @@ static bool findInBlock(const QTextBlock &block, const QString &expression, int 
             return false;
 
         if (options & QTextDocument::FindWholeWords) {
-            const int start = idx;
-            const int end = start + expression.length();
+            const auto start = idx;
+            const auto end = start + expression.length();
             if ((start != 0 && text.at(start - 1).isLetterOrNumber())
                 || (end != text.length() && text.at(end).isLetterOrNumber())) {
                 //if this is not a whole word, continue the search in the string
@@ -1310,7 +1310,7 @@ QTextCursor QTextDocument::find(const QString &subString, int from, FindFlags op
     if (subString.isEmpty())
         return QTextCursor();
 
-    int pos = from;
+    auto pos = from;
     //the cursor is positioned between characters, so for a backward search
     //do not include the character given in the position.
     if (options & FindBackward) {
@@ -1320,8 +1320,8 @@ QTextCursor QTextDocument::find(const QString &subString, int from, FindFlags op
     }
 
     QTextCursor cursor;
-    QTextBlock block = d->blocksFind(pos);
-    int blockOffset = pos - block.position();
+    auto block = d->blocksFind(pos);
+    auto blockOffset = pos - block.position();
 
     if (!(options & FindBackward)) {
         while (block.isValid()) {
@@ -1359,7 +1359,7 @@ QTextCursor QTextDocument::find(const QString &subString, int from, FindFlags op
 */
 QTextCursor QTextDocument::find(const QString &subString, const QTextCursor &cursor, FindFlags options) const
 {
-    int pos = 0;
+    auto pos = 0;
     if (!cursor.isNull()) {
         if (options & QTextDocument::FindBackward)
             pos = cursor.selectionStart();
@@ -1376,10 +1376,10 @@ static bool findInBlock(const QTextBlock &block, const QRegExp &expression, int 
                         QTextDocument::FindFlags options, QTextCursor *cursor)
 {
     QRegExp expr(expression);
-    QString text = block.text();
+    auto text = block.text();
     text.replace(QChar::Nbsp, QLatin1Char(' '));
 
-    int idx = -1;
+    auto idx = -1;
     while (offset >=0 && offset <= text.length()) {
         idx = (options & QTextDocument::FindBackward) ?
                expr.lastIndexIn(text, offset) : expr.indexIn(text, offset);
@@ -1387,8 +1387,8 @@ static bool findInBlock(const QTextBlock &block, const QRegExp &expression, int 
             return false;
 
         if (options & QTextDocument::FindWholeWords) {
-            const int start = idx;
-            const int end = start + expr.matchedLength();
+            const auto start = idx;
+            const auto end = start + expr.matchedLength();
             if ((start != 0 && text.at(start - 1).isLetterOrNumber())
                 || (end != text.length() && text.at(end).isLetterOrNumber())) {
                 //if this is not a whole word, continue the search in the string
@@ -1429,7 +1429,7 @@ QTextCursor QTextDocument::find(const QRegExp & expr, int from, FindFlags option
     if (expr.isEmpty())
         return QTextCursor();
 
-    int pos = from;
+    auto pos = from;
     //the cursor is positioned between characters, so for a backward search
     //do not include the character given in the position.
     if (options & FindBackward) {
@@ -1439,8 +1439,8 @@ QTextCursor QTextDocument::find(const QRegExp & expr, int from, FindFlags option
     }
 
     QTextCursor cursor;
-    QTextBlock block = d->blocksFind(pos);
-    int blockOffset = pos - block.position();
+    auto block = d->blocksFind(pos);
+    auto blockOffset = pos - block.position();
     if (!(options & FindBackward)) {
         while (block.isValid()) {
             if (findInBlock(block, expr, blockOffset, options, &cursor))
@@ -1482,7 +1482,7 @@ QTextCursor QTextDocument::find(const QRegExp & expr, int from, FindFlags option
 */
 QTextCursor QTextDocument::find(const QRegExp &expr, const QTextCursor &cursor, FindFlags options) const
 {
-    int pos = 0;
+    auto pos = 0;
     if (!cursor.isNull()) {
         if (options & QTextDocument::FindBackward)
             pos = cursor.selectionStart();
@@ -1503,10 +1503,10 @@ static bool findInBlock(const QTextBlock &block, const QRegularExpression &expre
     else
         expr.setPatternOptions(expr.patternOptions() & ~QRegularExpression::CaseInsensitiveOption);
 
-    QString text = block.text();
+    auto text = block.text();
     text.replace(QChar::Nbsp, QLatin1Char(' '));
     QRegularExpressionMatch match;
-    int idx = -1;
+    auto idx = -1;
 
     while (offset >= 0 && offset <= text.length()) {
         idx = (options & QTextDocument::FindBackward) ?
@@ -1515,8 +1515,8 @@ static bool findInBlock(const QTextBlock &block, const QRegularExpression &expre
             return false;
 
         if (options & QTextDocument::FindWholeWords) {
-            const int start = idx;
-            const int end = start + match.capturedLength();
+            const auto start = idx;
+            const auto end = start + match.capturedLength();
             if ((start != 0 && text.at(start - 1).isLetterOrNumber())
                 || (end != text.length() && text.at(end).isLetterOrNumber())) {
                 //if this is not a whole word, continue the search in the string
@@ -1556,7 +1556,7 @@ QTextCursor QTextDocument::find(const QRegularExpression &expr, int from, FindFl
     if (!expr.isValid())
         return QTextCursor();
 
-    int pos = from;
+    auto pos = from;
     //the cursor is positioned between characters, so for a backward search
     //do not include the character given in the position.
     if (options & FindBackward) {
@@ -1566,8 +1566,8 @@ QTextCursor QTextDocument::find(const QRegularExpression &expr, int from, FindFl
     }
 
     QTextCursor cursor;
-    QTextBlock block = d->blocksFind(pos);
-    int blockOffset = pos - block.position();
+    auto block = d->blocksFind(pos);
+    auto blockOffset = pos - block.position();
 
     if (!(options & FindBackward)) {
         while (block.isValid()) {
@@ -1609,7 +1609,7 @@ QTextCursor QTextDocument::find(const QRegularExpression &expr, int from, FindFl
 */
 QTextCursor QTextDocument::find(const QRegularExpression &expr, const QTextCursor &cursor, FindFlags options) const
 {
-    int pos = 0;
+    auto pos = 0;
     if (!cursor.isNull()) {
         if (options & QTextDocument::FindBackward)
             pos = cursor.selectionStart();
@@ -1854,7 +1854,7 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
     painter->translate(body.left(), body.top() - (index - 1) * body.height());
     QRectF view(0, (index - 1) * body.height(), body.width(), body.height());
 
-    QAbstractTextDocumentLayout *layout = doc->documentLayout();
+    auto layout = doc->documentLayout();
     QAbstractTextDocumentLayout::PaintContext ctx;
 
     painter->setClipRect(view);
@@ -1870,7 +1870,7 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
     if (!pageNumberPos.isNull()) {
         painter->setClipping(false);
         painter->setFont(QFont(doc->defaultFont()));
-        const QString pageString = QString::number(index);
+        const auto pageString = QString::number(index);
 
         painter->drawText(qRound(pageNumberPos.x() - painter->fontMetrics().width(pageString)),
                           qRound(pageNumberPos.y() + view.top()),
@@ -1905,13 +1905,13 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     if (!printer)
         return;
 
-    bool documentPaginated = d->pageSize.isValid() && !d->pageSize.isNull()
+    auto documentPaginated = d->pageSize.isValid() && !d->pageSize.isNull()
                              && d->pageSize.height() != INT_MAX;
 
-    QPagedPaintDevicePrivate *pd = QPagedPaintDevicePrivate::get(printer);
+    auto pd = QPagedPaintDevicePrivate::get(printer);
 
     // ### set page size to paginated size?
-    QPagedPaintDevice::Margins m = printer->margins();
+    auto m = printer->margins();
     if (!documentPaginated && m.left == 0. && m.right == 0. && m.top == 0. && m.bottom == 0.) {
         m.left = m.right = m.top = m.bottom = 2.;
         printer->setMargins(m);
@@ -1924,30 +1924,30 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     if (!p.isActive())
         return;
 
-    const QTextDocument *doc = this;
+    auto doc = this;
     QScopedPointer<QTextDocument> clonedDoc;
     (void)doc->documentLayout(); // make sure that there is a layout
 
-    QRectF body = QRectF(QPointF(0, 0), d->pageSize);
+    auto body = QRectF(QPointF(0, 0), d->pageSize);
     QPointF pageNumberPos;
 
     if (documentPaginated) {
         qreal sourceDpiX = qt_defaultDpi();
-        qreal sourceDpiY = sourceDpiX;
+        auto sourceDpiY = sourceDpiX;
 
-        QPaintDevice *dev = doc->documentLayout()->paintDevice();
+        auto dev = doc->documentLayout()->paintDevice();
         if (dev) {
             sourceDpiX = dev->logicalDpiX();
             sourceDpiY = dev->logicalDpiY();
         }
 
-        const qreal dpiScaleX = qreal(printer->logicalDpiX()) / sourceDpiX;
-        const qreal dpiScaleY = qreal(printer->logicalDpiY()) / sourceDpiY;
+        const auto dpiScaleX = qreal(printer->logicalDpiX()) / sourceDpiX;
+        const auto dpiScaleY = qreal(printer->logicalDpiY()) / sourceDpiY;
 
         // scale to dpi
         p.scale(dpiScaleX, dpiScaleY);
 
-        QSizeF scaledPageSize = d->pageSize;
+        auto scaledPageSize = d->pageSize;
         scaledPageSize.rwidth() *= dpiScaleX;
         scaledPageSize.rheight() *= dpiScaleY;
 
@@ -1960,21 +1960,21 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
         doc = clone(const_cast<QTextDocument *>(this));
         clonedDoc.reset(const_cast<QTextDocument *>(doc));
 
-        for (QTextBlock srcBlock = firstBlock(), dstBlock = clonedDoc->firstBlock();
+        for (auto srcBlock = firstBlock(), dstBlock = clonedDoc->firstBlock();
              srcBlock.isValid() && dstBlock.isValid();
              srcBlock = srcBlock.next(), dstBlock = dstBlock.next()) {
             dstBlock.layout()->setFormats(srcBlock.layout()->formats());
         }
 
-        QAbstractTextDocumentLayout *layout = doc->documentLayout();
+        auto layout = doc->documentLayout();
         layout->setPaintDevice(p.device());
 
         // copy the custom object handlers
         layout->d_func()->handlers = documentLayout()->d_func()->handlers;
 
-        int dpiy = p.device()->logicalDpiY();
-        int margin = (int) ((2/2.54)*dpiy); // 2 cm margins
-        QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
+        auto dpiy = p.device()->logicalDpiY();
+        auto margin = (int) ((2/2.54)*dpiy); // 2 cm margins
+        auto fmt = doc->rootFrame()->frameFormat();
         fmt.setMargin(margin);
         doc->rootFrame()->setFrameFormat(fmt);
 
@@ -1986,9 +1986,9 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
         clonedDoc->setPageSize(body.size());
     }
 
-    int fromPage = pd->fromPage;
-    int toPage = pd->toPage;
-    bool ascending = true;
+    auto fromPage = pd->fromPage;
+    auto toPage = pd->toPage;
+    auto ascending = true;
 
     if (fromPage == 0 && toPage == 0) {
         fromPage = 1;
@@ -2011,7 +2011,7 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
 //        ascending = false;
 //    }
 
-    int page = fromPage;
+    auto page = fromPage;
     while (true) {
         printPage(page, &p, doc, body, pageNumberPos);
 
@@ -2069,8 +2069,8 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
 QVariant QTextDocument::resource(int type, const QUrl &name) const
 {
     Q_D(const QTextDocument);
-    const QUrl url = d->baseUrl.resolved(name);
-    QVariant r = d->resources.value(url);
+    const auto url = d->baseUrl.resolved(name);
+    auto r = d->resources.value(url);
     if (!r.isValid()) {
         r = d->cachedResources.value(url);
         if (!r.isValid())
@@ -2126,12 +2126,12 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
     Q_D(QTextDocument);
     QVariant r;
 
-    QObject *p = parent();
+    auto p = parent();
     if (p) {
-        const QMetaObject *me = p->metaObject();
-        int index = me->indexOfMethod("loadResource(int,QUrl)");
+        auto me = p->metaObject();
+        auto index = me->indexOfMethod("loadResource(int,QUrl)");
         if (index >= 0) {
-            QMetaMethod loader = me->method(index);
+            auto loader = me->method(index);
             loader.invoke(p, Q_RETURN_ARG(QVariant, r), Q_ARG(int, type), Q_ARG(QUrl, name));
         }
     }
@@ -2146,7 +2146,7 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
 
     // if resource was not loaded try to load it here
     if (!qobject_cast<QTextDocument *>(p) && r.isNull()) {
-        QUrl resourceUrl = name;
+        auto resourceUrl = name;
 
         if (name.isRelative()) {
             QUrl currentURL = d->url;
@@ -2171,7 +2171,7 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
             }
         }
 
-        QString s = resourceUrl.toLocalFile();
+        auto s = resourceUrl.toLocalFile();
         QFile f(s);
         if (!s.isEmpty() && f.open(QFile::ReadOnly)) {
             r = f.readAll();
@@ -2201,10 +2201,10 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
 
 static QTextFormat formatDifference(const QTextFormat &from, const QTextFormat &to)
 {
-    QTextFormat diff = to;
+    auto diff = to;
 
-    const QMap<int, QVariant> props = to.properties();
-    for (QMap<int, QVariant>::ConstIterator it = props.begin(), end = props.end();
+    const auto props = to.properties();
+    for (auto it = props.begin(), end = props.end();
          it != end; ++it)
         if (it.value() == from.property(it.key()))
             diff.clearProperty(it.key());
@@ -2219,7 +2219,7 @@ static QString colorValue(QColor color)
     if (color.alpha() == 255) {
         result = color.name();
     } else if (color.alpha()) {
-        QString alphaValue = QString::number(color.alphaF(), 'f', 6).remove(QRegExp(QLatin1String("\\.?0*$")));
+        auto alphaValue = QString::number(color.alphaF(), 'f', 6).remove(QRegExp(QLatin1String("\\.?0*$")));
         result = QString::fromLatin1("rgba(%1,%2,%3,%4)").arg(color.red())
                                                          .arg(color.green())
                                                          .arg(color.blue())
@@ -2234,7 +2234,7 @@ static QString colorValue(QColor color)
 QTextHtmlExporter::QTextHtmlExporter(const QTextDocument *_doc)
     : doc(_doc), fragmentMarkers(false)
 {
-    const QFont defaultFont = doc->defaultFont();
+    const auto defaultFont = doc->defaultFont();
     defaultCharFormat.setFont(defaultFont);
     // don't export those for the default font since we cannot turn them off with CSS
     defaultCharFormat.clearProperty(QTextFormat::FontUnderline);
@@ -2260,7 +2260,7 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
     if (!encoding.isEmpty())
         html += QString::fromLatin1("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=%1\" />").arg(QString::fromLatin1(encoding));
 
-    QString title  = doc->metaInformation(QTextDocument::DocumentTitle);
+    auto title  = doc->metaInformation(QTextDocument::DocumentTitle);
     if (!title.isEmpty())
         html += QString::fromLatin1("<title>") + title + QString::fromLatin1("</title>");
     html += QLatin1String("<style type=\"text/css\">\n");
@@ -2296,7 +2296,7 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
 
         html += QLatin1Char('\"');
 
-        const QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
+        const auto fmt = doc->rootFrame()->frameFormat();
         emitBackgroundAttribute(fmt);
 
     } else {
@@ -2304,7 +2304,7 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
     }
     html += QLatin1Char('>');
 
-    QTextFrameFormat rootFmt = doc->rootFrame()->frameFormat();
+    auto rootFmt = doc->rootFrame()->frameFormat();
     rootFmt.clearProperty(QTextFormat::BackgroundBrush);
 
     QTextFrameFormat defaultFmt;
@@ -2330,10 +2330,10 @@ void QTextHtmlExporter::emitAttribute(const char *attribute, const QString &valu
 
 bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
 {
-    bool attributesEmitted = false;
+    auto attributesEmitted = false;
 
     {
-        const QString family = format.fontFamily();
+        const auto family = format.fontFamily();
         if (!family.isEmpty() && family != defaultCharFormat.fontFamily()) {
             emitFontFamily(family);
             attributesEmitted = true;
@@ -2359,7 +2359,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
             sizeof("small") + sizeof("medium"),        // "xx-large" )
         };
         const char *name = 0;
-        const int idx = format.intProperty(QTextFormat::FontSizeAdjustment) + 1;
+        const auto idx = format.intProperty(QTextFormat::FontSizeAdjustment) + 1;
         if (idx >= 0 && idx <= 4) {
             name = sizeNameData + sizeNameOffsets[idx];
         }
@@ -2394,8 +2394,8 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
 
     QLatin1String decorationTag(" text-decoration:");
     html += decorationTag;
-    bool hasDecoration = false;
-    bool atLeastOneDecorationSet = false;
+    auto hasDecoration = false;
+    auto atLeastOneDecorationSet = false;
 
     if ((format.hasProperty(QTextFormat::FontUnderline) || format.hasProperty(QTextFormat::TextUnderlineStyle))
         && format.fontUnderline() != defaultCharFormat.fontUnderline()) {
@@ -2454,7 +2454,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
     {
         html += QLatin1String(" vertical-align:");
 
-        QTextCharFormat::VerticalAlignment valign = format.verticalAlignment();
+        auto valign = format.verticalAlignment();
         if (valign == QTextCharFormat::AlignSubScript)
             html += QLatin1String("sub");
         else if (valign == QTextCharFormat::AlignSuperScript)
@@ -2471,7 +2471,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
     }
 
     if (format.fontCapitalization() != QFont::MixedCase) {
-        const QFont::Capitalization caps = format.fontCapitalization();
+        const auto caps = format.fontCapitalization();
         if (caps == QFont::AllUppercase)
             html += QLatin1String(" text-transform:uppercase;");
         else if (caps == QFont::AllLowercase)
@@ -2632,18 +2632,18 @@ void QTextHtmlExporter::emitMargins(const QString &top, const QString &bottom, c
 
 void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
 {
-    const QTextCharFormat format = fragment.charFormat();
+    const auto format = fragment.charFormat();
 
-    bool closeAnchor = false;
+    auto closeAnchor = false;
 
     if (format.isAnchor()) {
-        const QString name = format.anchorName();
+        const auto name = format.anchorName();
         if (!name.isEmpty()) {
             html += QLatin1String("<a name=\"");
             html += name.toHtmlEscaped();
             html += QLatin1String("\"></a>");
         }
-        const QString href = format.anchorHref();
+        const auto href = format.anchorHref();
         if (!href.isEmpty()) {
             html += QLatin1String("<a href=\"");
             html += href.toHtmlEscaped();
@@ -2652,14 +2652,14 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         }
     }
 
-    QString txt = fragment.text();
-    const bool isObject = txt.contains(QChar::ObjectReplacementCharacter);
-    const bool isImage = isObject && format.isImageFormat();
+    auto txt = fragment.text();
+    const auto isObject = txt.contains(QChar::ObjectReplacementCharacter);
+    const auto isImage = isObject && format.isImageFormat();
 
     QLatin1String styleTag("<span style=\"");
     html += styleTag;
 
-    bool attributesEmitted = false;
+    auto attributesEmitted = false;
     if (!isImage)
         attributesEmitted = emitCharFormatStyle(format);
     if (attributesEmitted)
@@ -2668,8 +2668,8 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         html.chop(qstrlen(styleTag.latin1()));
 
     if (isObject) {
-        for (int i = 0; isImage && i < txt.length(); ++i) {
-            QTextImageFormat imgFmt = format.toImageFormat();
+        for (auto i = 0; isImage && i < txt.length(); ++i) {
+            auto imgFmt = format.toImageFormat();
 
             html += QLatin1String("<img");
 
@@ -2687,7 +2687,7 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
             else if (imgFmt.verticalAlignment() == QTextCharFormat::AlignTop)
                 html += QLatin1String(" style=\"vertical-align: top;\"");
 
-            if (QTextFrame *imageFrame = qobject_cast<QTextFrame *>(doc->objectForFormat(imgFmt)))
+            if (auto imageFrame = qobject_cast<QTextFrame *>(doc->objectForFormat(imgFmt)))
                 emitFloatStyle(imageFrame->frameFormat().position());
 
             html += QLatin1String(" />");
@@ -2698,11 +2698,11 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         txt = txt.toHtmlEscaped();
 
         // split for [\n{LineSeparator}]
-        QString forcedLineBreakRegExp = QString::fromLatin1("[\\na]");
+        auto forcedLineBreakRegExp = QString::fromLatin1("[\\na]");
         forcedLineBreakRegExp[3] = QChar::LineSeparator;
 
-        const QStringList lines = txt.split(QRegExp(forcedLineBreakRegExp));
-        for (int i = 0; i < lines.count(); ++i) {
+        const auto lines = txt.split(QRegExp(forcedLineBreakRegExp));
+        for (auto i = 0; i < lines.count(); ++i) {
             if (i > 0)
                 html += QLatin1String("<br />"); // space on purpose for compatibility with Netscape, Lynx & Co.
             html += lines.at(i);
@@ -2727,7 +2727,7 @@ static bool isOrderedList(int style)
 
 void QTextHtmlExporter::emitBlockAttributes(const QTextBlock &block)
 {
-    QTextBlockFormat format = block.blockFormat();
+    auto format = block.blockFormat();
     emitAlignment(format.alignment());
 
     // assume default to not bloat the html too much
@@ -2738,7 +2738,7 @@ void QTextHtmlExporter::emitBlockAttributes(const QTextBlock &block)
     QLatin1String style(" style=\"");
     html += style;
 
-    const bool emptyBlock = block.begin().atEnd();
+    const auto emptyBlock = block.begin().atEnd();
     if (emptyBlock) {
         html += QLatin1String("-qt-paragraph-type:empty;");
     }
@@ -2789,13 +2789,13 @@ void QTextHtmlExporter::emitBlockAttributes(const QTextBlock &block)
 
     QTextCharFormat diff;
     if (emptyBlock) { // only print character properties when we don't expect them to be repeated by actual text in the parag
-        const QTextCharFormat blockCharFmt = block.charFormat();
+        const auto blockCharFmt = block.charFormat();
         diff = formatDifference(defaultCharFormat, blockCharFmt).toCharFormat();
     }
 
     diff.clearProperty(QTextFormat::BackgroundBrush);
     if (format.hasProperty(QTextFormat::BackgroundBrush)) {
-        QBrush bg = format.background();
+        auto bg = format.background();
         if (bg.style() != Qt::NoBrush)
             diff.setProperty(QTextFormat::BackgroundBrush, format.property(QTextFormat::BackgroundBrush));
     }
@@ -2811,11 +2811,11 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
 {
     if (block.begin().atEnd()) {
         // ### HACK, remove once QTextFrame::Iterator is fixed
-        int p = block.position();
+        auto p = block.position();
         if (p > 0)
             --p;
-        QTextDocumentPrivate::FragmentIterator frag = doc->docHandle()->find(p);
-        QChar ch = doc->docHandle()->buffer().at(frag->stringPosition);
+        auto frag = doc->docHandle()->find(p);
+        auto ch = doc->docHandle()->buffer().at(frag->stringPosition);
         if (ch == QTextBeginningOfFrame
             || ch == QTextEndOfFrame)
             return;
@@ -2825,12 +2825,12 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
 
     // save and later restore, in case we 'change' the default format by
     // emitting block char format information
-    QTextCharFormat oldDefaultCharFormat = defaultCharFormat;
+    auto oldDefaultCharFormat = defaultCharFormat;
 
-    QTextList *list = block.textList();
+    auto list = block.textList();
     if (list) {
         if (list->itemNumber(block) == 0) { // first item? emit <ul> or appropriate
-            const QTextListFormat format = list->format();
+            const auto format = list->format();
             const int style = format.style();
             switch (style) {
                 case QTextListFormat::ListDecimal: html += QLatin1String("<ol"); break;
@@ -2844,7 +2844,7 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
                 default: html += QLatin1String("<ul"); // ### should not happen
             }
 
-            QString styleString = QString::fromLatin1("margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;");
+            auto styleString = QString::fromLatin1("margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;");
 
             if (format.hasProperty(QTextFormat::ListIndent)) {
                 styleString += QLatin1String(" -qt-list-indent: ");
@@ -2853,7 +2853,7 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
             }
 
             if (format.hasProperty(QTextFormat::ListNumberPrefix)) {
-                QString numberPrefix = format.numberPrefix();
+                auto numberPrefix = format.numberPrefix();
                 numberPrefix.replace(QLatin1Char('"'), QLatin1String("\\22"));
                 numberPrefix.replace(QLatin1Char('\''), QLatin1String("\\27")); // FIXME: There's a problem in the CSS parser the prevents this from being correctly restored
                 styleString += QLatin1String(" -qt-list-number-prefix: ");
@@ -2865,7 +2865,7 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
 
             if (format.hasProperty(QTextFormat::ListNumberSuffix)) {
                 if (format.numberSuffix() != QLatin1String(".")) { // this is our default
-                    QString numberSuffix = format.numberSuffix();
+                    auto numberSuffix = format.numberSuffix();
                     numberSuffix.replace(QLatin1Char('"'), QLatin1String("\\22"));
                     numberSuffix.replace(QLatin1Char('\''), QLatin1String("\\27")); // see above
                     styleString += QLatin1String(" -qt-list-number-suffix: ");
@@ -2883,7 +2883,7 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
 
         html += QLatin1String("<li");
 
-        const QTextCharFormat blockFmt = formatDifference(defaultCharFormat, block.charFormat()).toCharFormat();
+        const auto blockFmt = formatDifference(defaultCharFormat, block.charFormat()).toCharFormat();
         if (!blockFmt.properties().isEmpty()) {
             html += QLatin1String(" style=\"");
             emitCharFormatStyle(blockFmt);
@@ -2893,11 +2893,11 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
         }
     }
 
-    const QTextBlockFormat blockFormat = block.blockFormat();
+    const auto blockFormat = block.blockFormat();
     if (blockFormat.hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) {
         html += QLatin1String("<hr");
 
-        QTextLength width = blockFormat.lengthProperty(QTextFormat::BlockTrailingHorizontalRulerWidth);
+        auto width = blockFormat.lengthProperty(QTextFormat::BlockTrailingHorizontalRulerWidth);
         if (width.type() != QTextLength::VariableLength)
             emitTextLength("width", width);
         else
@@ -2907,7 +2907,7 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
         return;
     }
 
-    const bool pre = blockFormat.nonBreakableLines();
+    const auto pre = blockFormat.nonBreakableLines();
     if (pre) {
         if (list)
             html += QLatin1Char('>');
@@ -2922,7 +2922,7 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
     if (block.begin().atEnd())
         html += QLatin1String("<br />");
 
-    QTextBlock::Iterator it = block.begin();
+    auto it = block.begin();
     if (fragmentMarkers && !it.atEnd() && block == doc->begin())
         html += QLatin1String("<!--StartFragment-->");
 
@@ -2959,12 +2959,12 @@ QString QTextHtmlExporter::findUrlForImage(const QTextDocument *doc, qint64 cach
     if (!doc)
         return url;
 
-    if (QTextDocument *parent = qobject_cast<QTextDocument *>(doc->parent()))
+    if (auto parent = qobject_cast<QTextDocument *>(doc->parent()))
         return findUrlForImage(parent, cacheKey, isPixmap);
 
     if (doc && doc->docHandle()) {
-        QTextDocumentPrivate *priv = doc->docHandle();
-        QMap<QUrl, QVariant>::const_iterator it = priv->cachedResources.constBegin();
+        auto priv = doc->docHandle();
+        auto it = priv->cachedResources.constBegin();
         for (; it != priv->cachedResources.constEnd(); ++it) {
 
             const QVariant &v = it.value();
@@ -2997,17 +2997,17 @@ void QTextDocumentPrivate::mergeCachedResources(const QTextDocumentPrivate *priv
 void QTextHtmlExporter::emitBackgroundAttribute(const QTextFormat &format)
 {
     if (format.hasProperty(QTextFormat::BackgroundImageUrl)) {
-        QString url = format.property(QTextFormat::BackgroundImageUrl).toString();
+        auto url = format.property(QTextFormat::BackgroundImageUrl).toString();
         emitAttribute("background", url);
     } else {
         const QBrush &brush = format.background();
         if (brush.style() == Qt::SolidPattern) {
             emitAttribute("bgcolor", colorValue(brush.color()));
         } else if (brush.style() == Qt::TexturePattern) {
-            const bool isPixmap = qHasPixmapTexture(brush);
-            const qint64 cacheKey = isPixmap ? brush.texture().cacheKey() : brush.textureImage().cacheKey();
+            const auto isPixmap = qHasPixmapTexture(brush);
+            const auto cacheKey = isPixmap ? brush.texture().cacheKey() : brush.textureImage().cacheKey();
 
-            const QString url = findUrlForImage(doc, cacheKey, isPixmap);
+            const auto url = findUrlForImage(doc, cacheKey, isPixmap);
 
             if (!url.isEmpty())
                 emitAttribute("background", url);
@@ -3017,7 +3017,7 @@ void QTextHtmlExporter::emitBackgroundAttribute(const QTextFormat &format)
 
 void QTextHtmlExporter::emitTable(const QTextTable *table)
 {
-    QTextTableFormat format = table->format();
+    auto format = table->format();
 
     html += QLatin1String("\n<table");
 
@@ -3038,10 +3038,10 @@ void QTextHtmlExporter::emitTable(const QTextTable *table)
 
     html += QLatin1Char('>');
 
-    const int rows = table->rows();
-    const int columns = table->columns();
+    const auto rows = table->rows();
+    const auto columns = table->columns();
 
-    QVector<QTextLength> columnWidths = format.columnWidthConstraints();
+    auto columnWidths = format.columnWidthConstraints();
     if (columnWidths.isEmpty()) {
         columnWidths.resize(columns);
         columnWidths.fill(QTextLength());
@@ -3049,18 +3049,18 @@ void QTextHtmlExporter::emitTable(const QTextTable *table)
     Q_ASSERT(columnWidths.count() == columns);
 
     QVarLengthArray<bool> widthEmittedForColumn(columns);
-    for (int i = 0; i < columns; ++i)
+    for (auto i = 0; i < columns; ++i)
         widthEmittedForColumn[i] = false;
 
-    const int headerRowCount = qMin(format.headerRowCount(), rows);
+    const auto headerRowCount = qMin(format.headerRowCount(), rows);
     if (headerRowCount > 0)
         html += QLatin1String("<thead>");
 
-    for (int row = 0; row < rows; ++row) {
+    for (auto row = 0; row < rows; ++row) {
         html += QLatin1String("\n<tr>");
 
-        for (int col = 0; col < columns; ++col) {
-            const QTextTableCell cell = table->cellAt(row, col);
+        for (auto col = 0; col < columns; ++col) {
+            const auto cell = table->cellAt(row, col);
 
             // for col/rowspans
             if (cell.row() != row)
@@ -3082,12 +3082,12 @@ void QTextHtmlExporter::emitTable(const QTextTable *table)
             if (cell.rowSpan() > 1)
                 emitAttribute("rowspan", QString::number(cell.rowSpan()));
 
-            const QTextTableCellFormat cellFormat = cell.format().toTableCellFormat();
+            const auto cellFormat = cell.format().toTableCellFormat();
             emitBackgroundAttribute(cellFormat);
 
-            QTextCharFormat oldDefaultCharFormat = defaultCharFormat;
+            auto oldDefaultCharFormat = defaultCharFormat;
 
-            QTextCharFormat::VerticalAlignment valign = cellFormat.verticalAlignment();
+            auto valign = cellFormat.verticalAlignment();
 
             QString styleString;
             if (valign >= QTextCharFormat::AlignMiddle && valign <= QTextCharFormat::AlignBottom) {
@@ -3144,7 +3144,7 @@ void QTextHtmlExporter::emitTable(const QTextTable *table)
 void QTextHtmlExporter::emitFrame(QTextFrame::Iterator frameIt)
 {
     if (!frameIt.atEnd()) {
-        QTextFrame::Iterator next = frameIt;
+        auto next = frameIt;
         ++next;
         if (next.atEnd()
             && frameIt.currentFrame() == 0
@@ -3153,10 +3153,10 @@ void QTextHtmlExporter::emitFrame(QTextFrame::Iterator frameIt)
             return;
     }
 
-    for (QTextFrame::Iterator it = frameIt;
+    for (auto it = frameIt;
          !it.atEnd(); ++it) {
-        if (QTextFrame *f = it.currentFrame()) {
-            if (QTextTable *table = qobject_cast<QTextTable *>(f)) {
+        if (auto f = it.currentFrame()) {
+            if (auto table = qobject_cast<QTextTable *>(f)) {
                 emitTable(table);
             } else {
                 emitTextFrame(f);
@@ -3169,10 +3169,10 @@ void QTextHtmlExporter::emitFrame(QTextFrame::Iterator frameIt)
 
 void QTextHtmlExporter::emitTextFrame(const QTextFrame *f)
 {
-    FrameType frameType = f->parentFrame() ? TextFrame : RootFrame;
+    auto frameType = f->parentFrame() ? TextFrame : RootFrame;
 
     html += QLatin1String("\n<table");
-    QTextFrameFormat format = f->frameFormat();
+    auto format = f->frameFormat();
 
     if (format.hasProperty(QTextFormat::FrameBorder))
         emitAttribute("border", QString::number(format.border()));
@@ -3196,7 +3196,7 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
 {
     QLatin1String styleAttribute(" style=\"");
     html += styleAttribute;
-    const int originalHtmlLength = html.length();
+    const auto originalHtmlLength = html.length();
 
     if (frameType == TextFrame)
         html += QLatin1String("-qt-table-type: frame;");

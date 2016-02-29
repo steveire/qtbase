@@ -258,7 +258,7 @@ QVector4D::QVector4D(const QVector3D& vector, float wpos)
 float QVector4D::length() const
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp) +
                  double(zp) * double(zp) +
                  double(wp) * double(wp);
@@ -288,14 +288,14 @@ float QVector4D::lengthSquared() const
 QVector4D QVector4D::normalized() const
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp) +
                  double(zp) * double(zp) +
                  double(wp) * double(wp);
     if (qFuzzyIsNull(len - 1.0f)) {
         return *this;
     } else if (!qFuzzyIsNull(len)) {
-        double sqrtLen = std::sqrt(len);
+        auto sqrtLen = std::sqrt(len);
         return QVector4D(float(double(xp) / sqrtLen),
                          float(double(yp) / sqrtLen),
                          float(double(zp) / sqrtLen),
@@ -314,7 +314,7 @@ QVector4D QVector4D::normalized() const
 void QVector4D::normalize()
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    auto len = double(xp) * double(xp) +
                  double(yp) * double(yp) +
                  double(zp) * double(zp) +
                  double(wp) * double(wp);

@@ -185,9 +185,9 @@ QT_BEGIN_NAMESPACE
 QPoint QCursor::pos(const QScreen *screen)
 {
     if (screen) {
-        if (const QPlatformCursor *cursor = screen->handle()->cursor()) {
+        if (auto cursor = screen->handle()->cursor()) {
             auto ps = static_cast<const QPlatformScreen *>(screen->handle());
-            QPoint nativePos = cursor->pos();
+            auto nativePos = cursor->pos();
             ps = ps->screenForPosition(nativePos);
             return QHighDpi::fromNativePixels(nativePos, ps->screen());
         }
@@ -242,8 +242,8 @@ QPoint QCursor::pos()
 void QCursor::setPos(QScreen *screen, int x, int y)
 {
     if (screen) {
-        if (QPlatformCursor *cursor = screen->handle()->cursor()) {
-            const QPoint devicePos = QHighDpi::toNativePixels(QPoint(x, y), screen);
+        if (auto cursor = screen->handle()->cursor()) {
+            const auto devicePos = QHighDpi::toNativePixels(QPoint(x, y), screen);
             // Need to check, since some X servers generate null mouse move
             // events, causing looping in applications which call setPos() on
             // every mouse move event.
@@ -309,7 +309,7 @@ QDataStream &operator<<(QDataStream &s, const QCursor &c)
 {
     s << (qint16)c.shape();                        // write shape id to stream
     if (c.shape() == Qt::BitmapCursor) {                // bitmap cursor
-        bool isPixmap = false;
+        auto isPixmap = false;
         if (s.version() >= 7) {
             isPixmap = !c.pixmap().isNull();
             s << isPixmap;
@@ -337,7 +337,7 @@ QDataStream &operator>>(QDataStream &s, QCursor &c)
     qint16 shape;
     s >> shape;                                        // read shape id from stream
     if (shape == Qt::BitmapCursor) {                // read bitmap cursor
-        bool isPixmap = false;
+        auto isPixmap = false;
         if (s.version() >= 7)
             s >> isPixmap;
         if (isPixmap) {
@@ -383,15 +383,15 @@ QDataStream &operator>>(QDataStream &s, QCursor &c)
 QCursor::QCursor(const QPixmap &pixmap, int hotX, int hotY)
     : d(0)
 {
-    QImage img = pixmap.toImage().convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither|Qt::AvoidDither);
-    QBitmap bm = QBitmap::fromImage(img, Qt::ThresholdDither|Qt::AvoidDither);
-    QBitmap bmm = pixmap.mask();
+    auto img = pixmap.toImage().convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither|Qt::AvoidDither);
+    auto bm = QBitmap::fromImage(img, Qt::ThresholdDither|Qt::AvoidDither);
+    auto bmm = pixmap.mask();
     if (!bmm.isNull()) {
         QBitmap nullBm;
         bm.setMask(nullBm);
     }
     else if (!pixmap.mask().isNull()) {
-        QImage mimg = pixmap.mask().toImage().convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither|Qt::AvoidDither);
+        auto mimg = pixmap.mask().toImage().convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither|Qt::AvoidDither);
         bmm = QBitmap::fromImage(mimg, Qt::ThresholdDither|Qt::AvoidDither);
     }
     else {
@@ -457,7 +457,7 @@ QCursor::QCursor()
         }
         QCursorData::initialize();
     }
-    QCursorData *c = qt_cursorTable[0];
+    auto c = qt_cursorTable[0];
     c->ref.ref();
     d = c;
 }
@@ -502,7 +502,7 @@ void QCursor::setShape(Qt::CursorShape shape)
 {
     if (!QCursorData::initialized)
         QCursorData::initialize();
-    QCursorData *c = uint(shape) <= Qt::LastCursor ? qt_cursorTable[shape] : 0;
+    auto c = uint(shape) <= Qt::LastCursor ? qt_cursorTable[shape] : 0;
     if (!c)
         c = qt_cursorTable[0];
     c->ref.ref();
@@ -643,7 +643,7 @@ void QCursorData::cleanup()
     if(!QCursorData::initialized)
         return;
 
-    for (int shape = 0; shape <= Qt::LastCursor; ++shape) {
+    for (auto shape = 0; shape <= Qt::LastCursor; ++shape) {
         // In case someone has a static QCursor defined with this shape
         if (!qt_cursorTable[shape]->ref.deref())
             delete qt_cursorTable[shape];
@@ -657,7 +657,7 @@ void QCursorData::initialize()
 {
     if (QCursorData::initialized)
         return;
-    for (int shape = 0; shape <= Qt::LastCursor; ++shape)
+    for (auto shape = 0; shape <= Qt::LastCursor; ++shape)
         qt_cursorTable[shape] = new QCursorData((Qt::CursorShape)shape);
     QCursorData::initialized = true;
 }
@@ -668,11 +668,11 @@ QCursorData *QCursorData::setBitmap(const QBitmap &bitmap, const QBitmap &mask, 
         QCursorData::initialize();
     if (bitmap.depth() != 1 || mask.depth() != 1 || bitmap.size() != mask.size()) {
         qWarning("QCursor: Cannot create bitmap cursor; invalid bitmap(s)");
-        QCursorData *c = qt_cursorTable[0];
+        auto c = qt_cursorTable[0];
         c->ref.ref();
         return c;
     }
-    QCursorData *d = new QCursorData;
+    auto d = new QCursorData;
     d->bm  = new QBitmap(bitmap);
     d->bmm = new QBitmap(mask);
     d->cshape = Qt::BitmapCursor;

@@ -84,8 +84,8 @@ QT_BEGIN_NAMESPACE
 QAbstractOpenGLFunctions *QOpenGLVersionFunctionsFactory::create(const QOpenGLVersionProfile &versionProfile)
 {
 #if !defined(QT_OPENGL_ES_2)
-    const int major = versionProfile.version().first;
-    const int minor = versionProfile.version().second;
+    const auto major = versionProfile.version().first;
+    const auto minor = versionProfile.version().second;
 
     if (versionProfile.hasProfiles()) {
         switch (versionProfile.profile()) {

@@ -56,11 +56,11 @@ Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_memrotate90_cachedRead(const T *src, int w, int h, int sstride, T *dest,
                                       int dstride)
 {
-    const char *s = reinterpret_cast<const char*>(src);
-    char *d = reinterpret_cast<char*>(dest);
-    for (int y = 0; y < h; ++y) {
-        for (int x = w - 1; x >= 0; --x) {
-            T *destline = reinterpret_cast<T *>(d + (w - x - 1) * dstride);
+    auto s = reinterpret_cast<const char*>(src);
+    auto d = reinterpret_cast<char*>(dest);
+    for (auto y = 0; y < h; ++y) {
+        for (auto x = w - 1; x >= 0; --x) {
+            auto destline = reinterpret_cast<T *>(d + (w - x - 1) * dstride);
             destline[y] = src[x];
         }
         s += sstride;
@@ -73,13 +73,13 @@ Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_memrotate270_cachedRead(const T *src, int w, int h, int sstride, T *dest,
                                        int dstride)
 {
-    const char *s = reinterpret_cast<const char*>(src);
-    char *d = reinterpret_cast<char*>(dest);
+    auto s = reinterpret_cast<const char*>(src);
+    auto d = reinterpret_cast<char*>(dest);
     s += (h - 1) * sstride;
-    for (int y = h - 1; y >= 0; --y) {
+    for (auto y = h - 1; y >= 0; --y) {
         src = reinterpret_cast<const T*>(s);
-        for (int x = 0; x < w; ++x) {
-            T *destline = reinterpret_cast<T *>(d + x * dstride);
+        for (auto x = 0; x < w; ++x) {
+            auto destline = reinterpret_cast<T *>(d + x * dstride);
             destline[h - y - 1] = src[x];
         }
         s -= sstride;
@@ -207,34 +207,34 @@ inline void qt_memrotate90_tiled(const T *src, int w, int h, int sstride, T *des
     const int pack = sizeof(quint32) / sizeof(T);
     const int unaligned =
         qMin(uint((quintptr(dest) & (sizeof(quint32)-1)) / sizeof(T)), uint(h));
-    const int restX = w % tileSize;
-    const int restY = (h - unaligned) % tileSize;
-    const int unoptimizedY = restY % pack;
-    const int numTilesX = w / tileSize + (restX > 0);
-    const int numTilesY = (h - unaligned) / tileSize + (restY >= pack);
+    const auto restX = w % tileSize;
+    const auto restY = (h - unaligned) % tileSize;
+    const auto unoptimizedY = restY % pack;
+    const auto numTilesX = w / tileSize + (restX > 0);
+    const auto numTilesY = (h - unaligned) / tileSize + (restY >= pack);
 
-    for (int tx = 0; tx < numTilesX; ++tx) {
-        const int startx = w - tx * tileSize - 1;
-        const int stopx = qMax(startx - tileSize, 0);
+    for (auto tx = 0; tx < numTilesX; ++tx) {
+        const auto startx = w - tx * tileSize - 1;
+        const auto stopx = qMax(startx - tileSize, 0);
 
         if (unaligned) {
-            for (int x = startx; x >= stopx; --x) {
+            for (auto x = startx; x >= stopx; --x) {
                 T *d = dest + (w - x - 1) * dstride;
-                for (int y = 0; y < unaligned; ++y) {
+                for (auto y = 0; y < unaligned; ++y) {
                     *d++ = src[y * sstride + x];
                 }
             }
         }
 
-        for (int ty = 0; ty < numTilesY; ++ty) {
-            const int starty = ty * tileSize + unaligned;
-            const int stopy = qMin(starty + tileSize, h - unoptimizedY);
+        for (auto ty = 0; ty < numTilesY; ++ty) {
+            const auto starty = ty * tileSize + unaligned;
+            const auto stopy = qMin(starty + tileSize, h - unoptimizedY);
 
-            for (int x = startx; x >= stopx; --x) {
-                quint32 *d = reinterpret_cast<quint32*>(dest + (w - x - 1) * dstride + starty);
-                for (int y = starty; y < stopy; y += pack) {
+            for (auto x = startx; x >= stopx; --x) {
+                auto d = reinterpret_cast<quint32*>(dest + (w - x - 1) * dstride + starty);
+                for (auto y = starty; y < stopy; y += pack) {
                     quint32 c = src[y * sstride + x];
-                    for (int i = 1; i < pack; ++i) {
+                    for (auto i = 1; i < pack; ++i) {
                         const int shift = (sizeof(int) * 8 / pack * i);
                         const T color = src[(y + i) * sstride + x];
                         c |= color << shift;
@@ -245,10 +245,10 @@ inline void qt_memrotate90_tiled(const T *src, int w, int h, int sstride, T *des
         }
 
         if (unoptimizedY) {
-            const int starty = h - unoptimizedY;
-            for (int x = startx; x >= stopx; --x) {
+            const auto starty = h - unoptimizedY;
+            for (auto x = startx; x >= stopx; --x) {
                 T *d = dest + (w - x - 1) * dstride + starty;
-                for (int y = starty; y < h; ++y) {
+                for (auto y = starty; y < h; ++y) {
                     *d++ = src[y * sstride + x];
                 }
             }
@@ -261,21 +261,21 @@ Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_memrotate90_tiled_unpacked(const T *src, int w, int h, int sstride, T *dest,
                                           int dstride)
 {
-    const int numTilesX = (w + tileSize - 1) / tileSize;
-    const int numTilesY = (h + tileSize - 1) / tileSize;
+    const auto numTilesX = (w + tileSize - 1) / tileSize;
+    const auto numTilesY = (h + tileSize - 1) / tileSize;
 
-    for (int tx = 0; tx < numTilesX; ++tx) {
-        const int startx = w - tx * tileSize - 1;
-        const int stopx = qMax(startx - tileSize, 0);
+    for (auto tx = 0; tx < numTilesX; ++tx) {
+        const auto startx = w - tx * tileSize - 1;
+        const auto stopx = qMax(startx - tileSize, 0);
 
-        for (int ty = 0; ty < numTilesY; ++ty) {
-            const int starty = ty * tileSize;
-            const int stopy = qMin(starty + tileSize, h);
+        for (auto ty = 0; ty < numTilesY; ++ty) {
+            const auto starty = ty * tileSize;
+            const auto stopy = qMin(starty + tileSize, h);
 
-            for (int x = startx; x >= stopx; --x) {
+            for (auto x = startx; x >= stopx; --x) {
                 T *d = (T *)((char*)dest + (w - x - 1) * dstride) + starty;
-                const char *s = (const char*)(src + x) + starty * sstride;
-                for (int y = starty; y < stopy; ++y) {
+                auto s = (const char*)(src + x) + starty * sstride;
+                for (auto y = starty; y < stopy; ++y) {
                     *d++ = *(const T *)(s);
                     s += sstride;
                 }
@@ -294,35 +294,35 @@ inline void qt_memrotate270_tiled(const T *src, int w, int h, int sstride, T *de
     const int pack = sizeof(quint32) / sizeof(T);
     const int unaligned =
         qMin(uint((long(dest) & (sizeof(quint32)-1)) / sizeof(T)), uint(h));
-    const int restX = w % tileSize;
-    const int restY = (h - unaligned) % tileSize;
-    const int unoptimizedY = restY % pack;
-    const int numTilesX = w / tileSize + (restX > 0);
-    const int numTilesY = (h - unaligned) / tileSize + (restY >= pack);
+    const auto restX = w % tileSize;
+    const auto restY = (h - unaligned) % tileSize;
+    const auto unoptimizedY = restY % pack;
+    const auto numTilesX = w / tileSize + (restX > 0);
+    const auto numTilesY = (h - unaligned) / tileSize + (restY >= pack);
 
-    for (int tx = 0; tx < numTilesX; ++tx) {
-        const int startx = tx * tileSize;
-        const int stopx = qMin(startx + tileSize, w);
+    for (auto tx = 0; tx < numTilesX; ++tx) {
+        const auto startx = tx * tileSize;
+        const auto stopx = qMin(startx + tileSize, w);
 
         if (unaligned) {
-            for (int x = startx; x < stopx; ++x) {
+            for (auto x = startx; x < stopx; ++x) {
                 T *d = dest + x * dstride;
-                for (int y = h - 1; y >= h - unaligned; --y) {
+                for (auto y = h - 1; y >= h - unaligned; --y) {
                     *d++ = src[y * sstride + x];
                 }
             }
         }
 
-        for (int ty = 0; ty < numTilesY; ++ty) {
-            const int starty = h - 1 - unaligned - ty * tileSize;
-            const int stopy = qMax(starty - tileSize, unoptimizedY);
+        for (auto ty = 0; ty < numTilesY; ++ty) {
+            const auto starty = h - 1 - unaligned - ty * tileSize;
+            const auto stopy = qMax(starty - tileSize, unoptimizedY);
 
-            for (int x = startx; x < stopx; ++x) {
-                quint32 *d = reinterpret_cast<quint32*>(dest + x * dstride
+            for (auto x = startx; x < stopx; ++x) {
+                auto d = reinterpret_cast<quint32*>(dest + x * dstride
                                                         + h - 1 - starty);
-                for (int y = starty; y > stopy; y -= pack) {
+                for (auto y = starty; y > stopy; y -= pack) {
                     quint32 c = src[y * sstride + x];
-                    for (int i = 1; i < pack; ++i) {
+                    for (auto i = 1; i < pack; ++i) {
                         const int shift = (sizeof(int) * 8 / pack * i);
                         const T color = src[(y - i) * sstride + x];
                         c |= color << shift;
@@ -332,10 +332,10 @@ inline void qt_memrotate270_tiled(const T *src, int w, int h, int sstride, T *de
             }
         }
         if (unoptimizedY) {
-            const int starty = unoptimizedY - 1;
-            for (int x = startx; x < stopx; ++x) {
+            const auto starty = unoptimizedY - 1;
+            for (auto x = startx; x < stopx; ++x) {
                 T *d = dest + x * dstride + h - 1 - starty;
-                for (int y = starty; y >= 0; --y) {
+                for (auto y = starty; y >= 0; --y) {
                     *d++ = src[y * sstride + x];
                 }
             }
@@ -348,21 +348,21 @@ Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_memrotate270_tiled_unpacked(const T *src, int w, int h, int sstride, T *dest,
                                            int dstride)
 {
-    const int numTilesX = (w + tileSize - 1) / tileSize;
-    const int numTilesY = (h + tileSize - 1) / tileSize;
+    const auto numTilesX = (w + tileSize - 1) / tileSize;
+    const auto numTilesY = (h + tileSize - 1) / tileSize;
 
-    for (int tx = 0; tx < numTilesX; ++tx) {
-        const int startx = tx * tileSize;
-        const int stopx = qMin(startx + tileSize, w);
+    for (auto tx = 0; tx < numTilesX; ++tx) {
+        const auto startx = tx * tileSize;
+        const auto stopx = qMin(startx + tileSize, w);
 
-        for (int ty = 0; ty < numTilesY; ++ty) {
-            const int starty = h - 1 - ty * tileSize;
-            const int stopy = qMax(starty - tileSize, 0);
+        for (auto ty = 0; ty < numTilesY; ++ty) {
+            const auto starty = h - 1 - ty * tileSize;
+            const auto stopy = qMax(starty - tileSize, 0);
 
-            for (int x = startx; x < stopx; ++x) {
+            for (auto x = startx; x < stopx; ++x) {
                 T *d = (T*)((char*)dest + x * dstride) + h - 1 - starty;
-                const char *s = (const char*)(src + x) + starty * sstride;
-                for (int y = starty; y >= stopy; --y) {
+                auto s = (const char*)(src + x) + starty * sstride;
+                for (auto y = starty; y >= stopy; --y) {
                     *d++ = *(const T*)s;
                     s -= sstride;
                 }
@@ -393,11 +393,11 @@ template <class T>
 Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_memrotate180_template(const T *src, int w, int h, int sstride, T *dest, int dstride)
 {
-    const char *s = (const char*)(src) + (h - 1) * sstride;
-    for (int y = h - 1; y >= 0; --y) {
-        T *d = reinterpret_cast<T*>((char *)(dest) + (h - y - 1) * dstride);
+    auto s = (const char*)(src) + (h - 1) * sstride;
+    for (auto y = h - 1; y >= 0; --y) {
+        auto d = reinterpret_cast<T*>((char *)(dest) + (h - y - 1) * dstride);
         src = reinterpret_cast<const T*>(s);
-        for (int x = w - 1; x >= 0; --x) {
+        for (auto x = w - 1; x >= 0; --x) {
             d[w - x - 1] = src[x];
         }
         s -= sstride;

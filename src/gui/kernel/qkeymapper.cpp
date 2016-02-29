@@ -135,7 +135,7 @@ void QKeyMapperPrivate::clearMappings()
 
 QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
 {
-    QList<int> result = QGuiApplicationPrivate::platformIntegration()->possibleKeys(e);
+    auto result = QGuiApplicationPrivate::platformIntegration()->possibleKeys(e);
     if (!result.isEmpty())
         return result;
 

@@ -244,10 +244,10 @@ public:
 
 QColorDialogStaticData::QColorDialogStaticData() : customSet(false)
 {
-    int i = 0;
-    for (int g = 0; g < 4; ++g)
-        for (int r = 0;  r < 4; ++r)
-            for (int b = 0; b < 3; ++b)
+    auto i = 0;
+    for (auto g = 0; g < 4; ++g)
+        for (auto r = 0;  r < 4; ++r)
+            for (auto b = 0; b < 3; ++b)
                 standardRgb[i++] = qRgb(r * 255 / 3, g * 255 / 3, b * 255 / 2);
     std::fill(customRgb, customRgb + CustomColorCount, 0xffffffff);
     readSettings();
@@ -257,8 +257,8 @@ void QColorDialogStaticData::readSettings()
 {
 #ifndef QT_NO_SETTINGS
     const QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
-    for (int i = 0; i < int(CustomColorCount); ++i) {
-        const QVariant v = settings.value(QLatin1String("Qt/customColors/") + QString::number(i));
+    for (auto i = 0; i < int(CustomColorCount); ++i) {
+        const auto v = settings.value(QLatin1String("Qt/customColors/") + QString::number(i));
         if (v.isValid())
             customRgb[i] = v.toUInt();
     }
@@ -270,7 +270,7 @@ void QColorDialogStaticData::writeSettings() const
 #ifndef QT_NO_SETTINGS
     if (!customSet) {
         QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
-        for (int i = 0; i < int(CustomColorCount); ++i)
+        for (auto i = 0; i < int(CustomColorCount); ++i)
             settings.setValue(QLatin1String("Qt/customColors/") + QString::number(i), customRgb[i]);
     }
 #endif
@@ -703,8 +703,8 @@ QStringList QPlatformFileDialogHelper::cleanFilterList(const QString &filter)
 {
     QRegExp regexp(QString::fromLatin1(filterRegExp));
     Q_ASSERT(regexp.isValid());
-    QString f = filter;
-    int i = regexp.indexIn(f);
+    auto f = filter;
+    auto i = regexp.indexIn(f);
     if (i >= 0)
         f = regexp.cap(2);
     return f.split(QLatin1Char(' '), QString::SkipEmptyParts);

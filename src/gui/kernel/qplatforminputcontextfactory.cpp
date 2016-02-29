@@ -64,7 +64,7 @@ QStringList QPlatformInputContextFactory::keys()
 
 QString QPlatformInputContextFactory::requested()
 {
-    QByteArray env = qgetenv("QT_IM_MODULE");
+    auto env = qgetenv("QT_IM_MODULE");
     return env.isNull() ? QString() : QString::fromLocal8Bit(env);
 }
 
@@ -72,10 +72,10 @@ QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
 {
 #ifndef QT_NO_SETTINGS
     if (!key.isEmpty()) {
-        QStringList paramList = key.split(QLatin1Char(':'));
-        const QString platform = paramList.takeFirst().toLower();
+        auto paramList = key.split(QLatin1Char(':'));
+        const auto platform = paramList.takeFirst().toLower();
 
-        QPlatformInputContext *ic = qLoadPlugin<QPlatformInputContext, QPlatformInputContextPlugin>
+        auto ic = qLoadPlugin<QPlatformInputContext, QPlatformInputContextPlugin>
                                                  (loader(), platform, paramList);
         if (ic && ic->isValid())
             return ic;

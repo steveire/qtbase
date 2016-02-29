@@ -95,8 +95,8 @@ void QOpenGL2GradientCache::freeResource(QOpenGLContext *)
 void QOpenGL2GradientCache::cleanCache()
 {
     QMutexLocker lock(&m_mutex);
-    QOpenGLGradientColorTableHash::const_iterator it = cache.constBegin();
-    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+    auto it = cache.constBegin();
+    auto funcs = QOpenGLContext::currentContext()->functions();
     for (; it != cache.constEnd(); ++it) {
         const CacheInfo &cache_info = it.value();
         funcs->glDeleteTextures(1, &cache_info.texId);
@@ -108,12 +108,12 @@ GLuint QOpenGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity
 {
     quint64 hash_val = 0;
 
-    QGradientStops stops = gradient.stops();
-    for (int i = 0; i < stops.size() && i <= 2; i++)
+    auto stops = gradient.stops();
+    for (auto i = 0; i < stops.size() && i <= 2; i++)
         hash_val += stops[i].second.rgba();
 
     const QMutexLocker lock(&m_mutex);
-    QOpenGLGradientColorTableHash::const_iterator it = cache.constFind(hash_val);
+    auto it = cache.constFind(hash_val);
 
     if (it == cache.constEnd())
         return addCacheElement(hash_val, gradient, opacity);
@@ -135,13 +135,13 @@ GLuint QOpenGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity
 
 GLuint QOpenGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity)
 {
-    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+    auto funcs = QOpenGLContext::currentContext()->functions();
     if (cache.size() == maxCacheSize()) {
-        int elem_to_remove = qrand() % maxCacheSize();
-        quint64 key = cache.keys()[elem_to_remove];
+        auto elem_to_remove = qrand() % maxCacheSize();
+        auto key = cache.keys()[elem_to_remove];
 
         // need to call glDeleteTextures on each removed cache entry:
-        QOpenGLGradientColorTableHash::const_iterator it = cache.constFind(key);
+        auto it = cache.constFind(key);
         do {
             funcs->glDeleteTextures(1, &it.value().texId);
         } while (++it != cache.constEnd() && it.key() == key);
@@ -169,19 +169,19 @@ GLuint QOpenGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient 
 //TODO: Let GL generate the texture using an FBO
 void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient, QRgba64 *colorTable, int size, qreal opacity) const
 {
-    int pos = 0;
-    QGradientStops s = gradient.stops();
+    auto pos = 0;
+    auto s = gradient.stops();
     QVector<QRgba64> colors(s.size());
 
-    for (int i = 0; i < s.size(); ++i)
+    for (auto i = 0; i < s.size(); ++i)
         colors[i] = s[i].second.rgba64();
 
-    bool colorInterpolation = (gradient.interpolationMode() == QGradient::ColorInterpolation);
+    auto colorInterpolation = (gradient.interpolationMode() == QGradient::ColorInterpolation);
 
     uint alpha = qRound(opacity * 256);
-    QRgba64 current_color = combineAlpha256(colors[0], alpha);
-    qreal incr = 1.0 / qreal(size);
-    qreal fpos = 1.5 * incr;
+    auto current_color = combineAlpha256(colors[0], alpha);
+    auto incr = 1.0 / qreal(size);
+    auto fpos = 1.5 * incr;
     colorTable[pos++] = qPremultiply(current_color);
 
     while (fpos <= s.first().first) {
@@ -193,15 +193,15 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
     if (colorInterpolation)
         current_color = qPremultiply(current_color);
 
-    for (int i = 0; i < s.size() - 1; ++i) {
-        qreal delta = 1/(s[i+1].first - s[i].first);
-        QRgba64 next_color = combineAlpha256(colors[i+1], alpha);
+    for (auto i = 0; i < s.size() - 1; ++i) {
+        auto delta = 1/(s[i+1].first - s[i].first);
+        auto next_color = combineAlpha256(colors[i+1], alpha);
         if (colorInterpolation)
             next_color = qPremultiply(next_color);
 
         while (fpos < s[i+1].first && pos < size) {
-            int dist = int(256 * ((fpos - s[i].first) * delta));
-            int idist = 256 - dist;
+            auto dist = int(256 * ((fpos - s[i].first) * delta));
+            auto idist = 256 - dist;
             if (colorInterpolation)
                 colorTable[pos] = interpolate256(current_color, idist, next_color, dist);
             else
@@ -214,7 +214,7 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
 
     Q_ASSERT(s.size() > 0);
 
-    QRgba64 last_color = qPremultiply(combineAlpha256(colors[s.size() - 1], alpha));
+    auto last_color = qPremultiply(combineAlpha256(colors[s.size() - 1], alpha));
     for (;pos < size; ++pos)
         colorTable[pos] = last_color;
 
@@ -224,19 +224,19 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
 
 void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, qreal opacity) const
 {
-    int pos = 0;
-    QGradientStops s = gradient.stops();
+    auto pos = 0;
+    auto s = gradient.stops();
     QVector<uint> colors(s.size());
 
-    for (int i = 0; i < s.size(); ++i)
+    for (auto i = 0; i < s.size(); ++i)
         colors[i] = s[i].second.rgba(); // Qt LIES! It returns ARGB (on little-endian AND on big-endian)
 
-    bool colorInterpolation = (gradient.interpolationMode() == QGradient::ColorInterpolation);
+    auto colorInterpolation = (gradient.interpolationMode() == QGradient::ColorInterpolation);
 
     uint alpha = qRound(opacity * 256);
-    uint current_color = ARGB_COMBINE_ALPHA(colors[0], alpha);
-    qreal incr = 1.0 / qreal(size);
-    qreal fpos = 1.5 * incr;
+    auto current_color = ARGB_COMBINE_ALPHA(colors[0], alpha);
+    auto incr = 1.0 / qreal(size);
+    auto fpos = 1.5 * incr;
     colorTable[pos++] = ARGB2RGBA(qPremultiply(current_color));
 
     while (fpos <= s.first().first) {
@@ -248,15 +248,15 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
     if (colorInterpolation)
         current_color = qPremultiply(current_color);
 
-    for (int i = 0; i < s.size() - 1; ++i) {
-        qreal delta = 1/(s[i+1].first - s[i].first);
-        uint next_color = ARGB_COMBINE_ALPHA(colors[i+1], alpha);
+    for (auto i = 0; i < s.size() - 1; ++i) {
+        auto delta = 1/(s[i+1].first - s[i].first);
+        auto next_color = ARGB_COMBINE_ALPHA(colors[i+1], alpha);
         if (colorInterpolation)
             next_color = qPremultiply(next_color);
 
         while (fpos < s[i+1].first && pos < size) {
-            int dist = int(256 * ((fpos - s[i].first) * delta));
-            int idist = 256 - dist;
+            auto dist = int(256 * ((fpos - s[i].first) * delta));
+            auto idist = 256 - dist;
             if (colorInterpolation)
                 colorTable[pos] = ARGB2RGBA(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist));
             else
@@ -269,7 +269,7 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
 
     Q_ASSERT(s.size() > 0);
 
-    uint last_color = ARGB2RGBA(qPremultiply(ARGB_COMBINE_ALPHA(colors[s.size() - 1], alpha)));
+    auto last_color = ARGB2RGBA(qPremultiply(ARGB_COMBINE_ALPHA(colors[s.size() - 1], alpha)));
     for (;pos < size; ++pos)
         colorTable[pos] = last_color;
 

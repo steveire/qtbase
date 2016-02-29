@@ -156,8 +156,8 @@ QIconPrivate::QIconPrivate()
 */
 qreal QIconPrivate::pixmapDevicePixelRatio(qreal displayDevicePixelRatio, const QSize &requestedSize, const QSize &actualSize)
 {
-    QSize targetSize = requestedSize * displayDevicePixelRatio;
-    qreal scale = 0.5 * (qreal(actualSize.width()) / qreal(targetSize.width()) +
+    auto targetSize = requestedSize * displayDevicePixelRatio;
+    auto scale = 0.5 * (qreal(actualSize.width()) / qreal(targetSize.width()) +
                          qreal(actualSize.height() / qreal(targetSize.height())));
     return qMax(qreal(1.0), displayDevicePixelRatio *scale);
 }
@@ -177,8 +177,8 @@ QPixmapIconEngine::~QPixmapIconEngine()
 
 void QPixmapIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
 {
-    QSize pixmapSize = rect.size() * qt_effective_device_pixel_ratio(0);
-    QPixmap px = pixmap(pixmapSize, mode, state);
+    auto pixmapSize = rect.size() * qt_effective_device_pixel_ratio(0);
+    auto px = pixmap(pixmapSize, mode, state);
     painter->drawPixmap(rect, px);
 }
 
@@ -187,18 +187,18 @@ static inline int area(const QSize &s) { return s.width() * s.height(); }
 // returns the smallest of the two that is still larger than or equal to size.
 static QPixmapIconEngineEntry *bestSizeMatch( const QSize &size, QPixmapIconEngineEntry *pa, QPixmapIconEngineEntry *pb)
 {
-    int s = area(size);
+    auto s = area(size);
     if (pa->size == QSize() && pa->pixmap.isNull()) {
         pa->pixmap = QPixmap(pa->fileName);
         pa->size = pa->pixmap.size();
     }
-    int a = area(pa->size);
+    auto a = area(pa->size);
     if (pb->size == QSize() && pb->pixmap.isNull()) {
         pb->pixmap = QPixmap(pb->fileName);
         pb->size = pb->pixmap.size();
     }
-    int b = area(pb->size);
-    int res = a;
+    auto b = area(pb->size);
+    auto res = a;
     if (qMin(a,b) >= s)
         res = qMin(a,b);
     else
@@ -211,7 +211,7 @@ static QPixmapIconEngineEntry *bestSizeMatch( const QSize &size, QPixmapIconEngi
 QPixmapIconEngineEntry *QPixmapIconEngine::tryMatch(const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
     QPixmapIconEngineEntry *pe = 0;
-    for (int i = 0; i < pixmaps.count(); ++i)
+    for (auto i = 0; i < pixmaps.count(); ++i)
         if (pixmaps.at(i).mode == mode && pixmaps.at(i).state == state) {
             if (pe)
                 pe = bestSizeMatch(size, &pixmaps[i], pe);
@@ -224,11 +224,11 @@ QPixmapIconEngineEntry *QPixmapIconEngine::tryMatch(const QSize &size, QIcon::Mo
 
 QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, QIcon::Mode mode, QIcon::State state, bool sizeOnly)
 {
-    QPixmapIconEngineEntry *pe = tryMatch(size, mode, state);
+    auto pe = tryMatch(size, mode, state);
     while (!pe){
-        QIcon::State oppositeState = (state == QIcon::On) ? QIcon::Off : QIcon::On;
+        auto oppositeState = (state == QIcon::On) ? QIcon::Off : QIcon::On;
         if (mode == QIcon::Disabled || mode == QIcon::Selected) {
-            QIcon::Mode oppositeMode = (mode == QIcon::Disabled) ? QIcon::Selected : QIcon::Disabled;
+            auto oppositeMode = (mode == QIcon::Disabled) ? QIcon::Selected : QIcon::Disabled;
             if ((pe = tryMatch(size, QIcon::Normal, state)))
                 break;
             if ((pe = tryMatch(size, QIcon::Active, state)))
@@ -244,7 +244,7 @@ QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, QIcon::M
             if ((pe = tryMatch(size, oppositeMode, oppositeState)))
                 break;
         } else {
-            QIcon::Mode oppositeMode = (mode == QIcon::Normal) ? QIcon::Active : QIcon::Normal;
+            auto oppositeMode = (mode == QIcon::Normal) ? QIcon::Active : QIcon::Normal;
             if ((pe = tryMatch(size, oppositeMode, state)))
                 break;
             if ((pe = tryMatch(size, mode, oppositeState)))
@@ -277,12 +277,12 @@ QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, QIcon::M
 QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
     QPixmap pm;
-    QPixmapIconEngineEntry *pe = bestMatch(size, mode, state, false);
+    auto pe = bestMatch(size, mode, state, false);
     if (pe)
         pm = pe->pixmap;
 
     if (pm.isNull()) {
-        int idx = pixmaps.count();
+        auto idx = pixmaps.count();
         while (--idx >= 0) {
             if (pe == &pixmaps[idx]) {
                 pixmaps.remove(idx);
@@ -295,7 +295,7 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
             return pixmap(size, mode, state);
     }
 
-    QSize actualSize = pm.size();
+    auto actualSize = pm.size();
     if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
         actualSize.scale(size, Qt::KeepAspectRatio);
 
@@ -310,8 +310,8 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
         if (QPixmapCache::find(key % HexString<uint>(mode), pm))
             return pm; // horray
         if (QPixmapCache::find(key % HexString<uint>(QIcon::Normal), pm)) {
-            QPixmap active = pm;
-            if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
+            auto active = pm;
+            if (auto guiApp = qobject_cast<QGuiApplication *>(qApp))
                 active = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(guiApp))->applyQIconStyleHelper(QIcon::Active, pm);
             if (pm.cacheKey() == active.cacheKey())
                 return pm;
@@ -322,8 +322,8 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
         if (pm.size() != actualSize)
             pm = pm.scaled(actualSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         if (pe->mode != mode && mode != QIcon::Normal) {
-            QPixmap generated = pm;
-            if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
+            auto generated = pm;
+            if (auto guiApp = qobject_cast<QGuiApplication *>(qApp))
                 generated = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(guiApp))->applyQIconStyleHelper(mode, pm);
             if (!generated.isNull())
                 pm = generated;
@@ -336,7 +336,7 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
 QSize QPixmapIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
     QSize actualSize;
-    if (QPixmapIconEngineEntry *pe = bestMatch(size, mode, state, true))
+    if (auto pe = bestMatch(size, mode, state, true))
         actualSize = pe->size;
 
     if (actualSize.isNull())
@@ -350,7 +350,7 @@ QSize QPixmapIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::
 void QPixmapIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state)
 {
     if (!pixmap.isNull()) {
-        QPixmapIconEngineEntry *pe = tryMatch(pixmap.size(), mode, state);
+        auto pe = tryMatch(pixmap.size(), mode, state);
         if(pe && pe->size == pixmap.size()) {
             pe->pixmap = pixmap;
             pe->fileName.clear();
@@ -363,13 +363,13 @@ void QPixmapIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon
 // Read out original image depth as set by ICOReader
 static inline int origIcoDepth(const QImage &image)
 {
-    const QString s = image.text(QStringLiteral("_q_icoOrigDepth"));
+    const auto s = image.text(QStringLiteral("_q_icoOrigDepth"));
     return s.isEmpty() ? 32 : s.toInt();
 }
 
 static inline int findBySize(const QVector<QImage> &images, const QSize &size)
 {
-    for (int i = 0; i < images.size(); ++i) {
+    for (auto i = 0; i < images.size(); ++i) {
         if (images.at(i).size() == size)
             return i;
     }
@@ -408,10 +408,10 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
 {
     if (fileName.isEmpty())
         return;
-    const QString abs = fileName.startsWith(QLatin1Char(':')) ? fileName : QFileInfo(fileName).absoluteFilePath();
-    const bool ignoreSize = !size.isValid();
+    const auto abs = fileName.startsWith(QLatin1Char(':')) ? fileName : QFileInfo(fileName).absoluteFilePath();
+    const auto ignoreSize = !size.isValid();
     ImageReader imageReader(abs);
-    const QByteArray format = imageReader.format();
+    const auto format = imageReader.format();
     if (format.isEmpty()) // Device failed to open or unsupported format.
         return;
     QImage image;
@@ -434,7 +434,7 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
     QVector<QImage> icoImages;
     while (imageReader.read(&image)) {
         if (ignoreSize || image.size() == size) {
-            const int position = findBySize(icoImages, image.size());
+            const auto position = findBySize(icoImages, image.size());
             if (position >= 0) { // Higher quality available? -> replace.
                 if (origIcoDepth(image) > origIcoDepth(icoImages.at(position)))
                     icoImages[position] = image;
@@ -469,7 +469,7 @@ bool QPixmapIconEngine::read(QDataStream &in)
     uint state;
 
     in >> num_entries;
-    for (int i=0; i < num_entries; ++i) {
+    for (auto i=0; i < num_entries; ++i) {
         if (in.atEnd()) {
             pixmaps.clear();
             return false;
@@ -492,9 +492,9 @@ bool QPixmapIconEngine::read(QDataStream &in)
 
 bool QPixmapIconEngine::write(QDataStream &out) const
 {
-    int num_entries = pixmaps.size();
+    auto num_entries = pixmaps.size();
     out << num_entries;
-    for (int i=0; i < num_entries; ++i) {
+    for (auto i=0; i < num_entries; ++i) {
         if (pixmaps.at(i).pixmap.isNull())
             out << QPixmap(pixmaps.at(i).fileName);
         else
@@ -514,7 +514,7 @@ void QPixmapIconEngine::virtual_hook(int id, void *data)
         QIconEngine::AvailableSizesArgument &arg =
             *reinterpret_cast<QIconEngine::AvailableSizesArgument*>(data);
         arg.sizes.clear();
-        for (int i = 0; i < pixmaps.size(); ++i) {
+        for (auto i = 0; i < pixmaps.size(); ++i) {
             QPixmapIconEngineEntry &pe = pixmaps[i];
             if (pe.size == QSize() && pe.pixmap.isNull()) {
                 pe.pixmap = QPixmap(pe.fileName);
@@ -836,14 +836,14 @@ QPixmap QIcon::pixmap(QWindow *window, const QSize &size, Mode mode, State state
     if (!d)
         return QPixmap();
 
-    qreal devicePixelRatio = qt_effective_device_pixel_ratio(window);
+    auto devicePixelRatio = qt_effective_device_pixel_ratio(window);
 
     // Handle the simple normal-dpi case:
     if (!(devicePixelRatio > 1.0))
         return d->engine->pixmap(size, mode, state);
 
     // Try get a pixmap that is big enough to be displayed at device pixel resolution.
-    QPixmap pixmap = d->engine->pixmap(size * devicePixelRatio, mode, state);
+    auto pixmap = d->engine->pixmap(size * devicePixelRatio, mode, state);
     pixmap.setDevicePixelRatio(d->pixmapDevicePixelRatio(devicePixelRatio, size, pixmap.size()));
     return pixmap;
 }
@@ -864,13 +864,13 @@ QSize QIcon::actualSize(QWindow *window, const QSize &size, Mode mode, State sta
     if (!d)
         return QSize();
 
-    qreal devicePixelRatio = qt_effective_device_pixel_ratio(window);
+    auto devicePixelRatio = qt_effective_device_pixel_ratio(window);
 
     // Handle the simple normal-dpi case:
     if (!(devicePixelRatio > 1.0))
         return d->engine->actualSize(size, mode, state);
 
-    QSize actualSize = d->engine->actualSize(size * devicePixelRatio, mode, state);
+    auto actualSize = d->engine->actualSize(size * devicePixelRatio, mode, state);
     return actualSize / d->pixmapDevicePixelRatio(devicePixelRatio, size, actualSize);
 }
 
@@ -886,12 +886,12 @@ void QIcon::paint(QPainter *painter, const QRect &rect, Qt::Alignment alignment,
         return;
 
     // Copy of QStyle::alignedRect
-    const QSize size = d->engine->actualSize(rect.size(), mode, state);
+    const auto size = d->engine->actualSize(rect.size(), mode, state);
     alignment = QGuiApplicationPrivate::visualAlignment(painter->layoutDirection(), alignment);
-    int x = rect.x();
-    int y = rect.y();
-    int w = size.width();
-    int h = size.height();
+    auto x = rect.x();
+    auto y = rect.y();
+    auto w = size.width();
+    auto h = size.height();
     if ((alignment & Qt::AlignVCenter) == Qt::AlignVCenter)
         y += rect.size().height()/2 - h/2;
     else if ((alignment & Qt::AlignBottom) == Qt::AlignBottom)
@@ -945,7 +945,7 @@ void QIcon::detach()
             d = 0;
             return;
         } else if (d->ref.load() != 1) {
-            QIconPrivate *x = new QIconPrivate;
+            auto x = new QIconPrivate;
             x->engine = d->engine->clone();
             if (!d->ref.deref())
                 delete d;
@@ -1014,13 +1014,13 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
     detach();
     if (!d) {
         QFileInfo info(fileName);
-        QString suffix = info.suffix();
+        auto suffix = info.suffix();
         if (!suffix.isEmpty()) {
             // first try version 2 engines..
-            const int index = loader()->indexOf(suffix);
+            const auto index = loader()->indexOf(suffix);
             if (index != -1) {
-                if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
-                    if (QIconEngine *engine = factory->create(fileName)) {
+                if (auto factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
+                    if (auto engine = factory->create(fileName)) {
                         d = new QIconPrivate;
                         d->engine = engine;
                     }
@@ -1037,7 +1037,7 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
     d->engine->addFile(fileName, size, mode, state);
 
     // Check if a "@Nx" file exists and add it.
-    QString atNxFileName = qt_findAtNxFile(fileName, qApp->devicePixelRatio());
+    auto atNxFileName = qt_findAtNxFile(fileName, qApp->devicePixelRatio());
     if (atNxFileName != fileName)
         d->engine->addFile(atNxFileName, size, mode, state);
 }
@@ -1175,11 +1175,11 @@ QIcon QIcon::fromTheme(const QString &name)
     } else if (QDir::isAbsolutePath(name)) {
         return QIcon(name);
     } else {
-        QPlatformTheme * const platformTheme = QGuiApplicationPrivate::platformTheme();
-        bool hasUserTheme = QIconLoader::instance()->hasUserTheme();
-        QIconEngine * const engine = (platformTheme && !hasUserTheme) ? platformTheme->createIconEngine(name)
+        const auto platformTheme = QGuiApplicationPrivate::platformTheme();
+        auto hasUserTheme = QIconLoader::instance()->hasUserTheme();
+        const auto engine = (platformTheme && !hasUserTheme) ? platformTheme->createIconEngine(name)
                                                    : new QIconLoaderEngine(name);
-        QIcon *cachedIcon  = new QIcon(engine);
+        auto cachedIcon  = new QIcon(engine);
         icon = *cachedIcon;
         qtIconCache()->insert(name, cachedIcon);
     }
@@ -1201,7 +1201,7 @@ QIcon QIcon::fromTheme(const QString &name)
 */
 QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
 {
-    QIcon icon = fromTheme(name);
+    auto icon = fromTheme(name);
 
     if (icon.isNull() || icon.availableSizes().isEmpty())
         return fallback;
@@ -1219,7 +1219,7 @@ QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
 */
 bool QIcon::hasThemeIcon(const QString &name)
 {
-    QIcon icon = fromTheme(name);
+    auto icon = fromTheme(name);
 
     return icon.name() == name;
 }
@@ -1286,10 +1286,10 @@ QDataStream &operator<<(QDataStream &s, const QIcon &icon)
         if (icon.isNull()) {
             s << 0;
         } else {
-            QPixmapIconEngine *engine = static_cast<QPixmapIconEngine *>(icon.d->engine);
-            int num_entries = engine->pixmaps.size();
+            auto engine = static_cast<QPixmapIconEngine *>(icon.d->engine);
+            auto num_entries = engine->pixmaps.size();
             s << num_entries;
-            for (int i=0; i < num_entries; ++i) {
+            for (auto i=0; i < num_entries; ++i) {
                 s << engine->pixmaps.at(i).pixmap;
                 s << engine->pixmaps.at(i).fileName;
                 s << engine->pixmaps.at(i).size;
@@ -1320,19 +1320,19 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
         s >> key;
         if (key == QLatin1String("QPixmapIconEngine")) {
             icon.d = new QIconPrivate;
-            QIconEngine *engine = new QPixmapIconEngine;
+            auto engine = new QPixmapIconEngine;
             icon.d->engine = engine;
             engine->read(s);
         } else if (key == QLatin1String("QIconLoaderEngine")) {
             icon.d = new QIconPrivate;
-            QIconEngine *engine = new QIconLoaderEngine();
+            auto engine = new QIconLoaderEngine();
             icon.d->engine = engine;
             engine->read(s);
         } else {
-            const int index = loader()->indexOf(key);
+            const auto index = loader()->indexOf(key);
             if (index != -1) {
-                if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
-                    if (QIconEngine *engine= factory->create()) {
+                if (auto factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
+                    if (auto engine= factory->create()) {
                         icon.d = new QIconPrivate;
                         icon.d->engine = engine;
                         engine->read(s);
@@ -1350,7 +1350,7 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
         uint state;
 
         s >> num_entries;
-        for (int i=0; i < num_entries; ++i) {
+        for (auto i=0; i < num_entries; ++i) {
             s >> pm;
             s >> fileName;
             s >> sz;
@@ -1419,18 +1419,18 @@ QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRati
     if (targetDevicePixelRatio <= 1.0)
         return baseFileName;
 
-    static bool disableNxImageLoading = !qEnvironmentVariableIsEmpty("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING");
+    static auto disableNxImageLoading = !qEnvironmentVariableIsEmpty("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING");
     if (disableNxImageLoading)
         return baseFileName;
 
-    int dotIndex = baseFileName.lastIndexOf(QLatin1Char('.'));
+    auto dotIndex = baseFileName.lastIndexOf(QLatin1Char('.'));
     if (dotIndex == -1) /* no dot */
         dotIndex = baseFileName.size(); /* append */
 
-    QString atNxfileName = baseFileName;
+    auto atNxfileName = baseFileName;
     atNxfileName.insert(dotIndex, QLatin1String("@2x"));
     // Check for @Nx, ..., @3x, @2x file versions,
-    for (int n = qMin(qCeil(targetDevicePixelRatio), 9); n > 1; --n) {
+    for (auto n = qMin(qCeil(targetDevicePixelRatio), 9); n > 1; --n) {
         atNxfileName[dotIndex + 1] = QLatin1Char('0' + n);
         if (QFile::exists(atNxfileName)) {
             if (sourceDevicePixelRatio)

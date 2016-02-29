@@ -122,7 +122,7 @@ public:
 
 bool QOpenGLTimerQueryPrivate::create()
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
 
     if (timer && context == ctx)
         return true;
@@ -142,7 +142,7 @@ bool QOpenGLTimerQueryPrivate::create()
     core = new QOpenGLQueryHelper(context);
 
     // Check to see if we also need to resolve the functions for EXT_timer_query
-    QSurfaceFormat f = context->format();
+    auto f = context->format();
     if (f.version() <= qMakePair<int, int>(3, 2)
         && !context->hasExtension(QByteArrayLiteral("GL_ARB_timer_query"))
         && context->hasExtension(QByteArrayLiteral("GL_EXT_timer_query"))) {
@@ -307,7 +307,7 @@ QOpenGLTimerQuery::QOpenGLTimerQuery(QObject *parent)
 */
 QOpenGLTimerQuery::~QOpenGLTimerQuery()
 {
-    QOpenGLContext* ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
 
     Q_D(QOpenGLTimerQuery);
     QOpenGLContext *oldContext = 0;
@@ -508,7 +508,7 @@ bool QOpenGLTimeMonitorPrivate::create()
     if (!timers.isEmpty() && timers.at(0) != 0 && timers.size() == requestedSampleCount)
         return true;
 
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     if (context && context != ctx) {
         qWarning("QTimeMonitor: Attempting to use different OpenGL context to recreate timers.\n"
                  "Please call destroy() first or use the same context to previously create");
@@ -529,7 +529,7 @@ bool QOpenGLTimeMonitorPrivate::create()
     core = new QOpenGLQueryHelper(context);
 
     // Check to see if we also need to resolve the functions for EXT_timer_query
-    QSurfaceFormat f = context->format();
+    auto f = context->format();
     if (f.version() <= qMakePair<int, int>(3, 2)
         && !context->hasExtension(QByteArrayLiteral("GL_ARB_timer_query"))
         && context->hasExtension(QByteArrayLiteral("GL_EXT_timer_query"))) {
@@ -602,7 +602,7 @@ QVector<GLuint64> QOpenGLTimeMonitorPrivate::samples() const
     // For the EXT implementation we cannot obtain timestamps so we defer any result
     // collection to the intervals() function
     if (!ext) {
-        for (int i = 0; i <= currentSample; ++i)
+        for (auto i = 0; i <= currentSample; ++i)
             core->glGetQueryObjectui64v(timers.at(i), GL_QUERY_RESULT, &timeSamples[i]);
     } else {
         qWarning("QOpenGLTimeMonitor::samples() requires OpenGL >=3.3\n"
@@ -616,8 +616,8 @@ QVector<GLuint64> QOpenGLTimeMonitorPrivate::intervals() const
     QVector<GLuint64> intervals(timers.size() - 1);
     if (!ext) {
         // Obtain the timestamp samples and calculate the interval durations
-        const QVector<GLuint64> timeStamps = samples();
-        for (int i = 0; i < intervals.size(); ++i)
+        const auto timeStamps = samples();
+        for (auto i = 0; i < intervals.size(); ++i)
             intervals[i] = timeStamps[i+1] - timeStamps[i];
     } else {
         // Stop the last timer if needed
@@ -628,7 +628,7 @@ QVector<GLuint64> QOpenGLTimeMonitorPrivate::intervals() const
 
         // Obtain the results from all timers apart from the redundant last one. In this
         // case the results actually are the intervals not timestamps
-        for (int i = 0; i < currentSample; ++i)
+        for (auto i = 0; i < currentSample; ++i)
             ext->glGetQueryObjectui64vEXT(timers.at(i), GL_QUERY_RESULT, &intervals[i]);
     }
 
@@ -698,7 +698,7 @@ QOpenGLTimeMonitor::QOpenGLTimeMonitor(QObject *parent)
 */
 QOpenGLTimeMonitor::~QOpenGLTimeMonitor()
 {
-    QOpenGLContext* ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
 
     Q_D(QOpenGLTimeMonitor);
     QOpenGLContext *oldContext = 0;
