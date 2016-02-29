@@ -53,15 +53,15 @@ QT_BEGIN_NAMESPACE
 
 static bool ignoreProxyFor(const QNetworkProxyQuery &query)
 {
-    const QByteArray noProxy = qgetenv("no_proxy").trimmed();
+    const auto noProxy = qgetenv("no_proxy").trimmed();
     if (noProxy.isEmpty())
         return false;
 
-    const QList<QByteArray> noProxyTokens = noProxy.split(',');
+    const auto noProxyTokens = noProxy.split(',');
 
     foreach (const QByteArray &rawToken, noProxyTokens) {
-        QByteArray token = rawToken.trimmed();
-        QString peerHostName = query.peerHostName();
+        auto token = rawToken.trimmed();
+        auto peerHostName = query.peerHostName();
 
         // Since we use suffix matching, "*" is our 'default' behaviour
         if (token.startsWith('*'))
@@ -94,7 +94,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
         return proxyList << QNetworkProxy::NoProxy;
 
     // No need to care about casing here, QUrl lowercases values already
-    const QString queryProtocol = query.protocolTag();
+    const auto queryProtocol = query.protocolTag();
     QByteArray proxy_env;
 
     if (queryProtocol == QLatin1String("http"))
@@ -111,7 +111,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
         proxy_env = qgetenv("http_proxy");
 
     if (!proxy_env.isEmpty()) {
-        QUrl url = QUrl(QString::fromLocal8Bit(proxy_env));
+        auto url = QUrl(QString::fromLocal8Bit(proxy_env));
         if (url.scheme() == QLatin1String("socks5")) {
             QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, url.host(),
                     url.port() ? url.port() : 1080, url.userName(), url.password());

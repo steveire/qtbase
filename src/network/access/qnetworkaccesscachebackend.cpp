@@ -60,7 +60,7 @@ QNetworkAccessCacheBackend::~QNetworkAccessCacheBackend()
 void QNetworkAccessCacheBackend::open()
 {
     if (operation() != QNetworkAccessManager::GetOperation || !sendCacheContents()) {
-        QString msg = QCoreApplication::translate("QNetworkAccessCacheBackend", "Error opening %1")
+        auto msg = QCoreApplication::translate("QNetworkAccessCacheBackend", "Error opening %1")
                                                 .arg(this->url().toString());
         error(QNetworkReply::ContentNotFoundError, msg);
     } else {
@@ -72,21 +72,21 @@ void QNetworkAccessCacheBackend::open()
 bool QNetworkAccessCacheBackend::sendCacheContents()
 {
     setCachingEnabled(false);
-    QAbstractNetworkCache *nc = networkCache();
+    auto nc = networkCache();
     if (!nc)
         return false;
 
-    QNetworkCacheMetaData item = nc->metaData(url());
+    auto item = nc->metaData(url());
     if (!item.isValid())
         return false;
 
-    QNetworkCacheMetaData::AttributesMap attributes = item.attributes();
+    auto attributes = item.attributes();
     setAttribute(QNetworkRequest::HttpStatusCodeAttribute, attributes.value(QNetworkRequest::HttpStatusCodeAttribute));
     setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, attributes.value(QNetworkRequest::HttpReasonPhraseAttribute));
 
     // set the raw headers
-    QNetworkCacheMetaData::RawHeaderList rawHeaders = item.rawHeaders();
-    QNetworkCacheMetaData::RawHeaderList::ConstIterator it = rawHeaders.constBegin(),
+    auto rawHeaders = item.rawHeaders();
+    auto it = rawHeaders.constBegin(),
                                                        end = rawHeaders.constEnd();
     for ( ; it != end; ++it) {
         if (it->first.toLower() == "cache-control" &&
@@ -97,7 +97,7 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
     }
 
     // handle a possible redirect
-    QVariant redirectionTarget = attributes.value(QNetworkRequest::RedirectionTargetAttribute);
+    auto redirectionTarget = attributes.value(QNetworkRequest::RedirectionTargetAttribute);
     if (redirectionTarget.isValid()) {
         setAttribute(QNetworkRequest::RedirectionTargetAttribute, redirectionTarget);
         redirectionRequested(redirectionTarget.toUrl());
@@ -107,7 +107,7 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
     metaDataChanged();
 
     if (operation() == QNetworkAccessManager::GetOperation) {
-        QIODevice *contents = nc->data(url());
+        auto contents = nc->data(url());
         if (!contents)
             return false;
         contents->setParent(this);

@@ -370,7 +370,7 @@ QAuthenticatorPrivate::~QAuthenticatorPrivate()
 
 void QAuthenticatorPrivate::updateCredentials()
 {
-    int separatorPosn = 0;
+    auto separatorPosn = 0;
 
     switch (method) {
     case QAuthenticatorPrivate::Ntlm:
@@ -393,7 +393,7 @@ void QAuthenticatorPrivate::updateCredentials()
 
 void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy)
 {
-    const char *search = isProxy ? "proxy-authenticate" : "www-authenticate";
+    auto search = isProxy ? "proxy-authenticate" : "www-authenticate";
 
     method = None;
     /*
@@ -407,11 +407,11 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
     */
 
     QByteArray headerVal;
-    for (int i = 0; i < values.size(); ++i) {
+    for (auto i = 0; i < values.size(); ++i) {
         const QPair<QByteArray, QByteArray> &current = values.at(i);
         if (current.first.toLower() != search)
             continue;
-        QByteArray str = current.second.toLower();
+        auto str = current.second.toLower();
         if (method < Basic && str.startsWith("basic")) {
             method = Basic;
             headerVal = current.second.mid(6);
@@ -427,7 +427,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
     // Reparse credentials since we know the method now
     updateCredentials();
     challenge = headerVal.trimmed();
-    QHash<QByteArray, QByteArray> options = parseDigestAuthenticationChallenge(challenge);
+    auto options = parseDigestAuthenticationChallenge(challenge);
 
     switch(method) {
     case Basic:
@@ -535,19 +535,19 @@ QHash<QByteArray, QByteArray> QAuthenticatorPrivate::parseDigestAuthenticationCh
 {
     QHash<QByteArray, QByteArray> options;
     // parse the challenge
-    const char *d = challenge.constData();
-    const char *end = d + challenge.length();
+    auto d = challenge.constData();
+    auto end = d + challenge.length();
     while (d < end) {
         while (d < end && (*d == ' ' || *d == '\n' || *d == '\r'))
             ++d;
-        const char *start = d;
+        auto start = d;
         while (d < end && *d != '=')
             ++d;
         QByteArray key = QByteArray(start, d - start);
         ++d;
         if (d >= end)
             break;
-        bool quote = (*d == '"');
+        auto quote = (*d == '"');
         if (quote)
             ++d;
         if (d >= end)
@@ -555,7 +555,7 @@ QHash<QByteArray, QByteArray> QAuthenticatorPrivate::parseDigestAuthenticationCh
         start = d;
         QByteArray value;
         while (d < end) {
-            bool backslash = false;
+            auto backslash = false;
             if (*d == '\\' && d < end - 1) {
                 ++d;
                 backslash = true;
@@ -578,9 +578,9 @@ QHash<QByteArray, QByteArray> QAuthenticatorPrivate::parseDigestAuthenticationCh
         options[key] = value;
     }
 
-    QByteArray qop = options.value("qop");
+    auto qop = options.value("qop");
     if (!qop.isEmpty()) {
-        QList<QByteArray> qopoptions = qop.split(',');
+        auto qopoptions = qop.split(',');
         if (!qopoptions.contains("auth"))
             return QHash<QByteArray, QByteArray>();
         // #### can't do auth-int currently
@@ -626,7 +626,7 @@ static QByteArray digestMd5ResponseHelper(
     hash.addData(realm);
     hash.addData(":", 1);
     hash.addData(password);
-    QByteArray ha1 = hash.result();
+    auto ha1 = hash.result();
     if (alg.toLower() == "md5-sess") {
         hash.reset();
         // RFC 2617 contains an error, it was:
@@ -651,7 +651,7 @@ static QByteArray digestMd5ResponseHelper(
         hash.addData(":", 1);
         hash.addData(hEntity);
     }
-    QByteArray ha2hex = hash.result().toHex();
+    auto ha2hex = hash.result().toHex();
 
     // calculate response
     hash.reset();
@@ -673,19 +673,19 @@ static QByteArray digestMd5ResponseHelper(
 
 QByteArray QAuthenticatorPrivate::digestMd5Response(const QByteArray &challenge, const QByteArray &method, const QByteArray &path)
 {
-    QHash<QByteArray,QByteArray> options = parseDigestAuthenticationChallenge(challenge);
+    auto options = parseDigestAuthenticationChallenge(challenge);
 
     ++nonceCount;
-    QByteArray nonceCountString = QByteArray::number(nonceCount, 16);
+    auto nonceCountString = QByteArray::number(nonceCount, 16);
     while (nonceCountString.length() < 8)
         nonceCountString.prepend('0');
 
-    QByteArray nonce = options.value("nonce");
-    QByteArray opaque = options.value("opaque");
-    QByteArray qop = options.value("qop");
+    auto nonce = options.value("nonce");
+    auto opaque = options.value("opaque");
+    auto qop = options.value("qop");
 
 //    qDebug() << "calculating digest: method=" << method << "path=" << path;
-    QByteArray response = digestMd5ResponseHelper(options.value("algorithm"), user.toLatin1(),
+    auto response = digestMd5ResponseHelper(options.value("algorithm"), user.toLatin1(),
                                               realm.toLatin1(), password.toLatin1(),
                                               nonce, nonceCountString,
                                               cnonce, qop, method,
@@ -937,8 +937,8 @@ static void qStreamNtlmString(QDataStream& ds, const QString& s, bool unicode)
         qStreamNtlmBuffer(ds, s.toLatin1());
         return;
     }
-    const ushort *d = s.utf16();
-    for (int i = 0; i < s.length(); ++i)
+    auto d = s.utf16();
+    for (auto i = 0; i < s.length(); ++i)
         ds << d[i];
 }
 
@@ -1080,9 +1080,9 @@ static QByteArray qNtlmPhase1()
 static QByteArray qStringAsUcs2Le(const QString& src)
 {
     QByteArray rc(2*src.length(), 0);
-    const unsigned short *s = src.utf16();
-    unsigned short *d = (unsigned short*)rc.data();
-    for (int i = 0; i < src.length(); ++i) {
+    auto s = src.utf16();
+    auto d = (unsigned short*)rc.data();
+    for (auto i = 0; i < src.length(); ++i) {
         d[i] = qToLittleEndian(s[i]);
     }
     return rc;
@@ -1092,8 +1092,8 @@ static QByteArray qStringAsUcs2Le(const QString& src)
 static QString qStringFromUcs2Le(QByteArray src)
 {
     Q_ASSERT(src.size() % 2 == 0);
-    unsigned short *d = (unsigned short*)src.data();
-    for (int i = 0; i < src.length() / 2; ++i) {
+    auto d = (unsigned short*)src.data();
+    for (auto i = 0; i < src.length() / 2; ++i) {
         d[i] = qFromLittleEndian(d[i]);
     }
     return QString((const QChar *)src.data(), src.size()/2);
@@ -1148,12 +1148,12 @@ QByteArray qEncodeHmacMd5(QByteArray &key, const QByteArray &message)
     //iKeyPad, oKeyPad and key are all of same size "blockSize"
 
     //xor of iKeyPad with Key and store the result into iKeyPad
-    for(int i = 0; i<key.size();i++) {
+    for(auto i = 0; i<key.size();i++) {
         iKeyPad[i] = key[i]^iKeyPad[i];
     }
 
     //xor of oKeyPad with Key and store the result into oKeyPad
-    for(int i = 0; i<key.size();i++) {
+    for(auto i = 0; i<key.size();i++) {
         oKeyPad[i] = key[i]^oKeyPad[i];
     }
 
@@ -1190,10 +1190,10 @@ static QByteArray qCreatev2Hash(const QAuthenticatorPrivate *ctx,
     // only once and stored and reused
     if(phase3->v2Hash.size() == 0) {
         QCryptographicHash md4(QCryptographicHash::Md4);
-        QByteArray passUnicode = qStringAsUcs2Le(ctx->password);
+        auto passUnicode = qStringAsUcs2Le(ctx->password);
         md4.addData(passUnicode.data(), passUnicode.size());
 
-        QByteArray hashKey = md4.result();
+        auto hashKey = md4.result();
         Q_ASSERT(hashKey.size() == 16);
         // Assuming the user and domain is always unicode in challenge
         QByteArray message =
@@ -1208,7 +1208,7 @@ static QByteArray qCreatev2Hash(const QAuthenticatorPrivate *ctx,
 static QByteArray clientChallenge(const QAuthenticatorPrivate *ctx)
 {
     Q_ASSERT(ctx->cnonce.size() >= 8);
-    QByteArray clientCh = ctx->cnonce.right(8);
+    auto clientCh = ctx->cnonce.right(8);
     return clientCh;
 }
 
@@ -1284,7 +1284,7 @@ static QByteArray qEncodeNtlmv2Response(const QAuthenticatorPrivate *ctx,
     }
 
     //8 byte client challenge
-    QByteArray clientCh = clientChallenge(ctx);
+    auto clientCh = clientChallenge(ctx);
     ds.writeRawData(clientCh.constData(), clientCh.size());
 
     //Reserved
@@ -1303,7 +1303,7 @@ static QByteArray qEncodeNtlmv2Response(const QAuthenticatorPrivate *ctx,
     QByteArray message((const char*)ch.challenge, sizeof(ch.challenge));
     message.append(temp);
 
-    QByteArray ntChallengeResp = qEncodeHmacMd5(phase3->v2Hash, message);
+    auto ntChallengeResp = qEncodeHmacMd5(phase3->v2Hash, message);
     ntChallengeResp.append(temp);
 
     return ntChallengeResp;
@@ -1318,11 +1318,11 @@ static QByteArray qEncodeLmv2Response(const QAuthenticatorPrivate *ctx,
     qCreatev2Hash(ctx, phase3);
 
     QByteArray message((const char*)ch.challenge, sizeof(ch.challenge));
-    QByteArray clientCh = clientChallenge(ctx);
+    auto clientCh = clientChallenge(ctx);
 
     message.append(clientCh);
 
-    QByteArray lmChallengeResp = qEncodeHmacMd5(phase3->v2Hash, message);
+    auto lmChallengeResp = qEncodeHmacMd5(phase3->v2Hash, message);
     lmChallengeResp.append(clientCh);
 
     return lmChallengeResp;

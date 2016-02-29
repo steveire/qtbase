@@ -714,7 +714,7 @@ void QNetworkSession::connectNotify(const QMetaMethod &signal)
 
     //check for preferredConfigurationChanged() signal connect notification
     //This is not required on all platforms
-    static const QMetaMethod preferredConfigurationChangedSignal =
+    static const auto preferredConfigurationChangedSignal =
             QMetaMethod::fromSignal(&QNetworkSession::preferredConfigurationChanged);
     if (signal == preferredConfigurationChangedSignal)
         d->setALREnabled(true);
@@ -737,7 +737,7 @@ void QNetworkSession::disconnectNotify(const QMetaMethod &signal)
 
     //check for preferredConfigurationChanged() signal disconnect notification
     //This is not required on all platforms
-    static const QMetaMethod preferredConfigurationChangedSignal =
+    static const auto preferredConfigurationChangedSignal =
             QMetaMethod::fromSignal(&QNetworkSession::preferredConfigurationChanged);
     if (signal == preferredConfigurationChangedSignal)
         d->setALREnabled(false);

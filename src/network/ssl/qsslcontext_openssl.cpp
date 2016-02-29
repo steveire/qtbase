@@ -60,13 +60,13 @@ static DH *get_dh1024()
     // Default DH params
     // 1024-bit MODP Group
     // From RFC 2409
-    QByteArray params = QByteArray::fromBase64(
+    auto params = QByteArray::fromBase64(
        QByteArrayLiteral("MIGHAoGBAP//////////yQ/aoiFowjTExmKLgNwc0SkCTgiKZ8x0Agu+pjsTmyJR" \
                          "Sgh5jjQE3e+VGbPNOkMbMCsKbfJfFDdP4TVtbVHCReSFtXZiXn7G9ExC6aY37WsL" \
                          "/1y29Aa37e44a/taiZ+lrp8kEXxLH+ZJKGZR7OZTgf//////////AgEC"));
 
-    const char *ptr = params.constData();
-    DH *dh = q_d2i_DHparams(NULL, reinterpret_cast<const unsigned char **>(&ptr), params.length());
+    auto ptr = params.constData();
+    auto dh = q_d2i_DHparams(NULL, reinterpret_cast<const unsigned char **>(&ptr), params.length());
 
     return dh;
 }
@@ -103,10 +103,10 @@ void QSslContext::initSslContext(QSslContext *sslContext, QSslSocket::SslMode mo
     sslContext->sslConfiguration = configuration;
     sslContext->errorCode = QSslError::NoError;
 
-    bool client = (mode == QSslSocket::SslClientMode);
+    auto client = (mode == QSslSocket::SslClientMode);
 
-    bool reinitialized = false;
-    bool unsupportedProtocol = false;
+    auto reinitialized = false;
+    auto unsupportedProtocol = false;
 init_context:
     switch (sslContext->sslConfiguration.protocol()) {
     case QSsl::SslV2:
@@ -191,7 +191,7 @@ init_context:
     }
 
     // Enable bug workarounds.
-    long options = QSslSocketBackendPrivate::setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
+    auto options = QSslSocketBackendPrivate::setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
     q_SSL_CTX_set_options(sslContext->ctx, options);
 
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
@@ -203,8 +203,8 @@ init_context:
 
     // Initialize ciphers
     QByteArray cipherString;
-    bool first = true;
-    QList<QSslCipher> ciphers = sslContext->sslConfiguration.ciphers();
+    auto first = true;
+    auto ciphers = sslContext->sslConfiguration.ciphers();
     if (ciphers.isEmpty())
         ciphers = QSslSocketPrivate::defaultCiphers();
     foreach (const QSslCipher &cipher, ciphers) {
@@ -221,7 +221,7 @@ init_context:
         return;
     }
 
-    const QDateTime now = QDateTime::currentDateTimeUtc();
+    const auto now = QDateTime::currentDateTimeUtc();
 
     // Add all our CAs to this store.
     foreach (const QSslCertificate &caCertificate, sslContext->sslConfiguration.caCertificates()) {
@@ -243,8 +243,8 @@ init_context:
 
     if (QSslSocketPrivate::s_loadRootCertsOnDemand && allowRootCertOnDemandLoading) {
         // tell OpenSSL the directories where to look up the root certs on demand
-        QList<QByteArray> unixDirs = QSslSocketPrivate::unixRootCertDirectories();
-        for (int a = 0; a < unixDirs.count(); ++a)
+        auto unixDirs = QSslSocketPrivate::unixRootCertDirectories();
+        for (auto a = 0; a < unixDirs.count(); ++a)
             q_SSL_CTX_load_verify_locations(sslContext->ctx, 0, unixDirs.at(a).constData());
     }
 
@@ -297,7 +297,7 @@ init_context:
         }
 
         // If we have any intermediate certificates then we need to add them to our chain
-        bool first = true;
+        auto first = true;
         foreach (const QSslCertificate &cert, configuration.d->localCertificateChain) {
             if (first) {
                 first = false;
@@ -344,7 +344,7 @@ init_context:
     }
 #endif // OPENSSL_NO_EC
 
-    const QVector<QSslEllipticCurve> qcurves = sslContext->sslConfiguration.ellipticCurves();
+    const auto qcurves = sslContext->sslConfiguration.ellipticCurves();
     if (!qcurves.isEmpty()) {
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_EC)
         // Set the curves to be used
@@ -370,14 +370,14 @@ init_context:
 
 QSslContext* QSslContext::fromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
 {
-    QSslContext *sslContext = new QSslContext();
+    auto sslContext = new QSslContext();
     initSslContext(sslContext, mode, configuration, allowRootCertOnDemandLoading);
     return sslContext;
 }
 
 QSharedPointer<QSslContext> QSslContext::sharedFromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
 {
-    QSharedPointer<QSslContext> sslContext = QSharedPointer<QSslContext>::create();
+    auto sslContext = QSharedPointer<QSslContext>::create();
     initSslContext(sslContext.data(), mode, configuration, allowRootCertOnDemandLoading);
     return sslContext;
 }
@@ -387,7 +387,7 @@ QSharedPointer<QSslContext> QSslContext::sharedFromConfiguration(QSslSocket::Ssl
 static int next_proto_cb(SSL *, unsigned char **out, unsigned char *outlen,
                          const unsigned char *in, unsigned int inlen, void *arg)
 {
-    QSslContext::NPNContext *ctx = reinterpret_cast<QSslContext::NPNContext *>(arg);
+    auto ctx = reinterpret_cast<QSslContext::NPNContext *>(arg);
 
     // comment out to debug:
 //    QList<QByteArray> supportedVersions;
@@ -397,7 +397,7 @@ static int next_proto_cb(SSL *, unsigned char **out, unsigned char *outlen,
 //        i += in[i] + 1;
 //    }
 
-    int proto = q_SSL_select_next_proto(out, outlen, in, inlen, ctx->data, ctx->len);
+    auto proto = q_SSL_select_next_proto(out, outlen, in, inlen, ctx->data, ctx->len);
     switch (proto) {
     case OPENSSL_NPN_UNSUPPORTED:
         ctx->status = QSslConfiguration::NextProtocolNegotiationNone;
@@ -424,12 +424,12 @@ QSslContext::NPNContext QSslContext::npnContext() const
 // Needs to be deleted by caller
 SSL* QSslContext::createSsl()
 {
-    SSL* ssl = q_SSL_new(ctx);
+    auto ssl = q_SSL_new(ctx);
     q_SSL_clear(ssl);
 
     if (!session && !sessionASN1().isEmpty()
             && !sslConfiguration.testSslOption(QSsl::SslOptionDisableSessionPersistence)) {
-        const unsigned char *data = reinterpret_cast<const unsigned char *>(m_sessionASN1.constData());
+        auto data = reinterpret_cast<const unsigned char *>(m_sessionASN1.constData());
         session = q_d2i_SSL_SESSION(0, &data, m_sessionASN1.size()); // refcount is 1 already, set by function above
     }
 
@@ -443,10 +443,10 @@ SSL* QSslContext::createSsl()
     }
 
 #if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
-    QList<QByteArray> protocols = sslConfiguration.d->nextAllowedProtocols;
+    auto protocols = sslConfiguration.d->nextAllowedProtocols;
     if (!protocols.isEmpty()) {
         m_supportedNPNVersions.clear();
-        for (int a = 0; a < protocols.count(); ++a) {
+        for (auto a = 0; a < protocols.count(); ++a) {
             if (protocols.at(a).size() > 255) {
                 qCWarning(lcSsl) << "TLS NPN extension" << protocols.at(a)
                                  << "is too long and will be truncated to 255 characters.";
@@ -480,10 +480,10 @@ bool QSslContext::cacheSession(SSL* ssl)
     session = q_SSL_get1_session(ssl);
 
     if (session && !sslConfiguration.testSslOption(QSsl::SslOptionDisableSessionPersistence)) {
-        int sessionSize = q_i2d_SSL_SESSION(session, 0);
+        auto sessionSize = q_i2d_SSL_SESSION(session, 0);
         if (sessionSize > 0) {
             m_sessionASN1.resize(sessionSize);
-            unsigned char *data = reinterpret_cast<unsigned char *>(m_sessionASN1.data());
+            auto data = reinterpret_cast<unsigned char *>(m_sessionASN1.data());
             if (!q_i2d_SSL_SESSION(session, &data))
                 qCWarning(lcSsl, "could not store persistent version of SSL session");
             m_sessionTicketLifeTimeHint = session->tlsext_tick_lifetime_hint;

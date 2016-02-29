@@ -169,8 +169,8 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             ns->sin6_port = htons(53);
             SetSALen::set(ns, sizeof(*ns));
 
-            Q_IPV6ADDR ipv6Address = nameserver.toIPv6Address();
-            for (int i=0; i<16; i++) {
+            auto ipv6Address = nameserver.toIPv6Address();
+            for (auto i=0; i<16; i++) {
                 ns->sin6_addr.s6_addr[i] = ipv6Address[i];
             }
 #else
@@ -189,10 +189,10 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     // Perform DNS query.
     unsigned char response[PACKETSZ];
     memset(response, 0, sizeof(response));
-    const int responseLength = local_res_nquery(&state, requestName, C_IN, requestType, response, sizeof(response));
+    const auto responseLength = local_res_nquery(&state, requestName, C_IN, requestType, response, sizeof(response));
 
     // Check the response header.
-    HEADER *header = (HEADER*)response;
+    auto header = (HEADER*)response;
     const int answerCount = ntohs(header->ancount);
     switch (header->rcode) {
     case NOERROR:
@@ -228,8 +228,8 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
 
     // Skip the query host, type (2 bytes) and class (2 bytes).
     char host[PACKETSZ], answer[PACKETSZ];
-    unsigned char *p = response + sizeof(HEADER);
-    int status = local_dn_expand(response, response + responseLength, p, host, sizeof(host));
+    auto p = response + sizeof(HEADER);
+    auto status = local_dn_expand(response, response + responseLength, p, host, sizeof(host));
     if (status < 0) {
         reply->error = QDnsLookup::InvalidReplyError;
         reply->errorString = tr("Could not expand domain name");
@@ -238,7 +238,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     p += status + 4;
 
     // Extract results.
-    int answerIndex = 0;
+    auto answerIndex = 0;
     while ((p < response + responseLength) && (answerIndex < answerCount)) {
         status = local_dn_expand(response, response + responseLength, p, host, sizeof(host));
         if (status < 0) {
@@ -246,7 +246,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             reply->errorString = tr("Could not expand domain name");
             return;
         }
-        const QString name = QUrl::fromAce(host);
+        const auto name = QUrl::fromAce(host);
 
         p += status;
         const quint16 type = (p[0] << 8) | p[1];
@@ -349,12 +349,12 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             record.d->weight = weight;
             reply->serviceRecords.append(record);
         } else if (type == QDnsLookup::TXT) {
-            unsigned char *txt = p;
+            auto txt = p;
             QDnsTextRecord record;
             record.d->name = name;
             record.d->timeToLive = ttl;
             while (txt < p + size) {
-                const unsigned char length = *txt;
+                const auto length = *txt;
                 txt++;
                 if (txt + length > p + size) {
                     reply->error = QDnsLookup::InvalidReplyError;

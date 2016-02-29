@@ -191,7 +191,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     }
 
     // IDN support
-    QByteArray aceHostname = QUrl::toAce(hostName);
+    auto aceHostname = QUrl::toAce(hostName);
     results.setHostName(hostName);
     if (aceHostname.isEmpty()) {
         results.setError(QHostInfo::HostNotFound);
@@ -212,7 +212,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     hints.ai_flags = Q_ADDRCONFIG;
 #endif
 
-    int result = getaddrinfo(aceHostname.constData(), 0, &hints, &res);
+    auto result = getaddrinfo(aceHostname.constData(), 0, &hints, &res);
 # ifdef Q_ADDRCONFIG
     if (result == EAI_BADFLAGS) {
         // if the lookup failed with AI_ADDRCONFIG set, try again without it
@@ -222,7 +222,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 # endif
 
     if (result == 0) {
-        addrinfo *node = res;
+        auto node = res;
         QList<QHostAddress> addresses;
         while (node) {
 #ifdef QHOSTINFO_DEBUG
@@ -236,7 +236,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
             }
             else if (node->ai_family == AF_INET6) {
                 QHostAddress addr;
-                sockaddr_in6 *sa6 = (sockaddr_in6 *) node->ai_addr;
+                auto sa6 = (sockaddr_in6 *) node->ai_addr;
                 addr.setAddress(sa6->sin6_addr.s6_addr);
                 if (sa6->sin6_scope_id)
                     addr.setScopeId(QString::number(sa6->sin6_scope_id));
@@ -331,7 +331,7 @@ QString QHostInfo::localDomainName()
         Q_CHECK_PTR(state);
         memset(state, 0, sizeof(*state));
         local_res_ninit(state);
-        QString domainName = QUrl::fromAce(state->defdname);
+        auto domainName = QUrl::fromAce(state->defdname);
         if (domainName.isEmpty())
             domainName = QUrl::fromAce(state->dnsrch[0]);
         local_res_nclose(state);
@@ -349,7 +349,7 @@ QString QHostInfo::localDomainName()
         QMutexLocker locker(&getHostByNameMutex);
 #endif
         local_res_init();
-        QString domainName = QUrl::fromAce(local_res->defdname);
+        auto domainName = QUrl::fromAce(local_res->defdname);
         if (domainName.isEmpty())
             domainName = QUrl::fromAce(local_res->dnsrch[0]);
         return domainName;
@@ -367,14 +367,14 @@ QString QHostInfo::localDomainName()
 
     QString domainName;
     while (!resolvconf.atEnd()) {
-        QByteArray line = resolvconf.readLine().trimmed();
+        auto line = resolvconf.readLine().trimmed();
         if (line.startsWith("domain "))
             return QUrl::fromAce(line.mid(sizeof "domain " - 1).trimmed());
 
         // in case there's no "domain" line, fall back to the first "search" entry
         if (domainName.isEmpty() && line.startsWith("search ")) {
-            QByteArray searchDomain = line.mid(sizeof "search " - 1).trimmed();
-            int pos = searchDomain.indexOf(' ');
+            auto searchDomain = line.mid(sizeof "search " - 1).trimmed();
+            auto pos = searchDomain.indexOf(' ');
             if (pos != -1)
                 searchDomain.truncate(pos);
             domainName = QUrl::fromAce(searchDomain);

@@ -67,7 +67,7 @@ public:
 
     QNetworkAuthenticationCredential *findClosestMatch(const QString &domain)
     {
-        iterator it = std::lower_bound(begin(), end(), domain);
+        auto it = std::lower_bound(begin(), end(), domain);
         if (it == end() && !isEmpty())
             --it;
         if (it == end() || !domain.startsWith(it->domain))
@@ -77,7 +77,7 @@ public:
 
     void insert(const QString &domain, const QString &user, const QString &password)
     {
-        QNetworkAuthenticationCredential *closestMatch = findClosestMatch(domain);
+        auto closestMatch = findClosestMatch(domain);
         if (closestMatch && closestMatch->domain == domain) {
             // we're overriding the current credentials
             closestMatch->user = user;
@@ -140,7 +140,7 @@ static QByteArray proxyAuthenticationKey(const QNetworkProxy &proxy, const QStri
 
 static inline QByteArray authenticationKey(const QUrl &url, const QString &realm)
 {
-    QUrl copy = url;
+    auto copy = url;
     copy.setFragment(realm);
     return "auth:" + copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery);
 }
@@ -156,8 +156,8 @@ void QNetworkAccessAuthenticationManager::cacheProxyCredentials(const QNetworkPr
 
     QMutexLocker mutexLocker(&mutex);
 
-    QString realm = authenticator->realm();
-    QNetworkProxy proxy = p;
+    auto realm = authenticator->realm();
+    auto proxy = p;
     proxy.setUser(authenticator->user());
 
     // don't cache null passwords, empty password may be valid though
@@ -168,11 +168,11 @@ void QNetworkAccessAuthenticationManager::cacheProxyCredentials(const QNetworkPr
     do {
         // Set two credentials actually: one with and one without the realm
         do {
-            QByteArray cacheKey = proxyAuthenticationKey(proxy, realm);
+            auto cacheKey = proxyAuthenticationKey(proxy, realm);
             if (cacheKey.isEmpty())
                 return;             // should not happen
 
-            QNetworkAuthenticationCache *auth = new QNetworkAuthenticationCache;
+            auto auth = new QNetworkAuthenticationCache;
             auth->insert(QString(), authenticator->user(), authenticator->password());
             authenticationCache.addEntry(cacheKey, auth); // replace the existing one, if there's any
 
@@ -194,7 +194,7 @@ QNetworkAuthenticationCredential
 QNetworkAccessAuthenticationManager::fetchCachedProxyCredentials(const QNetworkProxy &p,
                                                      const QAuthenticator *authenticator)
 {
-    QNetworkProxy proxy = p;
+    auto proxy = p;
     if (proxy.type() == QNetworkProxy::DefaultProxy) {
         proxy = QNetworkProxy::applicationProxy();
     }
@@ -206,15 +206,15 @@ QNetworkAccessAuthenticationManager::fetchCachedProxyCredentials(const QNetworkP
         realm = authenticator->realm();
 
     QMutexLocker mutexLocker(&mutex);
-    QByteArray cacheKey = proxyAuthenticationKey(proxy, realm);
+    auto cacheKey = proxyAuthenticationKey(proxy, realm);
     if (cacheKey.isEmpty())
         return QNetworkAuthenticationCredential();
     if (!authenticationCache.hasEntry(cacheKey))
         return QNetworkAuthenticationCredential();
 
-    QNetworkAuthenticationCache *auth =
+    auto auth =
         static_cast<QNetworkAuthenticationCache *>(authenticationCache.requestEntryNow(cacheKey));
-    QNetworkAuthenticationCredential cred = *auth->findClosestMatch(QString());
+    auto cred = *auth->findClosestMatch(QString());
     authenticationCache.releaseEntry(cacheKey);
 
     // proxy cache credentials always have exactly one item
@@ -231,23 +231,23 @@ void QNetworkAccessAuthenticationManager::cacheCredentials(const QUrl &url,
     Q_ASSERT(authenticator);
     if (authenticator->isNull())
         return;
-    QString domain = QString::fromLatin1("/"); // FIXME: make QAuthenticator return the domain
-    QString realm = authenticator->realm();
+    auto domain = QString::fromLatin1("/"); // FIXME: make QAuthenticator return the domain
+    auto realm = authenticator->realm();
 
     QMutexLocker mutexLocker(&mutex);
 
     // Set two credentials actually: one with and one without the username in the URL
-    QUrl copy = url;
+    auto copy = url;
     copy.setUserName(authenticator->user());
     do {
-        QByteArray cacheKey = authenticationKey(copy, realm);
+        auto cacheKey = authenticationKey(copy, realm);
         if (authenticationCache.hasEntry(cacheKey)) {
-            QNetworkAuthenticationCache *auth =
+            auto auth =
                 static_cast<QNetworkAuthenticationCache *>(authenticationCache.requestEntryNow(cacheKey));
             auth->insert(domain, authenticator->user(), authenticator->password());
             authenticationCache.releaseEntry(cacheKey);
         } else {
-            QNetworkAuthenticationCache *auth = new QNetworkAuthenticationCache;
+            auto auth = new QNetworkAuthenticationCache;
             auth->insert(domain, authenticator->user(), authenticator->password());
             authenticationCache.addEntry(cacheKey, auth);
         }
@@ -282,15 +282,15 @@ QNetworkAccessAuthenticationManager::fetchCachedCredentials(const QUrl &url,
     if (authentication)
         realm = authentication->realm();
 
-    QByteArray cacheKey = authenticationKey(url, realm);
+    auto cacheKey = authenticationKey(url, realm);
 
     QMutexLocker mutexLocker(&mutex);
     if (!authenticationCache.hasEntry(cacheKey))
         return QNetworkAuthenticationCredential();
 
-    QNetworkAuthenticationCache *auth =
+    auto auth =
         static_cast<QNetworkAuthenticationCache *>(authenticationCache.requestEntryNow(cacheKey));
-    QNetworkAuthenticationCredential *cred = auth->findClosestMatch(url.path());
+    auto cred = auth->findClosestMatch(url.path());
     QNetworkAuthenticationCredential ret;
     if (cred)
         ret = *cred;

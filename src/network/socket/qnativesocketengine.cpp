@@ -321,11 +321,11 @@ void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, Er
  */
 QHostAddress QNativeSocketEnginePrivate::adjustAddressProtocol(const QHostAddress &address) const
 {
-    QAbstractSocket::NetworkLayerProtocol targetProtocol = socketProtocol;
+    auto targetProtocol = socketProtocol;
     if (Q_LIKELY(targetProtocol == QAbstractSocket::UnknownNetworkLayerProtocol))
         return address;
 
-    QAbstractSocket::NetworkLayerProtocol sourceProtocol = address.protocol();
+    auto sourceProtocol = address.protocol();
 
     if (targetProtocol == QAbstractSocket::AnyIPProtocol)
         targetProtocol = QAbstractSocket::IPv6Protocol;
@@ -336,7 +336,7 @@ QHostAddress QNativeSocketEnginePrivate::adjustAddressProtocol(const QHostAddres
 
     if (targetProtocol == QAbstractSocket::IPv4Protocol && sourceProtocol == QAbstractSocket::IPv6Protocol) {
         // convert to IPv4 if the source is a v4-mapped address
-        quint32 ip4 = address.toIPv4Address();
+        auto ip4 = address.toIPv4Address();
         if (ip4)
             return QHostAddress(ip4);
     }
@@ -350,11 +350,11 @@ bool QNativeSocketEnginePrivate::checkProxy(const QHostAddress &address)
         return true;
 
 #if !defined(QT_NO_NETWORKPROXY)
-    QObject *parent = q_func()->parent();
+    auto parent = q_func()->parent();
     QNetworkProxy proxy;
-    if (QAbstractSocket *socket = qobject_cast<QAbstractSocket *>(parent)) {
+    if (auto socket = qobject_cast<QAbstractSocket *>(parent)) {
         proxy = socket->proxy();
-    } else if (QTcpServer *server = qobject_cast<QTcpServer *>(parent)) {
+    } else if (auto server = qobject_cast<QTcpServer *>(parent)) {
         proxy = server->proxy();
     } else {
         // no parent -> no proxy
@@ -572,7 +572,7 @@ bool QNativeSocketEngine::connectToHost(const QHostAddress &address, quint16 por
 
     d->peerAddress = address;
     d->peerPort = port;
-    bool connected = d->nativeConnect(d->adjustAddressProtocol(address), port);
+    auto connected = d->nativeConnect(d->adjustAddressProtocol(address), port);
     if (connected)
         d->fetchConnectionParameters();
 
@@ -878,7 +878,7 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxSize)
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::read(), -1);
     Q_CHECK_STATES(QNativeSocketEngine::read(), QAbstractSocket::ConnectedState, QAbstractSocket::BoundState, -1);
 
-    qint64 readBytes = d->nativeRead(data, maxSize);
+    auto readBytes = d->nativeRead(data, maxSize);
 
     // Handle remote close
     if (readBytes == 0 && d->socketType == QAbstractSocket::TcpSocket) {
@@ -961,7 +961,7 @@ bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
     if (timedOut)
         *timedOut = false;
 
-    int ret = d->nativeSelect(msecs, true);
+    auto ret = d->nativeSelect(msecs, true);
     if (ret == 0) {
         if (timedOut)
             *timedOut = true;
@@ -1001,7 +1001,7 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
     if (timedOut)
         *timedOut = false;
 
-    int ret = d->nativeSelect(msecs, false);
+    auto ret = d->nativeSelect(msecs, false);
     // On Windows, the socket is in connected state if a call to
     // select(writable) is successful. In this case we should not
     // issue a second call to WSAConnect()
@@ -1054,7 +1054,7 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
     Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForReadOrWrite(),
                       QAbstractSocket::UnconnectedState, false);
 
-    int ret = d->nativeSelect(msecs, checkRead, checkWrite, readyToRead, readyToWrite);
+    auto ret = d->nativeSelect(msecs, checkRead, checkWrite, readyToRead, readyToWrite);
     // On Windows, the socket is in connected state if a call to
     // select(writable) is successful. In this case we should not
     // issue a second call to WSAConnect()

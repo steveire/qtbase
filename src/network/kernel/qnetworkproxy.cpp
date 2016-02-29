@@ -322,7 +322,7 @@ QList<QNetworkProxy> QGlobalNetworkProxy::proxyForQuery(const QNetworkProxyQuery
 
     // don't look for proxies for a local connection
     QHostAddress parsed;
-    QString hostname = query.url().host();
+    auto hostname = query.url().host();
     if (hostname == QLatin1String("localhost")
         || hostname.startsWith(QLatin1String("localhost."))
         || (parsed.setAddress(hostname)
@@ -436,7 +436,7 @@ template<> void QSharedDataPointer<QNetworkProxyPrivate>::detach()
 {
     if (d && d->ref.load() == 1)
         return;
-    QNetworkProxyPrivate *x = (d ? new QNetworkProxyPrivate(*d)
+    auto x = (d ? new QNetworkProxyPrivate(*d)
                                : new QNetworkProxyPrivate);
     x->ref.ref();
     if (d && !d->ref.deref())
@@ -801,7 +801,7 @@ QByteArray QNetworkProxy::rawHeader(const QByteArray &headerName) const
 {
     if (d->type != HttpProxy && d->type != HttpCachingProxy)
         return QByteArray();
-    QNetworkHeadersPrivate::RawHeadersList::ConstIterator it =
+    auto it =
         d->headers.findRawHeader(headerName);
     if (it != d->headers.rawHeaders.constEnd())
         return it->second;
@@ -880,7 +880,7 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
 {
     if (d && d->ref.load() == 1)
         return;
-    QNetworkProxyQueryPrivate *x = (d ? new QNetworkProxyQueryPrivate(*d)
+    auto x = (d ? new QNetworkProxyQueryPrivate(*d)
                                     : new QNetworkProxyQueryPrivate);
     x->ref.ref();
     if (d && !d->ref.deref())
@@ -1577,7 +1577,7 @@ QDebug operator<<(QDebug debug, const QNetworkProxy &proxy)
 {
     QDebugStateSaver saver(debug);
     debug.resetFormat().nospace();
-    QNetworkProxy::ProxyType type = proxy.type();
+    auto type = proxy.type();
     switch (type) {
     case QNetworkProxy::NoProxy:
         debug << "NoProxy ";
@@ -1602,7 +1602,7 @@ QDebug operator<<(QDebug debug, const QNetworkProxy &proxy)
         break;
     }
     debug << '"' << proxy.hostName() << ':' << proxy.port() << "\" ";
-    QNetworkProxy::Capabilities caps = proxy.capabilities();
+    auto caps = proxy.capabilities();
     QStringList scaps;
     if (caps & QNetworkProxy::TunnelingCapability)
         scaps << QStringLiteral("Tunnel");

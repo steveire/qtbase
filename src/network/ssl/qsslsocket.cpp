@@ -502,7 +502,7 @@ bool QSslSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState state
 #endif
     if (!d->plainSocket)
         d->createPlainSocket(openMode);
-    bool retVal = d->plainSocket->setSocketDescriptor(socketDescriptor, state, openMode);
+    auto retVal = d->plainSocket->setSocketDescriptor(socketDescriptor, state, openMode);
     d->cachedSocketDescriptor = d->plainSocket->socketDescriptor();
     d->setError(d->plainSocket->error(), d->plainSocket->errorString());
     setSocketState(state);
@@ -895,7 +895,7 @@ QSslConfiguration QSslSocket::sslConfiguration() const
     Q_D(const QSslSocket);
 
     // create a deep copy of our configuration
-    QSslConfigurationPrivate *copy = new QSslConfigurationPrivate(d->configuration);
+    auto copy = new QSslConfigurationPrivate(d->configuration);
     copy->ref.store(0);              // the QSslConfiguration constructor refs up
     copy->sessionCipher = d->sessionCipher();
     copy->sessionProtocol = d->sessionProtocol();
@@ -1332,7 +1332,7 @@ bool QSslSocket::addCaCertificates(const QString &path, QSsl::EncodingFormat for
                                    QRegExp::PatternSyntax syntax)
 {
     Q_D(QSslSocket);
-    QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
+    auto certs = QSslCertificate::fromPath(path, format, syntax);
     if (certs.isEmpty())
         return false;
 
@@ -1537,7 +1537,7 @@ bool QSslSocket::waitForConnected(int msecs)
     Q_D(QSslSocket);
     if (!d->plainSocket)
         return false;
-    bool retVal = d->plainSocket->waitForConnected(msecs);
+    auto retVal = d->plainSocket->waitForConnected(msecs);
     if (!retVal) {
         setSocketState(d->plainSocket->state());
         d->setError(d->plainSocket->error(), d->plainSocket->errorString());
@@ -1605,8 +1605,8 @@ bool QSslSocket::waitForReadyRead(int msecs)
     // So we initialize "readyReadEmitted" to false and check if it was set to true.
     // waitForReadyRead() could be called recursively, so we can't use the same variable
     // (the inner waitForReadyRead() may fail, but the outer one still succeeded)
-    bool readyReadEmitted = false;
-    bool *previousReadyReadEmittedPointer = d->readyReadEmittedPointer;
+    auto readyReadEmitted = false;
+    auto previousReadyReadEmittedPointer = d->readyReadEmittedPointer;
     d->readyReadEmittedPointer = &readyReadEmitted;
 
     QElapsedTimer stopWatch;
@@ -1692,7 +1692,7 @@ bool QSslSocket::waitForDisconnected(int msecs)
         if (!waitForEncrypted(msecs))
             return false;
     }
-    bool retVal = d->plainSocket->waitForDisconnected(qt_subtract_from_timeout(msecs, stopWatch.elapsed()));
+    auto retVal = d->plainSocket->waitForDisconnected(qt_subtract_from_timeout(msecs, stopWatch.elapsed()));
     if (!retVal) {
         setSocketState(d->plainSocket->state());
         d->setError(d->plainSocket->error(), d->plainSocket->errorString());
@@ -2150,7 +2150,7 @@ bool QSslSocketPrivate::addDefaultCaCertificates(const QString &path, QSsl::Enco
                                                  QRegExp::PatternSyntax syntax)
 {
     QSslSocketPrivate::ensureInitialized();
-    QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
+    auto certs = QSslCertificate::fromPath(path, format, syntax);
     if (certs.isEmpty())
         return false;
 
@@ -2212,7 +2212,7 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
 {
     QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
-    const QSslConfigurationPrivate *global = globalData()->config.constData();
+    auto global = globalData()->config.constData();
 
     if (!global)
         return;
@@ -2323,7 +2323,7 @@ bool QSslSocketPrivate::bind(const QHostAddress &address, quint16 port, QAbstrac
 #endif
         createPlainSocket(QIODevice::ReadWrite);
     }
-    bool ret = plainSocket->bind(address, port, mode);
+    auto ret = plainSocket->bind(address, port, mode);
     localPort = plainSocket->localPort();
     localAddress = plainSocket->localAddress();
     cachedSocketDescriptor = plainSocket->socketDescriptor();
@@ -2416,7 +2416,7 @@ void QSslSocketPrivate::_q_errorSlot(QAbstractSocket::SocketError error)
 #endif
     // this moves encrypted bytes from plain socket into our buffer
     if (plainSocket->bytesAvailable()) {
-        qint64 tmpReadBufferMaxSize = readBufferMaxSize;
+        auto tmpReadBufferMaxSize = readBufferMaxSize;
         readBufferMaxSize = 0; // reset temporarily so the plain sockets completely drained drained
         transmit();
         readBufferMaxSize = tmpReadBufferMaxSize;
@@ -2513,7 +2513,7 @@ bool QSslSocketPrivate::verifyErrorsHaveBeenIgnored()
         // (applies only if the method QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
         // was called)
         doEmitSslError = false;
-        for (int a = 0; a < sslErrors.count(); a++) {
+        for (auto a = 0; a < sslErrors.count(); a++) {
             if (!ignoreErrorsList.contains(sslErrors.at(a))) {
                 doEmitSslError = true;
                 break;
@@ -2536,13 +2536,13 @@ qint64 QSslSocketPrivate::peek(char *data, qint64 maxSize)
     if (mode == QSslSocket::UnencryptedMode && !autoStartHandshake) {
         //unencrypted mode - do not use QIODevice::peek, as it reads ahead data from the plain socket
         //peek at data already in the QIODevice buffer (from a previous read)
-        qint64 r = buffer.peek(data, maxSize, transactionPos);
+        auto r = buffer.peek(data, maxSize, transactionPos);
         if (r == maxSize)
             return r;
         data += r;
         //peek at data in the plain socket
         if (plainSocket) {
-            qint64 r2 = plainSocket->peek(data, maxSize - r);
+            auto r2 = plainSocket->peek(data, maxSize - r);
             if (r2 < 0)
                 return (r > 0 ? r : r2);
             return r + r2;
@@ -2621,8 +2621,8 @@ QSharedPointer<QSslContext> QSslSocketPrivate::sslContext(QSslSocket *socket)
 
 bool QSslSocketPrivate::isMatchingHostname(const QSslCertificate &cert, const QString &peerName)
 {
-    const QString lowerPeerName = peerName.toLower();
-    const QStringList commonNames = cert.subjectInfo(QSslCertificate::CommonName);
+    const auto lowerPeerName = peerName.toLower();
+    const auto commonNames = cert.subjectInfo(QSslCertificate::CommonName);
 
     for (const QString &commonName : commonNames) {
         if (isMatchingHostname(commonName.toLower(), lowerPeerName))
@@ -2641,14 +2641,14 @@ bool QSslSocketPrivate::isMatchingHostname(const QSslCertificate &cert, const QS
 
 bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hostname)
 {
-    int wildcard = cn.indexOf(QLatin1Char('*'));
+    auto wildcard = cn.indexOf(QLatin1Char('*'));
 
     // Check this is a wildcard cert, if not then just compare the strings
     if (wildcard < 0)
         return cn == hostname;
 
-    int firstCnDot = cn.indexOf(QLatin1Char('.'));
-    int secondCnDot = cn.indexOf(QLatin1Char('.'), firstCnDot+1);
+    auto firstCnDot = cn.indexOf(QLatin1Char('.'));
+    auto secondCnDot = cn.indexOf(QLatin1Char('.'), firstCnDot+1);
 
     // Check at least 3 components
     if ((-1 == secondCnDot) || (secondCnDot+1 >= cn.length()))

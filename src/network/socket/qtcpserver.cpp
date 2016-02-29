@@ -196,7 +196,7 @@ void QTcpServerPrivate::readNotification()
             return;
         }
 
-        int descriptor = socketEngine->accept();
+        auto descriptor = socketEngine->accept();
         if (descriptor == -1) {
             if (socketEngine->error() != QAbstractSocket::TemporaryError) {
                 q->pauseAccepting();
@@ -278,13 +278,13 @@ bool QTcpServer::listen(const QHostAddress &address, quint16 port)
         return false;
     }
 
-    QAbstractSocket::NetworkLayerProtocol proto = address.protocol();
-    QHostAddress addr = address;
+    auto proto = address.protocol();
+    auto addr = address;
 
 #ifdef QT_NO_NETWORKPROXY
     static const QNetworkProxy &proxy = *(QNetworkProxy *)0;
 #else
-    QNetworkProxy proxy = d->resolveProxy(addr, port);
+    auto proxy = d->resolveProxy(addr, port);
 #endif
 
     delete d->socketEngine;
@@ -582,7 +582,7 @@ void QTcpServer::incomingConnection(qintptr socketDescriptor)
     qDebug("QTcpServer::incomingConnection(%i)", socketDescriptor);
 #endif
 
-    QTcpSocket *socket = new QTcpSocket(this);
+    auto socket = new QTcpSocket(this);
     socket->setSocketDescriptor(socketDescriptor);
     addPendingConnection(socket);
 }

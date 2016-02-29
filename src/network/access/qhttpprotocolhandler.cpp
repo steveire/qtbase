@@ -70,7 +70,7 @@ void QHttpProtocolHandler::_q_receiveReply()
         return;
     }
 
-    QAbstractSocket::SocketState socketState = m_socket->state();
+    auto socketState = m_socket->state();
 
     // connection might be closed to signal the end of data
     if (socketState == QAbstractSocket::UnconnectedState) {
@@ -91,18 +91,18 @@ void QHttpProtocolHandler::_q_receiveReply()
 
     // read loop for the response
     qint64 bytes = 0;
-    qint64 lastBytes = bytes;
+    auto lastBytes = bytes;
     do {
         lastBytes = bytes;
 
-        QHttpNetworkReplyPrivate::ReplyState state = m_reply->d_func()->state;
+        auto state = m_reply->d_func()->state;
         switch (state) {
         case QHttpNetworkReplyPrivate::NothingDoneState: {
             m_reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
             // fallthrough
         }
         case QHttpNetworkReplyPrivate::ReadingStatusState: {
-            qint64 statusBytes = m_reply->d_func()->readStatus(m_socket);
+            auto statusBytes = m_reply->d_func()->readStatus(m_socket);
             if (statusBytes == -1) {
                 // connection broke while reading status. also handled if later _q_disconnected is called
                 m_channel->handleUnexpectedEOF();
@@ -113,8 +113,8 @@ void QHttpProtocolHandler::_q_receiveReply()
             break;
         }
         case QHttpNetworkReplyPrivate::ReadingHeaderState: {
-            QHttpNetworkReplyPrivate *replyPrivate = m_reply->d_func();
-            qint64 headerBytes = replyPrivate->readHeader(m_socket);
+            auto replyPrivate = m_reply->d_func();
+            auto headerBytes = replyPrivate->readHeader(m_socket);
             if (headerBytes == -1) {
                 // connection broke while reading headers. also handled if later _q_disconnected is called
                 m_channel->handleUnexpectedEOF();
@@ -149,7 +149,7 @@ void QHttpProtocolHandler::_q_receiveReply()
             break;
         }
         case QHttpNetworkReplyPrivate::ReadingDataState: {
-           QHttpNetworkReplyPrivate *replyPrivate = m_reply->d_func();
+           auto replyPrivate = m_reply->d_func();
            if (m_socket->state() == QAbstractSocket::ConnectedState &&
                replyPrivate->downstreamLimited && !replyPrivate->responseData.isEmpty() && replyPrivate->shouldEmitSignals()) {
                // (only do the following when still connected, not when we have already been disconnected and there is still data)
@@ -167,7 +167,7 @@ void QHttpProtocolHandler::_q_receiveReply()
                // this only works when we can tell the user the content length and he/she can allocate
                // the buffer in that size.
                // note that this call will read only from the still buffered data
-               qint64 haveRead = replyPrivate->readBodyVeryFast(m_socket, replyPrivate->userProvidedDownloadBuffer + replyPrivate->totalProgress);
+               auto haveRead = replyPrivate->readBodyVeryFast(m_socket, replyPrivate->userProvidedDownloadBuffer + replyPrivate->totalProgress);
                if (haveRead > 0) {
                    bytes += haveRead;
                    replyPrivate->totalProgress += haveRead;
@@ -183,7 +183,7 @@ void QHttpProtocolHandler::_q_receiveReply()
                  && replyPrivate->bodyLength > 0) {
                  // bulk files like images should fulfill these properties and
                  // we can therefore save on memory copying
-                qint64 haveRead = replyPrivate->readBodyFast(m_socket, &replyPrivate->responseData);
+                auto haveRead = replyPrivate->readBodyFast(m_socket, &replyPrivate->responseData);
                 bytes += haveRead;
                 replyPrivate->totalProgress += haveRead;
                 if (replyPrivate->shouldEmitSignals()) {
@@ -195,7 +195,7 @@ void QHttpProtocolHandler::_q_receiveReply()
             {
                 // use the traditional slower reading (for compressed encoding, chunked encoding,
                 // no content-length etc)
-                qint64 haveRead = replyPrivate->readBody(m_socket, &replyPrivate->responseData);
+                auto haveRead = replyPrivate->readBody(m_socket, &replyPrivate->responseData);
                 if (haveRead > 0) {
                     bytes += haveRead;
                     replyPrivate->totalProgress += haveRead;
@@ -232,7 +232,7 @@ void QHttpProtocolHandler::_q_readyRead()
         // Also check if socket is in ConnectedState since
         // this function may also be invoked via the event loop.
         char c;
-        qint64  ret = m_socket->peek(&c, 1);
+        auto ret = m_socket->peek(&c, 1);
         if (ret < 0) {
             m_channel->_q_error(m_socket->error());
             // We still need to handle the reply so it emits its signals etc.
@@ -272,7 +272,7 @@ bool QHttpProtocolHandler::sendRequest()
             // _q_connected or _q_encrypted
             return false;
         }
-        QString scheme = m_channel->request.url().scheme();
+        auto scheme = m_channel->request.url().scheme();
         if (scheme == QLatin1String("preconnect-http")
             || scheme == QLatin1String("preconnect-https")) {
             m_channel->state = QHttpNetworkConnectionChannel::IdleState;
@@ -286,7 +286,7 @@ bool QHttpProtocolHandler::sendRequest()
         m_channel->written = 0; // excluding the header
         m_channel->bytesTotal = 0;
 
-        QHttpNetworkReplyPrivate *replyPrivate = m_reply->d_func();
+        auto replyPrivate = m_reply->d_func();
         replyPrivate->clear();
         replyPrivate->connection = m_connection;
         replyPrivate->connectionChannel = m_channel;
@@ -296,7 +296,7 @@ bool QHttpProtocolHandler::sendRequest()
         // if the url contains authentication parameters, use the new ones
         // both channels will use the new authentication parameters
         if (!m_channel->request.url().userInfo().isEmpty() && m_channel->request.withCredentials()) {
-            QUrl url = m_channel->request.url();
+            auto url = m_channel->request.url();
             QAuthenticator &auth = m_channel->authenticator;
             if (url.userName() != auth.user()
                 || (!url.password().isEmpty() && url.password() != auth.password())) {
@@ -314,7 +314,7 @@ bool QHttpProtocolHandler::sendRequest()
         if (m_channel->request.withCredentials())
             m_connection->d_func()->createAuthorization(m_socket, m_channel->request);
 #ifndef QT_NO_NETWORKPROXY
-        QByteArray header = QHttpNetworkRequestPrivate::header(m_channel->request,
+        auto header = QHttpNetworkRequestPrivate::header(m_channel->request,
             (m_connection->d_func()->networkProxy.type() != QNetworkProxy::NoProxy));
 #else
         QByteArray header = QHttpNetworkRequestPrivate::header(m_channel->request, false);
@@ -322,7 +322,7 @@ bool QHttpProtocolHandler::sendRequest()
         m_socket->write(header);
         // flushing is dangerous (QSslSocket calls transmit which might read or error)
 //        m_socket->flush();
-        QNonContiguousByteDevice* uploadByteDevice = m_channel->request.uploadByteDevice();
+        auto uploadByteDevice = m_channel->request.uploadByteDevice();
         if (uploadByteDevice) {
             // connect the signals so this function gets called again
             QObject::connect(uploadByteDevice, SIGNAL(readyRead()), m_channel, SLOT(_q_uploadDataReadyRead()));
@@ -341,7 +341,7 @@ bool QHttpProtocolHandler::sendRequest()
     case QHttpNetworkConnectionChannel::WritingState:
     {
         // write the data
-        QNonContiguousByteDevice* uploadByteDevice = m_channel->request.uploadByteDevice();
+        auto uploadByteDevice = m_channel->request.uploadByteDevice();
         if (!uploadByteDevice || m_channel->bytesTotal == m_channel->written) {
             if (uploadByteDevice)
                 emit m_reply->dataSendProgress(m_channel->written, m_channel->bytesTotal);
@@ -356,7 +356,7 @@ bool QHttpProtocolHandler::sendRequest()
 
 
 #ifndef QT_NO_SSL
-        QSslSocket *sslSocket = qobject_cast<QSslSocket*>(m_socket);
+        auto sslSocket = qobject_cast<QSslSocket*>(m_socket);
         // if it is really an ssl socket, check more than just bytesToWrite()
         while ((m_socket->bytesToWrite() + (sslSocket ? sslSocket->encryptedBytesToWrite() : 0))
                 <= socketBufferFill && m_channel->bytesTotal != m_channel->written)
@@ -367,8 +367,8 @@ bool QHttpProtocolHandler::sendRequest()
         {
             // get pointer to upload data
             qint64 currentReadSize = 0;
-            qint64 desiredReadSize = qMin(socketWriteMaxSize, m_channel->bytesTotal - m_channel->written);
-            const char *readPointer = uploadByteDevice->readPointer(desiredReadSize, currentReadSize);
+            auto desiredReadSize = qMin(socketWriteMaxSize, m_channel->bytesTotal - m_channel->written);
+            auto readPointer = uploadByteDevice->readPointer(desiredReadSize, currentReadSize);
 
             if (currentReadSize == -1) {
                 // premature eof happened
@@ -385,7 +385,7 @@ bool QHttpProtocolHandler::sendRequest()
                     m_connection->d_func()->emitReplyError(m_socket, m_reply, QNetworkReply::ProtocolFailure);
                     return false;
                 }
-                qint64 currentWriteSize = m_socket->write(readPointer, currentReadSize);
+                auto currentWriteSize = m_socket->write(readPointer, currentReadSize);
                 if (currentWriteSize == -1 || currentWriteSize != currentReadSize) {
                     // socket broke down
                     m_connection->d_func()->emitReplyError(m_socket, m_reply, QNetworkReply::UnknownNetworkError);
@@ -410,7 +410,7 @@ bool QHttpProtocolHandler::sendRequest()
 
     case QHttpNetworkConnectionChannel::WaitingState:
     {
-        QNonContiguousByteDevice* uploadByteDevice = m_channel->request.uploadByteDevice();
+        auto uploadByteDevice = m_channel->request.uploadByteDevice();
         if (uploadByteDevice) {
             QObject::disconnect(uploadByteDevice, SIGNAL(readyRead()), m_channel, SLOT(_q_uploadDataReadyRead()));
         }

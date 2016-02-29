@@ -468,13 +468,13 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     // $, (,), *, +, ., ?, [, ,], ^, {, | and }.
 
     // make sure to use the same path separators on Windows and Unix like systems.
-    QString sourcePath = QDir::fromNativeSeparators(path);
+    auto sourcePath = QDir::fromNativeSeparators(path);
 
     // Find the path without the filename
-    QString pathPrefix = sourcePath.left(sourcePath.lastIndexOf(QLatin1Char('/')));
+    auto pathPrefix = sourcePath.left(sourcePath.lastIndexOf(QLatin1Char('/')));
 
     // Check if the path contains any special chars
-    int pos = -1;
+    auto pos = -1;
     if (syntax == QRegExp::Wildcard)
         pos = pathPrefix.indexOf(QRegExp(QLatin1String("[*?[]")));
     else if (syntax != QRegExp::FixedString)
@@ -500,7 +500,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     }
 
     // Special case - if the prefix ends up being nothing, use "." instead.
-    int startIndex = 0;
+    auto startIndex = 0;
     if (pathPrefix.isEmpty()) {
         pathPrefix = QLatin1String(".");
         startIndex = 2;
@@ -511,7 +511,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     QRegExp pattern(sourcePath, Qt::CaseSensitive, syntax);
     QDirIterator it(pathPrefix, QDir::Files, QDirIterator::FollowSymlinks | QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        QString filePath = startIndex == 0 ? it.next() : it.next().mid(startIndex);
+        auto filePath = startIndex == 0 ? it.next() : it.next().mid(startIndex);
         if (!pattern.exactMatch(filePath))
             continue;
 
@@ -650,8 +650,8 @@ static const char *const certificate_blacklist[] = {
 
 bool QSslCertificatePrivate::isBlacklisted(const QSslCertificate &certificate)
 {
-    for (int a = 0; certificate_blacklist[a] != 0; a++) {
-        QString blacklistedCommonName = QString::fromUtf8(certificate_blacklist[(a+1)]);
+    for (auto a = 0; certificate_blacklist[a] != 0; a++) {
+        auto blacklistedCommonName = QString::fromUtf8(certificate_blacklist[(a+1)]);
         if (certificate.serialNumber() == certificate_blacklist[a++] &&
             (certificate.subjectInfo(QSslCertificate::CommonName).contains(blacklistedCommonName) ||
              certificate.issuerInfo(QSslCertificate::CommonName).contains(blacklistedCommonName)))

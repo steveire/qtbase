@@ -184,8 +184,8 @@ void QHostAddressPrivate::setAddress(const Q_IPV6ADDR &a_)
 
 static bool parseIp6(const QString &address, QIPAddressUtils::IPv6Address &addr, QString *scopeId)
 {
-    QString tmp = address;
-    int scopeIdPos = tmp.lastIndexOf(QLatin1Char('%'));
+    auto tmp = address;
+    auto scopeIdPos = tmp.lastIndexOf(QLatin1Char('%'));
     if (scopeIdPos != -1) {
         *scopeId = tmp.mid(scopeIdPos + 1);
         tmp.chop(tmp.size() - scopeIdPos);
@@ -199,7 +199,7 @@ Q_NEVER_INLINE bool QHostAddressPrivate::parse()
 {
     isParsed = true;
     protocol = QAbstractSocket::UnknownNetworkLayerProtocol;
-    QString a = ipString.simplified();
+    auto a = ipString.simplified();
     if (a.isEmpty())
         return false;
 
@@ -245,7 +245,7 @@ bool QNetmaskAddress::setAddress(const QHostAddress &address)
         quint8 v6[16];
     } ip;
 
-    int netmask = 0;
+    auto netmask = 0;
     quint8 *ptr = ip.v6;
     quint8 *end;
     length = -1;
@@ -488,7 +488,7 @@ QHostAddress::QHostAddress(SpecialAddress address)
 {
     Q_IPV6ADDR ip6;
     memset(&ip6, 0, sizeof ip6);
-    quint32 ip4 = INADDR_ANY;
+    auto ip4 = INADDR_ANY;
 
     switch (address) {
     case Null:
@@ -739,7 +739,7 @@ QString QHostAddress::toString() const
     QT_ENSURE_PARSED(this);
     if (d->protocol == QAbstractSocket::IPv4Protocol
         || d->protocol == QAbstractSocket::AnyIPProtocol) {
-        quint32 i = toIPv4Address();
+        auto i = toIPv4Address();
         QString s;
         QIPAddressUtils::toString(s, i);
         return s;
@@ -843,7 +843,7 @@ bool QHostAddress::operator==(const QHostAddress &other) const
 bool QHostAddress::operator ==(SpecialAddress other) const
 {
     QT_ENSURE_PARSED(this);
-    quint32 ip4 = INADDR_ANY;
+    auto ip4 = INADDR_ANY;
     switch (other) {
     case Null:
         return d->protocol == QAbstractSocket::UnknownNetworkLayerProtocol;
@@ -940,8 +940,8 @@ bool QHostAddress::isInSubnet(const QHostAddress &subnet, int netmask) const
 
     // compare the last octet now
     quint8 bytemask = 256 - (1 << (8 - (netmask & 7)));
-    quint8 ipbyte = ip[netmask / 8];
-    quint8 netbyte = net[netmask / 8];
+    auto ipbyte = ip[netmask / 8];
+    auto netbyte = net[netmask / 8];
     return (ipbyte & bytemask) == (netbyte & bytemask);
 }
 
@@ -1001,17 +1001,17 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
     //
     //  where nn can be an IPv4-style netmask for the IPv4 forms
 
-    const QPair<QHostAddress, int> invalid = qMakePair(QHostAddress(), -1);
+    const auto invalid = qMakePair(QHostAddress(), -1);
     if (subnet.isEmpty())
         return invalid;
 
-    int slash = subnet.indexOf(QLatin1Char('/'));
-    QString netStr = subnet;
+    auto slash = subnet.indexOf(QLatin1Char('/'));
+    auto netStr = subnet;
     if (slash != -1)
         netStr.truncate(slash);
 
-    int netmask = -1;
-    bool isIpv6 = netStr.contains(QLatin1Char(':'));
+    auto netmask = -1;
+    auto isIpv6 = netStr.contains(QLatin1Char(':'));
 
     if (slash != -1) {
         // is the netmask given in IP-form or in bit-count form?
@@ -1048,7 +1048,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
         return invalid;         // invalid netmask
 
     // parse the address manually
-    QStringList parts = netStr.split(QLatin1Char('.'));
+    auto parts = netStr.split(QLatin1Char('.'));
     if (parts.isEmpty() || parts.count() > 4)
         return invalid;         // invalid IPv4 address
 
@@ -1056,9 +1056,9 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
         parts.removeLast();
 
     quint32 addr = 0;
-    for (int i = 0; i < parts.count(); ++i) {
+    for (auto i = 0; i < parts.count(); ++i) {
         bool ok;
-        uint byteValue = parts.at(i).toUInt(&ok);
+        auto byteValue = parts.at(i).toUInt(&ok);
         if (!ok || byteValue > 255)
             return invalid;     // invalid IPv4 address
 
@@ -1075,7 +1075,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
         addr = 0;
     } else if (netmask != 32) {
         // clear remaining bits
-        quint32 mask = quint32(0xffffffff) >> (32 - netmask) << (32 - netmask);
+        auto mask = quint32(0xffffffff) >> (32 - netmask) << (32 - netmask);
         addr &= mask;
     }
 
@@ -1095,9 +1095,9 @@ bool QHostAddress::isLoopback() const
         return true; // v4 range (including IPv6 wrapped IPv4 addresses)
     if (d->protocol == QAbstractSocket::IPv6Protocol) {
 #ifdef __SSE2__
-        const __m128i loopback = _mm_setr_epi8(0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 1);
-        __m128i ipv6 = _mm_loadu_si128((const __m128i *)d->a6.c);
-        __m128i cmp = _mm_cmpeq_epi8(ipv6, loopback);
+        const auto loopback = _mm_setr_epi8(0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 1);
+        auto ipv6 = _mm_loadu_si128((const __m128i *)d->a6.c);
+        auto cmp = _mm_cmpeq_epi8(ipv6, loopback);
         return _mm_movemask_epi8(cmp) == 0xffff;
 #else
         if (d->a6_64.c[0] != 0 || qFromBigEndian(d->a6_64.c[1]) != 1)
@@ -1167,8 +1167,8 @@ QDataStream &operator<<(QDataStream &out, const QHostAddress &address)
         break;
     case QAbstractSocket::IPv6Protocol:
     {
-        Q_IPV6ADDR ipv6 = address.toIPv6Address();
-        for (int i = 0; i < 16; ++i)
+        auto ipv6 = address.toIPv6Address();
+        for (auto i = 0; i < 16; ++i)
             out << ipv6[i];
         out << address.scopeId();
     }
@@ -1202,7 +1202,7 @@ QDataStream &operator>>(QDataStream &in, QHostAddress &address)
     case QAbstractSocket::IPv6Protocol:
     {
         Q_IPV6ADDR ipv6;
-        for (int i = 0; i < 16; ++i)
+        for (auto i = 0; i < 16; ++i)
             in >> ipv6[i];
         address.setAddress(ipv6);
 

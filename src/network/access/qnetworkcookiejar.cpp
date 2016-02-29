@@ -187,7 +187,7 @@ static inline bool isParentDomain(const QString &domain, const QString &referenc
 bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieList,
                                           const QUrl &url)
 {
-    bool added = false;
+    auto added = false;
     foreach (QNetworkCookie cookie, cookieList) {
         cookie.normalize(url);
         if (validateCookie(cookie, url) && insertCookie(cookie))
@@ -222,12 +222,12 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
 //     It does not implement a very good cross-domain verification yet.
 
     Q_D(const QNetworkCookieJar);
-    const QDateTime now = QDateTime::currentDateTimeUtc();
+    const auto now = QDateTime::currentDateTimeUtc();
     QList<QNetworkCookie> result;
-    bool isEncrypted = url.scheme().toLower() == QLatin1String("https");
+    auto isEncrypted = url.scheme().toLower() == QLatin1String("https");
 
     // scan our cookies for something that matches
-    QList<QNetworkCookie>::ConstIterator it = d->allCookies.constBegin(),
+    auto it = d->allCookies.constBegin(),
                                         end = d->allCookies.constEnd();
     for ( ; it != end; ++it) {
         if (!isParentDomain(url.host(), it->domain()))
@@ -240,7 +240,7 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
             continue;
 
         // insert this cookie into result, sorted by path
-        QList<QNetworkCookie>::Iterator insertIt = result.begin();
+        auto insertIt = result.begin();
         while (insertIt != result.end()) {
             if (insertIt->path().length() < it->path().length()) {
                 // insert here
@@ -271,8 +271,8 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
 bool QNetworkCookieJar::insertCookie(const QNetworkCookie &cookie)
 {
     Q_D(QNetworkCookieJar);
-    const QDateTime now = QDateTime::currentDateTimeUtc();
-    bool isDeletion = !cookie.isSessionCookie() &&
+    const auto now = QDateTime::currentDateTimeUtc();
+    auto isDeletion = !cookie.isSessionCookie() &&
                       cookie.expirationDate() < now;
 
     deleteCookie(cookie);
@@ -330,7 +330,7 @@ bool QNetworkCookieJar::deleteCookie(const QNetworkCookie &cookie)
 */
 bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl &url) const
 {
-    QString domain = cookie.domain();
+    auto domain = cookie.domain();
     if (!(isParentDomain(domain, url.host()) || isParentDomain(url.host(), domain)))
         return false; // not accepted
 

@@ -49,7 +49,7 @@ QThreadStorage<QSharedNetworkSessionManager *> tls;
 
 inline QSharedNetworkSessionManager* sharedNetworkSessionManager()
 {
-    QSharedNetworkSessionManager* rv = tls.localData();
+    auto rv = tls.localData();
     if (!rv) {
         rv = new QSharedNetworkSessionManager;
         tls.setLocalData(rv);
@@ -67,7 +67,7 @@ QSharedPointer<QNetworkSession> QSharedNetworkSessionManager::getSession(const Q
     QSharedNetworkSessionManager *m(sharedNetworkSessionManager());
     //if already have a session, return it
     if (m->sessions.contains(config)) {
-        QSharedPointer<QNetworkSession> p = m->sessions.value(config).toStrongRef();
+        auto p = m->sessions.value(config).toStrongRef();
         if (!p.isNull())
             return p;
     }

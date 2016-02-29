@@ -67,7 +67,7 @@ QNetworkReplyDataImpl::QNetworkReplyDataImpl(QObject *parent, const QNetworkRequ
     setFinished(true);
     QNetworkReply::open(QIODevice::ReadOnly);
 
-    QUrl url = req.url();
+    auto url = req.url();
     QString mimeType;
     QByteArray payload;
     if (qDecodeDataUrl(url, mimeType, payload)) {
@@ -85,7 +85,7 @@ QNetworkReplyDataImpl::QNetworkReplyDataImpl(QObject *parent, const QNetworkRequ
         QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
     } else {
         // something wrong with this URI
-        const QString msg = QCoreApplication::translate("QNetworkAccessDataBackend",
+        const auto msg = QCoreApplication::translate("QNetworkAccessDataBackend",
                                                         "Invalid URI: %1").arg(url.toString());
         setError(QNetworkReply::ProtocolFailure, msg);
         QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,

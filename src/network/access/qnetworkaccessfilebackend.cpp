@@ -73,7 +73,7 @@ QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
         return 0;
     }
 
-    QUrl url = request.url();
+    auto url = request.url();
     if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0
 #if defined(Q_OS_ANDROID)
             || url.scheme().compare(QLatin1String("assets"), Qt::CaseInsensitive) == 0
@@ -106,7 +106,7 @@ QNetworkAccessFileBackend::~QNetworkAccessFileBackend()
 
 void QNetworkAccessFileBackend::open()
 {
-    QUrl url = this->url();
+    auto url = this->url();
 
     if (url.host() == QLatin1String("localhost"))
         url.setHost(QString());
@@ -124,7 +124,7 @@ void QNetworkAccessFileBackend::open()
         url.setPath(QLatin1String("/"));
     setUrl(url);
 
-    QString fileName = url.toLocalFile();
+    auto fileName = url.toLocalFile();
     if (fileName.isEmpty()) {
         if (url.scheme() == QLatin1String("qrc")) {
             fileName = QLatin1Char(':') + url.path();
@@ -162,11 +162,11 @@ void QNetworkAccessFileBackend::open()
     }
 
     mode |= QIODevice::Unbuffered;
-    bool opened = file.open(mode);
+    auto opened = file.open(mode);
 
     // could we open the file?
     if (!opened) {
-        QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Error opening %1: %2")
+        auto msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Error opening %1: %2")
                                                 .arg(this->url().toString(), file.errorString());
 
         // why couldn't we open the file?
@@ -187,7 +187,7 @@ void QNetworkAccessFileBackend::uploadReadyReadSlot()
 
     forever {
         qint64 haveRead;
-        const char *readPointer = uploadByteDevice->readPointer(-1, haveRead);
+        auto readPointer = uploadByteDevice->readPointer(-1, haveRead);
         if (haveRead == -1) {
             // EOF
             hasUploadFinished = true;
@@ -204,7 +204,7 @@ void QNetworkAccessFileBackend::uploadReadyReadSlot()
 
             if (haveWritten < 0) {
                 // write error!
-                QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Write error writing to %1: %2")
+                auto msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Write error writing to %1: %2")
                               .arg(url().toString(), file.errorString());
                 error(QNetworkReply::ProtocolFailure, msg);
 
@@ -263,11 +263,11 @@ bool QNetworkAccessFileBackend::readMoreFromFile()
         // Avoid extra copy
         QByteArray data;
         data.reserve(wantToRead);
-        qint64 actuallyRead = file.read(data.data(), wantToRead);
+        auto actuallyRead = file.read(data.data(), wantToRead);
         if (actuallyRead <= 0) {
             // EOF or error
             if (file.error() != QFile::NoError) {
-                QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Read error reading from %1: %2")
+                auto msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Read error reading from %1: %2")
                               .arg(url().toString(), file.errorString());
                 error(QNetworkReply::ProtocolFailure, msg);
 

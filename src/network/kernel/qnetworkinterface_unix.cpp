@@ -375,10 +375,10 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     // synthesize AF_PACKET addresses from the RTM_GETLINK responses, which
     // means by construction they currently show up first in the interface
     // listing.
-    for (ifaddrs *ptr = rawList; ptr; ptr = ptr->ifa_next) {
+    for (auto ptr = rawList; ptr; ptr = ptr->ifa_next) {
         if (ptr->ifa_addr && ptr->ifa_addr->sa_family == AF_PACKET) {
-            sockaddr_ll *sll = (sockaddr_ll *)ptr->ifa_addr;
-            QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
+            auto sll = (sockaddr_ll *)ptr->ifa_addr;
+            auto iface = new QNetworkInterfacePrivate;
             interfaces << iface;
             iface->index = sll->sll_ifindex;
             iface->name = QString::fromLatin1(ptr->ifa_name);
@@ -394,9 +394,9 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     // see if we missed anything:
     // - virtual interfaces with no HW address have no AF_PACKET
     // - interface labels have no AF_PACKET, but shouldn't be shown as a new interface
-    for (ifaddrs *ptr = rawList; ptr; ptr = ptr->ifa_next) {
+    for (auto ptr = rawList; ptr; ptr = ptr->ifa_next) {
         if (!ptr->ifa_addr || ptr->ifa_addr->sa_family != AF_PACKET) {
-            QString name = QString::fromLatin1(ptr->ifa_name);
+            auto name = QString::fromLatin1(ptr->ifa_name);
             if (seenInterfaces.contains(name))
                 continue;
 
@@ -404,7 +404,7 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
             if (seenIndexes.contains(ifindex))
                 continue;
 
-            QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
+            auto iface = new QNetworkInterfacePrivate;
             interfaces << iface;
             iface->name = name;
             iface->flags = convertFlags(ptr->ifa_flags);
@@ -486,11 +486,11 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     }
 
     interfaces = createInterfaces(interfaceListing);
-    for (ifaddrs *ptr = interfaceListing; ptr; ptr = ptr->ifa_next) {
+    for (auto ptr = interfaceListing; ptr; ptr = ptr->ifa_next) {
         // Find the interface
-        QString name = QString::fromLatin1(ptr->ifa_name);
+        auto name = QString::fromLatin1(ptr->ifa_name);
         QNetworkInterfacePrivate *iface = 0;
-        QList<QNetworkInterfacePrivate *>::Iterator if_it = interfaces.begin();
+        auto if_it = interfaces.begin();
         for ( ; if_it != interfaces.end(); ++if_it)
             if ((*if_it)->name == name) {
                 // found this interface already

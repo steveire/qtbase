@@ -59,11 +59,11 @@ QHttpNetworkHeaderPrivate::QHttpNetworkHeaderPrivate(const QHttpNetworkHeaderPri
 
 qint64 QHttpNetworkHeaderPrivate::contentLength() const
 {
-    bool ok = false;
+    auto ok = false;
     // We are not using the headerField() method here because servers might send us multiple content-length
     // headers which is crap (see QTBUG-15311). Therefore just take the first content-length header field.
     QByteArray value;
-    QList<QPair<QByteArray, QByteArray> >::ConstIterator it = fields.constBegin(),
+    auto it = fields.constBegin(),
                                                         end = fields.constEnd();
     for ( ; it != end; ++it)
         if (qstricmp("content-length", it->first) == 0) {
@@ -84,7 +84,7 @@ void QHttpNetworkHeaderPrivate::setContentLength(qint64 length)
 
 QByteArray QHttpNetworkHeaderPrivate::headerField(const QByteArray &name, const QByteArray &defaultValue) const
 {
-    QList<QByteArray> allValues = headerFieldValues(name);
+    auto allValues = headerFieldValues(name);
     if (allValues.isEmpty())
         return defaultValue;
     else
@@ -94,7 +94,7 @@ QByteArray QHttpNetworkHeaderPrivate::headerField(const QByteArray &name, const 
 QList<QByteArray> QHttpNetworkHeaderPrivate::headerFieldValues(const QByteArray &name) const
 {
     QList<QByteArray> result;
-    QList<QPair<QByteArray, QByteArray> >::ConstIterator it = fields.constBegin(),
+    auto it = fields.constBegin(),
                                                         end = fields.constEnd();
     for ( ; it != end; ++it)
         if (qstricmp(name.constData(), it->first) == 0)

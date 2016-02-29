@@ -501,7 +501,7 @@ bool QNetworkRequest::hasRawHeader(const QByteArray &headerName) const
 */
 QByteArray QNetworkRequest::rawHeader(const QByteArray &headerName) const
 {
-    QNetworkHeadersPrivate::RawHeadersList::ConstIterator it =
+    auto it =
         d->findRawHeader(headerName);
     if (it != d->rawHeaders.constEnd())
         return it->second;
@@ -771,12 +771,12 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
         }
 
     case QNetworkRequest::CookieHeader: {
-        QList<QNetworkCookie> cookies = qvariant_cast<QList<QNetworkCookie> >(value);
+        auto cookies = qvariant_cast<QList<QNetworkCookie> >(value);
         if (cookies.isEmpty() && value.userType() == qMetaTypeId<QNetworkCookie>())
             cookies << qvariant_cast<QNetworkCookie>(value);
 
         QByteArray result;
-        bool first = true;
+        auto first = true;
         foreach (const QNetworkCookie &cookie, cookies) {
             if (!first)
                 result += "; ";
@@ -787,12 +787,12 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
     }
 
     case QNetworkRequest::SetCookieHeader: {
-        QList<QNetworkCookie> cookies = qvariant_cast<QList<QNetworkCookie> >(value);
+        auto cookies = qvariant_cast<QList<QNetworkCookie> >(value);
         if (cookies.isEmpty() && value.userType() == qMetaTypeId<QNetworkCookie>())
             cookies << qvariant_cast<QNetworkCookie>(value);
 
         QByteArray result;
-        bool first = true;
+        auto first = true;
         foreach (const QNetworkCookie &cookie, cookies) {
             if (!first)
                 result += ", ";
@@ -846,7 +846,7 @@ static QNetworkRequest::KnownHeaders parseHeaderName(const QByteArray &headerNam
 
 static QVariant parseHttpDate(const QByteArray &raw)
 {
-    QDateTime dt = QNetworkHeadersPrivate::fromHttpDate(raw);
+    auto dt = QNetworkHeadersPrivate::fromHttpDate(raw);
     if (dt.isValid())
         return dt;
     return QVariant();          // transform an invalid QDateTime into a null QVariant
@@ -855,9 +855,9 @@ static QVariant parseHttpDate(const QByteArray &raw)
 static QVariant parseCookieHeader(const QByteArray &raw)
 {
     QList<QNetworkCookie> result;
-    QList<QByteArray> cookieList = raw.split(';');
+    auto cookieList = raw.split(';');
     foreach (const QByteArray &cookie, cookieList) {
-        QList<QNetworkCookie> parsed = QNetworkCookie::parseCookies(cookie.trimmed());
+        auto parsed = QNetworkCookie::parseCookies(cookie.trimmed());
         if (parsed.count() != 1)
             return QVariant();  // invalid Cookie: header
 
@@ -879,14 +879,14 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
 
     case QNetworkRequest::ContentLengthHeader: {
         bool ok;
-        qint64 result = value.trimmed().toLongLong(&ok);
+        auto result = value.trimmed().toLongLong(&ok);
         if (ok)
             return result;
         return QVariant();
     }
 
     case QNetworkRequest::LocationHeader: {
-        QUrl result = QUrl::fromEncoded(value, QUrl::StrictMode);
+        auto result = QUrl::fromEncoded(value, QUrl::StrictMode);
         if (result.isValid() && !result.scheme().isEmpty())
             return result;
         return QVariant();
@@ -910,8 +910,8 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
 QNetworkHeadersPrivate::RawHeadersList::ConstIterator
 QNetworkHeadersPrivate::findRawHeader(const QByteArray &key) const
 {
-    RawHeadersList::ConstIterator it = rawHeaders.constBegin();
-    RawHeadersList::ConstIterator end = rawHeaders.constEnd();
+    auto it = rawHeaders.constBegin();
+    auto end = rawHeaders.constEnd();
     for ( ; it != end; ++it)
         if (qstricmp(it->first.constData(), key.constData()) == 0)
             return it;
@@ -928,7 +928,7 @@ QList<QByteArray> QNetworkHeadersPrivate::rawHeadersKeys() const
 {
     QList<QByteArray> result;
     result.reserve(rawHeaders.size());
-    RawHeadersList::ConstIterator it = rawHeaders.constBegin(),
+    auto it = rawHeaders.constBegin(),
                                  end = rawHeaders.constEnd();
     for ( ; it != end; ++it)
         result << it->first;
@@ -959,8 +959,8 @@ void QNetworkHeadersPrivate::setAllRawHeaders(const RawHeadersList &list)
     cookedHeaders.clear();
     rawHeaders = list;
 
-    RawHeadersList::ConstIterator it = rawHeaders.constBegin();
-    RawHeadersList::ConstIterator end = rawHeaders.constEnd();
+    auto it = rawHeaders.constBegin();
+    auto end = rawHeaders.constEnd();
     for ( ; it != end; ++it)
         parseAndSetHeader(it->first, it->second);
 }
@@ -968,7 +968,7 @@ void QNetworkHeadersPrivate::setAllRawHeaders(const RawHeadersList &list)
 void QNetworkHeadersPrivate::setCookedHeader(QNetworkRequest::KnownHeaders header,
                                              const QVariant &value)
 {
-    QByteArray name = headerName(header);
+    auto name = headerName(header);
     if (name.isEmpty()) {
         // headerName verifies that \a header is a known value
         qWarning("QNetworkRequest::setHeader: invalid header value KnownHeader(%d) received", header);
@@ -979,7 +979,7 @@ void QNetworkHeadersPrivate::setCookedHeader(QNetworkRequest::KnownHeaders heade
         setRawHeaderInternal(name, QByteArray());
         cookedHeaders.remove(header);
     } else {
-        QByteArray rawValue = headerValue(header, value);
+        auto rawValue = headerValue(header, value);
         if (rawValue.isEmpty()) {
             qWarning("QNetworkRequest::setHeader: QVariant of type %s cannot be used with header %s",
                      value.typeName(), name.constData());
@@ -1012,7 +1012,7 @@ void QNetworkHeadersPrivate::setRawHeaderInternal(const QByteArray &key, const Q
 void QNetworkHeadersPrivate::parseAndSetHeader(const QByteArray &key, const QByteArray &value)
 {
     // is it a known header?
-    QNetworkRequest::KnownHeaders parsedKey = parseHeaderName(key);
+    auto parsedKey = parseHeaderName(key);
     if (parsedKey != QNetworkRequest::KnownHeaders(-1)) {
         if (value.isNull()) {
             cookedHeaders.remove(parsedKey);
@@ -1085,7 +1085,7 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
     //  ANSI C's asctime  -   ddd MMM d hh:mm:ss yyyy
     // We only handle them exactly. If they deviate, we bail out.
 
-    int pos = value.indexOf(',');
+    auto pos = value.indexOf(',');
     QDateTime dt;
 #ifndef QT_NO_DATESTRING
     if (pos == -1) {
@@ -1107,9 +1107,9 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
 #endif
                 dt = QDateTime(QDate(year, name_to_month(month_name), day), QTime(hour, minute, second));
         } else {
-            QLocale c = QLocale::c();
+            auto c = QLocale::c();
             // eat the weekday, the comma and the space following it
-            QString sansWeekday = QString::fromLatin1(value.constData() + pos + 2);
+            auto sansWeekday = QString::fromLatin1(value.constData() + pos + 2);
             // must be RFC 850 date
             dt = c.toDateTime(sansWeekday, QLatin1String("dd-MMM-yy hh:mm:ss 'GMT'"));
         }

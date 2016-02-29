@@ -144,19 +144,19 @@ QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der, const QMap<QByteArr
 {
     QByteArray pem(der.toBase64());
 
-    const int lineWidth = 64; // RFC 1421
-    const int newLines = pem.size() / lineWidth;
+    const auto lineWidth = 64; // RFC 1421
+    const auto newLines = pem.size() / lineWidth;
     const bool rem = pem.size() % lineWidth;
 
     // ### optimize
-    for (int i = 0; i < newLines; ++i)
+    for (auto i = 0; i < newLines; ++i)
         pem.insert((i + 1) * lineWidth + i, '\n');
     if (rem)
         pem.append('\n'); // ###
 
     QByteArray extra;
     if (!headers.isEmpty()) {
-        QMap<QByteArray, QByteArray>::const_iterator it = headers.constEnd();
+        auto it = headers.constEnd();
         do {
             --it;
             extra += it.key() + ": " + it.value() + '\n';
@@ -176,13 +176,13 @@ QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der, const QMap<QByteArr
 */
 QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem, QMap<QByteArray, QByteArray> *headers) const
 {
-    const QByteArray header = pemHeader();
-    const QByteArray footer = pemFooter();
+    const auto header = pemHeader();
+    const auto footer = pemFooter();
 
     QByteArray der(pem);
 
-    const int headerIndex = der.indexOf(header);
-    const int footerIndex = der.indexOf(footer);
+    const auto headerIndex = der.indexOf(header);
+    const auto footerIndex = der.indexOf(footer);
     if (headerIndex == -1 || footerIndex == -1)
         return QByteArray();
 
@@ -190,12 +190,12 @@ QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem, QMap<QByteArray, QB
 
     if (der.contains("Proc-Type:")) {
         // taken from QHttpNetworkReplyPrivate::parseHeader
-        int i = 0;
+        auto i = 0;
         while (i < der.count()) {
-            int j = der.indexOf(':', i); // field-name
+            auto j = der.indexOf(':', i); // field-name
             if (j == -1)
                 break;
-            const QByteArray field = der.mid(i, j - i).trimmed();
+            const auto field = der.mid(i, j - i).trimmed();
             j++;
             // any number of LWS is allowed before and after the value
             QByteArray value;
@@ -206,8 +206,8 @@ QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem, QMap<QByteArray, QB
                 if (!value.isEmpty())
                     value += ' ';
                 // check if we have CRLF or only LF
-                bool hasCR = (i && der[i-1] == '\r');
-                int length = i -(hasCR ? 1: 0) - j;
+                auto hasCR = (i && der[i-1] == '\r');
+                auto length = i -(hasCR ? 1: 0) - j;
                 value += der.mid(j, length).trimmed();
                 j = ++i;
             } while (i < der.count() && (der.at(i) == ' ' || der.at(i) == '\t'));

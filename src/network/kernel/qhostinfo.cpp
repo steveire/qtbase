@@ -159,7 +159,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
 
     qRegisterMetaType<QHostInfo>();
 
-    int id = theIdCounter.fetchAndAddRelaxed(1); // generate unique ID
+    auto id = theIdCounter.fetchAndAddRelaxed(1); // generate unique ID
 
     if (name.isEmpty()) {
         if (!receiver)
@@ -175,14 +175,14 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
         return id;
     }
 
-    QHostInfoLookupManager *manager = theHostInfoLookupManager();
+    auto manager = theHostInfoLookupManager();
 
     if (manager) {
         // the application is still alive
         if (manager->cache.isEnabled()) {
             // check cache first
-            bool valid = false;
-            QHostInfo info = manager->cache.get(name, &valid);
+            auto valid = false;
+            auto info = manager->cache.get(name, &valid);
             if (valid) {
                 if (!receiver)
                     return -1;
@@ -196,7 +196,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
         }
 
         // cache is not enabled or it was not in the cache, do normal lookup
-        QHostInfoRunnable* runnable = new QHostInfoRunnable(name, id);
+        auto runnable = new QHostInfoRunnable(name, id);
         if (receiver)
             QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
         manager->scheduleLookup(runnable);
@@ -233,8 +233,8 @@ QHostInfo QHostInfo::fromName(const QString &name)
     qDebug("QHostInfo::fromName(\"%s\")",name.toLatin1().constData());
 #endif
 
-    QHostInfo hostInfo = QHostInfoAgent::fromName(name);
-    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
+    auto hostInfo = QHostInfoAgent::fromName(name);
+    auto manager = theHostInfoLookupManager();
     manager->cache.put(name, hostInfo);
     return hostInfo;
 }
@@ -246,8 +246,8 @@ QHostInfo QHostInfoPrivate::fromName(const QString &name, QSharedPointer<QNetwor
     qDebug("QHostInfoPrivate::fromName(\"%s\") with session %p",name.toLatin1().constData(), session.data());
 #endif
 
-    QHostInfo hostInfo = QHostInfoAgent::fromName(name, session);
-    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
+    auto hostInfo = QHostInfoAgent::fromName(name, session);
+    auto manager = theHostInfoLookupManager();
     manager->cache.put(name, hostInfo);
     return hostInfo;
 }
@@ -457,7 +457,7 @@ QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i) : toBeLookedUp(hn
 // the QHostInfoLookupManager will at some point call this via a QThreadPool
 void QHostInfoRunnable::run()
 {
-    QHostInfoLookupManager *manager = theHostInfoLookupManager();
+    auto manager = theHostInfoLookupManager();
     // check aborted
     if (manager->wasAborted(id)) {
         manager->lookupFinished(this);
@@ -471,7 +471,7 @@ void QHostInfoRunnable::run()
     // in the meanwhile while this QHostInfoRunnable was scheduled but not running
     if (manager->cache.isEnabled()) {
         // check the cache first
-        bool valid = false;
+        auto valid = false;
         hostInfo = manager->cache.get(toBeLookedUp, &valid);
         if (!valid) {
             // not in cache, we need to do the lookup and store the result in the cache
@@ -498,7 +498,7 @@ void QHostInfoRunnable::run()
         QMutexLocker locker(&manager->mutex);
         QMutableListIterator<QHostInfoRunnable*> iterator(manager->postponedLookups);
         while (iterator.hasNext()) {
-            QHostInfoRunnable* postponed = iterator.next();
+            auto postponed = iterator.next();
             if (toBeLookedUp == postponed->toBeLookedUp) {
                 // we can now emit
                 iterator.remove();
@@ -558,7 +558,7 @@ void QHostInfoLookupManager::work()
 
     if (!finishedLookups.isEmpty()) {
         // remove ID from aborted if it is in there
-        for (int i = 0; i < finishedLookups.length(); i++) {
+        for (auto i = 0; i < finishedLookups.length(); i++) {
            abortedLookups.removeAll(finishedLookups.at(i)->id);
         }
 
@@ -570,11 +570,11 @@ void QHostInfoLookupManager::work()
 
         QMutableListIterator<QHostInfoRunnable*> iterator(postponedLookups);
         while (iterator.hasNext()) {
-            QHostInfoRunnable* postponed = iterator.next();
+            auto postponed = iterator.next();
 
             // check if none of the postponed hostnames is currently running
-            bool alreadyRunning = false;
-            for (int i = 0; i < currentLookups.length(); i++) {
+            auto alreadyRunning = false;
+            for (auto i = 0; i < currentLookups.length(); i++) {
                 if (currentLookups.at(i)->toBeLookedUp == postponed->toBeLookedUp) {
                     alreadyRunning = true;
                     break;
@@ -591,10 +591,10 @@ void QHostInfoLookupManager::work()
         // try to start the new ones
         QMutableListIterator<QHostInfoRunnable*> iterator(scheduledLookups);
         while (iterator.hasNext()) {
-            QHostInfoRunnable *scheduled = iterator.next();
+            auto scheduled = iterator.next();
 
             // check if a lookup for this host is already running, then postpone
-            for (int i = 0; i < currentLookups.size(); i++) {
+            for (auto i = 0; i < currentLookups.size(); i++) {
                 if (currentLookups.at(i)->toBeLookedUp == scheduled->toBeLookedUp) {
                     iterator.remove();
                     postponedLookups.append(scheduled);
@@ -636,7 +636,7 @@ void QHostInfoLookupManager::abortLookup(int id)
     QMutexLocker locker(&this->mutex);
 
     // is postponed? delete and return
-    for (int i = 0; i < postponedLookups.length(); i++) {
+    for (auto i = 0; i < postponedLookups.length(); i++) {
         if (postponedLookups.at(i)->id == id) {
             delete postponedLookups.takeAt(i);
             return;
@@ -644,7 +644,7 @@ void QHostInfoLookupManager::abortLookup(int id)
     }
 
     // is scheduled? delete and return
-    for (int i = 0; i < scheduledLookups.length(); i++) {
+    for (auto i = 0; i < scheduledLookups.length(); i++) {
         if (scheduledLookups.at(i)->id == id) {
             delete scheduledLookups.takeAt(i);
             return;
@@ -684,9 +684,9 @@ QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char
     *id = -1;
 
     // check cache
-    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
+    auto manager = theHostInfoLookupManager();
     if (manager && manager->cache.isEnabled()) {
-        QHostInfo info = manager->cache.get(name, valid);
+        auto info = manager->cache.get(name, valid);
         if (*valid) {
             return info;
         }
@@ -701,7 +701,7 @@ QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char
 
 void qt_qhostinfo_clear_cache()
 {
-    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
+    auto manager = theHostInfoLookupManager();
     if (manager) {
         manager->clear();
     }
@@ -753,7 +753,7 @@ QHostInfo QHostInfoCache::get(const QString &name, bool *valid)
     QMutexLocker locker(&this->mutex);
 
     *valid = false;
-    if (QHostInfoCacheElement *element = cache.object(name)) {
+    if (auto element = cache.object(name)) {
         if (element->age.elapsed() < max_age*1000)
             *valid = true;
         return element->info;
@@ -772,7 +772,7 @@ void QHostInfoCache::put(const QString &name, const QHostInfo &info)
     if (info.error() != QHostInfo::NoError)
         return;
 
-    QHostInfoCacheElement* element = new QHostInfoCacheElement();
+    auto element = new QHostInfoCacheElement();
     element->info = info;
     element->age = QElapsedTimer();
     element->age.start();

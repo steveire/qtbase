@@ -112,10 +112,10 @@ void QHttpSocketEngine::setProxy(const QNetworkProxy &proxy)
 {
     Q_D(QHttpSocketEngine);
     d->proxy = proxy;
-    QString user = proxy.user();
+    auto user = proxy.user();
     if (!user.isEmpty())
         d->authenticator.setUser(user);
-    QString password = proxy.password();
+    auto password = proxy.password();
     if (!password.isEmpty())
         d->authenticator.setPassword(password);
 }
@@ -220,7 +220,7 @@ qint64 QHttpSocketEngine::bytesAvailable() const
 qint64 QHttpSocketEngine::read(char *data, qint64 maxlen)
 {
     Q_D(QHttpSocketEngine);
-    qint64 bytesRead = d->socket->read(data, maxlen);
+    auto bytesRead = d->socket->read(data, maxlen);
 
     if (d->socket->state() == QAbstractSocket::UnconnectedState
         && d->socket->bytesAvailable() == 0) {
@@ -417,14 +417,14 @@ bool QHttpSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWrite
 
     if (!checkWrite) {
         // Not interested in writing? Then we wait for read notifications.
-        bool canRead = waitForRead(msecs, timedOut);
+        auto canRead = waitForRead(msecs, timedOut);
         if (readyToRead)
             *readyToRead = canRead;
         return canRead;
     }
 
     // Interested in writing? Then we wait for write notifications.
-    bool canWrite = waitForWrite(msecs, timedOut);
+    auto canWrite = waitForWrite(msecs, timedOut);
     if (readyToWrite)
         *readyToWrite = canWrite;
     return canWrite;
@@ -485,7 +485,7 @@ void QHttpSocketEngine::slotSocketConnected()
 
     // Send the greeting.
     const char method[] = "CONNECT";
-    QByteArray peerAddress = d->peerName.isEmpty() ?
+    auto peerAddress = d->peerName.isEmpty() ?
                              d->peerAddress.toString().toLatin1() :
                              QUrl::toAce(d->peerName);
     QByteArray path = peerAddress + ':' + QByteArray::number(d->peerPort);
@@ -500,7 +500,7 @@ void QHttpSocketEngine::slotSocketConnected()
     foreach (const QByteArray &header, d->proxy.rawHeaderList()) {
         data += header + ": " + d->proxy.rawHeader(header) + "\r\n";
     }
-    QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
+    auto priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
     //qDebug() << "slotSocketConnected: priv=" << priv << (priv ? (int)priv->method : -1);
     if (priv && priv->method != QAuthenticatorPrivate::None) {
         d->credentialsSent = true;
@@ -538,7 +538,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
     }
 
     if (d->state == ReadResponseHeader) {
-        bool ok = readHttpHeader();
+        auto ok = readHttpHeader();
         if (!ok) {
             // protocol error, this isn't HTTP
             d->socket->close();
@@ -570,7 +570,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
             d->state = SendAuthentication;
     }
 
-    int statusCode = d->reply->statusCode();
+    auto statusCode = d->reply->statusCode();
     QAuthenticatorPrivate *priv = 0;
     if (statusCode == 200) {
         d->state = Connected;
@@ -606,7 +606,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
         }
 
         bool willClose;
-        QByteArray proxyConnectionHeader = d->reply->headerField("Proxy-Connection");
+        auto proxyConnectionHeader = d->reply->headerField("Proxy-Connection");
         // Although most proxies use the unofficial Proxy-Connection header, the Connection header
         // from http spec is also allowed.
         if (proxyConnectionHeader.isEmpty())
@@ -681,7 +681,7 @@ bool QHttpSocketEngine::readHttpHeader()
     if (d->state != ReadResponseHeader)
         return false;
 
-    bool ok = true;
+    auto ok = true;
     if (d->reply->d_func()->state == QHttpNetworkReplyPrivate::NothingDoneState) {
         // do not keep old content sizes, status etc. around
         d->reply->d_func()->clearHttpLayerInformation();
@@ -699,7 +699,7 @@ bool QHttpSocketEngine::readHttpHeader()
     }
     if (ok) {
         bool contentLengthOk;
-        int contentLength = d->reply->headerField("Content-Length").toInt(&contentLengthOk);
+        auto contentLength = d->reply->headerField("Content-Length").toInt(&contentLengthOk);
         if (contentLengthOk && contentLength > 0)
             d->pendingResponseData = contentLength;
         d->state = ReadResponseContent; // we are done reading the header
@@ -838,7 +838,7 @@ QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(QAbstractSoc
     if (!qobject_cast<QAbstractSocket *>(parent))
         return 0;
 
-    QHttpSocketEngine *engine = new QHttpSocketEngine(parent);
+    auto engine = new QHttpSocketEngine(parent);
     engine->setProxy(proxy);
     return engine;
 }

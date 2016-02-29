@@ -141,27 +141,27 @@ void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhra
     if (!QSslSocket::supportsSsl())
         return;
 
-    BIO *bio = q_BIO_new_mem_buf(const_cast<char *>(pem.data()), pem.size());
+    auto bio = q_BIO_new_mem_buf(const_cast<char *>(pem.data()), pem.size());
     if (!bio)
         return;
 
-    void *phrase = const_cast<char *>(passPhrase.constData());
+    auto phrase = const_cast<char *>(passPhrase.constData());
 
     if (algorithm == QSsl::Rsa) {
-        RSA *result = (type == QSsl::PublicKey)
+        auto result = (type == QSsl::PublicKey)
             ? q_PEM_read_bio_RSA_PUBKEY(bio, &rsa, 0, phrase)
             : q_PEM_read_bio_RSAPrivateKey(bio, &rsa, 0, phrase);
         if (rsa && rsa == result)
             isNull = false;
     } else if (algorithm == QSsl::Dsa) {
-        DSA *result = (type == QSsl::PublicKey)
+        auto result = (type == QSsl::PublicKey)
             ? q_PEM_read_bio_DSA_PUBKEY(bio, &dsa, 0, phrase)
             : q_PEM_read_bio_DSAPrivateKey(bio, &dsa, 0, phrase);
         if (dsa && dsa == result)
             isNull = false;
 #ifndef OPENSSL_NO_EC
     } else if (algorithm == QSsl::Ec) {
-        EC_KEY *result = (type == QSsl::PublicKey)
+        auto result = (type == QSsl::PublicKey)
             ? q_PEM_read_bio_EC_PUBKEY(bio, &ec, 0, phrase)
             : q_PEM_read_bio_ECPrivateKey(bio, &ec, 0, phrase);
         if (ec && ec == result)
@@ -192,11 +192,11 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
     if (!QSslSocket::supportsSsl() || isNull || algorithm == QSsl::Opaque)
         return QByteArray();
 
-    BIO *bio = q_BIO_new(q_BIO_s_mem());
+    auto bio = q_BIO_new(q_BIO_s_mem());
     if (!bio)
         return QByteArray();
 
-    bool fail = false;
+    auto fail = false;
 
     if (algorithm == QSsl::Rsa) {
         if (type == QSsl::PublicKey) {
@@ -275,7 +275,7 @@ static QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
 {
     EVP_CIPHER_CTX ctx;
     const EVP_CIPHER* type = 0;
-    int i = 0, len = 0;
+    auto i = 0, len = 0;
 
     switch (cipher) {
     case QSslKeyPrivate::DesCbc:

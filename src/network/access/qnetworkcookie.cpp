@@ -387,23 +387,23 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
     //    (1)  token
     //    (2)  token = token
     //    (3)  token = quoted-string
-    const int length = text.length();
+    const auto length = text.length();
     position = nextNonWhitespace(text, position);
 
-    int semiColonPosition = text.indexOf(';', position);
+    auto semiColonPosition = text.indexOf(';', position);
     if (semiColonPosition < 0)
         semiColonPosition = length; //no ';' means take everything to end of string
 
-    int equalsPosition = text.indexOf('=', position);
+    auto equalsPosition = text.indexOf('=', position);
     if (equalsPosition < 0 || equalsPosition > semiColonPosition) {
         if (isNameValue)
             return qMakePair(QByteArray(), QByteArray()); //'=' is required for name-value-pair (RFC6265 section 5.2, rule 2)
         equalsPosition = semiColonPosition; //no '=' means there is an attribute-name but no attribute-value
     }
 
-    QByteArray first = text.mid(position, equalsPosition - position).trimmed();
+    auto first = text.mid(position, equalsPosition - position).trimmed();
     QByteArray second;
-    int secondLength = semiColonPosition - equalsPosition - 1;
+    auto secondLength = semiColonPosition - equalsPosition - 1;
     if (secondLength > 0)
         second = text.mid(equalsPosition + 1, secondLength).trimmed();
 
@@ -539,10 +539,10 @@ static bool checkStaticArray(int &val, const QByteArray &dateString, int at, con
     if (dateString[at] < 'a' || dateString[at] > 'z')
         return false;
     if (val == -1 && dateString.length() >= at + 3) {
-        int j = 0;
-        int i = 0;
+        auto j = 0;
+        auto i = 0;
         while (i <= size) {
-            const char *str = array + i;
+            auto str = array + i;
             if (str[0] == dateString[at]
                 && str[1] == dateString[at + 1]
                 && str[2] == dateString[at + 2]) {
@@ -586,20 +586,20 @@ static QDateTime parseDateString(const QByteArray &dateString)
     QTime time;
     // placeholders for values when we are not sure it is a year, month or day
     int unknown[3] = {-1, -1, -1};
-    int month = -1;
-    int day = -1;
-    int year = -1;
-    int zoneOffset = -1;
+    auto month = -1;
+    auto day = -1;
+    auto year = -1;
+    auto zoneOffset = -1;
 
     // hour:minute:second.ms pm
     QRegExp timeRx(QLatin1String("(\\d{1,2}):(\\d{1,2})(:(\\d{1,2})|)(\\.(\\d{1,3})|)((\\s{0,}(am|pm))|)"));
 
-    int at = 0;
+    auto at = 0;
     while (at < dateString.length()) {
 #ifdef PARSEDATESTRINGDEBUG
         qDebug() << dateString.mid(at);
 #endif
-        bool isNum = isNumber(dateString[at]);
+        auto isNum = isNumber(dateString[at]);
 
         // Month
         if (!isNum
@@ -615,7 +615,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
         if (!isNum
             && zoneOffset == -1
             && checkStaticArray(zoneOffset, dateString, at, zones, sizeof(zones)- 1)) {
-            int sign = (at >= 0 && dateString[at - 1] == '-') ? -1 : 1;
+            auto sign = (at >= 0 && dateString[at - 1] == '-') ? -1 : 1;
             zoneOffset = sign * zoneOffsets[zoneOffset] * 60 * 60;
 #ifdef PARSEDATESTRINGDEBUG
             qDebug() << "Zone:" << month;
@@ -635,12 +635,12 @@ static QDateTime parseDateString(const QByteArray &dateString)
                     && (dateString[at - 2] == 'm')
                     && (dateString[at - 1] == 't')))) {
 
-            int end = 1;
+            auto end = 1;
             while (end < 5 && dateString.length() > at+end
                    && dateString[at + end] >= '0' && dateString[at + end] <= '9')
                 ++end;
-            int minutes = 0;
-            int hours = 0;
+            auto minutes = 0;
+            auto hours = 0;
             switch (end - 1) {
             case 4:
                 minutes = atoi(dateString.mid(at + 3, 2).constData());
@@ -656,7 +656,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
                 continue;
             }
             if (end != 1) {
-                int sign = dateString[at] == '-' ? -1 : 1;
+                auto sign = dateString[at] == '-' ? -1 : 1;
                 zoneOffset = sign * ((minutes * 60) + (hours * 60 * 60));
 #ifdef PARSEDATESTRINGDEBUG
                 qDebug() << "Zone offset:" << zoneOffset << hours << minutes;
@@ -672,13 +672,13 @@ static QDateTime parseDateString(const QByteArray &dateString)
             && (dateString[at + 2] == ':' || dateString[at + 1] == ':')) {
             // While the date can be found all over the string the format
             // for the time is set and a nice regexp can be used.
-            int pos = timeRx.indexIn(QLatin1String(dateString), at);
+            auto pos = timeRx.indexIn(QLatin1String(dateString), at);
             if (pos != -1) {
-                QStringList list = timeRx.capturedTexts();
-                int h = atoi(list.at(1).toLatin1().constData());
-                int m = atoi(list.at(2).toLatin1().constData());
-                int s = atoi(list.at(4).toLatin1().constData());
-                int ms = atoi(list.at(6).toLatin1().constData());
+                auto list = timeRx.capturedTexts();
+                auto h = atoi(list.at(1).toLatin1().constData());
+                auto m = atoi(list.at(2).toLatin1().constData());
+                auto s = atoi(list.at(4).toLatin1().constData());
+                auto ms = atoi(list.at(6).toLatin1().constData());
                 if (h < 12 && !list.at(9).isEmpty())
                     if (list.at(9) == QLatin1String("pm"))
                         h += 12;
@@ -710,11 +710,11 @@ static QDateTime parseDateString(const QByteArray &dateString)
         // a one or two digit number
         // Could be month, day or year
         if (isNum) {
-            int length = 1;
+            auto length = 1;
             if (dateString.length() > at + 1
                 && isNumber(dateString[at + 1]))
                 ++length;
-            int x = atoi(dateString.mid(at, length).constData());
+            auto x = atoi(dateString.mid(at, length).constData());
             if (year == -1 && (x > 31 || x == 0)) {
                 year = x;
             } else {
@@ -737,8 +737,8 @@ static QDateTime parseDateString(const QByteArray &dateString)
     // and determine which is the unknown year/month/day
 
     int couldBe[3] = { 0, 0, 0 };
-    int unknownCount = 3;
-    for (int i = 0; i < unknownCount; ++i) {
+    auto unknownCount = 3;
+    for (auto i = 0; i < unknownCount; ++i) {
         if (unknown[i] == -1) {
             couldBe[i] = ADAY | AYEAR | AMONTH;
             unknownCount = i;
@@ -761,26 +761,26 @@ static QDateTime parseDateString(const QByteArray &dateString)
     // day that month can have.
     // Example: 31 11 06
     // 31 can't be a day because 11 and 6 don't have 31 days
-    for (int i = 0; i < unknownCount; ++i) {
-        int currentValue = unknown[i];
-        bool findMatchingMonth = couldBe[i] & ADAY && currentValue >= 29;
+    for (auto i = 0; i < unknownCount; ++i) {
+        auto currentValue = unknown[i];
+        auto findMatchingMonth = couldBe[i] & ADAY && currentValue >= 29;
         bool findMatchingDay = couldBe[i] & AMONTH;
         if (!findMatchingMonth || !findMatchingDay)
             continue;
-        for (int j = 0; j < 3; ++j) {
+        for (auto j = 0; j < 3; ++j) {
             if (j == i)
                 continue;
-            for (int k = 0; k < 2; ++k) {
+            for (auto k = 0; k < 2; ++k) {
                 if (k == 0 && !(findMatchingMonth && (couldBe[j] & AMONTH)))
                     continue;
                 else if (k == 1 && !(findMatchingDay && (couldBe[j] & ADAY)))
                     continue;
-                int m = currentValue;
-                int d = unknown[j];
+                auto m = currentValue;
+                auto d = unknown[j];
                 if (k == 0)
                     qSwap(m, d);
                 if (m == -1) m = month;
-                bool found = true;
+                auto found = true;
                 switch(m) {
                     case 2:
                         // When we get 29 and the year ends up having only 28
@@ -809,9 +809,9 @@ static QDateTime parseDateString(const QByteArray &dateString)
 
     // First set the year/month/day that have been deduced
     // and reduce the set as we go along to deduce more
-    for (int i = 0; i < unknownCount; ++i) {
-        int unset = 0;
-        for (int j = 0; j < 3; ++j) {
+    for (auto i = 0; i < unknownCount; ++i) {
+        auto unset = 0;
+        for (auto j = 0; j < 3; ++j) {
             if (couldBe[j] == ADAY && day == -1) {
                 day = unknown[j];
                 unset |= ADAY;
@@ -830,7 +830,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
     }
 
     // Now fallback to a standardized order to fill in the rest with
-    for (int i = 0; i < unknownCount; ++i) {
+    for (auto i = 0; i < unknownCount; ++i) {
         if (couldBe[i] & AMONTH && month == -1) month = unknown[i];
         else if (couldBe[i] & ADAY && day == -1) day = unknown[i];
         else if (couldBe[i] & AYEAR && year == -1) year = unknown[i];
@@ -847,7 +847,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
     }
 
     // Y2k behavior
-    int y2k = 0;
+    auto y2k = 0;
     if (year < 70)
         y2k = 2000;
     else if (year < 100)
@@ -889,8 +889,8 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
     // cookieString can be a number of set-cookie header strings joined together
     // by \n, parse each line separately.
     QList<QNetworkCookie> cookies;
-    QList<QByteArray> list = cookieString.split('\n');
-    for (int a = 0; a < list.size(); a++)
+    auto list = cookieString.split('\n');
+    for (auto a = 0; a < list.size(); a++)
         cookies += QNetworkCookiePrivate::parseSetCookieHeaderLine(list.at(a));
     return cookies;
 }
@@ -907,15 +907,15 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
     // We do not support RFC 2965 Set-Cookie2-style cookies
 
     QList<QNetworkCookie> result;
-    const QDateTime now = QDateTime::currentDateTimeUtc();
+    const auto now = QDateTime::currentDateTimeUtc();
 
-    int position = 0;
-    const int length = cookieString.length();
+    auto position = 0;
+    const auto length = cookieString.length();
     while (position < length) {
         QNetworkCookie cookie;
 
         // The first part is always the "NAME=VALUE" part
-        QPair<QByteArray,QByteArray> field = nextField(cookieString, position, true);
+        auto field = nextField(cookieString, position, true);
         if (field.first.isEmpty())
             // parsing error
             break;
@@ -937,14 +937,14 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                         if (isValueSeparator(cookieString.at(end)))
                             break;
 
-                    QByteArray dateString = cookieString.mid(position, end - position).trimmed();
+                    auto dateString = cookieString.mid(position, end - position).trimmed();
                     position = end;
-                    QDateTime dt = parseDateString(dateString.toLower());
+                    auto dt = parseDateString(dateString.toLower());
                     if (dt.isValid())
                         cookie.setExpirationDate(dt);
                     //if unparsed, ignore the attribute but not the whole cookie (RFC6265 section 5.2.1)
                 } else if (field.first == "domain") {
-                    QByteArray rawDomain = field.second;
+                    auto rawDomain = field.second;
                     //empty domain should be ignored (RFC6265 section 5.2.3)
                     if (!rawDomain.isEmpty()) {
                         QString maybeLeadingDot;
@@ -954,7 +954,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                         }
 
                         //IDN domains are required by RFC6265, accepting utf8 as well doesn't break any test cases.
-                        QString normalizedDomain = QUrl::fromAce(QUrl::toAce(QString::fromUtf8(rawDomain)));
+                        auto normalizedDomain = QUrl::fromAce(QUrl::toAce(QString::fromUtf8(rawDomain)));
                         if (!normalizedDomain.isEmpty()) {
                             cookie.setDomain(maybeLeadingDot + normalizedDomain);
                         } else {
@@ -965,8 +965,8 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                         }
                     }
                 } else if (field.first == "max-age") {
-                    bool ok = false;
-                    int secs = field.second.toInt(&ok);
+                    auto ok = false;
+                    auto secs = field.second.toInt(&ok);
                     if (ok) {
                         if (secs <= 0) {
                             //earliest representable time (RFC6265 section 5.2.2)
@@ -1014,8 +1014,8 @@ void QNetworkCookie::normalize(const QUrl &url)
 {
     // don't do path checking. See QTBUG-5815
     if (d->path.isEmpty()) {
-        QString pathAndFileName = url.path();
-        QString defaultPath = pathAndFileName.left(pathAndFileName.lastIndexOf(QLatin1Char('/'))+1);
+        auto pathAndFileName = url.path();
+        auto defaultPath = pathAndFileName.left(pathAndFileName.lastIndexOf(QLatin1Char('/'))+1);
         if (defaultPath.isEmpty())
             defaultPath = QLatin1Char('/');
         d->path = defaultPath;

@@ -372,21 +372,21 @@ qint64 QHttpPartPrivate::readData(char *data, qint64 maxSize)
     // read header if it has not been read yet
     if (readPointer < headerDataCount) {
         bytesRead = qMin(headerDataCount - readPointer, maxSize);
-        const char *headerData = header.constData();
+        auto headerData = header.constData();
         memcpy(data, headerData + readPointer, bytesRead);
         readPointer += bytesRead;
     }
     // read content if there is still space
     if (bytesRead < maxSize) {
         if (bodyDevice) {
-            qint64 dataBytesRead = bodyDevice->read(data + bytesRead, maxSize - bytesRead);
+            auto dataBytesRead = bodyDevice->read(data + bytesRead, maxSize - bytesRead);
             if (dataBytesRead == -1)
                 return -1;
             bytesRead += dataBytesRead;
             readPointer += dataBytesRead;
         } else {
-            qint64 contentBytesRead = qMin(body.count() - readPointer + headerDataCount, maxSize - bytesRead);
-            const char *contentData = body.constData();
+            auto contentBytesRead = qMin(body.count() - readPointer + headerDataCount, maxSize - bytesRead);
+            auto contentData = body.constData();
             // if this method is called several times, we need to find the
             // right offset in the content ourselves:
             memcpy(data + bytesRead, contentData + readPointer - headerDataCount, contentBytesRead);
@@ -411,7 +411,7 @@ qint64 QHttpPartPrivate::size() const
 
 bool QHttpPartPrivate::reset()
 {
-    bool ret = true;
+    auto ret = true;
     if (bodyDevice)
         if (!bodyDevice->reset())
             ret = false;
@@ -422,8 +422,8 @@ void QHttpPartPrivate::checkHeaderCreated() const
 {
     if (!headerCreated) {
         // copied from QHttpNetworkRequestPrivate::header() and adapted
-        QList<QPair<QByteArray, QByteArray> > fields = allRawHeaders();
-        QList<QPair<QByteArray, QByteArray> >::const_iterator it = fields.constBegin();
+        auto fields = allRawHeaders();
+        auto it = fields.constBegin();
         for (; it != fields.constEnd(); ++it)
             header += it->first + ": " + it->second + "\r\n";
         header += "\r\n";
@@ -457,7 +457,7 @@ qint64 QHttpMultiPartIODevice::size() const
     if (deviceSize == -1) {
         qint64 currentSize = 0;
         qint64 boundaryCount = multiPart->boundary.count();
-        for (int a = 0; a < multiPart->parts.count(); a++) {
+        for (auto a = 0; a < multiPart->parts.count(); a++) {
             partOffsets.append(currentSize);
             // 4 additional bytes for the "--" before and the "\r\n" after the boundary,
             // and 2 bytes for the "\r\n" after the content
@@ -471,8 +471,8 @@ qint64 QHttpMultiPartIODevice::size() const
 
 bool QHttpMultiPartIODevice::isSequential() const
 {
-    for (int a = 0; a < multiPart->parts.count(); a++) {
-        QIODevice *device = multiPart->parts.at(a).d->bodyDevice;
+    for (auto a = 0; a < multiPart->parts.count(); a++) {
+        auto device = multiPart->parts.at(a).d->bodyDevice;
         // we are sequential if any of the bodyDevices of our parts are sequential;
         // when reading from a byte array, we are not sequential
         if (device && device->isSequential())
@@ -483,7 +483,7 @@ bool QHttpMultiPartIODevice::isSequential() const
 
 bool QHttpMultiPartIODevice::reset()
 {
-    for (int a = 0; a < multiPart->parts.count(); a++)
+    for (auto a = 0; a < multiPart->parts.count(); a++)
         if (!multiPart->parts[a].d->reset())
             return false;
     readPointer = 0;
@@ -505,9 +505,9 @@ qint64 QHttpMultiPartIODevice::readData(char *data, qint64 maxSize)
         // check whether we need to read the boundary of the current part
         QByteArray boundaryData = "--" + multiPart->boundary + "\r\n";
         qint64 boundaryCount = boundaryData.count();
-        qint64 partIndex = readPointer - partOffsets.at(index);
+        auto partIndex = readPointer - partOffsets.at(index);
         if (partIndex < boundaryCount) {
-            qint64 boundaryBytesRead = qMin(boundaryCount - partIndex, maxSize - bytesRead);
+            auto boundaryBytesRead = qMin(boundaryCount - partIndex, maxSize - bytesRead);
             memcpy(data + bytesRead, boundaryData.constData() + partIndex, boundaryBytesRead);
             bytesRead += boundaryBytesRead;
             readPointer += boundaryBytesRead;
@@ -516,7 +516,7 @@ qint64 QHttpMultiPartIODevice::readData(char *data, qint64 maxSize)
 
         // check whether we need to read the data of the current part
         if (bytesRead < maxSize && partIndex >= boundaryCount && partIndex < boundaryCount + multiPart->parts.at(index).d->size()) {
-            qint64 dataBytesRead = multiPart->parts[index].d->readData(data + bytesRead, maxSize - bytesRead);
+            auto dataBytesRead = multiPart->parts[index].d->readData(data + bytesRead, maxSize - bytesRead);
             if (dataBytesRead == -1)
                 return -1;
             bytesRead += dataBytesRead;
@@ -537,8 +537,8 @@ qint64 QHttpMultiPartIODevice::readData(char *data, qint64 maxSize)
     // check whether we need to return the final boundary
     if (bytesRead < maxSize && index == multiPart->parts.count()) {
         QByteArray finalBoundary = "--" + multiPart->boundary + "--\r\n";
-        qint64 boundaryIndex = readPointer + finalBoundary.count() - size();
-        qint64 lastBoundaryBytesRead = qMin(finalBoundary.count() - boundaryIndex, maxSize - bytesRead);
+        auto boundaryIndex = readPointer + finalBoundary.count() - size();
+        auto lastBoundaryBytesRead = qMin(finalBoundary.count() - boundaryIndex, maxSize - bytesRead);
         memcpy(data + bytesRead, finalBoundary.constData() + boundaryIndex, lastBoundaryBytesRead);
         bytesRead += lastBoundaryBytesRead;
         readPointer += lastBoundaryBytesRead;

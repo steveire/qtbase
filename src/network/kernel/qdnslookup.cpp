@@ -71,13 +71,13 @@ static void qt_qdnsmailexchangerecord_sort(QList<QDnsMailExchangeRecord> &record
     // Order the records by preference.
     std::sort(records.begin(), records.end(), qt_qdnsmailexchangerecord_less_than);
 
-    int i = 0;
+    auto i = 0;
     while (i < records.size()) {
 
         // Determine the slice of records with the current preference.
         QList<QDnsMailExchangeRecord> slice;
-        const quint16 slicePreference = records[i].preference();
-        for (int j = i; j < records.size(); ++j) {
+        const auto slicePreference = records[i].preference();
+        for (auto j = i; j < records.size(); ++j) {
             if (records[j].preference() != slicePreference)
                 break;
             slice << records[j];
@@ -114,14 +114,14 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
     // priority, put records with a zero weight first.
     std::sort(records.begin(), records.end(), qt_qdnsservicerecord_less_than);
 
-    int i = 0;
+    auto i = 0;
     while (i < records.size()) {
 
         // Determine the slice of records with the current priority.
         QList<QDnsServiceRecord> slice;
-        const quint16 slicePriority = records[i].priority();
+        const auto slicePriority = records[i].priority();
         unsigned int sliceWeight = 0;
-        for (int j = i; j < records.size(); ++j) {
+        for (auto j = i; j < records.size(); ++j) {
             if (records[j].priority() != slicePriority)
                 break;
             sliceWeight += records[j].weight();
@@ -134,9 +134,9 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
 
         // Order the slice of records.
         while (!slice.isEmpty()) {
-            const unsigned int weightThreshold = qrand() % (sliceWeight + 1);
+            const auto weightThreshold = qrand() % (sliceWeight + 1);
             unsigned int summedWeight = 0;
-            for (int j = 0; j < slice.size(); ++j) {
+            for (auto j = 0; j < slice.size(); ++j) {
                 summedWeight += slice[j].weight();
                 if (summedWeight >= weightThreshold) {
 #ifdef QDNSLOOKUP_DEBUG
@@ -1034,7 +1034,7 @@ void QDnsLookupThreadPool::start(QRunnable *runnable)
     if (!signalsConnected) {
         QMutexLocker signalsLocker(&signalsMutex);
         if (!signalsConnected) {
-            QCoreApplication *app = QCoreApplication::instance();
+            auto app = QCoreApplication::instance();
             if (!app) {
                 qWarning("QDnsLookup requires a QCoreApplication");
                 delete runnable;

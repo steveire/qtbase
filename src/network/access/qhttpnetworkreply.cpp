@@ -335,7 +335,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
 #endif
 
 {
-    QString scheme = newUrl.scheme();
+    auto scheme = newUrl.scheme();
     if (scheme == QLatin1String("preconnect-http")
             || scheme == QLatin1String("preconnect-https"))
         // make sure we do not close the socket after preconnecting
@@ -385,7 +385,7 @@ qint64 QHttpNetworkReplyPrivate::bytesAvailable() const
 
 bool QHttpNetworkReplyPrivate::isCompressed()
 {
-    QByteArray encoding = headerField("content-encoding");
+    auto encoding = headerField("content-encoding");
     return qstricmp(encoding.constData(), "gzip") == 0 || qstricmp(encoding.constData(), "deflate") == 0;
 }
 
@@ -394,7 +394,7 @@ void QHttpNetworkReplyPrivate::removeAutoDecompressHeader()
     // The header "Content-Encoding  = gzip" is retained.
     // Content-Length is removed since the actual one sent by the server is for compressed data
     QByteArray name("content-length");
-    QList<QPair<QByteArray, QByteArray> >::Iterator it = fields.begin(),
+    auto it = fields.begin(),
                                                    end = fields.end();
     while (it != end) {
         if (qstricmp(name.constData(), it->first.constData()) == 0) {
@@ -412,9 +412,9 @@ bool QHttpNetworkReplyPrivate::findChallenge(bool forProxy, QByteArray &challeng
     // find out the type of authentication protocol requested.
     QByteArray header = forProxy ? "proxy-authenticate" : "www-authenticate";
     // pick the best protocol (has to match parsing in QAuthenticatorPrivate)
-    QList<QByteArray> challenges = headerFieldValues(header);
-    for (int i = 0; i<challenges.size(); i++) {
-        QByteArray line = challenges.at(i);
+    auto challenges = headerFieldValues(header);
+    for (auto i = 0; i<challenges.size(); i++) {
+        auto line = challenges.at(i);
         // todo use qstrincmp
         if (!line.toLower().startsWith("negotiate"))
             challenge = line;
@@ -425,11 +425,11 @@ bool QHttpNetworkReplyPrivate::findChallenge(bool forProxy, QByteArray &challeng
 QAuthenticatorPrivate::Method QHttpNetworkReplyPrivate::authenticationMethod(bool isProxy) const
 {
     // The logic is same as the one used in void QAuthenticatorPrivate::parseHttpResponse()
-    QAuthenticatorPrivate::Method method = QAuthenticatorPrivate::None;
+    auto method = QAuthenticatorPrivate::None;
     QByteArray header = isProxy ? "proxy-authenticate" : "www-authenticate";
-    QList<QByteArray> challenges = headerFieldValues(header);
-    for (int i = 0; i<challenges.size(); i++) {
-        QByteArray line = challenges.at(i).trimmed().toLower();
+    auto challenges = headerFieldValues(header);
+    for (auto i = 0; i<challenges.size(); i++) {
+        auto line = challenges.at(i).trimmed().toLower();
         if (method < QAuthenticatorPrivate::Basic
             && line.startsWith("basic")) {
             method = QAuthenticatorPrivate::Basic;
@@ -472,7 +472,7 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             if (fragment.endsWith('\r')) {
                 fragment.truncate(fragment.length()-1);
             }
-            bool ok = parseStatus(fragment);
+            auto ok = parseStatus(fragment);
             state = ReadingHeaderState;
             fragment.clear();
             if (!ok) {
@@ -502,9 +502,9 @@ bool QHttpNetworkReplyPrivate::parseStatus(const QByteArray &status)
     // that makes: 'HTTP/n.n xxx Message'
     // byte count:  0123456789012
 
-    static const int minLength = 11;
-    static const int dotPos = 6;
-    static const int spacePos = 8;
+    static const auto minLength = 11;
+    static const auto dotPos = 6;
+    static const auto spacePos = 8;
     static const char httpMagic[] = "HTTP/";
 
     if (status.length() < minLength
@@ -519,9 +519,9 @@ bool QHttpNetworkReplyPrivate::parseStatus(const QByteArray &status)
     majorVersion = status.at(dotPos - 1) - '0';
     minorVersion = status.at(dotPos + 1) - '0';
 
-    int i = spacePos;
-    int j = status.indexOf(' ', i + 1); // j == -1 || at(j) == ' ' so j+1 == 0 && j+1 <= length()
-    const QByteArray code = status.mid(i + 1, j - i - 1);
+    auto i = spacePos;
+    auto j = status.indexOf(' ', i + 1); // j == -1 || at(j) == ' ' so j+1 == 0 && j+1 <= length()
+    const auto code = status.mid(i + 1, j - i - 1);
 
     bool ok;
     statusCode = code.toInt(&ok);
@@ -541,7 +541,7 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
 
     qint64 bytes = 0;
     char c = 0;
-    bool allHeaders = false;
+    auto allHeaders = false;
     qint64 haveRead = 0;
     do {
         haveRead = socket->read(&c, 1);
@@ -583,7 +583,7 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
         chunkedTransferEncoding = headerField("transfer-encoding").toLower().contains("chunked");
 
         // cache isConnectionCloseEnabled since it is called often
-        QByteArray connectionHeaderField = headerField("connection");
+        auto connectionHeaderField = headerField("connection");
         // check for explicit indication of close or the implicit connection close of HTTP/1.0
         connectionCloseEnabled = (connectionHeaderField.toLower().contains("close") ||
             headerField("proxy-connection").toLower().contains("close")) ||
@@ -595,7 +595,7 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
             // allocate inflate state
             if (!inflateStrm)
                 inflateStrm = new z_stream;
-            int ret = initializeInflateStream();
+            auto ret = initializeInflateStream();
             if (ret != Z_OK)
                 return -1;
         }
@@ -609,12 +609,12 @@ void QHttpNetworkReplyPrivate::parseHeader(const QByteArray &header)
 {
     // see rfc2616, sec 4 for information about HTTP/1.1 headers.
     // allows relaxed parsing here, accepts both CRLF & LF line endings
-    int i = 0;
+    auto i = 0;
     while (i < header.count()) {
-        int j = header.indexOf(':', i); // field-name
+        auto j = header.indexOf(':', i); // field-name
         if (j == -1)
             break;
-        const QByteArray field = header.mid(i, j - i).trimmed();
+        const auto field = header.mid(i, j - i).trimmed();
         j++;
         // any number of LWS is allowed before and after the value
         QByteArray value;
@@ -625,8 +625,8 @@ void QHttpNetworkReplyPrivate::parseHeader(const QByteArray &header)
             if (!value.isEmpty())
                 value += ' ';
             // check if we have CRLF or only LF
-            bool hasCR = (i && header[i-1] == '\r');
-            int length = i -(hasCR ? 1: 0) - j;
+            auto hasCR = (i && header[i-1] == '\r');
+            auto length = i -(hasCR ? 1: 0) - j;
             value += header.mid(j, length).trimmed();
             j = ++i;
         } while (i < header.count() && (header.at(i) == ' ' || header.at(i) == '\t'));
@@ -671,7 +671,7 @@ qint64 QHttpNetworkReplyPrivate::readBodyVeryFast(QAbstractSocket *socket, char 
 qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QByteDataBuffer *rb)
 {
 
-    qint64 toBeRead = qMin(socket->bytesAvailable(), bodyLength - contentRead);
+    auto toBeRead = qMin(socket->bytesAvailable(), bodyLength - contentRead);
     if (readBufferMaxSize)
         toBeRead = qMin(toBeRead, readBufferMaxSize);
 
@@ -680,7 +680,7 @@ qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QByteData
 
     QByteArray bd;
     bd.resize(toBeRead);
-    qint64 haveRead = socket->read(bd.data(), toBeRead);
+    auto haveRead = socket->read(bd.data(), toBeRead);
     if (haveRead == -1) {
         bd.clear();
         return 0; // ### error checking here;
@@ -704,7 +704,7 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuff
 
 #ifndef QT_NO_COMPRESS
     // for gzip we'll allocate a temporary one that we then decompress
-    QByteDataBuffer *tempOutDataBuffer = (autoDecompress ? new QByteDataBuffer : out);
+    auto tempOutDataBuffer = (autoDecompress ? new QByteDataBuffer : out);
 #else
     QByteDataBuffer *tempOutDataBuffer = out;
 #endif
@@ -726,7 +726,7 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuff
 #ifndef QT_NO_COMPRESS
     // This is true if there is compressed encoding and we're supposed to use it.
     if (autoDecompress) {
-        qint64 uncompressRet = uncompressBodyData(tempOutDataBuffer, out);
+        auto uncompressRet = uncompressBodyData(tempOutDataBuffer, out);
         delete tempOutDataBuffer;
         if (uncompressRet < 0)
             return -1;
@@ -748,7 +748,7 @@ int QHttpNetworkReplyPrivate::initializeInflateStream()
     // "windowBits can also be greater than 15 for optional gzip decoding.
     // Add 32 to windowBits to enable zlib and gzip decoding with automatic header detection"
     // http://www.zlib.net/manual.html
-    int ret = inflateInit2(inflateStrm, MAX_WBITS+32);
+    auto ret = inflateInit2(inflateStrm, MAX_WBITS+32);
     Q_ASSERT(ret == Z_OK);
     return ret;
 }
@@ -763,8 +763,8 @@ qint64 QHttpNetworkReplyPrivate::uncompressBodyData(QByteDataBuffer *in, QByteDa
     if (!inflateStrm)
         return -1;
 
-    bool triedRawDeflate = false;
-    for (int i = 0; i < in->bufferCount(); i++) {
+    auto triedRawDeflate = false;
+    for (auto i = 0; i < in->bufferCount(); i++) {
         QByteArray &bIn = (*in)[i];
 
         inflateStrm->avail_in = bIn.size();
@@ -777,7 +777,7 @@ qint64 QHttpNetworkReplyPrivate::uncompressBodyData(QByteDataBuffer *in, QByteDa
             inflateStrm->avail_out = bOut.capacity();
             inflateStrm->next_out = reinterpret_cast<Bytef*>(bOut.data());
 
-            int ret = inflate(inflateStrm, Z_NO_FLUSH);
+            auto ret = inflate(inflateStrm, Z_NO_FLUSH);
             //All negative return codes are errors, in the context of HTTP compression, Z_NEED_DICT is also an error.
             // in the case where we get Z_DATA_ERROR this could be because we received raw deflate compressed data.
             if (ret == Z_DATA_ERROR && !triedRawDeflate) {
@@ -788,7 +788,7 @@ qint64 QHttpNetworkReplyPrivate::uncompressBodyData(QByteDataBuffer *in, QByteDa
                 inflateStrm->opaque = Z_NULL;
                 inflateStrm->avail_in = 0;
                 inflateStrm->next_in = Z_NULL;
-                int ret = inflateInit2(inflateStrm, -MAX_WBITS);
+                auto ret = inflateInit2(inflateStrm, -MAX_WBITS);
                 if (ret != Z_OK) {
                     return -1;
                 } else {
@@ -825,7 +825,7 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyRaw(QAbstractSocket *socket, QByte
     while (toBeRead > 0) {
         QByteArray byteData;
         byteData.resize(toBeRead);
-        qint64 haveRead = socket->read(byteData.data(), byteData.size());
+        auto haveRead = socket->read(byteData.data(), byteData.size());
         if (haveRead <= 0) {
             // ### error checking here
             byteData.clear();
@@ -859,7 +859,7 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QAbstractSocket *socket, Q
                 // After a chunk
                 char crlf[2];
                 // read the "\r\n" after the chunk
-                qint64 haveRead = socket->read(crlf, 2);
+                auto haveRead = socket->read(crlf, 2);
                 // FIXME: This code is slightly broken and not optimal. What if the 2 bytes are not available yet?!
                 // For nice reasons (the toLong in getChunkSize accepting \n at the beginning
                 // it right now still works, but we should definitely fix this.
@@ -878,7 +878,7 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QAbstractSocket *socket, Q
             lastChunkRead = true;
             // try to read the "\r\n" after the chunk
             char crlf[2];
-            qint64 haveRead = socket->read(crlf, 2);
+            auto haveRead = socket->read(crlf, 2);
             if (haveRead > 0)
                 bytes += haveRead;
 
@@ -895,7 +895,7 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QAbstractSocket *socket, Q
         }
 
         // otherwise, try to begin reading this chunk / to read what is missing for this chunk
-        qint64 haveRead = readReplyBodyRaw (socket, out, currentChunkSize - currentChunkRead);
+        auto haveRead = readReplyBodyRaw (socket, out, currentChunkSize - currentChunkRead);
         currentChunkRead += haveRead;
         bytes += haveRead;
 
@@ -914,8 +914,8 @@ qint64 QHttpNetworkReplyPrivate::getChunkSize(QAbstractSocket *socket, qint64 *c
     int bytesAvailable = socket->bytesAvailable();
     // FIXME rewrite to permanent loop without bytesAvailable
     while (bytesAvailable > bytes) {
-        qint64 sniffedBytes = socket->peek(crlf, 2);
-        int fragmentSize = fragment.size();
+        auto sniffedBytes = socket->peek(crlf, 2);
+        auto fragmentSize = fragment.size();
 
         // check the next two bytes for a "\r\n", skip blank lines
         if ((fragmentSize && sniffedBytes == 2 && crlf[0] == '\r' && crlf[1] == '\n')
@@ -924,7 +924,7 @@ qint64 QHttpNetworkReplyPrivate::getChunkSize(QAbstractSocket *socket, qint64 *c
             bytes += socket->read(crlf, 1);     // read the \r or \n
             if (crlf[0] == '\r')
                 bytes += socket->read(crlf, 1); // read the \n
-            bool ok = false;
+            auto ok = false;
             // ignore the chunk-extension
             fragment = fragment.mid(0, fragment.indexOf(';')).trimmed();
             *chunkSize = fragment.toLong(&ok, 16);
@@ -933,7 +933,7 @@ qint64 QHttpNetworkReplyPrivate::getChunkSize(QAbstractSocket *socket, qint64 *c
         } else {
             // read the fragment to the buffer
             char c = 0;
-            qint64 haveRead = socket->read(&c, 1);
+            auto haveRead = socket->read(&c, 1);
             if (haveRead < 0) {
                 return -1; // FIXME
             }
@@ -968,7 +968,7 @@ bool QHttpNetworkReplyPrivate::expectContent()
         return false;
     if (request.operation() == QHttpNetworkRequest::Head)
         return false; // no body expected for HEAD request
-    qint64 expectedContentLength = contentLength();
+    auto expectedContentLength = contentLength();
     if (expectedContentLength == 0)
         return false;
     if (expectedContentLength == -1 && bodyLength == 0) {
@@ -996,7 +996,7 @@ QSslConfiguration QHttpNetworkReply::sslConfiguration() const
     if (!d->connectionChannel)
         return QSslConfiguration();
 
-    QSslSocket *sslSocket = qobject_cast<QSslSocket*>(d->connectionChannel->socket);
+    auto sslSocket = qobject_cast<QSslSocket*>(d->connectionChannel->socket);
     if (!sslSocket)
         return QSslConfiguration();
 

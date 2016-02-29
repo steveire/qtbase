@@ -463,9 +463,9 @@ struct NumericallyLess
     typedef bool result_type;
     result_type operator()(const QStringRef &lhs, const QStringRef &rhs) const
     {
-        bool ok = false;
-        int b = 0;
-        int a = lhs.toInt(&ok);
+        auto ok = false;
+        auto b = 0;
+        auto a = lhs.toInt(&ok);
         if (ok)
             b = rhs.toInt(&ok);
         if (ok) {
@@ -483,8 +483,8 @@ struct LibGreaterThan
     typedef bool result_type;
     result_type operator()(const QString &lhs, const QString &rhs) const
     {
-        const QVector<QStringRef> lhsparts = lhs.splitRef(QLatin1Char('.'));
-        const QVector<QStringRef> rhsparts = rhs.splitRef(QLatin1Char('.'));
+        const auto lhsparts = lhs.splitRef(QLatin1Char('.'));
+        const auto rhsparts = rhs.splitRef(QLatin1Char('.'));
         Q_ASSERT(lhsparts.count() > 1 && rhsparts.count() > 1);
 
         // note: checking rhs < lhs, the same as lhs > rhs
@@ -499,8 +499,8 @@ static int dlIterateCallback(struct dl_phdr_info *info, size_t size, void *data)
 {
     if (size < sizeof (info->dlpi_addr) + sizeof (info->dlpi_name))
         return 1;
-    QSet<QString> *paths = (QSet<QString> *)data;
-    QString path = QString::fromLocal8Bit(info->dlpi_name);
+    auto paths = (QSet<QString> *)data;
+    auto path = QString::fromLocal8Bit(info->dlpi_name);
     if (!path.isEmpty()) {
         QFileInfo fi(path);
         path = fi.absolutePath();
@@ -549,13 +549,13 @@ static QStringList libraryPathList()
 Q_NEVER_INLINE
 static QStringList findAllLibs(QLatin1String filter)
 {
-    QStringList paths = libraryPathList();
+    auto paths = libraryPathList();
     QStringList found;
     const QStringList filters((QString(filter)));
 
     foreach (const QString &path, paths) {
         QDir dir(path);
-        QStringList entryList = dir.entryList(filters, QDir::Files);
+        auto entryList = dir.entryList(filters, QDir::Files);
 
         std::sort(entryList.begin(), entryList.end(), LibGreaterThan());
         foreach (const QString &entry, entryList)
@@ -688,14 +688,14 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
 #endif
 
     // third attempt: loop on the most common library paths and find libssl
-    QStringList sslList = findAllLibSsl();
-    QStringList cryptoList = findAllLibCrypto();
+    auto sslList = findAllLibSsl();
+    auto cryptoList = findAllLibCrypto();
 
     foreach (const QString &crypto, cryptoList) {
         libcrypto->setFileNameAndVersion(crypto, -1);
         if (libcrypto->load()) {
             QFileInfo fi(crypto);
-            QString version = fi.completeSuffix();
+            auto version = fi.completeSuffix();
 
             foreach (const QString &ssl, sslList) {
                 if (!ssl.endsWith(version))
@@ -729,8 +729,8 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
 
 bool q_resolveOpenSslSymbols()
 {
-    static bool symbolsResolved = false;
-    static bool triedToResolveSymbols = false;
+    static auto symbolsResolved = false;
+    static auto triedToResolveSymbols = false;
 #ifndef QT_NO_THREAD
     QMutexLocker locker(QMutexPool::globalInstanceGet((void *)&q_SSL_library_init));
 #endif
@@ -743,7 +743,7 @@ bool q_resolveOpenSslSymbols()
 #ifdef Q_OS_WIN
     QPair<QSystemLibrary *, QSystemLibrary *> libs = loadOpenSslWin32();
 #else
-    QPair<QLibrary *, QLibrary *> libs = loadOpenSsl();
+    auto libs = loadOpenSsl();
 #endif
     if (!libs.first || !libs.second)
         // failed to load them
@@ -1015,7 +1015,7 @@ bool q_resolveOpenSslSymbols()
 QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
 {
     size_t lTimeLength = aTime->length;
-    char *pString = (char *) aTime->data;
+    auto pString = (char *) aTime->data;
 
     if (aTime->type == V_ASN1_UTCTIME) {
 

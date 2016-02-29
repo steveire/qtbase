@@ -129,8 +129,8 @@ public:
 bool QUdpSocketPrivate::doEnsureInitialized(const QHostAddress &bindAddress, quint16 bindPort,
                                             const QHostAddress &remoteAddress)
 {
-    const QHostAddress *address = &bindAddress;
-    QAbstractSocket::NetworkLayerProtocol proto = address->protocol();
+    auto address = &bindAddress;
+    auto proto = address->protocol();
     if (proto == QUdpSocket::UnknownNetworkLayerProtocol) {
         address = &remoteAddress;
         proto = address->protocol();
@@ -340,7 +340,7 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
     if (state() == UnconnectedState)
         bind();
 
-    qint64 sent = d->socketEngine->writeDatagram(data, size, QIpPacketHeader(address, port));
+    auto sent = d->socketEngine->writeDatagram(data, size, QIpPacketHeader(address, port));
     d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
 
     if (sent >= 0) {

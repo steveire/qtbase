@@ -746,11 +746,11 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QIODe
 */
 QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const QByteArray &data)
 {
-    QBuffer *buffer = new QBuffer;
+    auto buffer = new QBuffer;
     buffer->setData(data);
     buffer->open(QIODevice::ReadOnly);
 
-    QNetworkReply *reply = post(request, buffer);
+    auto reply = post(request, buffer);
     buffer->setParent(reply);
     return reply;
 }
@@ -769,9 +769,9 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const
 */
 QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QHttpMultiPart *multiPart)
 {
-    QNetworkRequest newRequest = d_func()->prepareMultipart(request, multiPart);
-    QIODevice *device = multiPart->d_func()->device;
-    QNetworkReply *reply = post(newRequest, device);
+    auto newRequest = d_func()->prepareMultipart(request, multiPart);
+    auto device = multiPart->d_func()->device;
+    auto reply = post(newRequest, device);
     return reply;
 }
 
@@ -789,9 +789,9 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QHttp
 */
 QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QHttpMultiPart *multiPart)
 {
-    QNetworkRequest newRequest = d_func()->prepareMultipart(request, multiPart);
-    QIODevice *device = multiPart->d_func()->device;
-    QNetworkReply *reply = put(newRequest, device);
+    auto newRequest = d_func()->prepareMultipart(request, multiPart);
+    auto device = multiPart->d_func()->device;
+    auto reply = put(newRequest, device);
     return reply;
 }
 
@@ -827,11 +827,11 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QIODev
 */
 QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const QByteArray &data)
 {
-    QBuffer *buffer = new QBuffer;
+    auto buffer = new QBuffer;
     buffer->setData(data);
     buffer->open(QIODevice::ReadOnly);
 
-    QNetworkReply *reply = put(request, buffer);
+    auto reply = put(request, buffer);
     buffer->setParent(reply);
     return reply;
 }
@@ -953,9 +953,9 @@ void QNetworkAccessManager::setNetworkAccessible(QNetworkAccessManager::NetworkA
     d->defaultAccessControl = accessible == NotAccessible ? false : true;
 
     if (d->networkAccessible != accessible) {
-        NetworkAccessibility previous = networkAccessible();
+        auto previous = networkAccessible();
         d->networkAccessible = accessible;
-        NetworkAccessibility current = networkAccessible();
+        auto current = networkAccessible();
         if (previous != current)
             emit networkAccessibleChanged(current);
     }
@@ -1124,8 +1124,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 {
     Q_D(QNetworkAccessManager);
 
-    bool isLocalFile = req.url().isLocalFile();
-    QString scheme = req.url().scheme().toLower();
+    auto isLocalFile = req.url().isLocalFile();
+    auto scheme = req.url().scheme().toLower();
 
     // fast path for GET on file:// URLs
     // The QNetworkAccessFileBackend will right now only be used for PUT
@@ -1144,7 +1144,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     }
 
     // A request with QNetworkRequest::AlwaysCache does not need any bearer management
-    QNetworkRequest::CacheLoadControl mode =
+    auto mode =
         static_cast<QNetworkRequest::CacheLoadControl>(
             req.attribute(QNetworkRequest::CacheLoadControlAttribute,
                               QNetworkRequest::PreferNetwork).toInt());
@@ -1152,8 +1152,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         && (op == QNetworkAccessManager::GetOperation
         || op == QNetworkAccessManager::HeadOperation)) {
         // FIXME Implement a QNetworkReplyCacheImpl instead, see QTBUG-15106
-        QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
-        QNetworkReplyImplPrivate *priv = reply->d_func();
+        auto reply = new QNetworkReplyImpl(this);
+        auto priv = reply->d_func();
         priv->manager = this;
         priv->backend = new QNetworkAccessCacheBackend();
         priv->backend->manager = this->d_func();
@@ -1188,7 +1188,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     }
 #endif
 
-    QNetworkRequest request = req;
+    auto request = req;
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
         outgoingData && !outgoingData->isSequential()) {
         // request has no Content-Length
@@ -1200,7 +1200,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         (request.attribute(QNetworkRequest::CookieLoadControlAttribute,
                            QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic) {
         if (d->cookieJar) {
-            QList<QNetworkCookie> cookies = d->cookieJar->cookiesForUrl(request.url());
+            auto cookies = d->cookieJar->cookiesForUrl(request.url());
             if (!cookies.isEmpty())
                 request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
         }
@@ -1219,7 +1219,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         || scheme == QLatin1String("https") || scheme == QLatin1String("preconnect-https")
 #endif
         ) {
-        QNetworkReplyHttpImpl *reply = new QNetworkReplyHttpImpl(this, request, op, outgoingData);
+        auto reply = new QNetworkReplyHttpImpl(this, request, op, outgoingData);
 #ifndef QT_NO_BEARERMANAGEMENT
         connect(this, SIGNAL(networkSessionConnected()),
                 reply, SLOT(_q_networkSessionConnected()));
@@ -1229,14 +1229,14 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #endif // QT_NO_HTTP
 
     // first step: create the reply
-    QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
+    auto reply = new QNetworkReplyImpl(this);
 #ifndef QT_NO_BEARERMANAGEMENT
     if (!isLocalFile) {
         connect(this, SIGNAL(networkSessionConnected()),
                 reply, SLOT(_q_networkSessionConnected()));
     }
 #endif
-    QNetworkReplyImplPrivate *priv = reply->d_func();
+    auto priv = reply->d_func();
     priv->manager = this;
 
     // second step: fetch cached credentials
@@ -1271,7 +1271,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 QStringList QNetworkAccessManager::supportedSchemes() const
 {
     QStringList schemes;
-    QNetworkAccessManager *self = const_cast<QNetworkAccessManager *>(this); // We know we call a const slot
+    auto self = const_cast<QNetworkAccessManager *>(this); // We know we call a const slot
     QMetaObject::invokeMethod(self, "supportedSchemesImplementation", Qt::DirectConnection,
                               Q_RETURN_ARG(QStringList, schemes));
     schemes.removeDuplicates();
@@ -1300,7 +1300,7 @@ QStringList QNetworkAccessManager::supportedSchemesImplementation() const
 {
     Q_D(const QNetworkAccessManager);
 
-    QStringList schemes = d->backendSupportedSchemes();
+    auto schemes = d->backendSupportedSchemes();
     // Those ones don't exist in backends
 #ifndef QT_NO_HTTP
     schemes << QStringLiteral("http");
@@ -1330,7 +1330,7 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
 {
     Q_Q(QNetworkAccessManager);
 
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
+    auto reply = qobject_cast<QNetworkReply *>(q->sender());
     if (reply)
         emit q->finished(reply);
 
@@ -1348,7 +1348,7 @@ void QNetworkAccessManagerPrivate::_q_replyEncrypted()
 {
 #ifndef QT_NO_SSL
     Q_Q(QNetworkAccessManager);
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
+    auto reply = qobject_cast<QNetworkReply *>(q->sender());
     if (reply)
         emit q->encrypted(reply);
 #endif
@@ -1358,7 +1358,7 @@ void QNetworkAccessManagerPrivate::_q_replySslErrors(const QList<QSslError> &err
 {
 #ifndef QT_NO_SSL
     Q_Q(QNetworkAccessManager);
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
+    auto reply = qobject_cast<QNetworkReply *>(q->sender());
     if (reply)
         emit q->sslErrors(reply, errors);
 #else
@@ -1370,7 +1370,7 @@ void QNetworkAccessManagerPrivate::_q_replyPreSharedKeyAuthenticationRequired(QS
 {
 #ifndef QT_NO_SSL
     Q_Q(QNetworkAccessManager);
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
+    auto reply = qobject_cast<QNetworkReply *>(q->sender());
     if (reply)
     emit q->preSharedKeyAuthenticationRequired(reply, authenticator);
 #else
@@ -1401,7 +1401,7 @@ void QNetworkAccessManagerPrivate::createCookieJar() const
 {
     if (!cookieJarCreated) {
         // keep the ugly hack in here
-        QNetworkAccessManagerPrivate *that = const_cast<QNetworkAccessManagerPrivate *>(this);
+        auto that = const_cast<QNetworkAccessManagerPrivate *>(this);
         that->cookieJar = new QNetworkCookieJar(that->q_func());
         that->cookieJarCreated = true;
     }
@@ -1431,7 +1431,7 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
             return;
         }
 
-        QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedCredentials(url, authenticator);
+        auto cred = authenticationManager->fetchCachedCredentials(url, authenticator);
         if (!cred.isNull()) {
             authenticator->setUser(cred.user);
             authenticator->setPassword(cred.password);
@@ -1459,9 +1459,9 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(const QUrl &url,
                                                                QNetworkProxy *lastProxyAuthentication)
 {
     Q_Q(QNetworkAccessManager);
-    QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*authenticator);
+    auto priv = QAuthenticatorPrivate::getPrivate(*authenticator);
     if (proxy != *lastProxyAuthentication && (!priv || !priv->hasFailed)) {
-        QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedProxyCredentials(proxy);
+        auto cred = authenticationManager->fetchCachedProxyCredentials(proxy);
         if (!cred.isNull()) {
             authenticator->setUser(cred.user);
             authenticator->setPassword(cred.password);
@@ -1719,7 +1719,7 @@ QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkReq
     if (!request.hasRawHeader(mimeHeader))
         newRequest.setRawHeader(mimeHeader, QByteArray("1.0"));
 
-    QIODevice *device = multiPart->d_func()->device;
+    auto device = multiPart->d_func()->device;
     if (!device->isReadable()) {
         if (!device->isOpen()) {
             if (!device->open(QIODevice::ReadOnly))

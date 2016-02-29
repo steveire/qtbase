@@ -388,7 +388,7 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
     while (i.hasNext()) {
         i.next();
 
-        QNetworkConfigurationPrivatePointer p = i.value();
+        auto p = i.value();
 
         //if we have an invalid member get rid of it -> was deleted earlier on
         {
@@ -456,7 +456,7 @@ QNetworkConfiguration::BearerType QNetworkConfiguration::bearerType() const
 */
 QNetworkConfiguration::BearerType QNetworkConfiguration::bearerTypeFamily() const
 {
-    QNetworkConfiguration::BearerType type = bearerType();
+    auto type = bearerType();
     switch (type) {
     case QNetworkConfiguration::BearerUnknown: // fallthrough
     case QNetworkConfiguration::Bearer2G: // fallthrough

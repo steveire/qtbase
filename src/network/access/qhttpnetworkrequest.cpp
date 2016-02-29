@@ -126,16 +126,16 @@ QByteArray QHttpNetworkRequest::uri(bool throughProxy) const
     // for requests through proxy, the Request-URI contains full url
     if (!throughProxy)
         format |= QUrl::RemoveScheme | QUrl::RemoveAuthority;
-    QUrl copy = d->url;
+    auto copy = d->url;
     if (copy.path().isEmpty())
         copy.setPath(QStringLiteral("/"));
-    QByteArray uri = copy.toEncoded(format);
+    auto uri = copy.toEncoded(format);
     return uri;
 }
 
 QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request, bool throughProxy)
 {
-    QList<QPair<QByteArray, QByteArray> > fields = request.header();
+    auto fields = request.header();
     QByteArray ba;
     ba.reserve(40 + fields.length()*25); // very rough lower bound estimation
 
@@ -149,8 +149,8 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
     ba += QByteArray::number(request.minorVersion());
     ba += "\r\n";
 
-    QList<QPair<QByteArray, QByteArray> >::const_iterator it = fields.constBegin();
-    QList<QPair<QByteArray, QByteArray> >::const_iterator endIt = fields.constEnd();
+    auto it = fields.constBegin();
+    auto endIt = fields.constEnd();
     for (; it != endIt; ++it) {
         ba += it->first;
         ba += ": ";
@@ -167,7 +167,7 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
             ba += "Content-Type: application/x-www-form-urlencoded\r\n";
         }
         if (!request.d->uploadByteDevice && request.d->url.hasQuery()) {
-            QByteArray query = request.d->url.query(QUrl::FullyEncoded).toLatin1();
+            auto query = request.d->url.query(QUrl::FullyEncoded).toLatin1();
             ba += "Content-Length: ";
             ba += QByteArray::number(query.size());
             ba += "\r\n\r\n";

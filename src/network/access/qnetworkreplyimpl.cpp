@@ -92,7 +92,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     Q_Q(QNetworkReplyImpl);
     // Do not start background requests if they are not allowed by session policy
     QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
-    QVariant isBackground = backend->request().attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false));
+    auto isBackground = backend->request().attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false));
     if (isBackground.toBool() && session && session->usagePolicies().testFlag(QNetworkSession::NoBackgroundTrafficPolicy)) {
         error(QNetworkReply::BackgroundRequestNotAllowedError,
             QCoreApplication::translate("QNetworkReply", "Background request not allowed."));
@@ -178,7 +178,7 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
     // metaDataChanged ?
 
     forever {
-        qint64 bytesToRead = nextDownstreamBlockSize();
+        auto bytesToRead = nextDownstreamBlockSize();
         if (bytesToRead == 0)
             // we'll be called again, eventually
             break;
@@ -186,7 +186,7 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
         bytesToRead = qBound<qint64>(1, bytesToRead, copyDevice->bytesAvailable());
         QByteArray byteData;
         byteData.resize(bytesToRead);
-        qint64 bytesActuallyRead = copyDevice->read(byteData.data(), byteData.size());
+        auto bytesActuallyRead = copyDevice->read(byteData.data(), byteData.size());
         if (bytesActuallyRead == -1) {
             byteData.clear();
             backendNotify(NotifyCopyFinished);
@@ -211,7 +211,7 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
     }
 
     lastBytesDownloaded = bytesDownloaded;
-    QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    auto totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
@@ -270,7 +270,7 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
         if (bytesToBuffer <= 0)
             bytesToBuffer = 2*1024;
 
-        char *dst = outgoingDataBuffer->reserve(bytesToBuffer);
+        auto dst = outgoingDataBuffer->reserve(bytesToBuffer);
         bytesBuffered = outgoingData->read(dst, bytesToBuffer);
 
         if (bytesBuffered == -1) {
@@ -299,7 +299,7 @@ void QNetworkReplyImplPrivate::_q_networkSessionConnected()
     if (manager.isNull())
         return;
 
-    QSharedPointer<QNetworkSession> session = manager->d_func()->getNetworkSession();
+    auto session = manager->d_func()->getNetworkSession();
     if (!session)
         return;
 
@@ -378,7 +378,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
     q->QIODevice::open(QIODevice::ReadOnly);
     // Internal code that does a HTTP reply for the synchronous Ajax
     // in Qt WebKit.
-    QVariant synchronousHttpAttribute = req.attribute(
+    auto synchronousHttpAttribute = req.attribute(
             static_cast<QNetworkRequest::Attribute>(QNetworkRequest::SynchronousRequestAttribute));
     // The synchronous HTTP is a corner case, we will put all upload data in one big QByteArray in the outgoingDataBuffer.
     // Yes, this is not the most efficient thing to do, but on the other hand synchronous XHR needs to die anyway.
@@ -404,7 +404,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
             // just start the operation
             QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
         } else {
-            bool bufferingDisallowed =
+            auto bufferingDisallowed =
                     req.attribute(QNetworkRequest::DoNotBufferUploadDataAttribute,
                                   false).toBool();
 
@@ -448,14 +448,14 @@ void QNetworkReplyImplPrivate::handleNotifications()
     if (notificationHandlingPaused)
         return;
 
-    NotificationQueue current = pendingNotifications;
+    auto current = pendingNotifications;
     pendingNotifications.clear();
 
     if (state != Working)
         return;
 
     while (state == Working && !current.isEmpty()) {
-        InternalNotifications notification = current.dequeue();
+        auto notification = current.dequeue();
         switch (notification) {
         case NotifyDownstreamReadyWrite:
             if (copyDevice)
@@ -469,7 +469,7 @@ void QNetworkReplyImplPrivate::handleNotifications()
             break;
 
         case NotifyCopyFinished: {
-            QIODevice *dev = copyDevice;
+            auto dev = copyDevice;
             copyDevice = 0;
             backend->copyFinished(dev);
             break;
@@ -602,9 +602,9 @@ void QNetworkReplyImplPrivate::initCacheSaveDevice()
     metaData = backend->fetchCacheMetaData(metaData);
 
     // save the redirect request also in the cache
-    QVariant redirectionTarget = q->attribute(QNetworkRequest::RedirectionTargetAttribute);
+    auto redirectionTarget = q->attribute(QNetworkRequest::RedirectionTargetAttribute);
     if (redirectionTarget.isValid()) {
-        QNetworkCacheMetaData::AttributesMap attributes = metaData.attributes();
+        auto attributes = metaData.attributes();
         attributes.insert(QNetworkRequest::RedirectionTargetAttribute, redirectionTarget);
         metaData.setAttributes(attributes);
     }
@@ -636,7 +636,7 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
     }
 
     qint64 bytesWritten = 0;
-    for (int i = 0; i < data.bufferCount(); i++) {
+    for (auto i = 0; i < data.bufferCount(); i++) {
         QByteArray const &item = data[i];
 
         if (cacheSaveDevice)
@@ -657,7 +657,7 @@ void QNetworkReplyImplPrivate::appendDownstreamDataSignalEmissions()
 {
     Q_Q(QNetworkReplyImpl);
 
-    QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    auto totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
@@ -722,7 +722,7 @@ char* QNetworkReplyImplPrivate::getDownloadBuffer(qint64 size)
     if (!downloadBuffer) {
         // We are requested to create it
         // Check attribute() if allocating a buffer of that size can be allowed
-        QVariant bufferAllocationPolicy = request.attribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute);
+        auto bufferAllocationPolicy = request.attribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute);
         if (bufferAllocationPolicy.isValid() && bufferAllocationPolicy.toLongLong() >= size) {
             downloadBufferCurrentSize = 0;
             downloadBufferMaximumSize = size;
@@ -790,7 +790,7 @@ void QNetworkReplyImplPrivate::finished()
         return;
 
     pauseNotificationHandling();
-    QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    auto totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
@@ -875,9 +875,9 @@ void QNetworkReplyImplPrivate::metaDataChanged()
         && (static_cast<QNetworkRequest::LoadControl>
             (request.attribute(QNetworkRequest::CookieSaveControlAttribute,
                                QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic)) {
-        QList<QNetworkCookie> cookies =
+        auto cookies =
             qvariant_cast<QList<QNetworkCookie> >(cookedHeaders.value(QNetworkRequest::SetCookieHeader));
-        QNetworkCookieJar *jar = manager->cookieJar();
+        auto jar = manager->cookieJar();
         if (jar)
             jar->setCookiesFromUrl(cookies, url);
     }
@@ -988,7 +988,7 @@ qint64 QNetworkReplyImpl::bytesAvailable() const
     // Special case for the "zero copy" download buffer
     Q_D(const QNetworkReplyImpl);
     if (d->downloadBuffer) {
-        qint64 maxAvail = d->downloadBufferCurrentSize - d->downloadBufferReadPosition;
+        auto maxAvail = d->downloadBufferCurrentSize - d->downloadBufferReadPosition;
         return QNetworkReply::bytesAvailable() + maxAvail;
     }
 
@@ -1047,7 +1047,7 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
 
     // Special case code if we have the "zero copy" download buffer
     if (d->downloadBuffer) {
-        qint64 maxAvail = qMin<qint64>(d->downloadBufferCurrentSize - d->downloadBufferReadPosition, maxlen);
+        auto maxAvail = qMin<qint64>(d->downloadBufferCurrentSize - d->downloadBufferReadPosition, maxlen);
         if (maxAvail == 0)
             return d->state == QNetworkReplyPrivate::Finished ? -1 : 0;
         // FIXME what about "Aborted" state?
@@ -1146,7 +1146,7 @@ QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
 
     qRegisterMetaType<QNetworkReply::NetworkError>();
 
-    QString msg = QCoreApplication::translate("QNetworkAccessManager",
+    auto msg = QCoreApplication::translate("QNetworkAccessManager",
                                               "Network access is disabled.");
     setError(UnknownNetworkError, msg);
 

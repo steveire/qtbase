@@ -88,7 +88,7 @@ QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate()
 
 void QNetworkConfigurationManagerPrivate::cleanup()
 {
-    QThread* thread = bearerThread;
+    auto thread = bearerThread;
     deleteLater();
     if (thread->wait(5000))
         delete thread;
@@ -99,7 +99,7 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(
     QMutexLocker locker(&mutex);
 
     foreach (QBearerEngine *engine, sessionEngines) {
-        QNetworkConfigurationPrivatePointer ptr = engine->defaultConfiguration();
+        auto ptr = engine->defaultConfiguration();
         if (ptr) {
             QNetworkConfiguration config;
             config.d = ptr;
@@ -120,7 +120,7 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(
 
         for (it = engine->snapConfigurations.begin(),
              end = engine->snapConfigurations.end(); it != end; ++it) {
-            QNetworkConfigurationPrivatePointer ptr = it.value();
+            auto ptr = it.value();
 
             QMutexLocker configLocker(&ptr->mutex);
 
@@ -162,10 +162,10 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(
 
         for (it = engine->accessPointConfigurations.begin(),
              end = engine->accessPointConfigurations.end(); it != end; ++it) {
-            QNetworkConfigurationPrivatePointer ptr = it.value();
+            auto ptr = it.value();
 
             QMutexLocker configLocker(&ptr->mutex);
-            QNetworkConfiguration::BearerType bearerType = ptr->bearerType;
+            auto bearerType = ptr->bearerType;
 
             if ((ptr->state & QNetworkConfiguration::Discovered) == QNetworkConfiguration::Discovered) {
                 if (!defaultConfiguration) {
@@ -226,7 +226,7 @@ QList<QNetworkConfiguration> QNetworkConfigurationManagerPrivate::allConfigurati
         //find all InternetAccessPoints
         for (it = engine->accessPointConfigurations.begin(),
              end = engine->accessPointConfigurations.end(); it != end; ++it) {
-            QNetworkConfigurationPrivatePointer ptr = it.value();
+            auto ptr = it.value();
 
             QMutexLocker configLocker(&ptr->mutex);
 
@@ -240,7 +240,7 @@ QList<QNetworkConfiguration> QNetworkConfigurationManagerPrivate::allConfigurati
         //find all service networks
         for (it = engine->snapConfigurations.begin(),
              end = engine->snapConfigurations.end(); it != end; ++it) {
-            QNetworkConfigurationPrivatePointer ptr = it.value();
+            auto ptr = it.value();
 
             QMutexLocker configLocker(&ptr->mutex);
 
@@ -350,7 +350,7 @@ void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigura
         emit configurationChanged(item);
     }
 
-    bool previous = !onlineConfigurations.isEmpty();
+    auto previous = !onlineConfigurations.isEmpty();
 
     ptr->mutex.lock();
     if (ptr->state == QNetworkConfiguration::Active)
@@ -359,7 +359,7 @@ void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigura
         onlineConfigurations.remove(ptr->id);
     ptr->mutex.unlock();
 
-    bool online = !onlineConfigurations.isEmpty();
+    auto online = !onlineConfigurations.isEmpty();
 
     if (!firstUpdate && online != previous)
         emit onlineStateChanged(online);
@@ -377,21 +377,21 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 
         updating = false;
 
-        bool envOK  = false;
-        const int skipGeneric = qEnvironmentVariableIntValue("QT_EXCLUDE_GENERIC_BEARER", &envOK);
+        auto envOK  = false;
+        const auto skipGeneric = qEnvironmentVariableIntValue("QT_EXCLUDE_GENERIC_BEARER", &envOK);
         QBearerEngine *generic = 0;
         static QFactoryLoader loader(QBearerEngineFactoryInterface_iid, QLatin1String("/bearer"));
-        QFactoryLoader *l = &loader;
-        const PluginKeyMap keyMap = l->keyMap();
-        const PluginKeyMapConstIterator cend = keyMap.constEnd();
+        auto l = &loader;
+        const auto keyMap = l->keyMap();
+        const auto cend = keyMap.constEnd();
         QStringList addedEngines;
-        for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
+        for (auto it = keyMap.constBegin(); it != cend; ++it) {
             const QString &key = it.value();
             if (addedEngines.contains(key))
                 continue;
 
             addedEngines.append(key);
-            if (QBearerEngine *engine = qLoadPlugin<QBearerEngine, QBearerEnginePlugin>(l, key)) {
+            if (auto engine = qLoadPlugin<QBearerEngine, QBearerEnginePlugin>(l, key)) {
                 if (key == QLatin1String("generic"))
                     generic = engine;
                 else
@@ -420,7 +420,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         }
     }
 
-    QBearerEngine *engine = qobject_cast<QBearerEngine *>(sender());
+    auto engine = qobject_cast<QBearerEngine *>(sender());
     if (engine && !updatingEngines.isEmpty())
         updatingEngines.remove(engine);
 
@@ -437,7 +437,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 
     if (firstUpdate) {
         firstUpdate = false;
-        QList<QBearerEngine*> enginesToInitialize = sessionEngines; //shallow copy the list in case it is modified when we unlock mutex
+        auto enginesToInitialize = sessionEngines; //shallow copy the list in case it is modified when we unlock mutex
         locker.unlock();
         foreach (QBearerEngine* engine, enginesToInitialize) {
             QMetaObject::invokeMethod(engine, "initialize", Qt::BlockingQueuedConnection);
@@ -475,7 +475,7 @@ void QNetworkConfigurationManagerPrivate::startPolling()
     if (!pollTimer) {
         pollTimer = new QTimer(this);
         bool ok;
-        int interval = qEnvironmentVariableIntValue("QT_BEARER_POLL_TIMEOUT", &ok);
+        auto interval = qEnvironmentVariableIntValue("QT_BEARER_POLL_TIMEOUT", &ok);
         if (!ok)
             interval = 10000;//default 10 seconds
         pollTimer->setInterval(interval);

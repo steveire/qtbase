@@ -152,7 +152,7 @@ void QHttpNetworkConnectionChannel::init()
 #endif
 
 #ifndef QT_NO_SSL
-    QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
+    auto sslSocket = qobject_cast<QSslSocket*>(socket);
     if (sslSocket) {
         // won't be a sslSocket if encrypt is false
         QObject::connect(sslSocket, SIGNAL(encrypted()),
@@ -279,7 +279,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
     if (!isInitialized)
         init();
 
-    QAbstractSocket::SocketState socketState = socket->state();
+    auto socketState = socket->state();
 
     // resend this request after we receive the disconnected signal
     // If !socket->isOpen() then we have already called close() on the socket, but there was still a
@@ -311,7 +311,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
         authenticationCredentialsSent = false;
         proxyCredentialsSent = false;
         authenticator.detach();
-        QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(authenticator);
+        auto priv = QAuthenticatorPrivate::getPrivate(authenticator);
         priv->hasFailed = false;
         proxyAuthenticator.detach();
         priv = QAuthenticatorPrivate::getPrivate(proxyAuthenticator);
@@ -330,7 +330,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
         if (priv && priv->phase == QAuthenticatorPrivate::Done)
             priv->phase = QAuthenticatorPrivate::Start;
 
-        QString connectHost = connection->d_func()->hostName;
+        auto connectHost = connection->d_func()->hostName;
         qint16 connectPort = connection->d_func()->port;
 
 #ifndef QT_NO_NETWORKPROXY
@@ -356,7 +356,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
 #endif
         if (ssl) {
 #ifndef QT_NO_SSL
-            QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
+            auto sslSocket = qobject_cast<QSslSocket*>(socket);
 
             // check whether we can re-use an existing SSL session
             // (meaning another socket in this connection has already
@@ -423,8 +423,8 @@ void QHttpNetworkConnectionChannel::allDone()
     }
 
     // while handling 401 & 407, we might reset the status code, so save this.
-    bool emitFinished = reply->d_func()->shouldEmitSignals();
-    bool connectionCloseEnabled = reply->d_func()->isConnectionCloseEnabled();
+    auto emitFinished = reply->d_func()->shouldEmitSignals();
+    auto connectionCloseEnabled = reply->d_func()->isConnectionCloseEnabled();
     detectPipeliningSupport();
 
     handleStatus();
@@ -464,7 +464,7 @@ void QHttpNetworkConnectionChannel::allDone()
             close();
         } else {
             // there were requests pipelined in and we can continue
-            HttpMessagePair messagePair = alreadyPipelinedRequests.takeFirst();
+            auto messagePair = alreadyPipelinedRequests.takeFirst();
 
             request = messagePair.first;
             reply = messagePair.second;
@@ -526,7 +526,7 @@ void QHttpNetworkConnectionChannel::detectPipeliningSupport()
 // called when the connection broke and we need to queue some pipelined requests again
 void QHttpNetworkConnectionChannel::requeueCurrentlyPipelinedRequests()
 {
-    for (int i = 0; i < alreadyPipelinedRequests.length(); i++)
+    for (auto i = 0; i < alreadyPipelinedRequests.length(); i++)
         connection->d_func()->requeueRequest(alreadyPipelinedRequests.at(i));
     alreadyPipelinedRequests.clear();
 
@@ -542,8 +542,8 @@ void QHttpNetworkConnectionChannel::handleStatus()
     Q_ASSERT(socket);
     Q_ASSERT(reply);
 
-    int statusCode = reply->statusCode();
-    bool resend = false;
+    auto statusCode = reply->statusCode();
+    auto resend = false;
 
     switch (statusCode) {
     case 301:
@@ -552,7 +552,7 @@ void QHttpNetworkConnectionChannel::handleStatus()
     case 305:
     case 307: {
         // Parse the response headers and get the "location" url
-        QUrl redirectUrl = connection->d_func()->parseRedirectResponse(socket, reply);
+        auto redirectUrl = connection->d_func()->parseRedirectResponse(socket, reply);
         if (redirectUrl.isValid())
             reply->setRedirectUrl(redirectUrl);
 
@@ -585,7 +585,7 @@ void QHttpNetworkConnectionChannel::handleStatus()
         } else {
             emit reply->headerChanged();
             emit reply->readyRead();
-            QNetworkReply::NetworkError errorCode = (statusCode == 407)
+            auto errorCode = (statusCode == 407)
                 ? QNetworkReply::ProxyAuthenticationRequiredError
                 : QNetworkReply::AuthenticationRequiredError;
             reply->d_func()->errorString = connection->d_func()->errorDetail(errorCode, socket);
@@ -604,7 +604,7 @@ bool QHttpNetworkConnectionChannel::resetUploadData()
         //this happens if server closes connection while QHttpNetworkConnectionPrivate::_q_startNextRequest is pending
         return false;
     }
-    QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
+    auto uploadByteDevice = request.uploadByteDevice();
     if (!uploadByteDevice)
         return true;
 
@@ -663,7 +663,7 @@ void QHttpNetworkConnectionChannel::pipelineInto(HttpMessagePair &pair)
     // this is only called for simple GET
 
     QHttpNetworkRequest &request = pair.first;
-    QHttpNetworkReply *reply = pair.second;
+    auto reply = pair.second;
     reply->d_func()->clear();
     reply->d_func()->connection = connection;
     reply->d_func()->connectionChannel = this;
@@ -826,7 +826,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
         if (connection->sslContext().isNull()) {
             // this socket is making the 1st handshake for this connection,
             // we need to set the SSL context so new sockets can reuse it
-            QSharedPointer<QSslContext> socketSslContext = QSslSocketPrivate::sslContext(static_cast<QSslSocket*>(socket));
+            auto socketSslContext = QSslSocketPrivate::sslContext(static_cast<QSslSocket*>(socket));
             if (!socketSslContext.isNull())
                 connection->setSslContext(socketSslContext);
         }
@@ -845,7 +845,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 {
     if (!socket)
         return;
-    QNetworkReply::NetworkError errorCode = QNetworkReply::UnknownNetworkError;
+    auto errorCode = QNetworkReply::UnknownNetworkError;
 
     switch (socketError) {
     case QAbstractSocket::HostNotFoundError:
@@ -947,8 +947,8 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         errorCode = QNetworkReply::UnknownNetworkError;
         break;
     }
-    QPointer<QHttpNetworkConnection> that = connection;
-    QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
+    auto that = connection;
+    auto errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
 
     // In the HostLookupPending state the channel should not emit the error.
     // This will instead be handled by the connection.
@@ -972,10 +972,10 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
              || !connection->d_func()->lowPriorityQueue.isEmpty());
 #ifndef QT_NO_SSL
     if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY) {
-        QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
-        for (int a = 0; a < spdyPairs.count(); ++a) {
+        auto spdyPairs = spdyRequestsToSend.values();
+        for (auto a = 0; a < spdyPairs.count(); ++a) {
             // emit error for all replies
-            QHttpNetworkReply *currentReply = spdyPairs.at(a).second;
+            auto currentReply = spdyPairs.at(a).second;
             Q_ASSERT(currentReply);
             emit currentReply->finishedWithError(errorCode, errorString);
         }
@@ -1027,14 +1027,14 @@ void QHttpNetworkConnectionChannel::_q_uploadDataReadyRead()
 #ifndef QT_NO_SSL
 void QHttpNetworkConnectionChannel::_q_encrypted()
 {
-    QSslSocket *sslSocket = qobject_cast<QSslSocket *>(socket);
+    auto sslSocket = qobject_cast<QSslSocket *>(socket);
     Q_ASSERT(sslSocket);
 
     if (!protocolHandler) {
         switch (sslSocket->sslConfiguration().nextProtocolNegotiationStatus()) {
         case QSslConfiguration::NextProtocolNegotiationNegotiated: /* fall through */
         case QSslConfiguration::NextProtocolNegotiationUnsupported: {
-            QByteArray nextProtocol = sslSocket->sslConfiguration().nextNegotiatedProtocol();
+            auto nextProtocol = sslSocket->sslConfiguration().nextNegotiatedProtocol();
             if (nextProtocol == QSslConfiguration::NextProtocolHttp1_1) {
                 // fall through to create a QHttpProtocolHandler
             } else if (nextProtocol == QSslConfiguration::NextProtocolSpdy3_0) {
@@ -1085,8 +1085,8 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
 
 void QHttpNetworkConnectionChannel::requeueSpdyRequests()
 {
-    QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
-    for (int a = 0; a < spdyPairs.count(); ++a) {
+    auto spdyPairs = spdyRequestsToSend.values();
+    for (auto a = 0; a < spdyPairs.count(); ++a) {
         connection->d_func()->requeueRequest(spdyPairs.at(a));
     }
     spdyRequestsToSend.clear();
@@ -1097,9 +1097,9 @@ void QHttpNetworkConnectionChannel::emitFinishedWithError(QNetworkReply::Network
 {
     if (reply)
         emit reply->finishedWithError(error, QHttpNetworkConnectionChannel::tr(message));
-    QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
-    for (int a = 0; a < spdyPairs.count(); ++a) {
-        QHttpNetworkReply *currentReply = spdyPairs.at(a).second;
+    auto spdyPairs = spdyRequestsToSend.values();
+    for (auto a = 0; a < spdyPairs.count(); ++a) {
+        auto currentReply = spdyPairs.at(a).second;
         Q_ASSERT(currentReply);
         emit currentReply->finishedWithError(error, QHttpNetworkConnectionChannel::tr(message));
     }
@@ -1123,10 +1123,10 @@ void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
     }
 #ifndef QT_NO_SSL
     else { // SPDY
-        QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
-        for (int a = 0; a < spdyPairs.count(); ++a) {
+        auto spdyPairs = spdyRequestsToSend.values();
+        for (auto a = 0; a < spdyPairs.count(); ++a) {
             // emit SSL errors for all replies
-            QHttpNetworkReply *currentReply = spdyPairs.at(a).second;
+            auto currentReply = spdyPairs.at(a).second;
             Q_ASSERT(currentReply);
             emit currentReply->sslErrors(errors);
         }
@@ -1146,10 +1146,10 @@ void QHttpNetworkConnectionChannel::_q_preSharedKeyAuthenticationRequired(QSslPr
         if (reply)
             emit reply->preSharedKeyAuthenticationRequired(authenticator);
     } else {
-        QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
-        for (int a = 0; a < spdyPairs.count(); ++a) {
+        auto spdyPairs = spdyRequestsToSend.values();
+        for (auto a = 0; a < spdyPairs.count(); ++a) {
             // emit SSL errors for all replies
-            QHttpNetworkReply *currentReply = spdyPairs.at(a).second;
+            auto currentReply = spdyPairs.at(a).second;
             Q_ASSERT(currentReply);
             emit currentReply->preSharedKeyAuthenticationRequired(authenticator);
         }

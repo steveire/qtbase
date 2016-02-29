@@ -106,8 +106,8 @@ QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(QAbstractSocket
 #endif
 
     QMutexLocker locker(&socketHandlers()->mutex);
-    for (int i = 0; i < socketHandlers()->size(); i++) {
-        if (QAbstractSocketEngine *ret = socketHandlers()->at(i)->createSocketEngine(socketType, proxy, parent))
+    for (auto i = 0; i < socketHandlers()->size(); i++) {
+        if (auto ret = socketHandlers()->at(i)->createSocketEngine(socketType, proxy, parent))
             return ret;
     }
 
@@ -123,8 +123,8 @@ QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(QAbstractSocket
 QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(qintptr socketDescripter, QObject *parent)
 {
     QMutexLocker locker(&socketHandlers()->mutex);
-    for (int i = 0; i < socketHandlers()->size(); i++) {
-        if (QAbstractSocketEngine *ret = socketHandlers()->at(i)->createSocketEngine(socketDescripter, parent))
+    for (auto i = 0; i < socketHandlers()->size(); i++) {
+        if (auto ret = socketHandlers()->at(i)->createSocketEngine(socketDescripter, parent))
             return ret;
     }
     return new QNativeSocketEngine(parent);
@@ -154,38 +154,38 @@ void QAbstractSocketEngine::setReceiver(QAbstractSocketEngineReceiver *receiver)
 
 void QAbstractSocketEngine::readNotification()
 {
-    if (QAbstractSocketEngineReceiver *receiver = d_func()->receiver)
+    if (auto receiver = d_func()->receiver)
         receiver->readNotification();
 }
 
 void QAbstractSocketEngine::writeNotification()
 {
-    if (QAbstractSocketEngineReceiver *receiver = d_func()->receiver)
+    if (auto receiver = d_func()->receiver)
         receiver->writeNotification();
 }
 
 void QAbstractSocketEngine::exceptionNotification()
 {
-    if (QAbstractSocketEngineReceiver *receiver = d_func()->receiver)
+    if (auto receiver = d_func()->receiver)
         receiver->exceptionNotification();
 }
 
 void QAbstractSocketEngine::closeNotification()
 {
-    if (QAbstractSocketEngineReceiver *receiver = d_func()->receiver)
+    if (auto receiver = d_func()->receiver)
         receiver->closeNotification();
 }
 
 void QAbstractSocketEngine::connectionNotification()
 {
-    if (QAbstractSocketEngineReceiver *receiver = d_func()->receiver)
+    if (auto receiver = d_func()->receiver)
         receiver->connectionNotification();
 }
 
 #ifndef QT_NO_NETWORKPROXY
 void QAbstractSocketEngine::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator)
 {
-    if (QAbstractSocketEngineReceiver *receiver = d_func()->receiver)
+    if (auto receiver = d_func()->receiver)
         receiver->proxyAuthenticationRequired(proxy, authenticator);
 }
 #endif

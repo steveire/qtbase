@@ -226,10 +226,10 @@ static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
 bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType,
                                          QAbstractSocket::NetworkLayerProtocol &socketProtocol)
 {
-    int protocol = (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) ? AF_INET6 : AF_INET;
+    auto protocol = (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) ? AF_INET6 : AF_INET;
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
 
-    int socket = qt_safe_socket(protocol, type, 0, O_NONBLOCK);
+    auto socket = qt_safe_socket(protocol, type, 0, O_NONBLOCK);
     if (socket < 0 && socketProtocol == QAbstractSocket::AnyIPProtocol && errno == EAFNOSUPPORT) {
         protocol = AF_INET;
         socket = qt_safe_socket(protocol, type, 0, O_NONBLOCK);
@@ -237,7 +237,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     }
 
     if (socket < 0) {
-        int ecopy = errno;
+        auto ecopy = errno;
         switch (ecopy) {
         case EPROTONOSUPPORT:
         case EAFNOSUPPORT:
@@ -294,7 +294,7 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         return true;
 
     int n, level;
-    int v = -1;
+    auto v = -1;
     QT_SOCKOPTLEN_T len = sizeof(v);
 
     convertToLevelAndOption(opt, socketProtocol, level, n);
@@ -319,7 +319,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     case QNativeSocketEngine::NonBlockingSocketOption: {
         // Make the socket nonblocking.
 #if !defined(Q_OS_VXWORKS)
-        int flags = ::fcntl(socketDescriptor, F_GETFL, 0);
+        auto flags = ::fcntl(socketDescriptor, F_GETFL, 0);
         if (flags == -1) {
 #ifdef QNATIVESOCKETENGINE_DEBUG
             perror("QNativeSocketEnginePrivate::setOption(): fcntl(F_GETFL) failed");
@@ -377,7 +377,7 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
     QT_SOCKLEN_T sockAddrSize;
     setPortAndAddress(port, addr, &aa, &sockAddrSize);
 
-    int connectResult = qt_safe_connect(socketDescriptor, &aa.a, sockAddrSize);
+    auto connectResult = qt_safe_connect(socketDescriptor, &aa.a, sockAddrSize);
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     int ecopy = errno;
 #endif
@@ -455,7 +455,7 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
 
 #ifdef IPV6_V6ONLY
     if (aa.a.sa_family == AF_INET6) {
-        int ipv6only = 0;
+        auto ipv6only = 0;
         if (address.protocol() == QAbstractSocket::IPv6Protocol)
             ipv6only = 1;
         //default value of this socket option varies depending on unix variant (or system configuration on BSD), so always set it explicitly
@@ -463,7 +463,7 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
     }
 #endif
 
-    int bindResult = QT_SOCKET_BIND(socketDescriptor, &aa.a, sockAddrSize);
+    auto bindResult = QT_SOCKET_BIND(socketDescriptor, &aa.a, sockAddrSize);
     if (bindResult < 0 && errno == EAFNOSUPPORT && address.protocol() == QAbstractSocket::AnyIPProtocol) {
         // retry with v4
         aa.a4.sin_family = AF_INET;
@@ -542,7 +542,7 @@ bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 
 int QNativeSocketEnginePrivate::nativeAccept()
 {
-    int acceptedDescriptor = qt_safe_accept(socketDescriptor, 0, 0);
+    auto acceptedDescriptor = qt_safe_accept(socketDescriptor, 0, 0);
     if (acceptedDescriptor == -1) {
         switch (errno) {
         case EBADF:
@@ -595,8 +595,8 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
                                       const QHostAddress &groupAddress,
                                       const QNetworkInterface &interface)
 {
-    int level = 0;
-    int sockOpt = 0;
+    auto level = 0;
+    auto sockOpt = 0;
     void *sockArg;
     int sockArgSize;
 
@@ -609,7 +609,7 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
         sockArg = &mreq6;
         sockArgSize = sizeof(mreq6);
         memset(&mreq6, 0, sizeof(mreq6));
-        Q_IPV6ADDR ip6 = groupAddress.toIPv6Address();
+        auto ip6 = groupAddress.toIPv6Address();
         memcpy(&mreq6.ipv6mr_multiaddr, &ip6, sizeof(ip6));
         mreq6.ipv6mr_interface = interface.index();
     } else
@@ -622,9 +622,9 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
         mreq4.imr_multiaddr.s_addr = htonl(groupAddress.toIPv4Address());
 
         if (interface.isValid()) {
-            QList<QNetworkAddressEntry> addressEntries = interface.addressEntries();
+            auto addressEntries = interface.addressEntries();
             if (!addressEntries.isEmpty()) {
-                QHostAddress firstIP = addressEntries.first().ip();
+                auto firstIP = addressEntries.first().ip();
                 mreq4.imr_interface.s_addr = htonl(firstIP.toIPv4Address());
             } else {
                 d->setError(QAbstractSocket::NetworkError,
@@ -641,7 +641,7 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
         return false;
     }
 
-    int res = setsockopt(d->socketDescriptor, level, sockOpt, sockArg, sockArgSize);
+    auto res = setsockopt(d->socketDescriptor, level, sockOpt, sockArg, sockArgSize);
     if (res == -1) {
         switch (errno) {
         case ENOPROTOOPT:
@@ -698,11 +698,11 @@ QNetworkInterface QNativeSocketEnginePrivate::nativeMulticastInterface() const
         return QNetworkInterface();
     if (v.s_addr != 0 && sizeofv >= QT_SOCKOPTLEN_T(sizeof(v))) {
         QHostAddress ipv4(ntohl(v.s_addr));
-        QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
-        for (int i = 0; i < ifaces.count(); ++i) {
+        auto ifaces = QNetworkInterface::allInterfaces();
+        for (auto i = 0; i < ifaces.count(); ++i) {
             const QNetworkInterface &iface = ifaces.at(i);
-            QList<QNetworkAddressEntry> entries = iface.addressEntries();
-            for (int j = 0; j < entries.count(); ++j) {
+            auto entries = iface.addressEntries();
+            for (auto j = 0; j < entries.count(); ++j) {
                 const QNetworkAddressEntry &entry = entries.at(j);
                 if (entry.ip() == ipv4)
                     return iface;
@@ -721,13 +721,13 @@ bool QNativeSocketEnginePrivate::nativeSetMulticastInterface(const QNetworkInter
 
     struct in_addr v;
     if (iface.isValid()) {
-        QList<QNetworkAddressEntry> entries = iface.addressEntries();
-        for (int i = 0; i < entries.count(); ++i) {
+        auto entries = iface.addressEntries();
+        for (auto i = 0; i < entries.count(); ++i) {
             const QNetworkAddressEntry &entry = entries.at(i);
             const QHostAddress &ip = entry.ip();
             if (ip.protocol() == QAbstractSocket::IPv4Protocol) {
                 v.s_addr = htonl(ip.toIPv4Address());
-                int r = ::setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF, &v, sizeof(v));
+                auto r = ::setsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF, &v, sizeof(v));
                 if (r != -1)
                     return true;
             }
@@ -743,7 +743,7 @@ bool QNativeSocketEnginePrivate::nativeSetMulticastInterface(const QNetworkInter
 
 qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
 {
-    int nbytes = 0;
+    auto nbytes = 0;
     // gives shorter than true amounts on Unix domain sockets.
     qint64 available = -1;
 
@@ -781,7 +781,7 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
 
     // If there's no error, or if our buffer was too small, there must be a
     // pending datagram.
-    bool result = (readBytes != -1) || errno == EMSGSIZE;
+    auto result = (readBytes != -1) || errno == EMSGSIZE;
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeHasPendingDatagrams() == %s",
@@ -868,7 +868,7 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
              cmsgptr = CMSG_NXTHDR(&msg, cmsgptr)) {
             if (cmsgptr->cmsg_level == IPPROTO_IPV6 && cmsgptr->cmsg_type == IPV6_PKTINFO
                     && cmsgptr->cmsg_len >= CMSG_LEN(sizeof(in6_pktinfo))) {
-                in6_pktinfo *info = reinterpret_cast<in6_pktinfo *>(CMSG_DATA(cmsgptr));
+                auto info = reinterpret_cast<in6_pktinfo *>(CMSG_DATA(cmsgptr));
 
                 header->destinationAddress.setAddress(reinterpret_cast<quint8 *>(&info->ipi6_addr));
                 header->ifindex = info->ipi6_ifindex;
@@ -879,7 +879,7 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
 #ifdef IP_PKTINFO
             if (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_PKTINFO
                     && cmsgptr->cmsg_len >= CMSG_LEN(sizeof(in_pktinfo))) {
-                in_pktinfo *info = reinterpret_cast<in_pktinfo *>(CMSG_DATA(cmsgptr));
+                auto info = reinterpret_cast<in_pktinfo *>(CMSG_DATA(cmsgptr));
 
                 header->destinationAddress.setAddress(ntohl(info->ipi_addr.s_addr));
                 header->ifindex = info->ipi_ifindex;
@@ -928,7 +928,7 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
     // we use quintptr to force the alignment
     quintptr cbuf[(CMSG_SPACE(sizeof(struct in6_pktinfo)) + CMSG_SPACE(sizeof(int)) + sizeof(quintptr) - 1) / sizeof(quintptr)];
 
-    struct cmsghdr *cmsgptr = reinterpret_cast<struct cmsghdr *>(cbuf);
+    auto cmsgptr = reinterpret_cast<struct cmsghdr *>(cbuf);
     struct msghdr msg;
     struct iovec vec;
     qt_sockaddr aa;
@@ -954,7 +954,7 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
             cmsgptr = reinterpret_cast<cmsghdr *>(reinterpret_cast<char *>(cmsgptr) + CMSG_SPACE(sizeof(int)));
         }
         if (header.ifindex != 0 || !header.senderAddress.isNull()) {
-            struct in6_pktinfo *data = reinterpret_cast<in6_pktinfo *>(CMSG_DATA(cmsgptr));
+            auto data = reinterpret_cast<in6_pktinfo *>(CMSG_DATA(cmsgptr));
             memset(data, 0, sizeof(*data));
             msg.msg_controllen += CMSG_SPACE(sizeof(*data));
             cmsgptr->cmsg_len = CMSG_LEN(sizeof(*data));
@@ -962,7 +962,7 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
             cmsgptr->cmsg_type = IPV6_PKTINFO;
             data->ipi6_ifindex = header.ifindex;
 
-            QIPv6Address tmp = header.senderAddress.toIPv6Address();
+            auto tmp = header.senderAddress.toIPv6Address();
             memcpy(&data->ipi6_addr, &tmp, sizeof(tmp));
             cmsgptr = reinterpret_cast<cmsghdr *>(reinterpret_cast<char *>(cmsgptr) + CMSG_SPACE(sizeof(*data)));
         }
@@ -979,7 +979,7 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 #if defined(IP_PKTINFO) || defined(IP_SENDSRCADDR)
         if (header.ifindex != 0 || !header.senderAddress.isNull()) {
 #  ifdef IP_PKTINFO
-            struct in_pktinfo *data = reinterpret_cast<in_pktinfo *>(CMSG_DATA(cmsgptr));
+            auto data = reinterpret_cast<in_pktinfo *>(CMSG_DATA(cmsgptr));
             memset(data, 0, sizeof(*data));
             cmsgptr->cmsg_type = IP_PKTINFO;
             data->ipi_ifindex = header.ifindex;
@@ -1062,7 +1062,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     // On linux, these are returned as "::" (==AnyIPv6)
     // On OSX, these are returned as "::FFFF:0.0.0.0" (==AnyIPv4)
     // in either case, the IPV6_V6ONLY option is cleared
-    int ipv6only = 0;
+    auto ipv6only = 0;
     socklen_t optlen = sizeof(ipv6only);
     if (socketProtocol == QAbstractSocket::IPv6Protocol
         && (localAddress == QHostAddress::AnyIPv4 || localAddress == QHostAddress::AnyIPv6)
@@ -1081,7 +1081,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
         qt_socket_getPortAndAddress(&sa, &peerPort, &peerAddress);
 
     // Determine the socket type (UDP/TCP)
-    int value = 0;
+    auto value = 0;
     QT_SOCKOPTLEN_T valueSize = sizeof(int);
     if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_TYPE, &value, &valueSize) == 0) {
         if (value == SOCK_STREAM)
@@ -1209,7 +1209,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
 int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
                        bool *selectForRead, bool *selectForWrite) const
 {
-    pollfd pfd = qt_make_pollfd(socketDescriptor, 0);
+    auto pfd = qt_make_pollfd(socketDescriptor, 0);
 
     if (checkRead)
         pfd.events |= POLLIN;
@@ -1217,7 +1217,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
     if (checkWrite)
         pfd.events |= POLLOUT;
 
-    const int ret = qt_poll_msecs(&pfd, 1, timeout);
+    const auto ret = qt_poll_msecs(&pfd, 1, timeout);
 
     if (ret <= 0)
         return ret;

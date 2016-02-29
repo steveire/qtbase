@@ -127,9 +127,9 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
 static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy)
 {
     QString result;
-    QUrl copy = url;
-    QString scheme = copy.scheme().toLower();
-    bool isEncrypted = scheme == QLatin1String("https");
+    auto copy = url;
+    auto scheme = copy.scheme().toLower();
+    auto isEncrypted = scheme == QLatin1String("https");
     copy.setPort(copy.port(isEncrypted ? 443 : 80));
     if (scheme == QLatin1String("preconnect-http")) {
         copy.setScheme(QLatin1String("http"));
@@ -281,10 +281,10 @@ void QHttpThreadDelegate::startRequest()
     }
 
     // check if we have an open connection to this host
-    QUrl urlCopy = httpRequest.url();
+    auto urlCopy = httpRequest.url();
     urlCopy.setPort(urlCopy.port(ssl ? 443 : 80));
 
-    QHttpNetworkConnection::ConnectionType connectionType
+    auto connectionType
             = QHttpNetworkConnection::ConnectionTypeHTTP;
 #ifndef QT_NO_SSL
     if (httpRequest.isSPDYAllowed() && ssl) {
@@ -336,7 +336,7 @@ void QHttpThreadDelegate::startRequest()
         connections.localData()->addEntry(cacheKey, httpConnection);
     } else {
         if (httpRequest.withCredentials()) {
-            QNetworkAuthenticationCredential credential = authenticationManager->fetchCachedCredentials(httpRequest.url(), 0);
+            auto credential = authenticationManager->fetchCachedCredentials(httpRequest.url(), 0);
             if (!credential.user.isEmpty() && !credential.password.isEmpty()) {
                 QAuthenticator auth;
                 auth.setUser(credential.user);
@@ -600,7 +600,7 @@ void QHttpThreadDelegate::headerChangedSlot()
     if (httpReply->supportsUserProvidedDownloadBuffer()
         && (downloadBufferMaximumSize > 0) && (httpReply->contentLength() <= downloadBufferMaximumSize)) {
         QT_TRY {
-            char *buf = new char[httpReply->contentLength()]; // throws if allocation fails
+            auto buf = new char[httpReply->contentLength()]; // throws if allocation fails
             if (buf) {
                 downloadBuffer = QSharedPointer<char>(buf, downloadBufferDeleter);
                 httpReply->setUserProvidedDownloadBuffer(buf);
@@ -679,7 +679,7 @@ void QHttpThreadDelegate::sslErrorsSlot(const QList<QSslError> &errors)
 
     emit sslConfigurationChanged(httpReply->sslConfiguration());
 
-    bool ignoreAll = false;
+    auto ignoreAll = false;
     QList<QSslError> specificErrors;
     emit sslErrors(errors, &ignoreAll, &specificErrors);
     if (ignoreAll)
@@ -708,7 +708,7 @@ void QHttpThreadDelegate::synchronousAuthenticationRequiredSlot(const QHttpNetwo
 #endif
 
     // Ask the credential cache
-    QNetworkAuthenticationCredential credential = authenticationManager->fetchCachedCredentials(httpRequest.url(), a);
+    auto credential = authenticationManager->fetchCachedCredentials(httpRequest.url(), a);
     if (!credential.isNull()) {
         a->setUser(credential.user);
         a->setPassword(credential.password);
@@ -729,7 +729,7 @@ void  QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot(const QNet
     qDebug() << "QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot() thread=" << QThread::currentThreadId();
 #endif
     // Ask the credential cache
-    QNetworkAuthenticationCredential credential = authenticationManager->fetchCachedProxyCredentials(p, a);
+    auto credential = authenticationManager->fetchCachedProxyCredentials(p, a);
     if (!credential.isNull()) {
         a->setUser(credential.user);
         a->setPassword(credential.password);

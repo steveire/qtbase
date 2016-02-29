@@ -245,7 +245,7 @@ bool QLocalServer::hasPendingConnections() const
 void QLocalServer::incomingConnection(quintptr socketDescriptor)
 {
     Q_D(QLocalServer);
-    QLocalSocket *socket = new QLocalSocket(this);
+    auto socket = new QLocalSocket(this);
     socket->setSocketDescriptor(socketDescriptor);
     d->pendingConnections.enqueue(socket);
     emit newConnection();
@@ -380,7 +380,7 @@ QLocalSocket *QLocalServer::nextPendingConnection()
     Q_D(QLocalServer);
     if (d->pendingConnections.isEmpty())
         return 0;
-    QLocalSocket *nextSocket = d->pendingConnections.dequeue();
+    auto nextSocket = d->pendingConnections.dequeue();
 #ifndef QT_LOCALSOCKET_TCP
     if (d->pendingConnections.size() <= d->maxPendingConnections)
 #ifndef Q_OS_WIN

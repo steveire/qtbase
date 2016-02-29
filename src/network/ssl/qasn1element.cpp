@@ -107,7 +107,7 @@ bool QAsn1Element::read(QDataStream &stream)
             return false;
 
         quint8 b;
-        for (int i = 0; i < bytes; i++) {
+        for (auto i = 0; i < bytes; i++) {
             stream >> b;
             length = (length << 8) | b;
         }
@@ -119,7 +119,7 @@ bool QAsn1Element::read(QDataStream &stream)
     // value
     QByteArray tmpValue;
     tmpValue.resize(length);
-    int count = stream.readRawData(tmpValue.data(), tmpValue.size());
+    auto count = stream.readRawData(tmpValue.data(), tmpValue.size());
     if (count != length)
         return false;
 
@@ -183,7 +183,7 @@ QAsn1Element QAsn1Element::fromVector(const QVector<QAsn1Element> &items)
     QAsn1Element seq;
     seq.mType = SequenceType;
     QDataStream stream(&seq.mValue, QIODevice::WriteOnly);
-    for (QVector<QAsn1Element>::const_iterator it = items.cbegin(), end = items.cend(); it != end; ++it)
+    for (auto it = items.cbegin(), end = items.cend(); it != end; ++it)
         it->write(stream);
     return seq;
 }
@@ -192,14 +192,14 @@ QAsn1Element QAsn1Element::fromObjectId(const QByteArray &id)
 {
     QAsn1Element elem;
     elem.mType = ObjectIdentifierType;
-    QList<QByteArray> bits = id.split('.');
+    auto bits = id.split('.');
     Q_ASSERT(bits.size() > 2);
     elem.mValue += quint8((bits[0].toUInt() * 40 + bits[1].toUInt()));
-    for (int i = 2; i < bits.size(); ++i) {
+    for (auto i = 2; i < bits.size(); ++i) {
         char buffer[std::numeric_limits<unsigned int>::digits / 7 + 2];
-        char *pBuffer = buffer + sizeof(buffer);
+        auto pBuffer = buffer + sizeof(buffer);
         *--pBuffer = '\0';
-        unsigned int node = bits[i].toUInt();
+        auto node = bits[i].toUInt();
         *--pBuffer = quint8((node & 0x7f));
         node >>= 7;
         while (node) {
@@ -260,9 +260,9 @@ QMultiMap<QByteArray, QString> QAsn1Element::toInfo() const
         QAsn1Element issuerElem;
         QDataStream setStream(elem.mValue);
         if (issuerElem.read(setStream) && issuerElem.mType == QAsn1Element::SequenceType) {
-            QVector<QAsn1Element> elems = issuerElem.toVector();
+            auto elems = issuerElem.toVector();
             if (elems.size() == 2) {
-                const QByteArray key = elems.front().toObjectName();
+                const auto key = elems.front().toObjectName();
                 if (!key.isEmpty())
                     info.insert(key, elems.back().toString());
             }
@@ -287,7 +287,7 @@ qint64 QAsn1Element::toInteger(bool *ok) const
     }
 
     qint64 value = mValue.at(0) & 0x7f;
-    for (int i = 1; i < mValue.size(); ++i)
+    for (auto i = 1; i < mValue.size(); ++i)
         value = (value << 8) | quint8(mValue.at(i));
 
     if (ok)
@@ -314,7 +314,7 @@ QByteArray QAsn1Element::toObjectId() const
         quint8 b = mValue[0];
         key += QByteArray::number(b / 40) + '.' + QByteArray::number (b % 40);
         unsigned int val = 0;
-        for (int i = 1; i < mValue.size(); ++i) {
+        for (auto i = 1; i < mValue.size(); ++i) {
             b = mValue[i];
             val = (val << 7) | (b & 0x7f);
             if (!(b & 0x80)) {
@@ -328,7 +328,7 @@ QByteArray QAsn1Element::toObjectId() const
 
 QByteArray QAsn1Element::toObjectName() const
 {
-    QByteArray key = toObjectId();
+    auto key = toObjectId();
     return oidNameMap->value(key, key);
 }
 

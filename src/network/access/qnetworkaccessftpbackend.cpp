@@ -53,7 +53,7 @@ enum {
 
 static QByteArray makeCacheKey(const QUrl &url)
 {
-    QUrl copy = url;
+    auto copy = url;
     copy.setPort(url.port(DefaultFtpPort));
     return "ftp-connection:" +
         copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery |
@@ -80,7 +80,7 @@ QNetworkAccessFtpBackendFactory::create(QNetworkAccessManager::Operation op,
         return 0;
     }
 
-    QUrl url = request.url();
+    auto url = request.url();
     if (url.scheme().compare(QLatin1String("ftp"), Qt::CaseInsensitive) == 0)
         return new QNetworkAccessFtpBackend;
     return 0;
@@ -142,7 +142,7 @@ void QNetworkAccessFtpBackend::open()
 
 #endif
 
-    QUrl url = this->url();
+    auto url = this->url();
     if (url.path().isEmpty()) {
         url.setPath(QLatin1String("/"));
         setUrl(url);
@@ -155,8 +155,8 @@ void QNetworkAccessFtpBackend::open()
     }
     state = LoggingIn;
 
-    QNetworkAccessCache* objectCache = QNetworkAccessManagerPrivate::getObjectCache(this);
-    QByteArray cacheKey = makeCacheKey(url);
+    auto objectCache = QNetworkAccessManagerPrivate::getObjectCache(this);
+    auto cacheKey = makeCacheKey(url);
     if (!objectCache->requestEntry(cacheKey, this,
                              SLOT(ftpConnectionReady(QNetworkAccessCache::CacheableObject*)))) {
         ftp = new QNetworkAccessCachedFtpConnection;
@@ -216,7 +216,7 @@ void QNetworkAccessFtpBackend::disconnectFromFtp(CacheCleanupMode mode)
     if (ftp) {
         disconnect(ftp, 0, this, 0);
 
-        QByteArray key = makeCacheKey(url());
+        auto key = makeCacheKey(url());
         if (mode == RemoveCachedConnection) {
             QNetworkAccessManagerPrivate::getObjectCache(this)->removeEntry(key);
             ftp->dispose();
@@ -234,8 +234,8 @@ void QNetworkAccessFtpBackend::ftpDone()
     if (state == LoggingIn && ftp->state() != QFtp::LoggedIn) {
         if (ftp->state() == QFtp::Connected) {
             // the login did not succeed
-            QUrl newUrl = url();
-            QString userInfo = newUrl.userInfo();
+            auto newUrl = url();
+            auto userInfo = newUrl.userInfo();
             newUrl.setUserInfo(QString());
             setUrl(newUrl);
 
@@ -305,7 +305,7 @@ void QNetworkAccessFtpBackend::ftpDone()
         state = CheckingFeatures;
         if (operation() == QNetworkAccessManager::GetOperation) {
             // send help command to find out if server supports "SIZE" and "MDTM"
-            QString command = url().path();
+            auto command = url().path();
             command.prepend(QLatin1String("%1 "));
             helpId = ftp->rawCommand(QLatin1String("HELP")); // get supported commands
         } else {
@@ -315,7 +315,7 @@ void QNetworkAccessFtpBackend::ftpDone()
         state = Statting;
         if (operation() == QNetworkAccessManager::GetOperation) {
             // logged in successfully, send the stat requests (if supported)
-            QString command = url().path();
+            auto command = url().path();
             command.prepend(QLatin1String("%1 "));
             if (supportsSize) {
                 ftp->rawCommand(QLatin1String("TYPE I"));
@@ -333,7 +333,7 @@ void QNetworkAccessFtpBackend::ftpDone()
         emit metaDataChanged();
         state = Transferring;
 
-        QFtp::TransferType type = QFtp::Binary;
+        auto type = QFtp::Binary;
         if (operation() == QNetworkAccessManager::GetOperation) {
             setCachingEnabled(true);
             ftp->get(url().path(), 0, type);
@@ -350,7 +350,7 @@ void QNetworkAccessFtpBackend::ftpDone()
 
 void QNetworkAccessFtpBackend::ftpReadyRead()
 {
-    QByteArray data = ftp->readAll();
+    auto data = ftp->readAll();
     QByteDataBuffer list;
     list.append(data);
     data.clear(); // important because of implicit sharing!
@@ -360,7 +360,7 @@ void QNetworkAccessFtpBackend::ftpReadyRead()
 void QNetworkAccessFtpBackend::ftpRawCommandReply(int code, const QString &text)
 {
     //qDebug() << "FTP reply:" << code << text;
-    int id = ftp->currentId();
+    auto id = ftp->currentId();
 
     if ((id == helpId) && ((code == 200) || (code == 214))) {     // supported commands
         // the "FEAT" ftp command would be nice here, but it is not part of the
@@ -376,7 +376,7 @@ void QNetworkAccessFtpBackend::ftpRawCommandReply(int code, const QString &text)
             setHeader(QNetworkRequest::ContentLengthHeader, text.toLongLong());
 #ifndef QT_NO_DATESTRING
         } else if (id == mdtmId) {
-            QDateTime dt = QDateTime::fromString(text, QLatin1String("yyyyMMddHHmmss"));
+            auto dt = QDateTime::fromString(text, QLatin1String("yyyyMMddHHmmss"));
             setHeader(QNetworkRequest::LastModifiedHeader, dt);
 #endif
         }

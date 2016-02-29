@@ -63,9 +63,9 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QObject *parent, const QNetworkRequ
     setFinished(true);
     QNetworkReply::open(QIODevice::ReadOnly);
 
-    QNetworkReplyFileImplPrivate *d = (QNetworkReplyFileImplPrivate*) d_func();
+    auto d = (QNetworkReplyFileImplPrivate*) d_func();
 
-    QUrl url = req.url();
+    auto url = req.url();
     if (url.host() == QLatin1String("localhost"))
         url.setHost(QString());
 
@@ -73,7 +73,7 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QObject *parent, const QNetworkRequ
     // do not allow UNC paths on Unix
     if (!url.host().isEmpty()) {
         // we handle only local files
-        QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Request for opening non-local file %1").arg(url.toString());
+        auto msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Request for opening non-local file %1").arg(url.toString());
         setError(QNetworkReply::ProtocolInvalidOperationError, msg);
         QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
             Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProtocolInvalidOperationError));
@@ -86,7 +86,7 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QObject *parent, const QNetworkRequ
     setUrl(url);
 
 
-    QString fileName = url.toLocalFile();
+    auto fileName = url.toLocalFile();
     if (fileName.isEmpty()) {
         if (url.scheme() == QLatin1String("qrc")) {
             fileName = QLatin1Char(':') + url.path();
@@ -102,7 +102,7 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QObject *parent, const QNetworkRequ
 
     QFileInfo fi(fileName);
     if (fi.isDir()) {
-        QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Cannot open %1: Path is a directory").arg(url.toString());
+        auto msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Cannot open %1: Path is a directory").arg(url.toString());
         setError(QNetworkReply::ContentOperationNotPermittedError, msg);
         QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
             Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentOperationNotPermittedError));
@@ -111,11 +111,11 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QObject *parent, const QNetworkRequ
     }
 
     d->realFile.setFileName(fileName);
-    bool opened = d->realFile.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+    auto opened = d->realFile.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
 
     // could we open the file?
     if (!opened) {
-        QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Error opening %1: %2")
+        auto msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Error opening %1: %2")
                 .arg(d->realFile.fileName(), d->realFile.errorString());
 
         if (d->realFile.exists()) {
@@ -183,7 +183,7 @@ qint64 QNetworkReplyFileImpl::readData(char *data, qint64 maxlen)
     Q_D(QNetworkReplyFileImpl);
     if (!d->realFile.isOpen())
         return -1;
-    qint64 ret = d->realFile.read(data, maxlen);
+    auto ret = d->realFile.read(data, maxlen);
     if (bytesAvailable() == 0 && d->realFile.isOpen())
         d->realFile.close();
     if (ret == 0 && bytesAvailable() == 0)

@@ -331,8 +331,8 @@ QDataStream &operator<<(QDataStream &out, const QNetworkCacheMetaData &metaData)
 static inline QDataStream &operator<<(QDataStream &out, const QNetworkCacheMetaData::AttributesMap &hash)
 {
     out << quint32(hash.size());
-    QNetworkCacheMetaData::AttributesMap::ConstIterator it = hash.end();
-    QNetworkCacheMetaData::AttributesMap::ConstIterator begin = hash.begin();
+    auto it = hash.end();
+    auto begin = hash.begin();
     while (it != begin) {
         --it;
         out << int(it.key()) << it.value();
@@ -369,7 +369,7 @@ QDataStream &operator>>(QDataStream &in, QNetworkCacheMetaData &metaData)
 static inline QDataStream &operator>>(QDataStream &in, QNetworkCacheMetaData::AttributesMap &hash)
 {
     hash.clear();
-    QDataStream::Status oldStatus = in.status();
+    auto oldStatus = in.status();
     in.resetStatus();
     hash.clear();
 

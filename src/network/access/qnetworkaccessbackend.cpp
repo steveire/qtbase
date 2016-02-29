@@ -94,10 +94,10 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
 {
     if (QNetworkAccessBackendFactoryData::valid.load()) {
         QMutexLocker locker(&factoryData()->mutex);
-        QNetworkAccessBackendFactoryData::ConstIterator it = factoryData()->constBegin(),
+        auto it = factoryData()->constBegin(),
                                                            end = factoryData()->constEnd();
         while (it != end) {
-            QNetworkAccessBackend *backend = (*it)->create(op, request);
+            auto backend = (*it)->create(op, request);
             if (backend) {
                 backend->manager = this;
                 return backend; // found a factory that handled our request
@@ -112,8 +112,8 @@ QStringList QNetworkAccessManagerPrivate::backendSupportedSchemes() const
 {
     if (QNetworkAccessBackendFactoryData::valid.load()) {
         QMutexLocker locker(&factoryData()->mutex);
-        QNetworkAccessBackendFactoryData::ConstIterator it = factoryData()->constBegin();
-        QNetworkAccessBackendFactoryData::ConstIterator end = factoryData()->constEnd();
+        auto it = factoryData()->constBegin();
+        auto end = factoryData()->constEnd();
         QStringList schemes;
         while (it != end) {
             schemes += (*it)->supportedSchemes();
@@ -385,7 +385,7 @@ bool QNetworkAccessBackend::start()
             // Session not ready, but can skip for loopback connections
 
             // This is not ideal.
-            const QString host = reply->url.host();
+            const auto host = reply->url.host();
 
             if (host == QLatin1String("localhost") ||
                 QHostAddress(host).isLoopback() ||
@@ -403,12 +403,12 @@ bool QNetworkAccessBackend::start()
 #ifndef QT_NO_BEARERMANAGEMENT
     // Get the proxy settings from the network session (in the case of service networks,
     // the proxy settings change depending which AP was activated)
-    QNetworkSession *session = networkSession.data();
+    auto session = networkSession.data();
     QNetworkConfiguration config;
     if (session) {
         QNetworkConfigurationManager configManager;
         // The active configuration tells us what IAP is in use
-        QVariant v = session->sessionProperty(QLatin1String("ActiveConfiguration"));
+        auto v = session->sessionProperty(QLatin1String("ActiveConfiguration"));
         if (v.isValid())
             config = configManager.configurationFromIdentifier(qvariant_cast<QString>(v));
         // Fallback to using the configuration if no active configuration

@@ -92,7 +92,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     serverName = requestedServerName;
 
     QByteArray encodedTempPath;
-    const QByteArray encodedFullServerName = QFile::encodeName(fullServerName);
+    const auto encodedFullServerName = QFile::encodeName(fullServerName);
     QScopedPointer<QTemporaryDir> tempDir;
 
     // Check any of the flags
@@ -212,7 +212,7 @@ bool QLocalServerPrivate::listen(qintptr socketDescriptor)
         if (addr.sun_family == PF_UNIX && addr.sun_path[0] == 0) {
             addr.sun_path[0] = '@';
         }
-        QString name = QString::fromLatin1(addr.sun_path);
+        auto name = QString::fromLatin1(addr.sun_path);
         if (!name.isEmpty()) {
             fullServerName = name;
             serverName = fullServerName.mid(fullServerName.lastIndexOf(QLatin1Char('/')) + 1);
@@ -270,7 +270,7 @@ void QLocalServerPrivate::_q_onNewConnection()
 
     ::sockaddr_un addr;
     QT_SOCKLEN_T length = sizeof(sockaddr_un);
-    int connectedSocket = qt_safe_accept(listenSocket, (sockaddr *)&addr, &length);
+    auto connectedSocket = qt_safe_accept(listenSocket, (sockaddr *)&addr, &length);
     if(-1 == connectedSocket) {
         setError(QLatin1String("QLocalSocket::activated"));
         closeServer();
@@ -283,7 +283,7 @@ void QLocalServerPrivate::_q_onNewConnection()
 
 void QLocalServerPrivate::waitForNewConnection(int msec, bool *timedOut)
 {
-    pollfd pfd = qt_make_pollfd(listenSocket, POLLIN);
+    auto pfd = qt_make_pollfd(listenSocket, POLLIN);
 
     switch (qt_poll_msecs(&pfd, 1, msec)) {
     case 0:

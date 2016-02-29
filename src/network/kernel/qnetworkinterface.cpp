@@ -59,17 +59,17 @@ static QList<QNetworkInterfacePrivate *> postProcess(QList<QNetworkInterfacePriv
     // The math is:
     //    broadcast = IP | ~netmask
 
-    QList<QNetworkInterfacePrivate *>::Iterator it = list.begin();
-    const QList<QNetworkInterfacePrivate *>::Iterator end = list.end();
+    auto it = list.begin();
+    const auto end = list.end();
     for ( ; it != end; ++it) {
-        QList<QNetworkAddressEntry>::Iterator addr_it = (*it)->addressEntries.begin();
-        const QList<QNetworkAddressEntry>::Iterator addr_end = (*it)->addressEntries.end();
+        auto addr_it = (*it)->addressEntries.begin();
+        const auto addr_end = (*it)->addressEntries.end();
         for ( ; addr_it != addr_end; ++addr_it) {
             if (addr_it->ip().protocol() != QAbstractSocket::IPv4Protocol)
                 continue;
 
             if (!addr_it->netmask().isNull() && addr_it->broadcast().isNull()) {
-                QHostAddress bcast = addr_it->ip();
+                auto bcast = addr_it->ip();
                 bcast = QHostAddress(bcast.toIPv4Address() | ~addr_it->netmask().toIPv4Address());
                 addr_it->setBroadcast(bcast);
             }
@@ -91,11 +91,11 @@ QNetworkInterfaceManager::~QNetworkInterfaceManager()
 
 QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interfaceFromName(const QString &name)
 {
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> > interfaceList = allInterfaces();
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> >::ConstIterator it = interfaceList.constBegin();
+    auto interfaceList = allInterfaces();
+    auto it = interfaceList.constBegin();
 
     bool ok;
-    uint index = name.toUInt(&ok);
+    auto index = name.toUInt(&ok);
 
     for ( ; it != interfaceList.constEnd(); ++it) {
         if (ok && (*it)->index == int(index))
@@ -109,8 +109,8 @@ QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interface
 
 QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interfaceFromIndex(int index)
 {
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> > interfaceList = allInterfaces();
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> >::ConstIterator it = interfaceList.constBegin();
+    auto interfaceList = allInterfaces();
+    auto it = interfaceList.constBegin();
     for ( ; it != interfaceList.constEnd(); ++it)
         if ((*it)->index == index)
             return *it;
@@ -120,7 +120,7 @@ QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interface
 
 QList<QSharedDataPointer<QNetworkInterfacePrivate> > QNetworkInterfaceManager::allInterfaces()
 {
-    QList<QNetworkInterfacePrivate *> list = postProcess(scan());
+    auto list = postProcess(scan());
     QList<QSharedDataPointer<QNetworkInterfacePrivate> > result;
     result.reserve(list.size());
 
@@ -132,10 +132,10 @@ QList<QSharedDataPointer<QNetworkInterfacePrivate> > QNetworkInterfaceManager::a
 
 QString QNetworkInterfacePrivate::makeHwAddress(int len, uchar *data)
 {
-    const int outLen = qMax(len * 2 + (len - 1) * 1, 0);
+    const auto outLen = qMax(len * 2 + (len - 1) * 1, 0);
     QString result(outLen, Qt::Uninitialized);
-    QChar *out = result.data();
-    for (int i = 0; i < len; ++i) {
+    auto out = result.data();
+    for (auto i = 0; i < len; ++i) {
         if (i)
             *out++ = QLatin1Char(':');
         *out++ = QLatin1Char(QtMiscUtils::toHexUpper(data[i] / 16));
@@ -544,7 +544,7 @@ int QNetworkInterface::interfaceIndexFromName(const QString &name)
         return 0;
 
     bool ok;
-    uint id = name.toUInt(&ok);
+    auto id = name.toUInt(&ok);
     if (!ok)
         id = QNetworkInterfaceManager::interfaceIndexFromName(name);
     return int(id);
@@ -611,7 +611,7 @@ QString QNetworkInterface::interfaceNameFromIndex(int index)
 */
 QList<QNetworkInterface> QNetworkInterface::allInterfaces()
 {
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> > privs = manager()->allInterfaces();
+    auto privs = manager()->allInterfaces();
     QList<QNetworkInterface> result;
     result.reserve(privs.size());
     foreach (const QSharedDataPointer<QNetworkInterfacePrivate> &p, privs) {
@@ -631,7 +631,7 @@ QList<QNetworkInterface> QNetworkInterface::allInterfaces()
 */
 QList<QHostAddress> QNetworkInterface::allAddresses()
 {
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> > privs = manager()->allInterfaces();
+    auto privs = manager()->allInterfaces();
     QList<QHostAddress> result;
     foreach (const QSharedDataPointer<QNetworkInterfacePrivate> &p, privs) {
         foreach (const QNetworkAddressEntry &entry, p->addressEntries)

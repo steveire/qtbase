@@ -63,7 +63,7 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
 
 uint qHash(const QSslCertificate &key, uint seed) Q_DECL_NOTHROW
 {
-    if (X509 * const x509 = key.d->x509) {
+    if (const auto x509 = key.d->x509) {
         (void)q_X509_cmp(x509, x509); // populate x509->sha1_hash
                                       // (if someone knows a better way...)
         return qHashBits(x509->sha1_hash, SHA_DIGEST_LENGTH, seed);
@@ -99,10 +99,10 @@ QByteArray QSslCertificate::serialNumber() const
 {
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     if (d->serialNumberString.isEmpty() && d->x509) {
-        ASN1_INTEGER *serialNumber = d->x509->cert_info->serialNumber;
+        auto serialNumber = d->x509->cert_info->serialNumber;
         QByteArray hexString;
         hexString.reserve(serialNumber->length * 3);
-        for (int a = 0; a < serialNumber->length; ++a) {
+        for (auto a = 0; a < serialNumber->length; ++a) {
             hexString += QByteArray::number(serialNumber->data[a], 16).rightJustified(2, '0');
             hexString += ':';
         }
@@ -188,19 +188,19 @@ QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlter
     STACK_OF(GENERAL_NAME) *altNames = (STACK_OF(GENERAL_NAME)*)q_X509_get_ext_d2i(d->x509, NID_subject_alt_name, 0, 0);
 
     if (altNames) {
-        for (int i = 0; i < q_sk_GENERAL_NAME_num(altNames); ++i) {
-            const GENERAL_NAME *genName = q_sk_GENERAL_NAME_value(altNames, i);
+        for (auto i = 0; i < q_sk_GENERAL_NAME_num(altNames); ++i) {
+            auto genName = q_sk_GENERAL_NAME_value(altNames, i);
             if (genName->type != GEN_DNS && genName->type != GEN_EMAIL)
                 continue;
 
-            int len = q_ASN1_STRING_length(genName->d.ia5);
+            auto len = q_ASN1_STRING_length(genName->d.ia5);
             if (len < 0 || len >= 8192) {
                 // broken name
                 continue;
             }
 
-            const char *altNameStr = reinterpret_cast<const char *>(q_ASN1_STRING_data(genName->d.ia5));
-            const QString altName = QString::fromLatin1(altNameStr, len);
+            auto altNameStr = reinterpret_cast<const char *>(q_ASN1_STRING_data(genName->d.ia5));
+            const auto altName = QString::fromLatin1(altNameStr, len);
             if (genName->type == GEN_DNS)
                 result.insert(QSsl::DnsEntry, altName);
             else if (genName->type == GEN_EMAIL)
@@ -235,8 +235,8 @@ QSslKey QSslCertificate::publicKey() const
     QSslKey key;
 
     key.d->type = QSsl::PublicKey;
-    X509_PUBKEY *xkey = d->x509->cert_info->key;
-    EVP_PKEY *pkey = q_X509_PUBKEY_get(xkey);
+    auto xkey = d->x509->cert_info->key;
+    auto pkey = q_X509_PUBKEY_get(xkey);
     Q_ASSERT(pkey);
 
     if (q_EVP_PKEY_type(pkey->type) == EVP_PKEY_RSA) {
@@ -272,16 +272,16 @@ static QVariant x509UnknownExtensionToValue(X509_EXTENSION *ext)
     // we cast away the const-ness here because some versions of openssl
     // don't use const for the parameters in the functions pointers stored
     // in the object.
-    X509V3_EXT_METHOD *meth = const_cast<X509V3_EXT_METHOD *>(q_X509V3_EXT_get(ext));
+    auto meth = const_cast<X509V3_EXT_METHOD *>(q_X509V3_EXT_get(ext));
     if (!meth) {
-        ASN1_OCTET_STRING *value = q_X509_EXTENSION_get_data(ext);
+        auto value = q_X509_EXTENSION_get_data(ext);
         QByteArray result( reinterpret_cast<const char *>(q_ASN1_STRING_data(value)),
                            q_ASN1_STRING_length(value));
         return result;
     }
 
     //const unsigned char *data = ext->value->data;
-    void *ext_internal = q_X509V3_EXT_d2i(ext);
+    auto ext_internal = q_X509V3_EXT_d2i(ext);
 
     // If this extension can be converted
     if (meth->i2v && ext_internal) {
@@ -289,10 +289,10 @@ static QVariant x509UnknownExtensionToValue(X509_EXTENSION *ext)
 
         QVariantMap map;
         QVariantList list;
-        bool isMap = false;
+        auto isMap = false;
 
-        for (int j = 0; j < q_SKM_sk_num(CONF_VALUE, val); j++) {
-            CONF_VALUE *nval = q_SKM_sk_value(CONF_VALUE, val, j);
+        for (auto j = 0; j < q_SKM_sk_num(CONF_VALUE, val); j++) {
+            auto nval = q_SKM_sk_value(CONF_VALUE, val, j);
             if (nval->name && nval->value) {
                 isMap = true;
                 map[QString::fromUtf8(nval->name)] = QString::fromUtf8(nval->value);
@@ -314,7 +314,7 @@ static QVariant x509UnknownExtensionToValue(X509_EXTENSION *ext)
     } else if (meth->i2r && ext_internal) {
         QByteArray result;
 
-        BIO *bio = q_BIO_new(q_BIO_s_mem());
+        auto bio = q_BIO_new(q_BIO_s_mem());
         if (!bio)
             return result;
 
@@ -338,13 +338,13 @@ static QVariant x509UnknownExtensionToValue(X509_EXTENSION *ext)
  */
 static QVariant x509ExtensionToValue(X509_EXTENSION *ext)
 {
-    ASN1_OBJECT *obj = q_X509_EXTENSION_get_object(ext);
-    int nid = q_OBJ_obj2nid(obj);
+    auto obj = q_X509_EXTENSION_get_object(ext);
+    auto nid = q_OBJ_obj2nid(obj);
 
     switch (nid) {
     case NID_basic_constraints:
         {
-            BASIC_CONSTRAINTS *basic = reinterpret_cast<BASIC_CONSTRAINTS *>(q_X509V3_EXT_d2i(ext));
+            auto basic = reinterpret_cast<BASIC_CONSTRAINTS *>(q_X509V3_EXT_d2i(ext));
 
             QVariantMap result;
             result[QLatin1String("ca")] = basic->ca ? true : false;
@@ -357,22 +357,22 @@ static QVariant x509ExtensionToValue(X509_EXTENSION *ext)
         break;
     case NID_info_access:
         {
-            AUTHORITY_INFO_ACCESS *info = reinterpret_cast<AUTHORITY_INFO_ACCESS *>(q_X509V3_EXT_d2i(ext));
+            auto info = reinterpret_cast<AUTHORITY_INFO_ACCESS *>(q_X509V3_EXT_d2i(ext));
 
             QVariantMap result;
-            for (int i=0; i < q_SKM_sk_num(ACCESS_DESCRIPTION, info); i++) {
-                ACCESS_DESCRIPTION *ad = q_SKM_sk_value(ACCESS_DESCRIPTION, info, i);
+            for (auto i=0; i < q_SKM_sk_num(ACCESS_DESCRIPTION, info); i++) {
+                auto ad = q_SKM_sk_value(ACCESS_DESCRIPTION, info, i);
 
-                GENERAL_NAME *name = ad->location;
+                auto name = ad->location;
                 if (name->type == GEN_URI) {
-                    int len = q_ASN1_STRING_length(name->d.uniformResourceIdentifier);
+                    auto len = q_ASN1_STRING_length(name->d.uniformResourceIdentifier);
                     if (len < 0 || len >= 8192) {
                         // broken name
                         continue;
                     }
 
-                    const char *uriStr = reinterpret_cast<const char *>(q_ASN1_STRING_data(name->d.uniformResourceIdentifier));
-                    const QString uri = QString::fromUtf8(uriStr, len);
+                    auto uriStr = reinterpret_cast<const char *>(q_ASN1_STRING_data(name->d.uniformResourceIdentifier));
+                    const auto uri = QString::fromUtf8(uriStr, len);
 
                     result[QString::fromUtf8(QSslCertificatePrivate::asn1ObjectName(ad->method))] = uri;
                 } else {
@@ -390,19 +390,19 @@ static QVariant x509ExtensionToValue(X509_EXTENSION *ext)
         break;
     case NID_subject_key_identifier:
         {
-            void *ext_internal = q_X509V3_EXT_d2i(ext);
+            auto ext_internal = q_X509V3_EXT_d2i(ext);
 
             // we cast away the const-ness here because some versions of openssl
             // don't use const for the parameters in the functions pointers stored
             // in the object.
-            X509V3_EXT_METHOD *meth = const_cast<X509V3_EXT_METHOD *>(q_X509V3_EXT_get(ext));
+            auto meth = const_cast<X509V3_EXT_METHOD *>(q_X509V3_EXT_get(ext));
 
             return QVariant(QString::fromUtf8(meth->i2s(meth, ext_internal)));
         }
         break;
     case NID_authority_key_identifier:
         {
-            AUTHORITY_KEYID *auth_key = reinterpret_cast<AUTHORITY_KEYID *>(q_X509V3_EXT_d2i(ext));
+            auto auth_key = reinterpret_cast<AUTHORITY_KEYID *>(q_X509V3_EXT_d2i(ext));
 
             QVariantMap result;
 
@@ -433,9 +433,9 @@ QSslCertificateExtension QSslCertificatePrivate::convertExtension(X509_EXTENSION
 {
     QSslCertificateExtension result;
 
-    ASN1_OBJECT *obj = q_X509_EXTENSION_get_object(ext);
-    QByteArray oid = QSslCertificatePrivate::asn1ObjectId(obj);
-    QByteArray name = QSslCertificatePrivate::asn1ObjectName(obj);
+    auto obj = q_X509_EXTENSION_get_object(ext);
+    auto oid = QSslCertificatePrivate::asn1ObjectId(obj);
+    auto name = QSslCertificatePrivate::asn1ObjectName(obj);
 
     result.d->oid = QString::fromUtf8(oid);
     result.d->name = QString::fromUtf8(name);
@@ -444,7 +444,7 @@ QSslCertificateExtension QSslCertificatePrivate::convertExtension(X509_EXTENSION
     result.d->critical = critical;
 
     // Lets see if we have custom support for this one
-    QVariant extensionValue = x509ExtensionToValue(ext);
+    auto extensionValue = x509ExtensionToValue(ext);
     if (extensionValue.isValid()) {
         result.d->value = extensionValue;
         result.d->supported = true;
@@ -469,11 +469,11 @@ QList<QSslCertificateExtension> QSslCertificate::extensions() const
     if (!d->x509)
         return result;
 
-    int count = q_X509_get_ext_count(d->x509);
+    auto count = q_X509_get_ext_count(d->x509);
     result.reserve(count);
 
-    for (int i = 0; i < count; i++) {
-        X509_EXTENSION *ext = q_X509_get_ext(d->x509, i);
+    for (auto i = 0; i < count; i++) {
+        auto ext = q_X509_get_ext(d->x509, i);
         result << QSslCertificatePrivate::convertExtension(ext);
     }
 
@@ -507,7 +507,7 @@ QString QSslCertificate::toText() const
 void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat format)
 {
     if (!data.isEmpty()) {
-        QList<QSslCertificate> certs = (format == QSsl::Pem)
+        auto certs = (format == QSsl::Pem)
             ? certificatesFromPem(data, 1)
             : certificatesFromDer(data, 1);
         if (!certs.isEmpty()) {
@@ -527,12 +527,12 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
     }
 
     // Use i2d_X509 to convert the X509 to an array.
-    int length = q_i2d_X509(x509, 0);
+    auto length = q_i2d_X509(x509, 0);
     QByteArray array;
     array.resize(length);
-    char *data = array.data();
-    char **dataP = &data;
-    unsigned char **dataPu = (unsigned char **)dataP;
+    auto data = array.data();
+    auto dataP = &data;
+    auto dataPu = (unsigned char **)dataP;
     if (q_i2d_X509(x509, dataPu) < 0)
         return QByteArray();
 
@@ -542,11 +542,11 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
     // Convert to Base64 - wrap at 64 characters.
     array = array.toBase64();
     QByteArray tmp;
-    for (int i = 0; i <= array.size() - 64; i += 64) {
+    for (auto i = 0; i <= array.size() - 64; i += 64) {
         tmp += QByteArray::fromRawData(array.data() + i, 64);
         tmp += '\n';
     }
-    if (int remainder = array.size() % 64) {
+    if (auto remainder = array.size() % 64) {
         tmp += QByteArray::fromRawData(array.data() + array.size() - remainder, remainder);
         tmp += '\n';
     }
@@ -562,14 +562,14 @@ QString QSslCertificatePrivate::text_from_X509(X509 *x509)
     }
 
     QByteArray result;
-    BIO *bio = q_BIO_new(q_BIO_s_mem());
+    auto bio = q_BIO_new(q_BIO_s_mem());
     if (!bio)
         return QString();
 
     q_X509_print(bio, x509);
 
     QVarLengthArray<char, 16384> data;
-    int count = q_BIO_read(bio, data.data(), 16384);
+    auto count = q_BIO_read(bio, data.data(), 16384);
     if ( count > 0 ) {
         result = QByteArray( data.data(), count );
     }
@@ -590,7 +590,7 @@ QByteArray QSslCertificatePrivate::asn1ObjectId(ASN1_OBJECT *object)
 
 QByteArray QSslCertificatePrivate::asn1ObjectName(ASN1_OBJECT *object)
 {
-    int nid = q_OBJ_obj2nid(object);
+    auto nid = q_OBJ_obj2nid(object);
     if (nid != NID_undef)
         return QByteArray(q_OBJ_nid2sn(nid));
 
@@ -600,12 +600,12 @@ QByteArray QSslCertificatePrivate::asn1ObjectName(ASN1_OBJECT *object)
 static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name)
 {
     QMap<QByteArray, QString> info;
-    for (int i = 0; i < q_X509_NAME_entry_count(name); ++i) {
-        X509_NAME_ENTRY *e = q_X509_NAME_get_entry(name, i);
+    for (auto i = 0; i < q_X509_NAME_entry_count(name); ++i) {
+        auto e = q_X509_NAME_get_entry(name, i);
 
-        QByteArray name = QSslCertificatePrivate::asn1ObjectName(q_X509_NAME_ENTRY_get_object(e));
+        auto name = QSslCertificatePrivate::asn1ObjectName(q_X509_NAME_ENTRY_get_object(e));
         unsigned char *data = 0;
-        int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
+        auto size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
         info.insertMulti(name, QString::fromUtf8((char*)data, size));
         q_CRYPTO_free(data);
     }
@@ -619,8 +619,8 @@ QSslCertificate QSslCertificatePrivate::QSslCertificate_from_X509(X509 *x509)
     if (!x509 || !QSslSocket::supportsSsl())
         return certificate;
 
-    ASN1_TIME *nbef = q_X509_get_notBefore(x509);
-    ASN1_TIME *naft = q_X509_get_notAfter(x509);
+    auto nbef = q_X509_get_notBefore(x509);
+    auto naft = q_X509_get_notAfter(x509);
     certificate.d->notValidBefore = q_getTimeFromASN1(nbef);
     certificate.d->notValidAfter = q_getTimeFromASN1(naft);
     certificate.d->null = false;
@@ -653,16 +653,16 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromPem(const QByteAr
     QList<QSslCertificate> certificates;
     QSslSocketPrivate::ensureInitialized();
 
-    int offset = 0;
+    auto offset = 0;
     while (count == -1 || certificates.size() < count) {
-        int startPos = pem.indexOf(BEGINCERTSTRING, offset);
+        auto startPos = pem.indexOf(BEGINCERTSTRING, offset);
         if (startPos == -1)
             break;
         startPos += sizeof(BEGINCERTSTRING) - 1;
         if (!matchLineFeed(pem, &startPos))
             break;
 
-        int endPos = pem.indexOf(ENDCERTSTRING, startPos);
+        auto endPos = pem.indexOf(ENDCERTSTRING, startPos);
         if (endPos == -1)
             break;
 
@@ -670,11 +670,11 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromPem(const QByteAr
         if (offset < pem.size() && !matchLineFeed(pem, &offset))
             break;
 
-        QByteArray decoded = QByteArray::fromBase64(
+        auto decoded = QByteArray::fromBase64(
             QByteArray::fromRawData(pem.data() + startPos, endPos - startPos));
-        const unsigned char *data = (const unsigned char *)decoded.data();
+        auto data = (const unsigned char *)decoded.data();
 
-        if (X509 *x509 = q_d2i_X509(0, &data, decoded.size())) {
+        if (auto x509 = q_d2i_X509(0, &data, decoded.size())) {
             certificates << QSslCertificate_from_X509(x509);
             q_X509_free(x509);
         }
@@ -688,11 +688,11 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromDer(const QByteAr
     QList<QSslCertificate> certificates;
     QSslSocketPrivate::ensureInitialized();
 
-    const unsigned char *data = (const unsigned char *)der.data();
-    int size = der.size();
+    auto data = (const unsigned char *)der.data();
+    auto size = der.size();
 
     while (size > 0 && (count == -1 || certificates.size() < count)) {
-        if (X509 *x509 = q_d2i_X509(0, &data, size)) {
+        if (auto x509 = q_d2i_X509(0, &data, size)) {
             certificates << QSslCertificate_from_X509(x509);
             q_X509_free(x509);
         } else {

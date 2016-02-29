@@ -113,12 +113,12 @@ QNetworkAccessCache::~QNetworkAccessCache()
 
 void QNetworkAccessCache::clear()
 {
-    NodeHash hashCopy = hash;
+    auto hashCopy = hash;
     hash.clear();
 
     // remove all entries
-    NodeHash::Iterator it = hashCopy.begin();
-    NodeHash::Iterator end = hashCopy.end();
+    auto it = hashCopy.begin();
+    auto end = hashCopy.end();
     for ( ; it != end; ++it) {
         it->object->key.clear();
         it->object->dispose();
@@ -138,11 +138,11 @@ void QNetworkAccessCache::clear()
  */
 void QNetworkAccessCache::linkEntry(const QByteArray &key)
 {
-    NodeHash::Iterator it = hash.find(key);
+    auto it = hash.find(key);
     if (it == hash.end())
         return;
 
-    Node *const node = &it.value();
+    const auto node = &it.value();
     Q_ASSERT(node != oldest && node != newest);
     Q_ASSERT(node->older == 0 && node->newer == 0);
     Q_ASSERT(node->useCount == 0);
@@ -167,13 +167,13 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
  */
 bool QNetworkAccessCache::unlinkEntry(const QByteArray &key)
 {
-    NodeHash::Iterator it = hash.find(key);
+    auto it = hash.find(key);
     if (it == hash.end())
         return false;
 
-    Node *const node = &it.value();
+    const auto node = &it.value();
 
-    bool wasOldest = false;
+    auto wasOldest = false;
     if (node == oldest) {
         oldest = node->newer;
         wasOldest = true;
@@ -222,10 +222,10 @@ bool QNetworkAccessCache::emitEntryReady(Node *node, QObject *target, const char
 void QNetworkAccessCache::timerEvent(QTimerEvent *)
 {
     // expire old items
-    const QDateTime now = QDateTime::currentDateTimeUtc();
+    const auto now = QDateTime::currentDateTimeUtc();
 
     while (oldest && oldest->timestamp < now) {
-        Node *next = oldest->newer;
+        auto next = oldest->newer;
         oldest->object->dispose();
 
         hash.remove(oldest->key); // oldest gets deleted
@@ -267,11 +267,11 @@ bool QNetworkAccessCache::hasEntry(const QByteArray &key) const
 
 bool QNetworkAccessCache::requestEntry(const QByteArray &key, QObject *target, const char *member)
 {
-    NodeHash::Iterator it = hash.find(key);
+    auto it = hash.find(key);
     if (it == hash.end())
         return false;           // no such entry
 
-    Node *node = &it.value();
+    auto node = &it.value();
 
     if (node->useCount > 0 && !node->object->shareable) {
         // object is not shareable and is in use
@@ -296,7 +296,7 @@ bool QNetworkAccessCache::requestEntry(const QByteArray &key, QObject *target, c
 
 QNetworkAccessCache::CacheableObject *QNetworkAccessCache::requestEntryNow(const QByteArray &key)
 {
-    NodeHash::Iterator it = hash.find(key);
+    auto it = hash.find(key);
     if (it == hash.end())
         return 0;
     if (it->useCount > 0) {
@@ -310,7 +310,7 @@ QNetworkAccessCache::CacheableObject *QNetworkAccessCache::requestEntryNow(const
     }
 
     // entry not in use, let the caller have it
-    bool wasOldest = unlinkEntry(key);
+    auto wasOldest = unlinkEntry(key);
     ++it->useCount;
 
     if (wasOldest)
@@ -320,14 +320,14 @@ QNetworkAccessCache::CacheableObject *QNetworkAccessCache::requestEntryNow(const
 
 void QNetworkAccessCache::releaseEntry(const QByteArray &key)
 {
-    NodeHash::Iterator it = hash.find(key);
+    auto it = hash.find(key);
     if (it == hash.end()) {
         qWarning("QNetworkAccessCache::releaseEntry: trying to release key '%s' that is not in cache",
                  key.constData());
         return;
     }
 
-    Node *node = &it.value();
+    auto node = &it.value();
     Q_ASSERT(node->useCount > 0);
 
     // are there other objects waiting?
@@ -356,14 +356,14 @@ void QNetworkAccessCache::releaseEntry(const QByteArray &key)
 
 void QNetworkAccessCache::removeEntry(const QByteArray &key)
 {
-    NodeHash::Iterator it = hash.find(key);
+    auto it = hash.find(key);
     if (it == hash.end()) {
         qWarning("QNetworkAccessCache::removeEntry: trying to remove key '%s' that is not in cache",
                  key.constData());
         return;
     }
 
-    Node *node = &it.value();
+    auto node = &it.value();
     if (unlinkEntry(key))
         updateTimer();
     if (node->useCount > 1)
