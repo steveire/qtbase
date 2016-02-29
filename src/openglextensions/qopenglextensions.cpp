@@ -83,7 +83,7 @@ bool QOpenGLExtension_3DFX_tbuffer::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -107,7 +107,7 @@ bool QOpenGLExtension_AMD_debug_output::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -134,7 +134,7 @@ bool QOpenGLExtension_AMD_draw_buffers_blend::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -161,7 +161,7 @@ bool QOpenGLExtension_AMD_multi_draw_indirect::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -186,7 +186,7 @@ bool QOpenGLExtension_AMD_name_gen_delete::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -212,7 +212,7 @@ bool QOpenGLExtension_AMD_performance_monitor::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -246,7 +246,7 @@ bool QOpenGLExtension_AMD_sample_positions::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -270,7 +270,7 @@ bool QOpenGLExtension_AMD_sparse_texture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -294,7 +294,7 @@ bool QOpenGLExtension_AMD_stencil_operation_extended::initializeOpenGLFunctions(
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -318,7 +318,7 @@ bool QOpenGLExtension_AMD_vertex_shader_tesselator::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -343,7 +343,7 @@ bool QOpenGLExtension_APPLE_element_array::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -371,7 +371,7 @@ bool QOpenGLExtension_APPLE_fence::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -402,7 +402,7 @@ bool QOpenGLExtension_APPLE_flush_buffer_range::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -427,7 +427,7 @@ bool QOpenGLExtension_APPLE_object_purgeable::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -453,7 +453,7 @@ bool QOpenGLExtension_APPLE_texture_range::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -478,7 +478,7 @@ bool QOpenGLExtension_APPLE_vertex_array_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -505,7 +505,7 @@ bool QOpenGLExtension_APPLE_vertex_array_range::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -531,7 +531,7 @@ bool QOpenGLExtension_APPLE_vertex_program_evaluators::initializeOpenGLFunctions
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -561,7 +561,7 @@ bool QOpenGLExtension_ARB_ES2_compatibility::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -589,7 +589,7 @@ bool QOpenGLExtension_ARB_base_instance::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -615,7 +615,7 @@ bool QOpenGLExtension_ARB_blend_func_extended::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -640,7 +640,7 @@ bool QOpenGLExtension_ARB_cl_event::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -664,7 +664,7 @@ bool QOpenGLExtension_ARB_clear_buffer_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -689,7 +689,7 @@ bool QOpenGLExtension_ARB_color_buffer_float::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -713,7 +713,7 @@ bool QOpenGLExtension_ARB_compute_shader::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -738,7 +738,7 @@ bool QOpenGLExtension_ARB_copy_buffer::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -762,7 +762,7 @@ bool QOpenGLExtension_ARB_copy_image::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -786,7 +786,7 @@ bool QOpenGLExtension_ARB_debug_output::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -813,7 +813,7 @@ bool QOpenGLExtension_ARB_draw_buffers::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -837,7 +837,7 @@ bool QOpenGLExtension_ARB_draw_buffers_blend::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -864,7 +864,7 @@ bool QOpenGLExtension_ARB_draw_elements_base_vertex::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -891,7 +891,7 @@ bool QOpenGLExtension_ARB_draw_indirect::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -916,7 +916,7 @@ bool QOpenGLExtension_ARB_draw_instanced::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -941,7 +941,7 @@ bool QOpenGLExtension_ARB_framebuffer_no_attachments::initializeOpenGLFunctions(
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -966,7 +966,7 @@ bool QOpenGLExtension_ARB_framebuffer_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1009,7 +1009,7 @@ bool QOpenGLExtension_ARB_geometry_shader4::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1036,7 +1036,7 @@ bool QOpenGLExtension_ARB_get_program_binary::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1062,7 +1062,7 @@ bool QOpenGLExtension_ARB_gpu_shader_fp64::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1103,7 +1103,7 @@ bool QOpenGLExtension_ARB_instanced_arrays::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1127,7 +1127,7 @@ bool QOpenGLExtension_ARB_internalformat_query::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1151,7 +1151,7 @@ bool QOpenGLExtension_ARB_internalformat_query2::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1175,7 +1175,7 @@ bool QOpenGLExtension_ARB_invalidate_subdata::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1204,7 +1204,7 @@ bool QOpenGLExtension_ARB_map_buffer_range::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1229,7 +1229,7 @@ bool QOpenGLExtension_ARB_matrix_palette::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1257,7 +1257,7 @@ bool QOpenGLExtension_ARB_multi_draw_indirect::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1282,7 +1282,7 @@ bool QOpenGLExtension_ARB_multisample::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1306,7 +1306,7 @@ bool QOpenGLExtension_ARB_multitexture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1363,7 +1363,7 @@ bool QOpenGLExtension_ARB_occlusion_query::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1394,7 +1394,7 @@ bool QOpenGLExtension_ARB_point_parameters::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1419,7 +1419,7 @@ bool QOpenGLExtension_ARB_program_interface_query::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1448,7 +1448,7 @@ bool QOpenGLExtension_ARB_provoking_vertex::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1472,7 +1472,7 @@ bool QOpenGLExtension_ARB_robustness::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1515,7 +1515,7 @@ bool QOpenGLExtension_ARB_sample_shading::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1539,7 +1539,7 @@ bool QOpenGLExtension_ARB_sampler_objects::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1576,7 +1576,7 @@ bool QOpenGLExtension_ARB_separate_shader_objects::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1659,7 +1659,7 @@ bool QOpenGLExtension_ARB_shader_atomic_counters::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1683,7 +1683,7 @@ bool QOpenGLExtension_ARB_shader_image_load_store::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1708,7 +1708,7 @@ bool QOpenGLExtension_ARB_shader_objects::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1770,7 +1770,7 @@ bool QOpenGLExtension_ARB_shader_storage_buffer_object::initializeOpenGLFunction
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1794,7 +1794,7 @@ bool QOpenGLExtension_ARB_shader_subroutine::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1825,7 +1825,7 @@ bool QOpenGLExtension_ARB_shading_language_include::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1854,7 +1854,7 @@ bool QOpenGLExtension_ARB_sync::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1884,7 +1884,7 @@ bool QOpenGLExtension_ARB_tessellation_shader::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1909,7 +1909,7 @@ bool QOpenGLExtension_ARB_texture_buffer_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1933,7 +1933,7 @@ bool QOpenGLExtension_ARB_texture_buffer_range::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1957,7 +1957,7 @@ bool QOpenGLExtension_ARB_texture_compression::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -1987,7 +1987,7 @@ bool QOpenGLExtension_ARB_texture_multisample::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2014,7 +2014,7 @@ bool QOpenGLExtension_ARB_texture_storage::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2040,7 +2040,7 @@ bool QOpenGLExtension_ARB_texture_storage_multisample::initializeOpenGLFunctions
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2065,7 +2065,7 @@ bool QOpenGLExtension_ARB_texture_view::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2089,7 +2089,7 @@ bool QOpenGLExtension_ARB_timer_query::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2115,7 +2115,7 @@ bool QOpenGLExtension_ARB_transform_feedback2::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2145,7 +2145,7 @@ bool QOpenGLExtension_ARB_transform_feedback3::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2172,7 +2172,7 @@ bool QOpenGLExtension_ARB_transform_feedback_instanced::initializeOpenGLFunction
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2197,7 +2197,7 @@ bool QOpenGLExtension_ARB_transpose_matrix::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2224,7 +2224,7 @@ bool QOpenGLExtension_ARB_uniform_buffer_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2254,7 +2254,7 @@ bool QOpenGLExtension_ARB_vertex_array_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2281,7 +2281,7 @@ bool QOpenGLExtension_ARB_vertex_attrib_64bit::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2314,7 +2314,7 @@ bool QOpenGLExtension_ARB_vertex_attrib_binding::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2343,7 +2343,7 @@ bool QOpenGLExtension_ARB_vertex_blend::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2376,7 +2376,7 @@ bool QOpenGLExtension_ARB_vertex_buffer_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2410,7 +2410,7 @@ bool QOpenGLExtension_ARB_vertex_program::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2495,7 +2495,7 @@ bool QOpenGLExtension_ARB_vertex_shader::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2521,7 +2521,7 @@ bool QOpenGLExtension_ARB_vertex_type_2_10_10_10_rev::initializeOpenGLFunctions(
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2582,7 +2582,7 @@ bool QOpenGLExtension_ARB_viewport_array::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2615,7 +2615,7 @@ bool QOpenGLExtension_ARB_window_pos::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2654,7 +2654,7 @@ bool QOpenGLExtension_ATI_draw_buffers::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2678,7 +2678,7 @@ bool QOpenGLExtension_ATI_element_array::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2704,7 +2704,7 @@ bool QOpenGLExtension_ATI_envmap_bumpmap::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2731,7 +2731,7 @@ bool QOpenGLExtension_ATI_fragment_shader::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2768,7 +2768,7 @@ bool QOpenGLExtension_ATI_map_object_buffer::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2793,7 +2793,7 @@ bool QOpenGLExtension_ATI_pn_triangles::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2818,7 +2818,7 @@ bool QOpenGLExtension_ATI_separate_stencil::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2843,7 +2843,7 @@ bool QOpenGLExtension_ATI_vertex_array_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2878,7 +2878,7 @@ bool QOpenGLExtension_ATI_vertex_attrib_array_object::initializeOpenGLFunctions(
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2904,7 +2904,7 @@ bool QOpenGLExtension_ATI_vertex_streams::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2972,7 +2972,7 @@ bool QOpenGLExtension_EXT_bindable_uniform::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -2998,7 +2998,7 @@ bool QOpenGLExtension_EXT_blend_color::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3022,7 +3022,7 @@ bool QOpenGLExtension_EXT_blend_equation_separate::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3046,7 +3046,7 @@ bool QOpenGLExtension_EXT_blend_func_separate::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3070,7 +3070,7 @@ bool QOpenGLExtension_EXT_blend_minmax::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3094,7 +3094,7 @@ bool QOpenGLExtension_EXT_color_subtable::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3119,7 +3119,7 @@ bool QOpenGLExtension_EXT_compiled_vertex_array::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3144,7 +3144,7 @@ bool QOpenGLExtension_EXT_convolution::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3180,7 +3180,7 @@ bool QOpenGLExtension_EXT_coordinate_frame::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3225,7 +3225,7 @@ bool QOpenGLExtension_EXT_copy_texture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3253,7 +3253,7 @@ bool QOpenGLExtension_EXT_cull_vertex::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3278,7 +3278,7 @@ bool QOpenGLExtension_EXT_depth_bounds_test::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3302,7 +3302,7 @@ bool QOpenGLExtension_EXT_direct_state_access::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3547,7 +3547,7 @@ bool QOpenGLExtension_EXT_draw_buffers2::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3576,7 +3576,7 @@ bool QOpenGLExtension_EXT_draw_instanced::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3601,7 +3601,7 @@ bool QOpenGLExtension_EXT_draw_range_elements::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3625,7 +3625,7 @@ bool QOpenGLExtension_EXT_fog_coord::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3653,7 +3653,7 @@ bool QOpenGLExtension_EXT_framebuffer_blit::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3677,7 +3677,7 @@ bool QOpenGLExtension_EXT_framebuffer_multisample::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3701,7 +3701,7 @@ bool QOpenGLExtension_EXT_framebuffer_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3741,7 +3741,7 @@ bool QOpenGLExtension_EXT_geometry_shader4::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3765,7 +3765,7 @@ bool QOpenGLExtension_EXT_gpu_program_parameters::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3790,7 +3790,7 @@ bool QOpenGLExtension_EXT_gpu_shader4::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3824,7 +3824,7 @@ bool QOpenGLExtension_EXT_histogram::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3857,7 +3857,7 @@ bool QOpenGLExtension_EXT_index_func::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3881,7 +3881,7 @@ bool QOpenGLExtension_EXT_index_material::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3905,7 +3905,7 @@ bool QOpenGLExtension_EXT_light_texture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3931,7 +3931,7 @@ bool QOpenGLExtension_EXT_multi_draw_arrays::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3956,7 +3956,7 @@ bool QOpenGLExtension_EXT_multisample::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -3981,7 +3981,7 @@ bool QOpenGLExtension_EXT_paletted_texture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4008,7 +4008,7 @@ bool QOpenGLExtension_EXT_pixel_transform::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4037,7 +4037,7 @@ bool QOpenGLExtension_EXT_point_parameters::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4062,7 +4062,7 @@ bool QOpenGLExtension_EXT_polygon_offset::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4086,7 +4086,7 @@ bool QOpenGLExtension_EXT_provoking_vertex::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4110,7 +4110,7 @@ bool QOpenGLExtension_EXT_secondary_color::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4150,7 +4150,7 @@ bool QOpenGLExtension_EXT_separate_shader_objects::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4176,7 +4176,7 @@ bool QOpenGLExtension_EXT_shader_image_load_store::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4201,7 +4201,7 @@ bool QOpenGLExtension_EXT_stencil_clear_tag::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4225,7 +4225,7 @@ bool QOpenGLExtension_EXT_stencil_two_side::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4249,7 +4249,7 @@ bool QOpenGLExtension_EXT_subtexture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4274,7 +4274,7 @@ bool QOpenGLExtension_EXT_texture3D::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4299,7 +4299,7 @@ bool QOpenGLExtension_EXT_texture_buffer_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4323,7 +4323,7 @@ bool QOpenGLExtension_EXT_texture_integer::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4352,7 +4352,7 @@ bool QOpenGLExtension_EXT_texture_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4381,7 +4381,7 @@ bool QOpenGLExtension_EXT_texture_perturb_normal::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4405,7 +4405,7 @@ bool QOpenGLExtension_EXT_timer_query::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4430,7 +4430,7 @@ bool QOpenGLExtension_EXT_transform_feedback::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4460,7 +4460,7 @@ bool QOpenGLExtension_EXT_vertex_array::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4492,7 +4492,7 @@ bool QOpenGLExtension_EXT_vertex_attrib_64bit::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4526,7 +4526,7 @@ bool QOpenGLExtension_EXT_vertex_shader::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4591,7 +4591,7 @@ bool QOpenGLExtension_EXT_vertex_weighting::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4617,7 +4617,7 @@ bool QOpenGLExtension_EXT_x11_sync_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4641,7 +4641,7 @@ bool QOpenGLExtension_GREMEDY_frame_terminator::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4665,7 +4665,7 @@ bool QOpenGLExtension_GREMEDY_string_marker::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4689,7 +4689,7 @@ bool QOpenGLExtension_HP_image_transform::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4718,7 +4718,7 @@ bool QOpenGLExtension_IBM_multimode_draw_arrays::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4743,7 +4743,7 @@ bool QOpenGLExtension_IBM_vertex_array_lists::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4774,7 +4774,7 @@ bool QOpenGLExtension_INGR_blend_func_separate::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4798,7 +4798,7 @@ bool QOpenGLExtension_INTEL_parallel_arrays::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4825,7 +4825,7 @@ bool QOpenGLExtension_KHR_debug::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4858,7 +4858,7 @@ bool QOpenGLExtension_MESA_resize_buffers::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4882,7 +4882,7 @@ bool QOpenGLExtension_MESA_window_pos::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4929,7 +4929,7 @@ bool QOpenGLExtension_NV_bindless_texture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4965,7 +4965,7 @@ bool QOpenGLExtension_NV_conditional_render::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -4990,7 +4990,7 @@ bool QOpenGLExtension_NV_copy_image::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5014,7 +5014,7 @@ bool QOpenGLExtension_NV_depth_buffer_float::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5040,7 +5040,7 @@ bool QOpenGLExtension_NV_evaluators::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5072,7 +5072,7 @@ bool QOpenGLExtension_NV_explicit_multisample::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5098,7 +5098,7 @@ bool QOpenGLExtension_NV_fence::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5128,7 +5128,7 @@ bool QOpenGLExtension_NV_fragment_program::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5157,7 +5157,7 @@ bool QOpenGLExtension_NV_framebuffer_multisample_coverage::initializeOpenGLFunct
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5181,7 +5181,7 @@ bool QOpenGLExtension_NV_geometry_program4::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5208,7 +5208,7 @@ bool QOpenGLExtension_NV_gpu_program4::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5247,7 +5247,7 @@ bool QOpenGLExtension_NV_gpu_program5::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5272,7 +5272,7 @@ bool QOpenGLExtension_NV_gpu_shader5::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5328,7 +5328,7 @@ bool QOpenGLExtension_NV_half_float::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5397,7 +5397,7 @@ bool QOpenGLExtension_NV_occlusion_query::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5427,7 +5427,7 @@ bool QOpenGLExtension_NV_parameter_buffer_object::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5453,7 +5453,7 @@ bool QOpenGLExtension_NV_path_rendering::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5525,7 +5525,7 @@ bool QOpenGLExtension_NV_pixel_data_range::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5550,7 +5550,7 @@ bool QOpenGLExtension_NV_point_sprite::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5575,7 +5575,7 @@ bool QOpenGLExtension_NV_present_video::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5604,7 +5604,7 @@ bool QOpenGLExtension_NV_primitive_restart::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5629,7 +5629,7 @@ bool QOpenGLExtension_NV_register_combiners::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5665,7 +5665,7 @@ bool QOpenGLExtension_NV_register_combiners2::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5690,7 +5690,7 @@ bool QOpenGLExtension_NV_shader_buffer_load::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5727,7 +5727,7 @@ bool QOpenGLExtension_NV_texture_barrier::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5751,7 +5751,7 @@ bool QOpenGLExtension_NV_texture_multisample::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5780,7 +5780,7 @@ bool QOpenGLExtension_NV_transform_feedback::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5815,7 +5815,7 @@ bool QOpenGLExtension_NV_transform_feedback2::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5845,7 +5845,7 @@ bool QOpenGLExtension_NV_vdpau_interop::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5878,7 +5878,7 @@ bool QOpenGLExtension_NV_vertex_array_range::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5903,7 +5903,7 @@ bool QOpenGLExtension_NV_vertex_attrib_integer_64bit::initializeOpenGLFunctions(
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5945,7 +5945,7 @@ bool QOpenGLExtension_NV_vertex_buffer_unified_memory::initializeOpenGLFunctions
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -5980,7 +5980,7 @@ bool QOpenGLExtension_NV_vertex_program::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6067,7 +6067,7 @@ bool QOpenGLExtension_NV_vertex_program4::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6113,7 +6113,7 @@ bool QOpenGLExtension_NV_video_capture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6148,7 +6148,7 @@ bool QOpenGLExtension_PGI_misc_hints::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6172,7 +6172,7 @@ bool QOpenGLExtension_SGIS_detail_texture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6197,7 +6197,7 @@ bool QOpenGLExtension_SGIS_fog_function::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6222,7 +6222,7 @@ bool QOpenGLExtension_SGIS_multisample::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6247,7 +6247,7 @@ bool QOpenGLExtension_SGIS_pixel_texture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6276,7 +6276,7 @@ bool QOpenGLExtension_SGIS_point_parameters::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6301,7 +6301,7 @@ bool QOpenGLExtension_SGIS_sharpen_texture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6326,7 +6326,7 @@ bool QOpenGLExtension_SGIS_texture4D::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6351,7 +6351,7 @@ bool QOpenGLExtension_SGIS_texture_color_mask::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6375,7 +6375,7 @@ bool QOpenGLExtension_SGIS_texture_filter4::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6400,7 +6400,7 @@ bool QOpenGLExtension_SGIX_async::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6429,7 +6429,7 @@ bool QOpenGLExtension_SGIX_flush_raster::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6453,7 +6453,7 @@ bool QOpenGLExtension_SGIX_fragment_lighting::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6494,7 +6494,7 @@ bool QOpenGLExtension_SGIX_framezoom::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6518,7 +6518,7 @@ bool QOpenGLExtension_SGIX_igloo_interface::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6542,7 +6542,7 @@ bool QOpenGLExtension_SGIX_instruments::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6571,7 +6571,7 @@ bool QOpenGLExtension_SGIX_list_priority::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6600,7 +6600,7 @@ bool QOpenGLExtension_SGIX_pixel_texture::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6624,7 +6624,7 @@ bool QOpenGLExtension_SGIX_polynomial_ffd::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6651,7 +6651,7 @@ bool QOpenGLExtension_SGIX_reference_plane::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6675,7 +6675,7 @@ bool QOpenGLExtension_SGIX_sprite::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6702,7 +6702,7 @@ bool QOpenGLExtension_SGIX_tag_sample_buffer::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6726,7 +6726,7 @@ bool QOpenGLExtension_SGI_color_table::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6756,7 +6756,7 @@ bool QOpenGLExtension_SUNX_constant_data::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6780,7 +6780,7 @@ bool QOpenGLExtension_SUN_global_alpha::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6811,7 +6811,7 @@ bool QOpenGLExtension_SUN_mesh_array::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6835,7 +6835,7 @@ bool QOpenGLExtension_SUN_triangle_list::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
@@ -6865,7 +6865,7 @@ bool QOpenGLExtension_SUN_vertex::initializeOpenGLFunctions()
     if (isInitialized())
         return true;
 
-    QOpenGLContext *context = QOpenGLContext::currentContext();
+    auto context = QOpenGLContext::currentContext();
     if (!context) {
         qWarning("A current OpenGL context is required to resolve OpenGL extension functions");
         return false;
