@@ -121,24 +121,24 @@ void CppGenerator::operator () ()
 #define ACTION(i, j) table [(i) * terminal_count + (j)]
 #define GOTO(i, j) pgoto [(i) * non_terminal_count + (j)]
 
-  int *table = new int [state_count * terminal_count];
+  auto table = new int [state_count * terminal_count];
   ::memset (table, 0, state_count * terminal_count * sizeof (int));
 
-  int *pgoto = new int [state_count * non_terminal_count];
+  auto pgoto = new int [state_count * non_terminal_count];
   ::memset (pgoto, 0, state_count * non_terminal_count * sizeof (int));
 
   accept_state = -1;
-  int shift_reduce_conflict_count = 0;
-  int reduce_reduce_conflict_count = 0;
+  auto shift_reduce_conflict_count = 0;
+  auto reduce_reduce_conflict_count = 0;
 
-  for (StatePointer state = aut.states.begin (); state != aut.states.end (); ++state)
+  for (auto state = aut.states.begin (); state != aut.states.end (); ++state)
     {
-      int q = aut.id (state);
+      auto q = aut.id (state);
 
-      for (Bundle::iterator a = state->bundle.begin (); a != state->bundle.end (); ++a)
+      for (auto a = state->bundle.begin (); a != state->bundle.end (); ++a)
         {
-          int symbol = aut.id (a.key ());
-          int r = aut.id (a.value ());
+          auto symbol = aut.id (a.key ());
+          auto r = aut.id (a.value ());
 
           Q_ASSERT (r < state_count);
 
@@ -152,14 +152,14 @@ void CppGenerator::operator () ()
             ACTION (q, symbol) = r;
         }
 
-      for (ItemPointer item = state->closure.begin (); item != state->closure.end (); ++item)
+      for (auto item = state->closure.begin (); item != state->closure.end (); ++item)
         {
           if (item->dot != item->end_rhs ())
             continue;
 
-          int r = aut.id (item->rule);
+          auto r = aut.id (item->rule);
 
-          const NameSet lookaheads = aut.lookaheads.value (item);
+          const auto lookaheads = aut.lookaheads.value (item);
 
           if (item->rule == grammar.goal)
             accept_state = q;
@@ -189,8 +189,8 @@ void CppGenerator::operator () ()
                 {
                   if (item->rule->prec != grammar.names.end() && grammar.token_info.contains (s))
                     {
-                      Grammar::TokenInfo info_r = grammar.token_info.value (item->rule->prec);
-                      Grammar::TokenInfo info_s = grammar.token_info.value (s);
+                      auto info_r = grammar.token_info.value (item->rule->prec);
+                      auto info_s = grammar.token_info.value (s);
 
                       if (info_r.prec > info_s.prec)
                         u = -r;
@@ -235,10 +235,10 @@ void CppGenerator::operator () ()
 
   QBitArray used_rules (grammar.rules.count ());
 
-  int q = 0;
-  for (StatePointer state = aut.states.begin (); state != aut.states.end (); ++state, ++q)
+  auto q = 0;
+  for (auto state = aut.states.begin (); state != aut.states.end (); ++state, ++q)
     {
-      for (int j = 0; j < terminal_count; ++j)
+      for (auto j = 0; j < terminal_count; ++j)
         {
           int &u = ACTION (q, j);
 
@@ -247,11 +247,11 @@ void CppGenerator::operator () ()
         }
     }
 
-  for (int i = 0; i < used_rules.count (); ++i)
+  for (auto i = 0; i < used_rules.count (); ++i)
     {
       if (! used_rules.testBit (i))
         {
-          RulePointer rule = grammar.rules.begin () + i;
+          auto rule = grammar.rules.begin () + i;
 
           if (rule != grammar.goal)
             qerr << "*** Warning: Rule ``" << *rule << "'' is useless!" << endl;
@@ -259,16 +259,16 @@ void CppGenerator::operator () ()
     }
 
   q = 0;
-  for (StatePointer state = aut.states.begin (); state != aut.states.end (); ++state, ++q)
+  for (auto state = aut.states.begin (); state != aut.states.end (); ++state, ++q)
     {
-      for (int j = 0; j < terminal_count; ++j)
+      for (auto j = 0; j < terminal_count; ++j)
         {
           int &u = ACTION (q, j);
 
           if (u >= 0)
             continue;
 
-          RulePointer rule = grammar.rules.begin () + (- u - 1);
+          auto rule = grammar.rules.begin () + (- u - 1);
 
           if (state->defaultReduce == rule)
             u = 0;
@@ -277,15 +277,15 @@ void CppGenerator::operator () ()
 
   // ... compress the goto table
   defgoto.resize (non_terminal_count);
-  for (int j = 0; j < non_terminal_count; ++j)
+  for (auto j = 0; j < non_terminal_count; ++j)
     {
       count.fill (0, state_count);
 
       int &mx = defgoto [j];
 
-      for (int i = 0; i < state_count; ++i)
+      for (auto i = 0; i < state_count; ++i)
         {
-          int r = GOTO (i, j);
+          auto r = GOTO (i, j);
 
           if (! r)
             continue;
@@ -297,9 +297,9 @@ void CppGenerator::operator () ()
         }
     }
 
-  for (int i = 0; i < state_count; ++i)
+  for (auto i = 0; i < state_count; ++i)
     {
-      for (int j = 0; j < non_terminal_count; ++j)
+      for (auto j = 0; j < non_terminal_count; ++j)
         {
           int &r = GOTO (i, j);
 
@@ -369,7 +369,7 @@ void CppGenerator::operator () ()
     f.open (QFile::WriteOnly);
     QTextStream out (&f);
 
-    QString prot = declFileName.toUpper ().replace (QLatin1Char ('.'), QLatin1Char ('_'));
+    auto prot = declFileName.toUpper ().replace (QLatin1Char ('.'), QLatin1Char ('_'));
 
     // copyright headers must come first, otherwise the headers tests will fail
     if (copyright)
@@ -448,9 +448,9 @@ void CppGenerator::generateDecl (QTextStream &out)
       << "public:" << endl
       << "  enum VariousConstants {" << endl;
 
-  for (Name t : qAsConst(grammar.terminals))
+  for (auto t : qAsConst(grammar.terminals))
     {
-      QString name = *t;
+      auto name = *t;
       int value = std::distance (grammar.names.begin (), t);
 
       if (name == QLatin1String ("$end"))
@@ -483,7 +483,7 @@ void CppGenerator::generateDecl (QTextStream &out)
 
   if (debug_info)
     {
-      QString prot = debugInfoProt();
+      auto prot = debugInfoProt();
 
       out << endl << "#ifndef " << prot << endl
           << "  static const int     rule_index [];" << endl
@@ -522,17 +522,17 @@ void CppGenerator::generateDecl (QTextStream &out)
 
 void CppGenerator::generateImpl (QTextStream &out)
 {
-  int idx = 0;
+  auto idx = 0;
 
   out << "const char *const " << grammar.table_name << "::spell [] = {";
   idx = 0;
 
   QMap<Name, int> name_ids;
-  bool first_nt = true;
+  auto first_nt = true;
 
-  for (Name t = grammar.names.begin (); t != grammar.names.end (); ++t, ++idx)
+  for (auto t = grammar.names.begin (); t != grammar.names.end (); ++t, ++idx)
     {
-      bool terminal = grammar.isTerminal (t);
+      auto terminal = grammar.isTerminal (t);
 
       if (! (debug_info || terminal))
         break;
@@ -547,7 +547,7 @@ void CppGenerator::generateImpl (QTextStream &out)
 
       if (terminal)
         {
-          QString spell = grammar.spells.value (t);
+          auto spell = grammar.spells.value (t);
 
           if (spell.isEmpty ())
             out << "0";
@@ -559,7 +559,7 @@ void CppGenerator::generateImpl (QTextStream &out)
           if (first_nt)
             {
               first_nt = false;
-              QString prot = debugInfoProt();
+              auto prot = debugInfoProt();
               out << endl << "#ifndef " << prot << endl;
             }
           out << "\"" << *t << "\"";
@@ -573,7 +573,7 @@ void CppGenerator::generateImpl (QTextStream &out)
 
   out << "const short " << grammar.table_name << "::lhs [] = {";
   idx = 0;
-  for (RulePointer rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
+  for (auto rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
     {
       if (idx)
         out << ", ";
@@ -587,7 +587,7 @@ void CppGenerator::generateImpl (QTextStream &out)
 
   out << "const short " << grammar.table_name << "::rhs [] = {";
   idx = 0;
-  for (RulePointer rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
+  for (auto rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
     {
       if (idx)
         out << ", ";
@@ -601,7 +601,7 @@ void CppGenerator::generateImpl (QTextStream &out)
 
   if (debug_info)
     {
-      QString prot = debugInfoProt();
+      auto prot = debugInfoProt();
 
       out << endl << "#ifndef " << prot << endl;
       out << "const int " << grammar.table_name << "::rule_info [] = {";
@@ -624,8 +624,8 @@ void CppGenerator::generateImpl (QTextStream &out)
 
       out << "const int " << grammar.table_name << "::rule_index [] = {";
       idx = 0;
-      int offset = 0;
-      for (RulePointer rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
+      auto offset = 0;
+      for (auto rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
         {
           if (idx)
             out << ", ";
@@ -642,7 +642,7 @@ void CppGenerator::generateImpl (QTextStream &out)
 
   out << "const short " << grammar.table_name << "::action_default [] = {";
   idx = 0;
-  for (StatePointer state = aut.states.begin (); state != aut.states.end (); ++state, ++idx)
+  for (auto state = aut.states.begin (); state != aut.states.end (); ++state, ++idx)
     {
       if (state != aut.states.begin ())
         out << ", ";
@@ -658,7 +658,7 @@ void CppGenerator::generateImpl (QTextStream &out)
   out << "};" << endl << endl;
 
   out << "const short " << grammar.table_name << "::goto_default [] = {";
-  for (int i = 0; i < defgoto.size (); ++i)
+  for (auto i = 0; i < defgoto.size (); ++i)
     {
       if (i)
         out << ", ";
@@ -671,7 +671,7 @@ void CppGenerator::generateImpl (QTextStream &out)
   out << "};" << endl << endl;
 
   out << "const short " << grammar.table_name << "::action_index [] = {";
-  for (int i = 0; i < compressed_action.index.size (); ++i)
+  for (auto i = 0; i < compressed_action.index.size (); ++i)
     {
       if (! (i % 10))
         out << endl << "  ";
@@ -679,7 +679,7 @@ void CppGenerator::generateImpl (QTextStream &out)
       out << compressed_action.index [i] << ", ";
     }
   out << endl;
-  for (int i = 0; i < compressed_goto.index.size (); ++i)
+  for (auto i = 0; i < compressed_goto.index.size (); ++i)
     {
       if (i)
         out << ", ";
@@ -692,7 +692,7 @@ void CppGenerator::generateImpl (QTextStream &out)
   out << "};" << endl << endl;
 
   out << "const short " << grammar.table_name << "::action_info [] = {";
-  for (int i = 0; i < compressed_action.info.size (); ++i)
+  for (auto i = 0; i < compressed_action.info.size (); ++i)
     {
       if (! (i % 10))
         out << endl << "  ";
@@ -700,7 +700,7 @@ void CppGenerator::generateImpl (QTextStream &out)
       out << compressed_action.info [i] << ", ";
     }
   out << endl;
-  for (int i = 0; i < compressed_goto.info.size (); ++i)
+  for (auto i = 0; i < compressed_goto.info.size (); ++i)
     {
       if (i)
         out << ", ";
@@ -713,7 +713,7 @@ void CppGenerator::generateImpl (QTextStream &out)
   out << "};" << endl << endl;
 
   out << "const short " << grammar.table_name << "::action_check [] = {";
-  for (int i = 0; i < compressed_action.check.size (); ++i)
+  for (auto i = 0; i < compressed_action.check.size (); ++i)
     {
       if (! (i % 10))
         out << endl << "  ";
@@ -721,7 +721,7 @@ void CppGenerator::generateImpl (QTextStream &out)
       out << compressed_action.check [i] << ", ";
     }
   out << endl;
-  for (int i = 0; i < compressed_goto.check.size (); ++i)
+  for (auto i = 0; i < compressed_goto.check.size (); ++i)
     {
       if (i)
         out << ", ";

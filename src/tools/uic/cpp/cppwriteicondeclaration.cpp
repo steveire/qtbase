@@ -54,7 +54,7 @@ void WriteIconDeclaration::acceptImages(DomImages *images)
 
 void WriteIconDeclaration::acceptImage(DomImage *image)
 {
-    QString name = image->attributeName();
+    auto name = image->attributeName();
     if (name.isEmpty())
         return;
 

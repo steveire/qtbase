@@ -103,15 +103,15 @@ static inline QString typeNameToXml(const char *typeName)
 
 static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
 
-    QString xml = QString::fromLatin1("    <%1 name=\"%2\">\n")
+    auto xml = QString::fromLatin1("    <%1 name=\"%2\">\n")
                   .arg(isSignal ? QLatin1String("signal") : QLatin1String("method"))
                   .arg(QLatin1String(mm.name));
 
     // check the return type first
-    int typeId = QMetaType::type(mm.normalizedType.constData());
+    auto typeId = QMetaType::type(mm.normalizedType.constData());
     if (typeId != QMetaType::Void) {
         if (typeId) {
-            const char *typeName = QDBusMetaType::typeToSignature(typeId);
+            auto typeName = QDBusMetaType::typeToSignature(typeId);
             if (typeName) {
                 xml += QString::fromLatin1("      <arg type=\"%1\" direction=\"out\"/>\n")
                         .arg(typeNameToXml(typeName));
@@ -127,10 +127,10 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
             return QString();           // wasn't a valid type
         }
     }
-    QVector<ArgumentDef> names = mm.arguments;
+    auto names = mm.arguments;
     QVector<int> types;
     QString errorMsg;
-    int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
+    auto inputCount = qDBusParametersForMethod(mm, types, errorMsg);
     if (inputCount == -1) {
         qWarning() << qPrintable(errorMsg);
         return QString();           // invalid form
@@ -140,8 +140,8 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
     if (isSignal && types.at(inputCount) == QDBusMetaTypeId::message())
         return QString();           // signal with QDBusMessage argument?
 
-    bool isScriptable = mm.isScriptable;
-    for (int j = 1; j < types.count(); ++j) {
+    auto isScriptable = mm.isScriptable;
+    for (auto j = 1; j < types.count(); ++j) {
         // input parameter for a slot or output for a signal
         if (types.at(j) == QDBusMetaTypeId::message()) {
             isScriptable = true;
@@ -152,9 +152,9 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         if (!names.at(j - 1).name.isEmpty())
             name = QString::fromLatin1("name=\"%1\" ").arg(QString::fromLatin1(names.at(j - 1).name));
 
-        bool isOutput = isSignal || j > inputCount;
+        auto isOutput = isSignal || j > inputCount;
 
-        const char *signature = QDBusMetaType::typeToSignature(types.at(j));
+        auto signature = QDBusMetaType::typeToSignature(types.at(j));
         xml += QString::fromLatin1("      <arg %1type=\"%2\" direction=\"%3\"/>\n")
                 .arg(name)
                 .arg(QLatin1String(signature))
@@ -162,7 +162,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
 
         // do we need to describe this argument?
         if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
-            const char *typeName = QMetaType::typeName(types.at(j));
+            auto typeName = QMetaType::typeName(types.at(j));
             xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
                     .arg(isOutput ? QLatin1String("Out") : QLatin1String("In"))
                     .arg(isOutput && !isSignal ? j - inputCount : j - 1)
@@ -185,7 +185,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         xml += QLatin1String("      <annotation name=\"" ANNOTATION_NO_WAIT "\""
                               " value=\"true\"/>\n");
 
-    QString retval = xml;
+    auto retval = xml;
     retval += QString::fromLatin1("    </%1>\n")
               .arg(isSignal ? QLatin1String("signal") : QLatin1String("method"));
 
@@ -206,16 +206,16 @@ static QString generateInterfaceXml(const ClassDef *mo)
                   (!mp.scriptable.isEmpty() && (flags & QDBusConnection::ExportNonScriptableProperties))))
                 continue;
 
-            int access = 0;
+            auto access = 0;
             if (!mp.read.isEmpty())
                 access |= 1;
             if (!mp.write.isEmpty())
                 access |= 2;
 
-            int typeId = QMetaType::type(mp.type.constData());
+            auto typeId = QMetaType::type(mp.type.constData());
             if (!typeId)
                 continue;
-            const char *signature = QDBusMetaType::typeToSignature(typeId);
+            auto signature = QDBusMetaType::typeToSignature(typeId);
             if (!signature)
                 continue;
 
@@ -296,9 +296,9 @@ QString qDBusGenerateClassDefXml(const ClassDef *cdef)
     }
 
     // generate the interface name from the meta object
-    QString interface = qDBusInterfaceFromClassDef(cdef);
+    auto interface = qDBusInterfaceFromClassDef(cdef);
 
-    QString xml = generateInterfaceXml(cdef);
+    auto xml = generateInterfaceXml(cdef);
 
     if (xml.isEmpty())
         return QString();       // don't add an empty interface
@@ -322,8 +322,8 @@ static void showVersion()
 static void parseCmdLine(QStringList &arguments)
 {
     flags = 0;
-    for (int i = 0; i < arguments.count(); ++i) {
-        const QString arg = arguments.at(i);
+    for (auto i = 0; i < arguments.count(); ++i) {
+        const auto arg = arguments.at(i);
 
         if (arg == QLatin1String("--help"))
             showHelp();
@@ -331,7 +331,7 @@ static void parseCmdLine(QStringList &arguments)
         if (!arg.startsWith(QLatin1Char('-')))
             continue;
 
-        char c = arg.count() == 2 ? arg.at(1).toLatin1() : char(0);
+        auto c = arg.count() == 2 ? arg.at(1).toLatin1() : char(0);
         switch (c) {
         case 'P':
             flags |= QDBusConnection::ExportNonScriptableProperties;
@@ -393,14 +393,14 @@ int main(int argc, char **argv)
 {
     QStringList args;
     args.reserve(argc - 1);
-    for (int n = 1; n < argc; ++n)
+    for (auto n = 1; n < argc; ++n)
         args.append(QString::fromLocal8Bit(argv[n]));
     parseCmdLine(args);
 
     QVector<ClassDef> classes;
 
-    for (int i = 0; i < args.count(); ++i) {
-        const QString arg = args.at(i);
+    for (auto i = 0; i < args.count(); ++i) {
+        const auto arg = args.at(i);
 
         if (arg.startsWith(QLatin1Char('-')))
             continue;
@@ -417,7 +417,7 @@ int main(int argc, char **argv)
         pp.macros["Q_MOC_RUN"];
         pp.macros["__cplusplus"];
 
-        const QByteArray filename = arg.toLocal8Bit();
+        const auto filename = arg.toLocal8Bit();
 
         moc.filename = filename;
         moc.currentFilenames.push(filename);
@@ -447,7 +447,7 @@ int main(int argc, char **argv)
     output.write(docTypeHeader);
     output.write("<node>\n");
     for (const ClassDef &cdef : qAsConst(classes)) {
-        QString xml = qDBusGenerateClassDefXml(&cdef);
+        auto xml = qDBusGenerateClassDefXml(&cdef);
         output.write(xml.toLocal8Bit());
     }
     output.write("</node>\n");

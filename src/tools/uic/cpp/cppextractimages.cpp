@@ -68,7 +68,7 @@ void ExtractImages::acceptUI(DomUI *node)
         }
 
         QFileInfo fi(m_option.qrcOutputFile);
-        QDir dir = fi.absoluteDir();
+        auto dir = fi.absoluteDir();
         if (!dir.exists(QLatin1String("images")) && !dir.mkdir(QLatin1String("images"))) {
             fprintf(stderr, "%s: Error: Could not create image dir\n", qPrintable(m_option.messagePrefix()));
             return;
@@ -100,15 +100,15 @@ void ExtractImages::acceptImages(DomImages *images)
 
 void ExtractImages::acceptImage(DomImage *image)
 {
-    QString format = image->elementData()->attributeFormat();
-    QString extension = format.left(format.indexOf(QLatin1Char('.'))).toLower();
-    QString fname = m_imagesDir.absoluteFilePath(image->attributeName() + QLatin1Char('.') + extension);
+    auto format = image->elementData()->attributeFormat();
+    auto extension = format.left(format.indexOf(QLatin1Char('.'))).toLower();
+    auto fname = m_imagesDir.absoluteFilePath(image->attributeName() + QLatin1Char('.') + extension);
 
     *m_output << "        <file>images/" << image->attributeName() << QLatin1Char('.') + extension << "</file>\n";
 
     QFile f;
     f.setFileName(fname);
-    const bool isXPM_GZ = format == QLatin1String("XPM.GZ");
+    const auto isXPM_GZ = format == QLatin1String("XPM.GZ");
     QIODevice::OpenMode openMode = QIODevice::WriteOnly;
     if (isXPM_GZ)
         openMode |= QIODevice::Text;
@@ -120,7 +120,7 @@ void ExtractImages::acceptImage(DomImage *image)
     }
 
     if (isXPM_GZ) {
-        QTextStream *imageOut = new QTextStream(&f);
+        auto imageOut = new QTextStream(&f);
         imageOut->setCodec(QTextCodec::codecForName("UTF-8"));
 
         CPP::WriteIconData::writeImage(*imageOut, QString(), m_option.limitXPM_LineLength, image);

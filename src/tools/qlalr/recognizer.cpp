@@ -276,13 +276,13 @@ bool Recognizer::parse (const QString &input_file)
       return false;
     }
 
-  QString _M_contents = QTextStream(&file).readAll();
+  auto _M_contents = QTextStream(&file).readAll();
   _M_firstChar = _M_contents.constBegin();
   _M_lastChar = _M_contents.constEnd();
   _M_currentChar = _M_firstChar;
   _M_line = 1;
 
-  int yytoken = -1;
+  auto yytoken = -1;
   inp ();
 
   reallocateStack();
@@ -299,7 +299,7 @@ bool Recognizer::parse (const QString &input_file)
       if (yytoken == -1 && - TERMINAL_COUNT != action_index [state_stack [tos]])
         yytoken = nextToken();
 
-      int act = t_action (state_stack [tos], yytoken);
+      auto act = t_action (state_stack [tos], yytoken);
 
       if (act == ACCEPT_STATE)
         return true;
@@ -316,7 +316,7 @@ bool Recognizer::parse (const QString &input_file)
 
       else if (act < 0)
         {
-          int r = - act - 1;
+          auto r = - act - 1;
 
           tos -= rhs [r];
           act = state_stack [tos++];
@@ -324,7 +324,7 @@ bool Recognizer::parse (const QString &input_file)
           switch (r) {
 
 case 3: {
-  Name name = _M_grammar->intern (sym(2));
+  auto name = _M_grammar->intern (sym(2));
   _M_grammar->start = name;
   _M_grammar->non_terminals.insert (name);
 } break;
@@ -357,7 +357,7 @@ case 11: {
   _M_grammar->token_prefix = sym(2);
 } break;
 case 17:case 18: {
-  Name name = _M_grammar->intern (sym(1));
+  auto name = _M_grammar->intern (sym(1));
   _M_grammar->terminals.insert (name);
   _M_grammar->spells.insert (name, sym(2));
 } break;
@@ -378,7 +378,7 @@ case 21: {
 } break;
 
 case 25: {
-  Name name = _M_grammar->intern (sym(1));
+  auto name = _M_grammar->intern (sym(1));
   _M_grammar->terminals.insert (name);
 
   Grammar::TokenInfo info;
@@ -410,7 +410,7 @@ case 34: {
 } break;
 
 case 38: {
-  Name lhs = _M_current_rule->lhs;
+  auto lhs = _M_current_rule->lhs;
   _M_current_rule = _M_grammar->rules.insert (_M_grammar->rules.end (), Rule ());
   _M_current_rule->lhs = lhs;
   _M_grammar->declared_lhs.insert (_M_current_rule->lhs);
@@ -427,7 +427,7 @@ case 38: {
 case 39: {
   _M_current_rule->prec = _M_grammar->names.end ();
 
-  for (NameList::iterator it = _M_current_rule->rhs.begin (); it != _M_current_rule->rhs.end (); ++it)
+  for (auto it = _M_current_rule->rhs.begin (); it != _M_current_rule->rhs.end (); ++it)
     {
       if (! _M_grammar->isTerminal (*it))
         continue;
@@ -437,7 +437,7 @@ case 39: {
 } break;
 
 case 40: {
-  Name tok = _M_grammar->intern (sym(2));
+  auto tok = _M_grammar->intern (sym(2));
   if (! _M_grammar->isTerminal (tok))
     {
       qerr << _M_input_file << ":" << _M_line << ": `" << *tok << " is not a terminal symbol" << endl;
@@ -448,7 +448,7 @@ case 40: {
 } break;
 
 case 42: {
-  Name name = _M_grammar->intern (sym(2));
+  auto name = _M_grammar->intern (sym(2));
 
   if (_M_grammar->terminals.find (name) == _M_grammar->terminals.end ())
     _M_grammar->non_terminals.insert (name);

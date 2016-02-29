@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 void dumpRecursive(const QDir &dir, QTextStream &out)
 {
-    const QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot
+    const auto entries = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot
                                                     | QDir::NoSymLinks);
     for (const QFileInfo &entry : entries) {
         if (entry.isDir()) {
@@ -64,13 +64,13 @@ void dumpRecursive(const QDir &dir, QTextStream &out)
 
 int createProject(const QString &outFileName)
 {
-    QDir currentDir = QDir::current();
-    QString currentDirName = currentDir.dirName();
+    auto currentDir = QDir::current();
+    auto currentDirName = currentDir.dirName();
     if (currentDirName.isEmpty())
         currentDirName = QLatin1String("root");
 
     QFile file;
-    bool isOk = false;
+    auto isOk = false;
     if (outFileName.isEmpty()) {
         isOk = file.open(stdout, QFile::WriteOnly | QFile::Text);
     } else {
@@ -190,9 +190,9 @@ int runRcc(int argc, char *argv[])
     if (parser.isSet(verboseOption))
         library.setVerbose(true);
 
-    const bool list = parser.isSet(listOption);
-    const bool projectRequested = parser.isSet(projectOption);
-    const QStringList filenamesIn = parser.positionalArguments();
+    const auto list = parser.isSet(listOption);
+    const auto projectRequested = parser.isSet(projectOption);
+    const auto filenamesIn = parser.positionalArguments();
 
     for (const QString &file : filenamesIn) {
         if (file == QLatin1String("-"))
@@ -203,8 +203,8 @@ int runRcc(int argc, char *argv[])
         }
     }
 
-    QString outFilename = parser.value(outputOption);
-    QString tempFilename = parser.value(tempOption);
+    auto outFilename = parser.value(outputOption);
+    auto tempFilename = parser.value(tempOption);
 
     if (projectRequested) {
         return createProject(outFilename);
@@ -256,7 +256,7 @@ int runRcc(int argc, char *argv[])
     } else {
         out.setFileName(outFilename);
         if (!out.open(mode)) {
-            const QString msg = QString::fromLatin1("Unable to open %1 for writing: %2\n").arg(outFilename).arg(out.errorString());
+            const auto msg = QString::fromLatin1("Unable to open %1 for writing: %2\n").arg(outFilename).arg(out.errorString());
             errorDevice.write(msg.toUtf8());
             return 1;
         }
@@ -264,8 +264,8 @@ int runRcc(int argc, char *argv[])
 
     // do the task
     if (list) {
-        const QStringList data = library.dataFiles();
-        for (int i = 0; i < data.size(); ++i) {
+        const auto data = library.dataFiles();
+        for (auto i = 0; i < data.size(); ++i) {
             out.write(qPrintable(QDir::cleanPath(data.at(i))));
             out.write("\n");
         }
@@ -276,13 +276,13 @@ int runRcc(int argc, char *argv[])
     if (!tempFilename.isEmpty()) {
         temp.setFileName(tempFilename);
         if (!temp.open(QIODevice::ReadOnly)) {
-            const QString msg = QString::fromUtf8("Unable to open temporary file %1 for reading: %2\n")
+            const auto msg = QString::fromUtf8("Unable to open temporary file %1 for reading: %2\n")
                     .arg(outFilename).arg(out.errorString());
             errorDevice.write(msg.toUtf8());
             return 1;
         }
     }
-    bool success = library.output(out, temp, errorDevice);
+    auto success = library.output(out, temp, errorDevice);
     if (!success) {
         // erase the output file if we failed
         out.remove();

@@ -62,7 +62,7 @@ struct _GenerateCheck
 
   inline int operator () ()
   {
-    int check = initial++;
+    auto check = initial++;
     return *iterator++ ? check : -1;
   }
 };
@@ -153,10 +153,10 @@ void Compress::operator () (int *table, int row_count, int column_count)
 
   QVector<UncompressedRow> sortedTable (row_count);
 
-  for (int i = 0; i < row_count; ++i)
+  for (auto i = 0; i < row_count; ++i)
     {
-      int *begin = &table [i * column_count];
-      int *end = begin + column_count;
+      auto begin = &table [i * column_count];
+      auto end = begin + column_count;
 
       sortedTable [i].assign (i, begin, end);
     }
@@ -181,14 +181,14 @@ void Compress::operator () (int *table, int row_count, int column_count)
   for (const UncompressedRow &row : qAsConst(sortedTable))
     {
       int first_token = std::distance (row.begin (), row.beginNonZeros ());
-      QVector<int>::iterator pos = info.begin ();
+      auto pos = info.begin ();
 
       while (pos != info.end ())
         {
           if (pos == info.begin ())
             {
               // try to find a perfect match
-              QVector<int>::iterator pm = std::search (pos, info.end (), row.beginNonZeros (), row.endNonZeros (), _PerfectMatch ());
+              auto pm = std::search (pos, info.end (), row.beginNonZeros (), row.endNonZeros (), _PerfectMatch ());
 
               if (pm != info.end ())
                 {
@@ -203,9 +203,9 @@ void Compress::operator () (int *table, int row_count, int column_count)
             break;
 
           int idx = std::distance (info.begin (), pos) - first_token;
-          bool conflict = false;
+          auto conflict = false;
 
-          for (int j = 0; ! conflict && j < row.size (); ++j)
+          for (auto j = 0; ! conflict && j < row.size (); ++j)
             {
               if (row.at (j) == 0)
                 conflict |= idx + j >= 0 && check [idx + j] == j;
@@ -222,7 +222,7 @@ void Compress::operator () (int *table, int row_count, int column_count)
 
       if (pos == info.end ())
         {
-          int size = info.size ();
+          auto size = info.size ();
 
           info.resize (info.size () + row.nonZeroElements ());
           check.resize (info.size ());
@@ -234,15 +234,15 @@ void Compress::operator () (int *table, int row_count, int column_count)
       int offset = std::distance (info.begin (), pos);
       index [row.index ()] = offset - first_token;
 
-      for (const int *it = row.beginNonZeros (); it != row.endNonZeros (); ++it, ++pos)
+      for (auto it = row.beginNonZeros (); it != row.endNonZeros (); ++it, ++pos)
         {
           if (*it)
             *pos = *it;
         }
 
-      int i = row.index ();
+      auto i = row.index ();
 
-      for (int j = 0; j < row.size (); ++j)
+      for (auto j = 0; j < row.size (); ++j)
         {
           if (row.at (j) == 0)
             continue;

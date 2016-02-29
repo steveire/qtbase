@@ -46,8 +46,8 @@ namespace {
     void openNameSpaces(const QStringList &namespaceList, QTextStream &output) {
         if (namespaceList.empty())
             return;
-        const QStringList::const_iterator cend = namespaceList.constEnd();
-        for (QStringList::const_iterator it = namespaceList.constBegin(); it != cend; ++it) {
+        const auto cend = namespaceList.constEnd();
+        for (auto it = namespaceList.constBegin(); it != cend; ++it) {
             if (!it->isEmpty()) {
                 output << "namespace " << *it << " {\n";
             }
@@ -61,7 +61,7 @@ namespace {
         QListIterator<QString> it(namespaceList);
         it.toBack();
         while (it.hasPrevious()) {
-            const QString ns = it.previous();
+            const auto ns = it.previous();
             if (!ns.isEmpty()) {
                 output << "} // namespace " << ns << "\n";
             }
@@ -114,16 +114,16 @@ WriteDeclaration::WriteDeclaration(Uic *uic, bool activateScripts)  :
 void WriteDeclaration::acceptUI(DomUI *node)
 {
     QString qualifiedClassName = node->elementClass() + m_option.postfix;
-    QString className = qualifiedClassName;
+    auto className = qualifiedClassName;
 
-    QString varName = m_driver->findOrInsertWidget(node->elementWidget());
-    QString widgetClassName = node->elementWidget()->attributeClass();
+    auto varName = m_driver->findOrInsertWidget(node->elementWidget());
+    auto widgetClassName = node->elementWidget()->attributeClass();
 
-    QString exportMacro = node->elementExportMacro();
+    auto exportMacro = node->elementExportMacro();
     if (!exportMacro.isEmpty())
         exportMacro.append(QLatin1Char(' '));
 
-    QStringList namespaceList = qualifiedClassName.split(QLatin1String("::"));
+    auto namespaceList = qualifiedClassName.split(QLatin1String("::"));
     if (namespaceList.count()) {
         className = namespaceList.last();
         namespaceList.removeLast();
@@ -134,7 +134,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     // is a User using Qt-in-namespace having his own classes not in a namespace.
     // In this case the generated Ui helper classes will also end up in
     // the Qt namespace (which is harmless, but not "pretty")
-    const bool needsMacro = namespaceList.count() == 0
+    const auto needsMacro = namespaceList.count() == 0
         || namespaceList[0] == QLatin1String("qdesigner_internal");
 
     if (needsMacro)
@@ -149,9 +149,9 @@ void WriteDeclaration::acceptUI(DomUI *node)
            << "{\n"
            << "public:\n";
 
-    const QStringList connections = m_uic->databaseInfo()->connections();
-    for (int i=0; i<connections.size(); ++i) {
-        const QString connection = connections.at(i);
+    const auto connections = m_uic->databaseInfo()->connections();
+    for (auto i=0; i<connections.size(); ++i) {
+        const auto connection = connections.at(i);
 
         if (connection == QLatin1String("(default)"))
             continue;
@@ -160,7 +160,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     }
 
     TreeWalker::acceptWidget(node->elementWidget());
-    if (const DomButtonGroups *domButtonGroups = node->elementButtonGroups())
+    if (auto domButtonGroups = node->elementButtonGroups())
         acceptButtonGroups(domButtonGroups);
 
     m_output << "\n";

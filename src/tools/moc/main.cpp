@@ -58,7 +58,7 @@ static QByteArray combinePath(const QString &infile, const QString &outfile)
 {
     QFileInfo inFileInfo(QDir::current(), infile);
     QFileInfo outFileInfo(QDir::current(), outfile);
-    const QByteArray relativePath = QFile::encodeName(outFileInfo.dir().relativeFilePath(inFileInfo.filePath()));
+    const auto relativePath = QFile::encodeName(outFileInfo.dir().relativeFilePath(inFileInfo.filePath()));
 #ifdef Q_OS_WIN
     // It's a system limitation.
     // It depends on the Win API function which is used by the program to open files.
@@ -86,12 +86,12 @@ static inline const Symbol &next(const Symbols &symbols, int &i)
 
 QByteArray composePreprocessorOutput(const Symbols &symbols) {
     QByteArray output;
-    int lineNum = 1;
-    Token last = PP_NOTOKEN;
-    Token secondlast = last;
-    int i = 0;
+    auto lineNum = 1;
+    auto last = PP_NOTOKEN;
+    auto secondlast = last;
+    auto i = 0;
     while (hasNext(symbols, i)) {
-        Symbol sym = next(symbols, i);
+        auto sym = next(symbols, i);
         switch (sym.token) {
         case PP_NEWLINE:
         case PP_WHITESPACE:
@@ -124,7 +124,7 @@ QByteArray composePreprocessorOutput(const Symbols &symbols) {
         secondlast = last;
         last = sym.token;
 
-        const int padding = sym.lineNum - lineNum;
+        const auto padding = sym.lineNum - lineNum;
         if (padding > 0) {
             output.resize(output.size() + padding);
             memset(output.data() + output.size() - padding, '\n', padding);
@@ -144,7 +144,7 @@ static QStringList argumentsFromCommandLineAndFile(const QStringList &arguments)
     for (const QString &argument : arguments) {
         // "@file" doesn't start with a '-' so we can't use QCommandLineParser for it
         if (argument.startsWith(QLatin1Char('@'))) {
-            QString optionsFile = argument;
+            auto optionsFile = argument;
             optionsFile.remove(0, 1);
             if (optionsFile.isEmpty()) {
                 error("The @ option requires an input file");
@@ -156,7 +156,7 @@ static QStringList argumentsFromCommandLineAndFile(const QStringList &arguments)
                 return QStringList();
             }
             while (!f.atEnd()) {
-                QString line = QString::fromLocal8Bit(f.readLine().trimmed());
+                auto line = QString::fromLocal8Bit(f.readLine().trimmed());
                 if (!line.isEmpty())
                     allArguments << line;
             }
@@ -173,8 +173,8 @@ int runMoc(int argc, char **argv)
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationVersion(QString::fromLatin1(QT_VERSION_STR));
 
-    bool autoInclude = true;
-    bool defaultInclude = true;
+    auto autoInclude = true;
+    auto defaultInclude = true;
     Preprocessor pp;
     Moc moc;
     pp.macros["Q_MOC_RUN"];
@@ -276,11 +276,11 @@ int runMoc(int argc, char **argv)
     parser.addPositionalArgument(QStringLiteral("[@option-file]"),
             QStringLiteral("Read additional options from option-file."));
 
-    const QStringList arguments = argumentsFromCommandLineAndFile(app.arguments());
+    const auto arguments = argumentsFromCommandLineAndFile(app.arguments());
 
     parser.process(arguments);
 
-    const QStringList files = parser.positionalArguments();
+    const auto files = parser.positionalArguments();
     if (files.count() > 1) {
         error(qPrintable(QStringLiteral("Too many input files specified: '") + files.join(QStringLiteral("' '")) + QLatin1Char('\'')));
         parser.showHelp(1);
@@ -288,7 +288,7 @@ int runMoc(int argc, char **argv)
         filename = files.first();
     }
 
-    const bool ignoreConflictingOptions = parser.isSet(ignoreConflictsOption);
+    const auto ignoreConflictingOptions = parser.isSet(ignoreConflictsOption);
     output = parser.value(outputOption);
     pp.preprocessOnly = parser.isSet(preprocessOption);
     if (parser.isSet(noIncludeOption)) {
@@ -323,9 +323,9 @@ int runMoc(int argc, char **argv)
     }
     const auto defines = parser.values(defineOption);
     for (const QString &arg : defines) {
-        QByteArray name = arg.toLocal8Bit();
+        auto name = arg.toLocal8Bit();
         QByteArray value("1");
-        int eq = name.indexOf('=');
+        auto eq = name.indexOf('=');
         if (eq >= 0) {
             value = name.mid(eq + 1);
             name = name.left(eq);
@@ -341,22 +341,22 @@ int runMoc(int argc, char **argv)
     }
     const auto undefines = parser.values(undefineOption);
     for (const QString &arg : undefines) {
-        QByteArray macro = arg.toLocal8Bit();
+        auto macro = arg.toLocal8Bit();
         if (macro.isEmpty()) {
             error("Missing macro name");
             parser.showHelp(1);
         }
         pp.macros.remove(macro);
     }
-    const QStringList noNotesCompatValues = parser.values(noNotesWarningsCompatOption);
+    const auto noNotesCompatValues = parser.values(noNotesWarningsCompatOption);
     if (parser.isSet(noNotesOption) || noNotesCompatValues.contains(QStringLiteral("n")))
         moc.displayNotes = false;
     if (parser.isSet(noWarningsOption) || noNotesCompatValues.contains(QStringLiteral("w")))
         moc.displayWarnings = moc.displayNotes = false;
 
     if (autoInclude) {
-        int spos = filename.lastIndexOf(QDir::separator());
-        int ppos = filename.lastIndexOf(QLatin1Char('.'));
+        auto spos = filename.lastIndexOf(QDir::separator());
+        auto ppos = filename.lastIndexOf(QLatin1Char('.'));
         // spos >= -1 && ppos > spos => ppos >= 0
         moc.noInclude = (ppos > spos && filename[ppos + 1].toLower() != QLatin1Char('h'));
     }
@@ -387,9 +387,9 @@ int runMoc(int argc, char **argv)
 
     const auto metadata = parser.values(metadataOption);
     for (const QString &md : metadata) {
-        int split = md.indexOf(QLatin1Char('='));
-        QString key = md.left(split);
-        QString value = md.mid(split + 1);
+        auto split = md.indexOf(QLatin1Char('='));
+        auto key = md.left(split);
+        auto value = md.mid(split + 1);
 
         if (split == -1 || key.isEmpty() || value.isEmpty()) {
             error("missing key or value for option '-M'");
@@ -398,7 +398,7 @@ int runMoc(int argc, char **argv)
             // format later for more advanced meta data API
             error("A key cannot contain the letter '.' for option '-M'");
         } else {
-            QJsonArray array = moc.metaArgs.value(key);
+            auto array = moc.metaArgs.value(key);
             array.append(value);
             moc.metaArgs.insert(key, array);
         }

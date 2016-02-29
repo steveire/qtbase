@@ -60,11 +60,11 @@ int main (int argc, char *argv[])
 {
   QCoreApplication app (argc, argv);
 
-  bool generate_dot = false;
-  bool generate_report = false;
-  bool no_lines = false;
-  bool debug_info = true;
-  bool qt_copyright = false;
+  auto generate_dot = false;
+  auto generate_report = false;
+  auto no_lines = false;
+  auto debug_info = true;
+  auto qt_copyright = false;
   QString file_name = 0;
 
   const QStringList args = app.arguments().mid(1);
@@ -146,7 +146,7 @@ int main (int argc, char *argv[])
 
 QString Recognizer::expand (const QString &text) const
 {
-  QString code = text;
+  auto code = text;
 
   if (_M_grammar->start != _M_grammar->names.end ())
     {

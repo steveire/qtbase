@@ -60,7 +60,7 @@ static const ClassInfoEntry qclass_lib_map[] = {
 // Format a module header as 'QtCore/QObject'
 static inline QString moduleHeader(const QString &module, const QString &header)
 {
-    QString rc = module;
+    auto rc = module;
     rc += QLatin1Char('/');
     rc += header;
     return rc;
@@ -75,15 +75,15 @@ WriteIncludes::WriteIncludes(Uic *uic)
     // and create a re-mapping of the old header "qclass.h" to it. Do not do this
     // for the "Phonon::Someclass" classes, however.
     const QString namespaceDelimiter = QLatin1String("::");
-    const ClassInfoEntry *classLibEnd = qclass_lib_map + sizeof(qclass_lib_map)/sizeof(ClassInfoEntry);
+    auto classLibEnd = qclass_lib_map + sizeof(qclass_lib_map)/sizeof(ClassInfoEntry);
     for (const ClassInfoEntry *it = qclass_lib_map; it < classLibEnd;  ++it) {
         const QString klass = QLatin1String(it->klass);
         const QString module = QLatin1String(it->module);
-        QLatin1String header = QLatin1String(it->header);
+        auto header = QLatin1String(it->header);
         if (klass.contains(namespaceDelimiter)) {
             m_classToHeader.insert(klass, moduleHeader(module, header));
         } else {
-            const QString newHeader = moduleHeader(module, klass);
+            const auto newHeader = moduleHeader(module, klass);
             m_classToHeader.insert(klass, newHeader);
             m_oldHeaderToNewHeader.insert(header, newHeader);
         }
@@ -164,7 +164,7 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
             break;
 
         // Known class
-        const StringMap::const_iterator it = m_classToHeader.constFind(className);
+        const auto it = m_classToHeader.constFind(className);
         if (it != m_classToHeader.constEnd()) {
             header = it.value();
             global =  true;
@@ -173,9 +173,9 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
 
         // Quick check by class name to detect includehints provided for custom widgets.
         // Remove namespaces
-        QString lowerClassName = className.toLower();
+        auto lowerClassName = className.toLower();
         static const QString namespaceSeparator = QLatin1String("::");
-        const int namespaceIndex = lowerClassName.lastIndexOf(namespaceSeparator);
+        const auto namespaceIndex = lowerClassName.lastIndexOf(namespaceSeparator);
         if (namespaceIndex != -1)
             lowerClassName.remove(0, namespaceIndex + namespaceSeparator.size());
         if (m_includeBaseNames.contains(lowerClassName)) {
@@ -226,11 +226,11 @@ void WriteIncludes::add(const QString &className, bool determineHeader, const QS
 
 void WriteIncludes::acceptCustomWidget(DomCustomWidget *node)
 {
-    const QString className = node->elementClass();
+    const auto className = node->elementClass();
     if (className.isEmpty())
         return;
 
-    if (const DomScript *domScript = node->elementScript())
+    if (auto domScript = node->elementScript())
         if (!domScript->text().isEmpty())
             activateScripts();
 
@@ -239,7 +239,7 @@ void WriteIncludes::acceptCustomWidget(DomCustomWidget *node)
     } else {
         // custom header unless it is a built-in qt class
         QString header;
-        bool global = false;
+        auto global = false;
         if (!m_classToHeader.contains(className)) {
             global = node->elementHeader()->attributeLocation().toLower() == QLatin1String("global");
             header = node->elementHeader()->text();
@@ -260,7 +260,7 @@ void WriteIncludes::acceptIncludes(DomIncludes *node)
 
 void WriteIncludes::acceptInclude(DomInclude *node)
 {
-    bool global = true;
+    auto global = true;
     if (node->hasAttributeLocation())
         global = node->attributeLocation() == QLatin1String("global");
     insertInclude(node->text(), global);
@@ -276,7 +276,7 @@ void WriteIncludes::insertInclude(const QString &header, bool global)
         return;
     // Insert. Also remember base name for quick check of suspicious custom plugins
     includes.insert(header, false);
-    const QString lowerBaseName = QFileInfo(header).completeBaseName ().toLower();
+    const auto lowerBaseName = QFileInfo(header).completeBaseName ().toLower();
     m_includeBaseNames.insert(lowerBaseName);
 }
 
@@ -286,11 +286,11 @@ void WriteIncludes::writeHeaders(const OrderedSet &headers, bool global)
     const QChar closingQuote = global ? QLatin1Char('>') : QLatin1Char('"');
 
     // Check for the old headers 'qslider.h' and replace by 'QtGui/QSlider'
-    const OrderedSet::const_iterator cend = headers.constEnd();
-    for (OrderedSet::const_iterator sit = headers.constBegin(); sit != cend; ++sit) {
-        const StringMap::const_iterator hit = m_oldHeaderToNewHeader.constFind(sit.key());
-        const bool mapped =  hit != m_oldHeaderToNewHeader.constEnd();
-        const  QString header =  mapped ? hit.value() : sit.key();
+    const auto cend = headers.constEnd();
+    for (auto sit = headers.constBegin(); sit != cend; ++sit) {
+        const auto hit = m_oldHeaderToNewHeader.constFind(sit.key());
+        const auto mapped =  hit != m_oldHeaderToNewHeader.constEnd();
+        const auto header =  mapped ? hit.value() : sit.key();
         if (!header.trimmed().isEmpty()) {
             m_output << "#include " << openingQuote << header << closingQuote << QLatin1Char('\n');
         }

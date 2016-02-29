@@ -39,11 +39,11 @@ namespace CPP {
 
 static QByteArray transformImageData(const QString &data)
 {
-    int baSize = data.length() / 2;
-    uchar *ba = new uchar[baSize];
-    for (int i = 0; i < baSize; ++i) {
-        char h = data[2 * (i)].toLatin1();
-        char l = data[2 * (i) + 1].toLatin1();
+    auto baSize = data.length() / 2;
+    auto ba = new uchar[baSize];
+    for (auto i = 0; i < baSize; ++i) {
+        auto h = data[2 * (i)].toLatin1();
+        auto l = data[2 * (i) + 1].toLatin1();
         uchar r = 0;
         if (h <= '9')
             r += h - '0';
@@ -64,7 +64,7 @@ static QByteArray transformImageData(const QString &data)
 static QByteArray unzipXPM(const QString &data, ulong &length)
 {
 #ifndef QT_NO_COMPRESS
-    const int lengthOffset = 4;
+    const auto lengthOffset = 4;
     QByteArray ba(lengthOffset, ' ');
 
     // qUncompress() expects the first 4 bytes to be the expected length of the
@@ -74,7 +74,7 @@ static QByteArray unzipXPM(const QString &data, ulong &length)
     ba[2] = (length & 0x0000ff00) >> 8;
     ba[3] = (length & 0x000000ff);
     ba.append(transformImageData(data));
-    QByteArray baunzip = qUncompress(ba);
+    auto baunzip = qUncompress(ba);
     return baunzip;
 #else
     Q_UNUSED(data);
@@ -109,19 +109,19 @@ void WriteIconData::writeImage(QTextStream &output, const QString &indent,
                                bool limitXPM_LineLength, const DomImage *image)
 {
     QString img = image->attributeName() + QLatin1String("_data");
-    QString data = image->elementData()->text();
-    QString fmt = image->elementData()->attributeFormat();
-    int size = image->elementData()->attributeLength();
+    auto data = image->elementData()->text();
+    auto fmt = image->elementData()->attributeFormat();
+    auto size = image->elementData()->attributeLength();
 
     if (fmt == QLatin1String("XPM.GZ")) {
         ulong length = size;
-        QByteArray baunzip = unzipXPM(data, length);
+        auto baunzip = unzipXPM(data, length);
         length = baunzip.size();
         // shouldn't we test the initial 'length' against the
         // resulting 'length' to catch corrupt UIC files?
-        int a = 0;
-        int column = 0;
-        bool inQuote = false;
+        auto a = 0;
+        auto column = 0;
+        auto inQuote = false;
         output << indent << "/* XPM */\n"
                << indent << "static const char* const " << img << "[] = { \n";
         while (baunzip[a] != '\"')
@@ -163,7 +163,7 @@ void WriteIconData::writeImage(QTextStream &output, const QString &indent,
 
 void WriteIconData::writeImage(QIODevice &output, DomImage *image)
 {
-    const QByteArray array = transformImageData(image->elementData()->text());
+    const auto array = transformImageData(image->elementData()->text());
     output.write(array.constData(), array.size());
 }
 

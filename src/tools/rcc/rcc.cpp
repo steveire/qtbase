@@ -57,7 +57,7 @@ enum {
 void RCCResourceLibrary::write(const char *str, int len)
 {
     --len; // trailing \0 on string literals...
-    int n = m_out.size();
+    auto n = m_out.size();
     m_out.resize(n + len);
     memcpy(m_out.data() + n, str, len);
 }
@@ -147,16 +147,16 @@ RCCFileInfo::~RCCFileInfo()
 
 QString RCCFileInfo::resourceName() const
 {
-    QString resource = m_name;
-    for (RCCFileInfo *p = m_parent; p; p = p->m_parent)
+    auto resource = m_name;
+    for (auto p = m_parent; p; p = p->m_parent)
         resource = resource.prepend(p->m_name + QLatin1Char('/'));
     return QLatin1Char(':') + resource;
 }
 
 void RCCFileInfo::writeDataInfo(RCCResourceLibrary &lib)
 {
-    const bool text = lib.m_format == RCCResourceLibrary::C_Code;
-    const bool pass1 = lib.m_format == RCCResourceLibrary::Pass1;
+    const auto text = lib.m_format == RCCResourceLibrary::C_Code;
+    const auto pass1 = lib.m_format == RCCResourceLibrary::Pass1;
     //some info
     if (text || pass1) {
         if (m_language != QLocale::C) {
@@ -208,10 +208,10 @@ void RCCFileInfo::writeDataInfo(RCCResourceLibrary &lib)
 qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
     QString *errorMessage)
 {
-    const bool text = lib.m_format == RCCResourceLibrary::C_Code;
-    const bool pass1 = lib.m_format == RCCResourceLibrary::Pass1;
-    const bool pass2 = lib.m_format == RCCResourceLibrary::Pass2;
-    const bool binary = lib.m_format == RCCResourceLibrary::Binary;
+    const auto text = lib.m_format == RCCResourceLibrary::C_Code;
+    const auto pass1 = lib.m_format == RCCResourceLibrary::Pass1;
+    const auto pass2 = lib.m_format == RCCResourceLibrary::Pass2;
+    const auto binary = lib.m_format == RCCResourceLibrary::Binary;
 
     //capture the offset
     m_dataOffset = offset;
@@ -222,15 +222,15 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
         *errorMessage = msgOpenReadFailed(m_fileInfo.absoluteFilePath(), file.errorString());
         return 0;
     }
-    QByteArray data = file.readAll();
+    auto data = file.readAll();
 
 #ifndef QT_NO_COMPRESS
     // Check if compression is useful for this file
     if (m_compressLevel != 0 && data.size() != 0) {
-        QByteArray compressed =
+        auto compressed =
             qCompress(reinterpret_cast<uchar *>(data.data()), data.size(), m_compressLevel);
 
-        int compressRatio = int(100.0 * (data.size() - compressed.size()) / data.size());
+        auto compressRatio = int(100.0 * (data.size() - compressed.size()) / data.size());
         if (compressRatio >= m_compressThreshold) {
             data = compressed;
             m_flags |= Compressed;
@@ -254,9 +254,9 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
     offset += 4;
 
     // write the payload
-    const char *p = data.constData();
+    auto p = data.constData();
     if (text) {
-        for (int i = data.size(), j = 0; --i >= 0; --j) {
+        for (auto i = data.size(), j = 0; --i >= 0; --j) {
             lib.writeHex(*p++);
             if (j == 0) {
                 lib.writeString("\n  ");
@@ -276,8 +276,8 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
 
 qint64 RCCFileInfo::writeDataName(RCCResourceLibrary &lib, qint64 offset)
 {
-    const bool text = lib.m_format == RCCResourceLibrary::C_Code;
-    const bool pass1 = lib.m_format == RCCResourceLibrary::Pass1;
+    const auto text = lib.m_format == RCCResourceLibrary::C_Code;
+    const auto pass1 = lib.m_format == RCCResourceLibrary::Pass1;
 
     // capture the offset
     m_nameOffset = offset;
@@ -302,8 +302,8 @@ qint64 RCCFileInfo::writeDataName(RCCResourceLibrary &lib, qint64 offset)
     offset += 4;
 
     // write the m_name
-    const QChar *unicode = m_name.unicode();
-    for (int i = 0; i < m_name.length(); ++i) {
+    auto unicode = m_name.unicode();
+    for (auto i = 0; i < m_name.length(); ++i) {
         lib.writeNumber2(unicode[i].unicode());
         if ((text || pass1) && i % 16 == 0)
             lib.writeString("\n  ");
@@ -375,14 +375,14 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
     QStack<RCCXmlTag> tokens;
 
     QString prefix;
-    QLocale::Language language = QLocale::c().language();
-    QLocale::Country country = QLocale::c().country();
+    auto language = QLocale::c().language();
+    auto country = QLocale::c().country();
     QString alias;
-    int compressLevel = m_compressLevel;
-    int compressThreshold = m_compressThreshold;
+    auto compressLevel = m_compressLevel;
+    auto compressThreshold = m_compressThreshold;
 
     while (!reader.atEnd()) {
-        QXmlStreamReader::TokenType t = reader.readNext();
+        auto t = reader.readNext();
         switch (t) {
         case QXmlStreamReader::StartElement:
             if (reader.name() == m_strings.TAG_RCC) {
@@ -396,13 +396,13 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                 } else {
                     tokens.push(ResourceTag);
 
-                    QXmlStreamAttributes attributes = reader.attributes();
+                    auto attributes = reader.attributes();
                     language = QLocale::c().language();
                     country = QLocale::c().country();
 
                     if (attributes.hasAttribute(m_strings.ATTRIBUTE_LANG)) {
-                        QString attribute = attributes.value(m_strings.ATTRIBUTE_LANG).toString();
-                        QLocale lang = QLocale(attribute);
+                        auto attribute = attributes.value(m_strings.ATTRIBUTE_LANG).toString();
+                        auto lang = QLocale(attribute);
                         language = lang.language();
                         if (2 == attribute.length()) {
                             // Language only
@@ -426,7 +426,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                 } else {
                     tokens.push(FileTag);
 
-                    QXmlStreamAttributes attributes = reader.attributes();
+                    auto attributes = reader.attributes();
                     alias.clear();
                     if (attributes.hasAttribute(m_strings.ATTRIBUTE_ALIAS))
                         alias = attributes.value(m_strings.ATTRIBUTE_ALIAS).toString();
@@ -473,9 +473,9 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
             if (tokens.isEmpty() || tokens.top() != FileTag) {
                 reader.raiseError(QLatin1String("unexpected text"));
             } else {
-                QString fileName = reader.text().toString();
+                auto fileName = reader.text().toString();
                 if (fileName.isEmpty()) {
-                    const QString msg = QString::fromLatin1("RCC: Warning: Null node in XML of '%1'\n").arg(fname);
+                    const auto msg = QString::fromLatin1("RCC: Warning: Null node in XML of '%1'\n").arg(fname);
                     m_errorDevice->write(msg.toUtf8());
                 }
 
@@ -487,20 +487,20 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                     alias.remove(0, 3);
                 alias = QDir::cleanPath(m_resourceRoot) + prefix + alias;
 
-                QString absFileName = fileName;
+                auto absFileName = fileName;
                 if (QDir::isRelativePath(absFileName))
                     absFileName.prepend(currentPath);
                 QFileInfo file(absFileName);
                 if (!file.exists()) {
                     m_failedResources.push_back(absFileName);
-                    const QString msg = QString::fromLatin1("RCC: Error in '%1': Cannot find file '%2'\n").arg(fname).arg(fileName);
+                    const auto msg = QString::fromLatin1("RCC: Error in '%1': Cannot find file '%2'\n").arg(fname).arg(fileName);
                     m_errorDevice->write(msg.toUtf8());
                     if (ignoreErrors)
                         continue;
                     else
                         return false;
                 } else if (file.isFile()) {
-                    const bool arc =
+                    const auto arc =
                         addFile(alias,
                                 RCCFileInfo(alias.section(slash, -1),
                                             file,
@@ -529,7 +529,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                         it.next();
                         QFileInfo child(it.fileInfo());
                         if (child.fileName() != QLatin1String(".") && child.fileName() != QLatin1String("..")) {
-                            const bool arc =
+                            const auto arc =
                                 addFile(alias + child.fileName(),
                                         RCCFileInfo(child.fileName(),
                                                     child,
@@ -557,14 +557,14 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
             return true;
         int errorLine = reader.lineNumber();
         int errorColumn = reader.columnNumber();
-        QString errorMessage = reader.errorString();
-        QString msg = QString::fromLatin1("RCC Parse Error: '%1' Line: %2 Column: %3 [%4]\n").arg(fname).arg(errorLine).arg(errorColumn).arg(errorMessage);
+        auto errorMessage = reader.errorString();
+        auto msg = QString::fromLatin1("RCC Parse Error: '%1' Line: %2 Column: %3 [%4]\n").arg(fname).arg(errorLine).arg(errorColumn).arg(errorMessage);
         m_errorDevice->write(msg.toUtf8());
         return false;
     }
 
     if (m_root == 0) {
-        const QString msg = QString::fromLatin1("RCC: Warning: No resources in '%1'.\n").arg(fname);
+        const auto msg = QString::fromLatin1("RCC: Warning: No resources in '%1'.\n").arg(fname);
         m_errorDevice->write(msg.toUtf8());
         if (!ignoreErrors && m_format == Binary) {
             // create dummy entry, otherwise loading with QResource will crash
@@ -580,21 +580,21 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
 {
     Q_ASSERT(m_errorDevice);
     if (file.m_fileInfo.size() > 0xffffffff) {
-        const QString msg = QString::fromLatin1("File too big: %1\n").arg(file.m_fileInfo.absoluteFilePath());
+        const auto msg = QString::fromLatin1("File too big: %1\n").arg(file.m_fileInfo.absoluteFilePath());
         m_errorDevice->write(msg.toUtf8());
         return false;
     }
     if (!m_root)
         m_root = new RCCFileInfo(QString(), QFileInfo(), QLocale::C, QLocale::AnyCountry, RCCFileInfo::Directory);
 
-    RCCFileInfo *parent = m_root;
-    const QStringList nodes = alias.split(QLatin1Char('/'));
-    for (int i = 1; i < nodes.size()-1; ++i) {
-        const QString node = nodes.at(i);
+    auto parent = m_root;
+    const auto nodes = alias.split(QLatin1Char('/'));
+    for (auto i = 1; i < nodes.size()-1; ++i) {
+        const auto node = nodes.at(i);
         if (node.isEmpty())
             continue;
         if (!parent->m_children.contains(node)) {
-            RCCFileInfo *s = new RCCFileInfo(node, QFileInfo(), QLocale::C, QLocale::AnyCountry, RCCFileInfo::Directory);
+            auto s = new RCCFileInfo(node, QFileInfo(), QLocale::C, QLocale::AnyCountry, RCCFileInfo::Directory);
             s->m_parent = parent;
             parent->m_children.insert(node, s);
             parent = s;
@@ -603,13 +603,13 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
         }
     }
 
-    const QString filename = nodes.at(nodes.size()-1);
-    RCCFileInfo *s = new RCCFileInfo(file);
+    const auto filename = nodes.at(nodes.size()-1);
+    auto s = new RCCFileInfo(file);
     s->m_parent = parent;
     typedef QHash<QString, RCCFileInfo*>::const_iterator ChildConstIterator;
-    const ChildConstIterator cbegin = parent->m_children.constFind(filename);
-    const ChildConstIterator cend = parent->m_children.constEnd();
-    for (ChildConstIterator it = cbegin; it != cend; ++it) {
+    const auto cbegin = parent->m_children.constFind(filename);
+    const auto cend = parent->m_children.constEnd();
+    for (auto it = cbegin; it != cend; ++it) {
         if (it.key() == filename && it.value()->m_language == s->m_language &&
             it.value()->m_country == s->m_country) {
             for (const QString &name : qAsConst(m_fileNames)) {
@@ -640,13 +640,13 @@ bool RCCResourceLibrary::readFiles(bool ignoreErrors, QIODevice &errorDevice)
     m_errorDevice = &errorDevice;
     //read in data
     if (m_verbose) {
-        const QString msg = QString::fromLatin1("Processing %1 files [%2]\n")
+        const auto msg = QString::fromLatin1("Processing %1 files [%2]\n")
             .arg(m_fileNames.size()).arg(static_cast<int>(ignoreErrors));
         m_errorDevice->write(msg.toUtf8());
     }
-    for (int i = 0; i < m_fileNames.size(); ++i) {
+    for (auto i = 0; i < m_fileNames.size(); ++i) {
         QFile fileIn;
-        QString fname = m_fileNames.at(i);
+        auto fname = m_fileNames.at(i);
         QString pwd;
         if (fname == QLatin1String("-")) {
             fname = QLatin1String("(stdin)");
@@ -665,7 +665,7 @@ bool RCCResourceLibrary::readFiles(bool ignoreErrors, QIODevice &errorDevice)
             }
         }
         if (m_verbose) {
-            const QString msg = QString::fromLatin1("Interpreting %1\n").arg(fname);
+            const auto msg = QString::fromLatin1("Interpreting %1\n").arg(fname);
             m_errorDevice->write(msg.toUtf8());
         }
 
@@ -684,10 +684,10 @@ QStringList RCCResourceLibrary::dataFiles() const
         return ret;
     pending.push(m_root);
     while (!pending.isEmpty()) {
-        RCCFileInfo *file = pending.pop();
-        for (QHash<QString, RCCFileInfo*>::iterator it = file->m_children.begin();
+        auto file = pending.pop();
+        for (auto it = file->m_children.begin();
             it != file->m_children.end(); ++it) {
-            RCCFileInfo *child = it.value();
+            auto child = it.value();
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);
             else
@@ -702,10 +702,10 @@ static void resourceDataFileMapRecursion(const RCCFileInfo *m_root, const QStrin
 {
     typedef QHash<QString, RCCFileInfo*>::const_iterator ChildConstIterator;
     const QChar slash = QLatin1Char('/');
-    const ChildConstIterator cend = m_root->m_children.constEnd();
-    for (ChildConstIterator it = m_root->m_children.constBegin(); it != cend; ++it) {
-        const RCCFileInfo *child = it.value();
-        QString childName = path;
+    const auto cend = m_root->m_children.constEnd();
+    for (auto it = m_root->m_children.constBegin(); it != cend; ++it) {
+        auto child = it.value();
+        auto childName = path;
         childName += slash;
         childName += child->m_name;
         if (child->m_flags & RCCFileInfo::Directory) {
@@ -730,11 +730,11 @@ bool RCCResourceLibrary::output(QIODevice &outDevice, QIODevice &tempDevice, QIO
 
     if (m_format == Pass2) {
         const char pattern[] = { 'Q', 'R', 'C', '_', 'D', 'A', 'T', 'A' };
-        bool foundSignature = false;
+        auto foundSignature = false;
 
         while (true) {
             char c;
-            for (int i = 0; i < 8; ) {
+            for (auto i = 0; i < 8; ) {
                 if (!tempDevice.getChar(&c)) {
                     if (foundSignature)
                         return true;
@@ -744,7 +744,7 @@ bool RCCResourceLibrary::output(QIODevice &outDevice, QIODevice &tempDevice, QIO
                 if (c == pattern[i]) {
                     ++i;
                 } else {
-                    for (int k = 0; k < i; ++k)
+                    for (auto k = 0; k < i; ++k)
                         outDevice.putChar(pattern[k]);
                     outDevice.putChar(c);
                     i = 0;
@@ -754,7 +754,7 @@ bool RCCResourceLibrary::output(QIODevice &outDevice, QIODevice &tempDevice, QIO
             m_outDevice = &outDevice;
             quint64 start = outDevice.pos();
             writeDataBlobs();
-            quint64 len = outDevice.pos() - start;
+            auto len = outDevice.pos() - start;
 
             tempDevice.seek(tempDevice.pos() + len - 8);
             foundSignature = true;
@@ -873,10 +873,10 @@ bool RCCResourceLibrary::writeDataBlobs()
     qint64 offset = 0;
     QString errorMessage;
     while (!pending.isEmpty()) {
-        RCCFileInfo *file = pending.pop();
-        for (QHash<QString, RCCFileInfo*>::iterator it = file->m_children.begin();
+        auto file = pending.pop();
+        for (auto it = file->m_children.begin();
             it != file->m_children.end(); ++it) {
-            RCCFileInfo *child = it.value();
+            auto child = it.value();
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);
             else {
@@ -916,10 +916,10 @@ bool RCCResourceLibrary::writeDataNames()
     pending.push(m_root);
     qint64 offset = 0;
     while (!pending.isEmpty()) {
-        RCCFileInfo *file = pending.pop();
-        for (QHash<QString, RCCFileInfo*>::iterator it = file->m_children.begin();
+        auto file = pending.pop();
+        for (auto it = file->m_children.begin();
             it != file->m_children.end(); ++it) {
-            RCCFileInfo *child = it.value();
+            auto child = it.value();
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);
             if (names.contains(child->m_name)) {
@@ -957,18 +957,18 @@ bool RCCResourceLibrary::writeDataStructure()
 
     //calculate the child offsets (flat)
     pending.push(m_root);
-    int offset = 1;
+    auto offset = 1;
     while (!pending.isEmpty()) {
-        RCCFileInfo *file = pending.pop();
+        auto file = pending.pop();
         file->m_childOffset = offset;
 
         //sort by hash value for binary lookup
-        QList<RCCFileInfo*> m_children = file->m_children.values();
+        auto m_children = file->m_children.values();
         std::sort(m_children.begin(), m_children.end(), qt_rcc_compare_hash());
 
         //write out the actual data now
-        for (int i = 0; i < m_children.size(); ++i) {
-            RCCFileInfo *child = m_children.at(i);
+        for (auto i = 0; i < m_children.size(); ++i) {
+            auto child = m_children.at(i);
             ++offset;
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);
@@ -979,15 +979,15 @@ bool RCCResourceLibrary::writeDataStructure()
     pending.push(m_root);
     m_root->writeDataInfo(*this);
     while (!pending.isEmpty()) {
-        RCCFileInfo *file = pending.pop();
+        auto file = pending.pop();
 
         //sort by hash value for binary lookup
-        QList<RCCFileInfo*> m_children = file->m_children.values();
+        auto m_children = file->m_children.values();
         std::sort(m_children.begin(), m_children.end(), qt_rcc_compare_hash());
 
         //write out the actual data now
-        for (int i = 0; i < m_children.size(); ++i) {
-            RCCFileInfo *child = m_children.at(i);
+        for (auto i = 0; i < m_children.size(); ++i) {
+            auto child = m_children.at(i);
             child->writeDataInfo(*this);
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);
@@ -1025,12 +1025,12 @@ bool RCCResourceLibrary::writeInitializer()
 {
     if (m_format == C_Code || m_format == Pass1) {
         //write("\nQT_BEGIN_NAMESPACE\n");
-        QString initNameStr = m_initName;
+        auto initNameStr = m_initName;
         if (!initNameStr.isEmpty()) {
             initNameStr.prepend(QLatin1Char('_'));
             initNameStr.replace(QRegExp(QLatin1String("[^a-zA-Z0-9_]")), QLatin1String("_"));
         }
-        QByteArray initName = initNameStr.toLatin1();
+        auto initName = initNameStr.toLatin1();
 
         //init
         if (m_useNameSpace) {
@@ -1114,8 +1114,8 @@ bool RCCResourceLibrary::writeInitializer()
                   "}\n");
 
     } else if (m_format == Binary) {
-        int i = 4;
-        char *p = m_out.data();
+        auto i = 4;
+        auto p = m_out.data();
         p[i++] = 0; // 0x01
         p[i++] = 0;
         p[i++] = 0;

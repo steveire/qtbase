@@ -113,7 +113,7 @@ QString Driver::findOrInsertAction(DomAction *ui_action)
 
 QString Driver::findOrInsertButtonGroup(const DomButtonGroup *ui_group)
 {
-    ButtonGroupNameHash::iterator it = m_buttonGroups.find(ui_group);
+    auto it = m_buttonGroups.find(ui_group);
     if (it == m_buttonGroups.end())
         it = m_buttonGroups.insert(ui_group, unique(ui_group->attributeName(), QLatin1String("QButtonGroup")));
     return it.value();
@@ -122,8 +122,8 @@ QString Driver::findOrInsertButtonGroup(const DomButtonGroup *ui_group)
 // Find a group by its non-uniqified name
 const DomButtonGroup *Driver::findButtonGroup(const QString &attributeName) const
 {
-    const ButtonGroupNameHash::const_iterator cend = m_buttonGroups.constEnd();
-    for (ButtonGroupNameHash::const_iterator it = m_buttonGroups.constBegin(); it != cend; ++it)
+    const auto cend = m_buttonGroups.constEnd();
+    for (auto it = m_buttonGroups.constBegin(); it != cend; ++it)
         if (it.key()->attributeName() == attributeName)
             return it.key();
     return 0;
@@ -137,9 +137,9 @@ QString Driver::findOrInsertName(const QString &name)
 
 QString Driver::normalizedName(const QString &name)
 {
-    QString result = name;
-    QChar *data = result.data();
-    for (int i = name.size(); --i >= 0; ++data) {
+    auto result = name;
+    auto data = result.data();
+    for (auto i = name.size(); --i >= 0; ++data) {
         if (!data->isLetterOrNumber())
             *data = QLatin1Char('_');
     }
@@ -149,13 +149,13 @@ QString Driver::normalizedName(const QString &name)
 QString Driver::unique(const QString &instanceName, const QString &className)
 {
     QString name;
-    bool alreadyUsed = false;
+    auto alreadyUsed = false;
 
     if (instanceName.size()) {
-        int id = 1;
+        auto id = 1;
         name = instanceName;
         name = normalizedName(name);
-        QString base = name;
+        auto base = name;
 
         while (m_nameRepository.contains(name)) {
             alreadyUsed = true;
@@ -180,12 +180,12 @@ QString Driver::unique(const QString &instanceName, const QString &className)
 
 QString Driver::qtify(const QString &name)
 {
-    QString qname = name;
+    auto qname = name;
 
     if (qname.at(0) == QLatin1Char('Q') || qname.at(0) == QLatin1Char('K'))
         qname = qname.mid(1);
 
-    int i=0;
+    auto i=0;
     while (i < qname.length()) {
         if (qname.at(i).toLower() != qname.at(i))
             qname[i] = qname.at(i).toLower();
@@ -206,7 +206,7 @@ static bool isAnsiCCharacter(QChar c)
 
 QString Driver::headerFileName() const
 {
-    QString name = m_option.outputFile;
+    auto name = m_option.outputFile;
 
     if (name.isEmpty()) {
         name = QLatin1String("ui_"); // ### use ui_ as prefix.
@@ -222,15 +222,15 @@ QString Driver::headerFileName(const QString &fileName)
         return headerFileName(QLatin1String("noname"));
 
     QFileInfo info(fileName);
-    QString baseName = info.baseName();
+    auto baseName = info.baseName();
     // Transform into a valid C++ identifier
     if (!baseName.isEmpty() && baseName.at(0).isDigit())
         baseName.prepend(QLatin1Char('_'));
-    for (int i = 0; i < baseName.size(); ++i) {
-        QChar c = baseName.at(i);
+    for (auto i = 0; i < baseName.size(); ++i) {
+        auto c = baseName.at(i);
         if (!isAnsiCCharacter(c)) {
             // Replace character by its unicode value
-            QString hex = QString::number(c.unicode(), 16);
+            auto hex = QString::number(c.unicode(), 16);
             baseName.replace(i, 1, QLatin1Char('_') + hex + QLatin1Char('_'));
             i += hex.size() + 1;
         }
@@ -252,12 +252,12 @@ bool Driver::uic(const QString &fileName, DomUI *ui, QTextStream *out)
 {
     m_option.inputFile = fileName;
 
-    QTextStream *oldOutput = m_output;
+    auto oldOutput = m_output;
 
     m_output = out != 0 ? out : &m_stdout;
 
     Uic tool(this);
-    bool rtn = false;
+    auto rtn = false;
 #ifdef QT_UIC_CPP_GENERATOR
     rtn = tool.write(ui);
 #else
@@ -284,8 +284,8 @@ bool Driver::uic(const QString &fileName, QTextStream *out)
 
     m_option.inputFile = fileName;
 
-    QTextStream *oldOutput = m_output;
-    bool deleteOutput = false;
+    auto oldOutput = m_output;
+    auto deleteOutput = false;
 
     if (out) {
         m_output = out;
@@ -303,7 +303,7 @@ bool Driver::uic(const QString &fileName, QTextStream *out)
     }
 
     Uic tool(this);
-    bool rtn = tool.write(&f);
+    auto rtn = tool.write(&f);
     f.close();
 
     if (deleteOutput)

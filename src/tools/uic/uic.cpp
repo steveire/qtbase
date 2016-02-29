@@ -64,7 +64,7 @@ Uic::~Uic()
 
 bool Uic::printDependencies()
 {
-    QString fileName = opt.inputFile;
+    auto fileName = opt.inputFile;
 
     QFile f;
     if (fileName.isEmpty())
@@ -84,10 +84,10 @@ bool Uic::printDependencies()
             return false;
     }
 
-    if (DomIncludes *includes = ui->elementIncludes()) {
+    if (auto includes = ui->elementIncludes()) {
         const auto incls = includes->elementInclude();
-        for (DomInclude *incl : incls) {
-            QString file = incl->text();
+        for (auto incl : incls) {
+            auto file = incl->text();
             if (file.isEmpty())
                 continue;
 
@@ -95,11 +95,11 @@ bool Uic::printDependencies()
         }
     }
 
-    if (DomCustomWidgets *customWidgets = ui->elementCustomWidgets()) {
+    if (auto customWidgets = ui->elementCustomWidgets()) {
         const auto elementCustomWidget = customWidgets->elementCustomWidget();
-        for (DomCustomWidget *customWidget : elementCustomWidget) {
-            if (DomHeader *header = customWidget->elementHeader()) {
-                QString file = header->text();
+        for (auto customWidget : elementCustomWidget) {
+            if (auto header = customWidget->elementHeader()) {
+                auto file = header->text();
                 if (file.isEmpty())
                     continue;
 
@@ -115,7 +115,7 @@ bool Uic::printDependencies()
 
 void Uic::writeCopyrightHeader(DomUI *ui)
 {
-    QString comment = ui->elementComment();
+    auto comment = ui->elementComment();
     if (comment.size())
         out << "/*\n" << comment << "\n*/\n\n";
 
@@ -132,11 +132,11 @@ void Uic::writeCopyrightHeader(DomUI *ui)
 
 static double versionFromUiAttribute(QXmlStreamReader &reader)
 {
-    const QXmlStreamAttributes attributes = reader.attributes();
+    const auto attributes = reader.attributes();
     const QString versionAttribute = QLatin1String("version");
     if (!attributes.hasAttribute(versionAttribute))
         return 4.0;
-    const QStringRef version = attributes.value(versionAttribute);
+    const auto version = attributes.value(versionAttribute);
     return version.toDouble();
 }
 
@@ -149,9 +149,9 @@ DomUI *Uic::parseUiFile(QXmlStreamReader &reader)
         if (reader.readNext() == QXmlStreamReader::StartElement) {
             if (reader.name().compare(uiElement, Qt::CaseInsensitive) == 0
                 && !ui) {
-                const double version = versionFromUiAttribute(reader);
+                const auto version = versionFromUiAttribute(reader);
                 if (version < 4.0) {
-                    const QString msg = QString::fromLatin1("uic: File generated with too old version of Qt Designer (%1)").arg(version);
+                    const auto msg = QString::fromLatin1("uic: File generated with too old version of Qt Designer (%1)").arg(version);
                     fprintf(stderr, "%s\n", qPrintable(msg));
                     return 0;
                 }
@@ -191,7 +191,7 @@ bool Uic::write(QIODevice *in)
             return false;
     }
 
-    double version = ui->attributeVersion().toDouble();
+    auto version = ui->attributeVersion().toDouble();
     if (version < 4.0) {
         delete ui;
 
@@ -199,10 +199,10 @@ bool Uic::write(QIODevice *in)
         return false;
     }
 
-    QString language = ui->attributeLanguage();
+    auto language = ui->attributeLanguage();
 
 
-    bool rtn = false;
+    auto rtn = false;
 
     if (option().generator == Option::JavaGenerator) {
 #ifdef QT_UIC_JAVA_GENERATOR
@@ -303,14 +303,14 @@ bool Uic::jwrite(DomUI *ui)
 
 void Uic::writeHeaderProtectionStart()
 {
-    QString h = drv->headerFileName();
+    auto h = drv->headerFileName();
     out << "#ifndef " << h << "\n"
         << "#define " << h << "\n";
 }
 
 void Uic::writeHeaderProtectionEnd()
 {
-    QString h = drv->headerFileName();
+    auto h = drv->headerFileName();
     out << "#endif // " << h << "\n";
 }
 #endif

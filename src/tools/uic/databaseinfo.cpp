@@ -50,27 +50,27 @@ void DatabaseInfo::acceptUI(DomUI *node)
 
 void DatabaseInfo::acceptWidget(DomWidget *node)
 {
-    QHash<QString, DomProperty*> properties = propertyMap(node->elementProperty());
+    auto properties = propertyMap(node->elementProperty());
 
-    DomProperty *frameworkCode = properties.value(QLatin1String("frameworkCode"), 0);
+    auto frameworkCode = properties.value(QLatin1String("frameworkCode"), 0);
     if (frameworkCode && toBool(frameworkCode->elementBool()) == false)
         return;
 
-    DomProperty *db = properties.value(QLatin1String("database"), 0);
+    auto db = properties.value(QLatin1String("database"), 0);
     if (db && db->elementStringList()) {
-        QStringList info = db->elementStringList()->elementString();
+        auto info = db->elementStringList()->elementString();
 
-        QString connection = info.size() > 0 ? info.at(0) : QString();
+        auto connection = info.size() > 0 ? info.at(0) : QString();
         if (connection.isEmpty())
             return;
         m_connections.append(connection);
 
-        QString table = info.size() > 1 ? info.at(1) : QString();
+        auto table = info.size() > 1 ? info.at(1) : QString();
         if (table.isEmpty())
             return;
         m_cursors[connection].append(table);
 
-        QString field = info.size() > 2 ? info.at(2) : QString();
+        auto field = info.size() > 2 ? info.at(2) : QString();
         if (field.isEmpty())
             return;
         m_fields[connection].append(field);

@@ -63,9 +63,9 @@ bool CustomWidgetsInfo::extends(const QString &classNameIn, QLatin1String baseCl
     if (classNameIn == baseClassName)
         return true;
 
-    QString className = classNameIn;
-    while (const DomCustomWidget *c = customWidget(className)) {
-        const QString extends = c->elementExtends();
+    auto className = classNameIn;
+    while (auto c = customWidget(className)) {
+        const auto extends = c->elementExtends();
         if (className == extends) // Faulty legacy custom widget entries exist.
             return false;
         if (extends == baseClassName)
@@ -77,7 +77,7 @@ bool CustomWidgetsInfo::extends(const QString &classNameIn, QLatin1String baseCl
 
 bool CustomWidgetsInfo::isCustomWidgetContainer(const QString &className) const
 {
-    if (const DomCustomWidget *dcw = m_customWidgets.value(className, 0))
+    if (auto dcw = m_customWidgets.value(className, 0))
         if (dcw->hasElementContainer())
             return dcw->elementContainer() != 0;
     return false;
@@ -96,7 +96,7 @@ DomScript *CustomWidgetsInfo::customWidgetScript(const QString &name) const
     if (m_customWidgets.empty())
         return 0;
 
-    const NameCustomWidgetMap::const_iterator it = m_customWidgets.constFind(name);
+    const auto it = m_customWidgets.constFind(name);
     if (it == m_customWidgets.constEnd())
         return 0;
 
@@ -105,7 +105,7 @@ DomScript *CustomWidgetsInfo::customWidgetScript(const QString &name) const
 
 QString CustomWidgetsInfo::customWidgetAddPageMethod(const QString &name) const
 {
-    if (DomCustomWidget *dcw = m_customWidgets.value(name, 0))
+    if (auto dcw = m_customWidgets.value(name, 0))
         return dcw->elementAddPageMethod();
     return QString();
 }

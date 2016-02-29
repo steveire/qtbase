@@ -46,15 +46,15 @@ static QByteArray cleaned(const QByteArray &input)
 {
     QByteArray result;
     result.reserve(input.size());
-    const char *data = input.constData();
-    const char *end = input.constData() + input.size();
-    char *output = result.data();
+    auto data = input.constData();
+    auto end = input.constData() + input.size();
+    auto output = result.data();
 
-    int newlines = 0;
+    auto newlines = 0;
     while (data != end) {
         while (data != end && is_space(*data))
             ++data;
-        bool takeLine = (*data == '#');
+        auto takeLine = (*data == '#');
         if (*data == '%' && *(data+1) == ':') {
             takeLine = true;
             ++data;
@@ -81,7 +81,7 @@ static QByteArray cleaned(const QByteArray &input)
                 ++data;
             }
 
-            char ch = *data;
+            auto ch = *data;
             if (ch == '\r') // os9: replace \r with \n
                 ch = '\n';
             *output = ch;
@@ -154,22 +154,22 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
     // input size and the final size of symbols.
     // This yielded a value of 16.x when compiling Qt Base.
     symbols.reserve(input.size() / 16);
-    const char *begin = input.constData();
-    const char *data = begin;
+    auto begin = input.constData();
+    auto data = begin;
     while (*data) {
         if (mode == TokenizeCpp || mode == TokenizeDefine) {
-            int column = 0;
+            auto column = 0;
 
-            const char *lexem = data;
-            int state = 0;
-            Token token = NOTOKEN;
+            auto lexem = data;
+            auto state = 0;
+            auto token = NOTOKEN;
             for (;;) {
                 if (static_cast<signed char>(*data) < 0) {
                     ++data;
                     continue;
                 }
                 int nextindex = keywords[state].next;
-                int next = 0;
+                auto next = 0;
                 if (*data == keywords[state].defchar)
                     next = keywords[state].defnext;
                 else if (!state || nextindex)
@@ -207,7 +207,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                         && !symbols.isEmpty()
                         && symbols.last().token == STRING_LITERAL) {
 
-                        QByteArray newString = symbols.last().unquotedLexem();
+                        auto newString = symbols.last().unquotedLexem();
                         newString += input.mid(lexem - begin + 1, data - lexem - 2);
                         newString.prepend('\"');
                         newString.append('\"');
@@ -286,7 +286,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                     continue;
                 case BACKSLASH:
                 {
-                    const char *rewind = data;
+                    auto rewind = data;
                     while (*data && (*data == ' ' || *data == '\t'))
                         ++data;
                     if (*data && *data == '\n') {
@@ -347,9 +347,9 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
 
         } else { //   Preprocessor
 
-            const char *lexem = data;
-            int state = 0;
-            Token token = NOTOKEN;
+            auto lexem = data;
+            auto state = 0;
+            auto token = NOTOKEN;
             if (mode == TokenizePreprocessorStatement) {
                 state = pp_keyword_trans[0][(int)'#'];
                 mode = TokenizePreprocessor;
@@ -361,7 +361,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                 }
 
                 int nextindex = pp_keywords[state].next;
-                int next = 0;
+                auto next = 0;
                 if (*data == pp_keywords[state].defchar)
                     next = pp_keywords[state].defnext;
                 else if (!state || nextindex)
@@ -493,7 +493,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                 break;
             case PP_BACKSLASH:
             {
-                const char *rewind = data;
+                auto rewind = data;
                 while (*data && (*data == ' ' || *data == '\t'))
                     ++data;
                 if (*data && *data == '\n') {
@@ -544,11 +544,11 @@ void Preprocessor::macroExpand(Symbols *into, Preprocessor *that, const Symbols 
 
     for (;;) {
         QByteArray macro;
-        Symbols newSyms = macroExpandIdentifier(that, symbols, lineNum, &macro);
+        auto newSyms = macroExpandIdentifier(that, symbols, lineNum, &macro);
 
         if (macro.isEmpty()) {
             // not a macro
-            Symbol s = symbols.symbol();
+            auto s = symbols.symbol();
             s.lineNum = lineNum;
             *into += s;
         } else {
@@ -572,7 +572,7 @@ void Preprocessor::macroExpand(Symbols *into, Preprocessor *that, const Symbols 
 
 Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &symbols, int lineNum, QByteArray *macroName)
 {
-    Symbol s = symbols.symbol();
+    auto s = symbols.symbol();
 
     // not a macro
     if (s.token != PP_IDENTIFIER || !that->macros.contains(s) || symbols.dontReplaceSymbol(s.lexem())) {
@@ -586,7 +586,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
     if (!macro.isFunction) {
         expansion = macro.symbols;
     } else {
-        bool haveSpace = false;
+        auto haveSpace = false;
         while (symbols.test(PP_WHITESPACE)) { haveSpace = true; }
         if (!symbols.test(PP_LPAREN)) {
             *macroName = QByteArray();
@@ -602,10 +602,10 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
             Symbols argument;
             // strip leading space
             while (symbols.test(PP_WHITESPACE)) {}
-            int nesting = 0;
-            bool vararg = macro.isVariadic && (arguments.size() == macro.arguments.size() - 1);
+            auto nesting = 0;
+            auto vararg = macro.isVariadic && (arguments.size() == macro.arguments.size() - 1);
             while (symbols.hasNext()) {
-                Token t = symbols.next();
+                auto t = symbols.next();
                 if (t == PP_LPAREN) {
                     ++nesting;
                 } else if (t == PP_RPAREN) {
@@ -637,19 +637,19 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
             HashHash
         } mode = Normal;
 
-        for (int i = 0; i < macro.symbols.size(); ++i) {
+        for (auto i = 0; i < macro.symbols.size(); ++i) {
             const Symbol &s = macro.symbols.at(i);
             if (s.token == HASH || s.token == PP_HASHHASH) {
                 mode = (s.token == HASH ? Hash : HashHash);
                 continue;
             }
-            int index = macro.arguments.indexOf(s);
+            auto index = macro.arguments.indexOf(s);
             if (mode == Normal) {
                 if (index >= 0 && index < arguments.size()) {
                     // each argument undoergoes macro expansion if it's not used as part of a # or ##
                     if (i == macro.symbols.size() - 1 || macro.symbols.at(i + 1).token != PP_HASHHASH) {
-                        Symbols arg = arguments.at(index);
-                        int idx = 1;
+                        auto arg = arguments.at(index);
+                        auto idx = 1;
                         macroExpand(&expansion, that, arg, idx, lineNum, false, symbols.excludeSymbols());
                     } else {
                         expansion += arguments.at(index);
@@ -668,7 +668,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
 
                 const Symbols &arg = arguments.at(index);
                 QByteArray stringified;
-                for (int i = 0; i < arg.size(); ++i) {
+                for (auto i = 0; i < arg.size(); ++i) {
                     stringified += arg.at(i).lexem();
                 }
                 stringified.replace('"', "\\\"");
@@ -682,7 +682,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                 while (expansion.size() && expansion.last().token == PP_WHITESPACE)
                     expansion.pop_back();
 
-                Symbol next = s;
+                auto next = s;
                 if (index >= 0 && index < arguments.size()) {
                     const Symbols &arg = arguments.at(index);
                     if (arg.size() == 0) {
@@ -693,7 +693,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                 }
 
                 if (!expansion.isEmpty() && expansion.last().token == s.token) {
-                    Symbol last = expansion.last();
+                    auto last = expansion.last();
                     expansion.pop_back();
 
                     if (last.token == STRING_LITERAL || s.token == STRING_LITERAL)
@@ -707,7 +707,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
 
                 if (index >= 0 && index < arguments.size()) {
                     const Symbols &arg = arguments.at(index);
-                    for (int i = 1; i < arg.size(); ++i)
+                    for (auto i = 1; i < arg.size(); ++i)
                         expansion += arg.at(i);
                 }
             }
@@ -724,13 +724,13 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
 void Preprocessor::substituteUntilNewline(Symbols &substituted)
 {
     while (hasNext()) {
-        Token token = next();
+        auto token = next();
         if (token == PP_IDENTIFIER) {
             macroExpand(&substituted, this, symbols, index, symbol().lineNum, true);
         } else if (token == PP_DEFINED) {
-            bool braces = test(PP_LPAREN);
+            auto braces = test(PP_LPAREN);
             next(PP_IDENTIFIER);
-            Symbol definedOrNotDefined = symbol();
+            auto definedOrNotDefined = symbol();
             definedOrNotDefined.token = macros.contains(definedOrNotDefined)? PP_MOC_TRUE : PP_MOC_FALSE;
             substituted += definedOrNotDefined;
             if (braces)
@@ -770,10 +770,10 @@ public:
 
 int PP_Expression::conditional_expression()
 {
-    int value = logical_OR_expression();
+    auto value = logical_OR_expression();
     if (test(PP_QUESTION)) {
-        int alt1 = conditional_expression();
-        int alt2 = test(PP_COLON) ? conditional_expression() : 0;
+        auto alt1 = conditional_expression();
+        auto alt2 = test(PP_COLON) ? conditional_expression() : 0;
         return value ? alt1 : alt2;
     }
     return value;
@@ -781,7 +781,7 @@ int PP_Expression::conditional_expression()
 
 int PP_Expression::logical_OR_expression()
 {
-    int value = logical_AND_expression();
+    auto value = logical_AND_expression();
     if (test(PP_OROR))
         return logical_OR_expression() || value;
     return value;
@@ -789,7 +789,7 @@ int PP_Expression::logical_OR_expression()
 
 int PP_Expression::logical_AND_expression()
 {
-    int value = inclusive_OR_expression();
+    auto value = inclusive_OR_expression();
     if (test(PP_ANDAND))
         return logical_AND_expression() && value;
     return value;
@@ -797,7 +797,7 @@ int PP_Expression::logical_AND_expression()
 
 int PP_Expression::inclusive_OR_expression()
 {
-    int value = exclusive_OR_expression();
+    auto value = exclusive_OR_expression();
     if (test(PP_OR))
         return value | inclusive_OR_expression();
     return value;
@@ -805,7 +805,7 @@ int PP_Expression::inclusive_OR_expression()
 
 int PP_Expression::exclusive_OR_expression()
 {
-    int value = AND_expression();
+    auto value = AND_expression();
     if (test(PP_HAT))
         return value ^ exclusive_OR_expression();
     return value;
@@ -813,7 +813,7 @@ int PP_Expression::exclusive_OR_expression()
 
 int PP_Expression::AND_expression()
 {
-    int value = equality_expression();
+    auto value = equality_expression();
     if (test(PP_AND))
         return value & AND_expression();
     return value;
@@ -821,7 +821,7 @@ int PP_Expression::AND_expression()
 
 int PP_Expression::equality_expression()
 {
-    int value = relational_expression();
+    auto value = relational_expression();
     switch (next()) {
     case PP_EQEQ:
         return value == equality_expression();
@@ -835,7 +835,7 @@ int PP_Expression::equality_expression()
 
 int PP_Expression::relational_expression()
 {
-    int value = shift_expression();
+    auto value = shift_expression();
     switch (next()) {
     case PP_LANGLE:
         return value < relational_expression();
@@ -853,7 +853,7 @@ int PP_Expression::relational_expression()
 
 int PP_Expression::shift_expression()
 {
-    int value = additive_expression();
+    auto value = additive_expression();
     switch (next()) {
     case PP_LTLT:
         return value << shift_expression();
@@ -867,7 +867,7 @@ int PP_Expression::shift_expression()
 
 int PP_Expression::additive_expression()
 {
-    int value = multiplicative_expression();
+    auto value = multiplicative_expression();
     switch (next()) {
     case PP_PLUS:
         return value + additive_expression();
@@ -881,18 +881,18 @@ int PP_Expression::additive_expression()
 
 int PP_Expression::multiplicative_expression()
 {
-    int value = unary_expression();
+    auto value = unary_expression();
     switch (next()) {
     case PP_STAR:
         return value * multiplicative_expression();
     case PP_PERCENT:
     {
-        int remainder = multiplicative_expression();
+        auto remainder = multiplicative_expression();
         return remainder ? value % remainder : 0;
     }
     case PP_SLASH:
     {
-        int div = multiplicative_expression();
+        auto div = multiplicative_expression();
         return div ? value / div : 0;
     }
     default:
@@ -924,7 +924,7 @@ int PP_Expression::unary_expression()
 
 bool PP_Expression::unary_expression_lookup()
 {
-    Token t = lookup();
+    auto t = lookup();
     return (primary_expression_lookup()
             || t == PP_PLUS
             || t == PP_MINUS
@@ -948,7 +948,7 @@ int PP_Expression::primary_expression()
 
 bool PP_Expression::primary_expression_lookup()
 {
-    Token t = lookup();
+    auto t = lookup();
     return (t == PP_IDENTIFIER
             || t == PP_INTEGER_LITERAL
             || t == PP_FLOATING_LITERAL
@@ -969,29 +969,29 @@ int Preprocessor::evaluateCondition()
 
 static QByteArray readOrMapFile(QFile *file)
 {
-    const qint64 size = file->size();
-    char *rawInput = reinterpret_cast<char*>(file->map(0, size));
+    const auto size = file->size();
+    auto rawInput = reinterpret_cast<char*>(file->map(0, size));
     return rawInput ? QByteArray::fromRawData(rawInput, size) : file->readAll();
 }
 
 static void mergeStringLiterals(Symbols *_symbols)
 {
     Symbols &symbols = *_symbols;
-    for (Symbols::iterator i = symbols.begin(); i != symbols.end(); ++i) {
+    for (auto i = symbols.begin(); i != symbols.end(); ++i) {
         if (i->token == STRING_LITERAL) {
-            Symbols::Iterator mergeSymbol = i;
-            int literalsLength = mergeSymbol->len;
+            auto mergeSymbol = i;
+            auto literalsLength = mergeSymbol->len;
             while (++i != symbols.end() && i->token == STRING_LITERAL)
                 literalsLength += i->len - 2; // no quotes
 
             if (literalsLength != mergeSymbol->len) {
-                QByteArray mergeSymbolOriginalLexem = mergeSymbol->unquotedLexem();
+                auto mergeSymbolOriginalLexem = mergeSymbol->unquotedLexem();
                 QByteArray &mergeSymbolLexem = mergeSymbol->lex;
                 mergeSymbolLexem.resize(0);
                 mergeSymbolLexem.reserve(literalsLength);
                 mergeSymbolLexem.append('"');
                 mergeSymbolLexem.append(mergeSymbolOriginalLexem);
-                for (Symbols::const_iterator j = mergeSymbol + 1; j != i; ++j)
+                for (auto j = mergeSymbol + 1; j != i; ++j)
                     mergeSymbolLexem.append(j->lex.constData() + j->from + 1, j->len - 2); // append j->unquotedLexem()
                 mergeSymbolLexem.append('"');
                 mergeSymbol->len = mergeSymbol->lex.length();
@@ -1009,14 +1009,14 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
     currentFilenames.push(filename);
     preprocessed.reserve(preprocessed.size() + symbols.size());
     while (hasNext()) {
-        Token token = next();
+        auto token = next();
 
         switch (token) {
         case PP_INCLUDE:
         {
-            int lineNum = symbol().lineNum;
+            auto lineNum = symbol().lineNum;
             QByteArray include;
-            bool local = false;
+            auto local = false;
             if (test(PP_STRING_LITERAL)) {
                 local = lexem().startsWith('\"');
                 include = unquotedLexem();
@@ -1028,13 +1028,13 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
             QFileInfo fi;
             if (local)
                 fi.setFile(QFileInfo(QString::fromLocal8Bit(filename.constData())).dir(), QString::fromLocal8Bit(include.constData()));
-            for (int j = 0; j < Preprocessor::includes.size() && !fi.exists(); ++j) {
+            for (auto j = 0; j < Preprocessor::includes.size() && !fi.exists(); ++j) {
                 const IncludePath &p = Preprocessor::includes.at(j);
                 if (p.isFrameworkPath) {
-                    const int slashPos = include.indexOf('/');
+                    const auto slashPos = include.indexOf('/');
                     if (slashPos == -1)
                         continue;
-                    QByteArray frameworkCandidate = include.left(slashPos);
+                    auto frameworkCandidate = include.left(slashPos);
                     frameworkCandidate.append(".framework/Headers/");
                     fi.setFile(QString::fromLocal8Bit(QByteArray(p.path + '/' + frameworkCandidate).constData()), QString::fromLocal8Bit(include.mid(slashPos + 1).constData()));
                 } else {
@@ -1060,14 +1060,14 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
             if (!file.open(QFile::ReadOnly))
                 continue;
 
-            QByteArray input = readOrMapFile(&file);
+            auto input = readOrMapFile(&file);
 
             file.close();
             if (input.isEmpty())
                 continue;
 
-            Symbols saveSymbols = symbols;
-            int saveIndex = index;
+            auto saveSymbols = symbols;
+            auto saveIndex = index;
 
             // phase 1: get rid of backslash-newlines
             input = cleaned(input);
@@ -1090,10 +1090,10 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
         case PP_DEFINE:
         {
             next(IDENTIFIER);
-            QByteArray name = lexem();
+            auto name = lexem();
             Macro macro;
             macro.isVariadic = false;
-            Token t = next();
+            auto t = next();
             if (t == LPAREN) {
                 // we have a function macro
                 macro.isFunction = true;
@@ -1103,15 +1103,15 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
             } else {
                 error("Moc: internal error");
             }
-            int start = index;
+            auto start = index;
             until(PP_NEWLINE);
             macro.symbols.reserve(index - start - 1);
 
             // remove whitespace where there shouldn't be any:
             // Before and after the macro, after a # and around ##
-            Token lastToken = HASH; // skip shitespace at the beginning
-            for (int i = start; i < index - 1; ++i) {
-                Token token = symbols.at(i).token;
+            auto lastToken = HASH; // skip shitespace at the beginning
+            for (auto i = start; i < index - 1; ++i) {
+                auto token = symbols.at(i).token;
                 if (token ==  PP_WHITESPACE || token == WHITESPACE) {
                     if (lastToken == PP_HASH || lastToken == HASH ||
                         lastToken == PP_HASHHASH ||
@@ -1141,7 +1141,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
         }
         case PP_UNDEF: {
             next(IDENTIFIER);
-            QByteArray name = lexem();
+            auto name = lexem();
             until(PP_NEWLINE);
             macros.remove(name);
             continue;
@@ -1178,7 +1178,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
             continue;
         case SIGNALS:
         case SLOTS: {
-            Symbol sym = symbol();
+            auto sym = symbol();
             if (macros.contains("QT_NO_KEYWORDS"))
                 sym.token = IDENTIFIER;
             else
@@ -1196,7 +1196,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
 
 Symbols Preprocessor::preprocessed(const QByteArray &filename, QFile *file)
 {
-    QByteArray input = readOrMapFile(file);
+    auto input = readOrMapFile(file);
 
     if (input.isEmpty())
         return symbols;
@@ -1240,11 +1240,11 @@ void Preprocessor::parseDefineArguments(Macro *m)
     Symbols arguments;
     while (hasNext()) {
         while (test(PP_WHITESPACE)) {}
-        Token t = next();
+        auto t = next();
         if (t == PP_RPAREN)
             break;
         if (t != PP_IDENTIFIER) {
-            QByteArray l = lexem();
+            auto l = lexem();
             if (l == "...") {
                 m->isVariadic = true;
                 arguments += Symbol(symbol().lineNum, PP_IDENTIFIER, "__VA_ARGS__");
@@ -1258,7 +1258,7 @@ void Preprocessor::parseDefineArguments(Macro *m)
             }
         }
 
-        Symbol arg = symbol();
+        auto arg = symbol();
         if (arguments.contains(arg))
             error("Duplicate macro parameter.");
         arguments += symbol();

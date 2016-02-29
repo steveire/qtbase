@@ -81,8 +81,8 @@ void WriteIconInitialization::acceptImages(DomImages *images)
 void WriteIconInitialization::acceptImage(DomImage *image)
 {
     QString img = image->attributeName() + QLatin1String("_data");
-    QString data = image->elementData()->text();
-    QString fmt = image->elementData()->attributeFormat();
+    auto data = image->elementData()->text();
+    auto fmt = image->elementData()->attributeFormat();
 
     QString imageId = image->attributeName() + QLatin1String("_ID");
     QString imageData = image->attributeName() + QLatin1String("_data");

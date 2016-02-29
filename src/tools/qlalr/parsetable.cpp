@@ -39,19 +39,19 @@ ParseTable::ParseTable (QTextStream &o):
 
 void ParseTable::operator () (Automaton *aut)
 {
-  Grammar *g = aut->_M_grammar;
+  auto g = aut->_M_grammar;
 
-  int rindex = 1;
-  for (RulePointer rule = g->rules.begin (); rule != g->rules.end (); ++rule)
+  auto rindex = 1;
+  for (auto rule = g->rules.begin (); rule != g->rules.end (); ++rule)
     out << rindex++ << ")\t" << *rule << endl;
   out << endl << endl;
 
-  int index = 0;
-  for (StatePointer state = aut->states.begin (); state != aut->states.end (); ++state)
+  auto index = 0;
+  for (auto state = aut->states.begin (); state != aut->states.end (); ++state)
     {
       out << "state " << index++ << endl << endl;
 
-      for (ItemPointer item = state->kernel.begin (); item != state->kernel.end (); ++item)
+      for (auto item = state->kernel.begin (); item != state->kernel.end (); ++item)
         {
           out << " *  " << *item;
 
@@ -61,8 +61,8 @@ void ParseTable::operator () (Automaton *aut)
           out << endl;
         }
 
-      bool first = true;
-      for (Bundle::iterator arrow = state->bundle.begin (); arrow != state->bundle.end (); ++arrow)
+      auto first = true;
+      for (auto arrow = state->bundle.begin (); arrow != state->bundle.end (); ++arrow)
         {
           if (! g->isTerminal (arrow.key ()))
             continue;
@@ -76,7 +76,7 @@ void ParseTable::operator () (Automaton *aut)
         }
 
       first = true;
-      for (ItemPointer item = state->closure.begin (); item != state->closure.end (); ++item)
+      for (auto item = state->closure.begin (); item != state->closure.end (); ++item)
         {
           if (item->dot != item->end_rhs () || item->rule == state->defaultReduce)
             continue;
@@ -92,7 +92,7 @@ void ParseTable::operator () (Automaton *aut)
         }
 
       first = true;
-      for (Bundle::iterator arrow = state->bundle.begin (); arrow != state->bundle.end (); ++arrow)
+      for (auto arrow = state->bundle.begin (); arrow != state->bundle.end (); ++arrow)
         {
           if (! g->isNonTerminal (arrow.key ()))
             continue;

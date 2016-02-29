@@ -34,7 +34,7 @@ QT_BEGIN_NAMESPACE
 void TreeWalker::acceptUI(DomUI *ui)
 {
     acceptWidget(ui->elementWidget());
-    if (const DomButtonGroups *domButtonGroups = ui->elementButtonGroups())
+    if (auto domButtonGroups = ui->elementButtonGroups())
         acceptButtonGroups(domButtonGroups);
 
     acceptTabStops(ui->elementTabStops());
@@ -60,10 +60,10 @@ void TreeWalker::acceptTabStops(DomTabStops *tabStops)
 
 void TreeWalker::acceptLayout(DomLayout *layout)
 {
-    for (int i=0; i<layout->elementProperty().size(); ++i)
+    for (auto i=0; i<layout->elementProperty().size(); ++i)
         acceptProperty(layout->elementProperty().at(i));
 
-    for (int i=0; i<layout->elementItem().size(); ++i)
+    for (auto i=0; i<layout->elementItem().size(); ++i)
         acceptLayoutItem(layout->elementItem().at(i));
 }
 
@@ -88,24 +88,24 @@ void TreeWalker::acceptLayoutItem(DomLayoutItem *layoutItem)
 
 void TreeWalker::acceptWidget(DomWidget *widget)
 {
-    for (int i=0; i<widget->elementAction().size(); ++i)
+    for (auto i=0; i<widget->elementAction().size(); ++i)
         acceptAction(widget->elementAction().at(i));
 
-    for (int i=0; i<widget->elementActionGroup().size(); ++i)
+    for (auto i=0; i<widget->elementActionGroup().size(); ++i)
         acceptActionGroup(widget->elementActionGroup().at(i));
 
-    for (int i=0; i<widget->elementAddAction().size(); ++i)
+    for (auto i=0; i<widget->elementAddAction().size(); ++i)
         acceptActionRef(widget->elementAddAction().at(i));
 
-    for (int i=0; i<widget->elementProperty().size(); ++i)
+    for (auto i=0; i<widget->elementProperty().size(); ++i)
         acceptProperty(widget->elementProperty().at(i));
 
 
 
     // recurse down
     DomWidgets childWidgets;
-    for (int i=0; i<widget->elementWidget().size(); ++i) {
-        DomWidget *child = widget->elementWidget().at(i);
+    for (auto i=0; i<widget->elementWidget().size(); ++i) {
+        auto child = widget->elementWidget().at(i);
         childWidgets += child;
         acceptWidget(child);
     }
@@ -119,7 +119,7 @@ void TreeWalker::acceptWidget(DomWidget *widget)
 
 void TreeWalker::acceptSpacer(DomSpacer *spacer)
 {
-    for (int i=0; i<spacer->elementProperty().size(); ++i)
+    for (auto i=0; i<spacer->elementProperty().size(); ++i)
         acceptProperty(spacer->elementProperty().at(i));
 }
 
@@ -223,7 +223,7 @@ void TreeWalker::acceptProperty(DomProperty *property)
 
 void TreeWalker::acceptCustomWidgets(DomCustomWidgets *customWidgets)
 {
-    for (int i=0; i<customWidgets->elementCustomWidget().size(); ++i)
+    for (auto i=0; i<customWidgets->elementCustomWidget().size(); ++i)
         acceptCustomWidget(customWidgets->elementCustomWidget().at(i));
 }
 
@@ -239,10 +239,10 @@ void TreeWalker::acceptAction(DomAction *action)
 
 void TreeWalker::acceptActionGroup(DomActionGroup *actionGroup)
 {
-    for (int i=0; i<actionGroup->elementAction().size(); ++i)
+    for (auto i=0; i<actionGroup->elementAction().size(); ++i)
         acceptAction(actionGroup->elementAction().at(i));
 
-    for (int i=0; i<actionGroup->elementActionGroup().size(); ++i)
+    for (auto i=0; i<actionGroup->elementActionGroup().size(); ++i)
         acceptActionGroup(actionGroup->elementActionGroup().at(i));
 }
 
@@ -253,7 +253,7 @@ void TreeWalker::acceptActionRef(DomActionRef *actionRef)
 
 void TreeWalker::acceptImages(DomImages *images)
 {
-    for (int i=0; i<images->elementImage().size(); ++i)
+    for (auto i=0; i<images->elementImage().size(); ++i)
         acceptImage(images->elementImage().at(i));
 }
 
@@ -264,7 +264,7 @@ void TreeWalker::acceptImage(DomImage *image)
 
 void TreeWalker::acceptIncludes(DomIncludes *includes)
 {
-    for (int i=0; i<includes->elementInclude().size(); ++i)
+    for (auto i=0; i<includes->elementInclude().size(); ++i)
         acceptInclude(includes->elementInclude().at(i));
 }
 
@@ -275,7 +275,7 @@ void TreeWalker::acceptInclude(DomInclude *incl)
 
 void TreeWalker::acceptConnections(DomConnections *connections)
 {
-    for (int i=0; i<connections->elementConnection().size(); ++i)
+    for (auto i=0; i<connections->elementConnection().size(); ++i)
         acceptConnection(connections->elementConnection().at(i));
 }
 
@@ -286,7 +286,7 @@ void TreeWalker::acceptConnection(DomConnection *connection)
 
 void TreeWalker::acceptConnectionHints(DomConnectionHints *connectionHints)
 {
-    for (int i=0; i<connectionHints->elementHint().size(); ++i)
+    for (auto i=0; i<connectionHints->elementHint().size(); ++i)
         acceptConnectionHint(connectionHints->elementHint().at(i));
 }
 
@@ -302,9 +302,9 @@ void TreeWalker::acceptWidgetScripts(const DomScripts &, DomWidget *, const  Dom
 void TreeWalker::acceptButtonGroups(const DomButtonGroups *domButtonGroups)
 {
     typedef QList<DomButtonGroup*> DomButtonGroupList;
-    const DomButtonGroupList domGroups = domButtonGroups->elementButtonGroup();
-    const DomButtonGroupList::const_iterator cend = domGroups.constEnd();
-    for (DomButtonGroupList::const_iterator it = domGroups.constBegin(); it != cend; ++it)
+    const auto domGroups = domButtonGroups->elementButtonGroup();
+    const auto cend = domGroups.constEnd();
+    for (auto it = domGroups.constBegin(); it != cend; ++it)
         acceptButtonGroup(*it);
 }
 

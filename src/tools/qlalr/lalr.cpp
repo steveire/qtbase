@@ -92,7 +92,7 @@ QTextStream &operator << (QTextStream &out, const Rule &r)
 {
   out << *r.lhs << " ::=";
 
-  for (NameList::const_iterator name = r.rhs.begin (); name != r.rhs.end (); ++name)
+  for (auto name = r.rhs.begin (); name != r.rhs.end (); ++name)
     out << " " << **name;
 
   return out;
@@ -102,7 +102,7 @@ QTextStream &operator << (QTextStream &out, const NameSet &ns)
 {
   out << "{";
 
-  for (NameSet::const_iterator n = ns.begin (); n != ns.end (); ++n)
+  for (auto n = ns.begin (); n != ns.end (); ++n)
     {
       if (n != ns.begin ())
         out << ", ";
@@ -127,10 +127,10 @@ Item Item::next () const
 
 QTextStream &operator << (QTextStream &out, const Item &item)
 {
-  RulePointer r = item.rule;
+  auto r = item.rule;
 
   out << *r->lhs << ":";
-  for (NameList::iterator name = r->rhs.begin (); name != r->rhs.end (); ++name)
+  for (auto name = r->rhs.begin (); name != r->rhs.end (); ++name)
     {
       out << " ";
 
@@ -153,7 +153,7 @@ State::State (Grammar *g):
 
 QPair<ItemPointer, bool> State::insert (const Item &item)
 {
-  ItemPointer it = std::find (kernel.begin (), kernel.end (), item);
+  auto it = std::find (kernel.begin (), kernel.end (), item);
 
   if (it != kernel.end ())
     return qMakePair (it, false);
@@ -163,7 +163,7 @@ QPair<ItemPointer, bool> State::insert (const Item &item)
 
 QPair<ItemPointer, bool> State::insertClosure (const Item &item)
 {
-  ItemPointer it = std::find (closure.begin (), closure.end (), item);
+  auto it = std::find (closure.begin (), closure.end (), item);
 
   if (it != closure.end ())
     return qMakePair (it, false);
@@ -194,7 +194,7 @@ Grammar::Grammar ():
 
 Name Grammar::intern (const QString &id)
 {
-  Name name = std::find (names.begin (), names.end (), id);
+  auto name = std::find (names.begin (), names.end (), id);
 
   if (name == names.end ())
     name = names.insert (names.end (), id);
@@ -205,11 +205,11 @@ Name Grammar::intern (const QString &id)
 void Grammar::buildRuleMap ()
 {
   NameSet undefined;
-  for (RulePointer rule = rules.begin (); rule != rules.end (); ++rule)
+  for (auto rule = rules.begin (); rule != rules.end (); ++rule)
     {
-      for (NameList::iterator it = rule->rhs.begin (); it != rule->rhs.end (); ++it)
+      for (auto it = rule->rhs.begin (); it != rule->rhs.end (); ++it)
         {
-          Name name = *it;
+          auto name = *it;
           if (isTerminal (name) || declared_lhs.find (name) != declared_lhs.end ()
               || undefined.find (name) != undefined.end ())
             continue;
@@ -287,15 +287,15 @@ void Automaton::build ()
 
 void Automaton::buildNullables ()
 {
-  bool changed = true;
+  auto changed = true;
 
   while (changed)
     {
       changed = false;
 
-      for (RulePointer rule = _M_grammar->rules.begin (); rule != _M_grammar->rules.end (); ++rule)
+      for (auto rule = _M_grammar->rules.begin (); rule != _M_grammar->rules.end (); ++rule)
         {
-          NameList::iterator nn = std::find_if (rule->rhs.begin (), rule->rhs.end (), std::not1 (Nullable (this)));
+          auto nn = std::find_if (rule->rhs.begin (), rule->rhs.end (), std::not1 (Nullable (this)));
 
           if (nn == rule->rhs.end ())
             changed |= nullables.insert (rule->lhs).second;
@@ -309,7 +309,7 @@ void Automaton::buildNullables ()
 
 QPair<StatePointer, bool> Automaton::internState (const State &state)
 {
-  StatePointer it = std::find (states.begin (), states.end (), state);
+  auto it = std::find (states.begin (), states.end (), state);
 
   if (it != states.end ())
     return qMakePair (it, false);
@@ -328,7 +328,7 @@ struct _Bucket
   {
     State st (aut->_M_grammar);
 
-    for (QLinkedList<ItemPointer>::iterator item = items.begin (); item != items.end (); ++item)
+    for (auto item = items.begin (); item != items.end (); ++item)
       st.insert ((*item)->next ());
 
     return st;
@@ -345,14 +345,14 @@ void Automaton::closure (StatePointer state)
   bucket_map_type buckets;
   QStack<ItemPointer> working_list;
 
-  for (ItemPointer item = state->kernel.begin (); item != state->kernel.end (); ++item)
+  for (auto item = state->kernel.begin (); item != state->kernel.end (); ++item)
     working_list.push (item);
 
   state->closure = state->kernel;
 
   while (! working_list.empty ())
     {
-      ItemPointer item = working_list.top ();
+      auto item = working_list.top ();
       working_list.pop ();
 
       if (item->isReduceItem ())
@@ -370,7 +370,7 @@ void Automaton::closure (StatePointer state)
               ii.rule = rule;
               ii.dot = rule->rhs.begin ();
 
-              QPair<ItemPointer, bool> r = state->insertClosure (ii);
+              auto r = state->insertClosure (ii);
 
               if (r.second)
                 working_list.push (r.first);
@@ -380,11 +380,11 @@ void Automaton::closure (StatePointer state)
 
   QList<StatePointer> todo;
 
-  for (bucket_map_type::iterator bucket = buckets.begin (); bucket != buckets.end (); ++bucket)
+  for (auto bucket = buckets.begin (); bucket != buckets.end (); ++bucket)
     {
-      QPair<StatePointer, bool> r = internState (bucket->toState (this));
+      auto r = internState (bucket->toState (this));
 
-      StatePointer target = r.first;
+      auto target = r.first;
 
       if (r.second)
         todo.push_back (target);
@@ -401,11 +401,11 @@ void Automaton::closure (StatePointer state)
 
 void Automaton::buildLookbackSets ()
 {
-  for (StatePointer p = states.begin (); p != states.end (); ++p)
+  for (auto p = states.begin (); p != states.end (); ++p)
     {
-      for (Bundle::iterator a = p->bundle.begin (); a != p->bundle.end (); ++a)
+      for (auto a = p->bundle.begin (); a != p->bundle.end (); ++a)
         {
-          Name A = a.key ();
+          auto A = a.key ();
 
           if (! _M_grammar->isNonTerminal (A))
             continue;
@@ -414,14 +414,14 @@ void Automaton::buildLookbackSets ()
           for (auto it = range.first; it != range.second; ++it)
             {
               const RulePointer &rule = *it;
-              StatePointer q = p;
+              auto q = p;
 
-              for (NameList::iterator dot = rule->rhs.begin (); dot != rule->rhs.end (); ++dot)
+              for (auto dot = rule->rhs.begin (); dot != rule->rhs.end (); ++dot)
                 q = q->bundle.value (*dot, states.end ());
 
               Q_ASSERT (q != states.end ());
 
-              ItemPointer item = q->closure.begin ();
+              auto item = q->closure.begin ();
 
               for (; item != q->closure.end (); ++item)
                 {
@@ -455,18 +455,18 @@ void Automaton::buildLookbackSets ()
 
 void Automaton::buildDirectReads ()
 {
-  for (StatePointer q = states.begin (); q != states.end (); ++q)
+  for (auto q = states.begin (); q != states.end (); ++q)
     {
-      for (Bundle::iterator a = q->bundle.begin (); a != q->bundle.end (); ++a)
+      for (auto a = q->bundle.begin (); a != q->bundle.end (); ++a)
         {
           if (! _M_grammar->isNonTerminal (a.key ()))
             continue;
 
-          StatePointer r = a.value ();
+          auto r = a.value ();
 
-          for (Bundle::iterator z = r->bundle.begin (); z != r->bundle.end (); ++z)
+          for (auto z = r->bundle.begin (); z != r->bundle.end (); ++z)
             {
-              Name sym = z.key ();
+              auto sym = z.key ();
 
               if (! _M_grammar->isTerminal (sym))
                 continue;
@@ -484,24 +484,24 @@ void Automaton::buildDirectReads ()
 
 void Automaton::buildReadsDigraph ()
 {
-  for (StatePointer q = states.begin (); q != states.end (); ++q)
+  for (auto q = states.begin (); q != states.end (); ++q)
     {
-      for (Bundle::iterator a = q->bundle.begin (); a != q->bundle.end (); ++a)
+      for (auto a = q->bundle.begin (); a != q->bundle.end (); ++a)
         {
           if (! _M_grammar->isNonTerminal (a.key ()))
             continue;
 
-          StatePointer r = a.value ();
+          auto r = a.value ();
 
-          for (Bundle::iterator z = r->bundle.begin (); z != r->bundle.end (); ++z)
+          for (auto z = r->bundle.begin (); z != r->bundle.end (); ++z)
             {
-              Name sym = z.key ();
+              auto sym = z.key ();
 
               if (! _M_grammar->isNonTerminal(sym) || nullables.find (sym) == nullables.end ())
                 continue;
 
-              ReadsGraph::iterator source = ReadsGraph::get (Read (q, a.key ()));
-              ReadsGraph::iterator target = ReadsGraph::get (Read (r, sym));
+              auto source = ReadsGraph::get (Read (q, a.key ()));
+              auto target = ReadsGraph::get (Read (r, sym));
 
               source->insertEdge (target);
 
@@ -524,7 +524,7 @@ void Automaton::buildReads ()
 
   _M_reads_dfn = 0;
 
-  for (ReadsGraph::iterator node = ReadsGraph::begin_nodes (); node != ReadsGraph::end_nodes (); ++node)
+  for (auto node = ReadsGraph::begin_nodes (); node != ReadsGraph::end_nodes (); ++node)
     {
       if (! node->root)
         continue;
@@ -532,7 +532,7 @@ void Automaton::buildReads ()
       visitReadNode (node);
     }
 
-  for (ReadsGraph::iterator node = ReadsGraph::begin_nodes (); node != ReadsGraph::end_nodes (); ++node)
+  for (auto node = ReadsGraph::begin_nodes (); node != ReadsGraph::end_nodes (); ++node)
     visitReadNode (node);
 }
 
@@ -541,16 +541,16 @@ void Automaton::visitReadNode (ReadNode node)
   if (node->dfn != 0)
     return; // nothing to do
 
-  int N = node->dfn = ++_M_reads_dfn;
+  auto N = node->dfn = ++_M_reads_dfn;
   _M_reads_stack.push (node);
 
 #ifndef QLALR_NO_DEBUG_INCLUDES
   // qerr << "*** Debug. visit node (" << id (node->data.state) << ", " << node->data.nt << ")  N = " << N << endl;
 #endif
 
-  for (ReadsGraph::edge_iterator edge = node->begin (); edge != node->end (); ++edge)
+  for (auto edge = node->begin (); edge != node->end (); ++edge)
     {
-      ReadsGraph::iterator r = *edge;
+      auto r = *edge;
 
       visitReadNode (r);
 
@@ -563,7 +563,7 @@ void Automaton::visitReadNode (ReadNode node)
 
   if (node->dfn == N)
     {
-      ReadsGraph::iterator tos = _M_reads_stack.top ();
+      auto tos = _M_reads_stack.top ();
 
       do {
         tos = _M_reads_stack.top ();
@@ -575,14 +575,14 @@ void Automaton::visitReadNode (ReadNode node)
 
 void Automaton::buildIncludesAndFollows ()
 {
-  for (StatePointer p = states.begin (); p != states.end (); ++p)
+  for (auto p = states.begin (); p != states.end (); ++p)
     p->follows = p->reads;
 
   buildIncludesDigraph ();
 
   _M_includes_dfn = 0;
 
-  for (IncludesGraph::iterator node = IncludesGraph::begin_nodes (); node != IncludesGraph::end_nodes (); ++node)
+  for (auto node = IncludesGraph::begin_nodes (); node != IncludesGraph::end_nodes (); ++node)
     {
       if (! node->root)
         continue;
@@ -590,17 +590,17 @@ void Automaton::buildIncludesAndFollows ()
       visitIncludeNode (node);
     }
 
-  for (IncludesGraph::iterator node = IncludesGraph::begin_nodes (); node != IncludesGraph::end_nodes (); ++node)
+  for (auto node = IncludesGraph::begin_nodes (); node != IncludesGraph::end_nodes (); ++node)
     visitIncludeNode (node);
 }
 
 void Automaton::buildIncludesDigraph ()
 {
-  for (StatePointer pp = states.begin (); pp != states.end (); ++pp)
+  for (auto pp = states.begin (); pp != states.end (); ++pp)
     {
-      for (Bundle::iterator a = pp->bundle.begin (); a != pp->bundle.end (); ++a)
+      for (auto a = pp->bundle.begin (); a != pp->bundle.end (); ++a)
         {
-          Name name = a.key ();
+          auto name = a.key ();
 
           if (! _M_grammar->isNonTerminal (name))
             continue;
@@ -609,18 +609,18 @@ void Automaton::buildIncludesDigraph ()
           for (auto it = range.first; it != range.second; ++it)
             {
               const RulePointer &rule = *it;
-              StatePointer p = pp;
+              auto p = pp;
 
-              for (NameList::iterator A = rule->rhs.begin (); A != rule->rhs.end (); ++A)
+              for (auto A = rule->rhs.begin (); A != rule->rhs.end (); ++A)
                 {
-                  NameList::iterator dot = A;
+                  auto dot = A;
                   ++dot;
 
                   if (_M_grammar->isNonTerminal (*A) && dot == rule->rhs.end ())
                     {
                       // found an include edge.
-                      IncludesGraph::iterator target = IncludesGraph::get (Include (pp, name));
-                      IncludesGraph::iterator source = IncludesGraph::get (Include (p, *A));
+                      auto target = IncludesGraph::get (Include (pp, name));
+                      auto source = IncludesGraph::get (Include (p, *A));
 
                       source->insertEdge (target);
 
@@ -636,13 +636,13 @@ void Automaton::buildIncludesDigraph ()
                   if (! _M_grammar->isNonTerminal (*A))
                     continue;
 
-                  NameList::iterator first_not_nullable = std::find_if (dot, rule->rhs.end (), std::not1 (Nullable (this)));
+                  auto first_not_nullable = std::find_if (dot, rule->rhs.end (), std::not1 (Nullable (this)));
                   if (first_not_nullable != rule->rhs.end ())
                     continue;
 
                   // found an include edge.
-                  IncludesGraph::iterator target = IncludesGraph::get (Include (pp, name));
-                  IncludesGraph::iterator source = IncludesGraph::get (Include (p, *A));
+                  auto target = IncludesGraph::get (Include (pp, name));
+                  auto source = IncludesGraph::get (Include (p, *A));
 
                   source->insertEdge (target);
 
@@ -660,16 +660,16 @@ void Automaton::visitIncludeNode (IncludeNode node)
   if (node->dfn != 0)
     return; // nothing to do
 
-  int N = node->dfn = ++_M_includes_dfn;
+  auto N = node->dfn = ++_M_includes_dfn;
   _M_includes_stack.push (node);
 
 #ifndef QLALR_NO_DEBUG_INCLUDES
   // qerr << "*** Debug. visit node (" << id (node->data.state) << ", " << node->data.nt << ")  N = " << N << endl;
 #endif
 
-  for (IncludesGraph::edge_iterator edge = node->begin (); edge != node->end (); ++edge)
+  for (auto edge = node->begin (); edge != node->end (); ++edge)
     {
-      IncludesGraph::iterator r = *edge;
+      auto r = *edge;
 
       visitIncludeNode (r);
 
@@ -691,7 +691,7 @@ void Automaton::visitIncludeNode (IncludeNode node)
 
   if (node->dfn == N)
     {
-      IncludesGraph::iterator tos = _M_includes_stack.top ();
+      auto tos = _M_includes_stack.top ();
 
       do {
         tos = _M_includes_stack.top ();
@@ -703,15 +703,15 @@ void Automaton::visitIncludeNode (IncludeNode node)
 
 void Automaton::buildLookaheads ()
 {
-  for (StatePointer p = states.begin (); p != states.end (); ++p)
+  for (auto p = states.begin (); p != states.end (); ++p)
     {
-      for (ItemPointer item = p->closure.begin (); item != p->closure.end (); ++item)
+      for (auto item = p->closure.begin (); item != p->closure.end (); ++item)
         {
           const auto range = qAsConst(lookbacks).equal_range(item);
           for (auto it = range.first; it != range.second; ++it)
             {
               const Lookback &lookback = *it;
-              StatePointer q = lookback.state;
+              auto q = lookback.state;
 
 #ifndef QLALR_NO_DEBUG_LOOKAHEADS
               qerr << "(" << id (p) << ", " << *item->rule << ") lookbacks ";
@@ -724,8 +724,8 @@ void Automaton::buildLookaheads ()
         }
 
       // propagate the lookahead in the kernel
-      ItemPointer k = p->kernel.begin ();
-      ItemPointer c = p->closure.begin ();
+      auto k = p->kernel.begin ();
+      auto c = p->closure.begin ();
 
       for (; k != p->kernel.end (); ++k, ++c)
         lookaheads [k] = lookaheads [c];
@@ -734,17 +734,17 @@ void Automaton::buildLookaheads ()
 
 void Automaton::buildDefaultReduceActions ()
 {
-  for (StatePointer state = states.begin (); state != states.end (); ++state)
+  for (auto state = states.begin (); state != states.end (); ++state)
     {
-      ItemPointer def = state->closure.end ();
-      int size = -1;
+      auto def = state->closure.end ();
+      auto size = -1;
 
-      for (ItemPointer item = state->closure.begin (); item != state->closure.end (); ++item)
+      for (auto item = state->closure.begin (); item != state->closure.end (); ++item)
         {
           if (item->dot != item->end_rhs ())
             continue;
 
-          int la = lookaheads.value (item).size ();
+          auto la = lookaheads.value (item).size ();
           if (def == state->closure.end () || la > size)
             {
               def = item;

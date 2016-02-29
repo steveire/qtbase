@@ -135,7 +135,7 @@ int runUic(int argc, char *argv[])
         out->setCodec(QTextCodec::codecForName("UTF-8"));
     }
 
-    bool rtn = driver.uic(inputFile, out);
+    auto rtn = driver.uic(inputFile, out);
     delete out;
 
     if (!rtn) {
