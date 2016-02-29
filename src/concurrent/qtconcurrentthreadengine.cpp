@@ -51,7 +51,7 @@ ThreadEngineBarrier::ThreadEngineBarrier()
 void ThreadEngineBarrier::acquire()
 {
     forever {
-        int localCount = count.load();
+        auto localCount = count.load();
         if (localCount < 0) {
             if (count.testAndSetOrdered(localCount, localCount -1))
                 return;
@@ -65,7 +65,7 @@ void ThreadEngineBarrier::acquire()
 int ThreadEngineBarrier::release()
 {
     forever {
-        int localCount = count.load();
+        auto localCount = count.load();
         if (localCount == -1) {
             if (count.testAndSetOrdered(-1, 0)) {
                 semaphore.release();
@@ -85,7 +85,7 @@ int ThreadEngineBarrier::release()
 void ThreadEngineBarrier::wait()
 {
     forever {
-        int localCount = count.load();
+        auto localCount = count.load();
         if (localCount == 0)
             return;
 
@@ -107,7 +107,7 @@ int ThreadEngineBarrier::currentCount()
 bool ThreadEngineBarrier::releaseUnlessLast()
 {
     forever {
-        int localCount = count.load();
+        auto localCount = count.load();
         if (qAbs(localCount) == 1) {
             return false;
         } else if (localCount < 0) {
@@ -142,7 +142,7 @@ void ThreadEngineBase::startBlocking()
     barrier.acquire();
     startThreads();
 
-    bool throttled = false;
+    auto throttled = false;
 #ifndef QT_NO_EXCEPTIONS
     try {
 #endif
@@ -232,7 +232,7 @@ void ThreadEngineBase::startThreads()
 
 void ThreadEngineBase::threadExit()
 {
-    const bool asynchronous = futureInterface != 0;
+    const auto asynchronous = futureInterface != 0;
     const int lastThread = (barrier.release() == 0);
 
     if (lastThread && asynchronous)

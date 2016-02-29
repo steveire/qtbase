@@ -89,7 +89,7 @@ static qint64 getticks()
 #  if (_POSIX_THREAD_CPUTIME-0 == 0)
     // detect availablility of CLOCK_THREAD_CPUTIME_ID
     static QBasicAtomicInt sUseThreadCpuTime = Q_BASIC_ATOMIC_INITIALIZER(-2);
-    int useThreadCpuTime = sUseThreadCpuTime.load();
+    auto useThreadCpuTime = sUseThreadCpuTime.load();
     if (useThreadCpuTime == -2) {
         // sysconf() will return either -1L or _POSIX_VERSION
         // (don't care about sysconf's exact return value)
