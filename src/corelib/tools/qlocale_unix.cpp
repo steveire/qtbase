@@ -76,13 +76,13 @@ void QSystemLocaleData::readEnvironment()
 {
     QWriteLocker locker(&lock);
 
-    QByteArray all = qgetenv("LC_ALL");
-    QByteArray numeric  = all.isEmpty() ? qgetenv("LC_NUMERIC") : all;
-    QByteArray time     = all.isEmpty() ? qgetenv("LC_TIME") : all;
-    QByteArray monetary = all.isEmpty() ? qgetenv("LC_MONETARY") : all;
+    auto all = qgetenv("LC_ALL");
+    auto numeric  = all.isEmpty() ? qgetenv("LC_NUMERIC") : all;
+    auto time     = all.isEmpty() ? qgetenv("LC_TIME") : all;
+    auto monetary = all.isEmpty() ? qgetenv("LC_MONETARY") : all;
     lc_messages_var     = all.isEmpty() ? qgetenv("LC_MESSAGES") : all;
     lc_measurement_var  = all.isEmpty() ? qgetenv("LC_MEASUREMENT") : all;
-    QByteArray lang = qgetenv("LANG");
+    auto lang = qgetenv("LANG");
     if (lang.isEmpty())
         lang = QByteArray("C");
     if (numeric.isEmpty())
@@ -109,7 +109,7 @@ Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
 
 QLocale QSystemLocale::fallbackUiLocale() const
 {
-    QByteArray lang = qgetenv("LC_ALL");
+    auto lang = qgetenv("LC_ALL");
     if (lang.isEmpty())
         lang = qgetenv("LC_MESSAGES");
     if (lang.isEmpty())
@@ -120,7 +120,7 @@ QLocale QSystemLocale::fallbackUiLocale() const
 
     // if the locale is not the "C" locale and LANGUAGE is not empty, return
     // the first part of LANGUAGE if LANGUAGE is set and has a first part:
-    QByteArray language = qgetenv("LANGUAGE");
+    auto language = qgetenv("LANGUAGE");
     if (!language.isEmpty()) {
         language = language.split(':').first();
         if (!language.isEmpty())
@@ -132,7 +132,7 @@ QLocale QSystemLocale::fallbackUiLocale() const
 
 QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
-    QSystemLocaleData *d = qSystemLocaleData();
+    auto d = qSystemLocaleData();
 
     if (type == LocaleChanged) {
         d->readEnvironment();
@@ -219,7 +219,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return QString();
     }
     case MeasurementSystem: {
-        const QString meas_locale = QString::fromLatin1(d->lc_measurement_var.constData(), d->lc_measurement_var.size());
+        const auto meas_locale = QString::fromLatin1(d->lc_measurement_var.constData(), d->lc_measurement_var.size());
         if (meas_locale.compare(QLatin1String("Metric"), Qt::CaseInsensitive) == 0)
             return QLocale::MetricSystem;
         if (meas_locale.compare(QLatin1String("Other"), Qt::CaseInsensitive) == 0)
@@ -229,14 +229,14 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case UILanguages: {
         if (!d->uiLanguages.isEmpty())
             return d->uiLanguages;
-        QString languages = QString::fromLatin1(qgetenv("LANGUAGE"));
+        auto languages = QString::fromLatin1(qgetenv("LANGUAGE"));
         QStringList lst;
         if (languages.isEmpty())
             lst.append(QString::fromLatin1(d->lc_messages_var));
         else
             lst = languages.split(QLatin1Char(':'));
 
-        for (int i = 0; i < lst.size(); ++i) {
+        for (auto i = 0; i < lst.size(); ++i) {
             const QString &name = lst.at(i);
             QString lang, script, cntry;
             if (qt_splitLocaleName(name, lang, script, cntry)) {

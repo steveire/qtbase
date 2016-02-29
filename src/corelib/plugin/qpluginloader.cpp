@@ -279,24 +279,24 @@ bool QPluginLoader::isLoaded() const
 #if defined(QT_SHARED)
 static QString locatePlugin(const QString& fileName)
 {
-    const bool isAbsolute = QDir::isAbsolutePath(fileName);
+    const auto isAbsolute = QDir::isAbsolutePath(fileName);
     if (isAbsolute) {
         QFileInfo fi(fileName);
         if (fi.isFile()) {
             return fi.canonicalFilePath();
         }
     }
-    QStringList prefixes = QLibraryPrivate::prefixes_sys();
+    auto prefixes = QLibraryPrivate::prefixes_sys();
     prefixes.prepend(QString());
-    QStringList suffixes = QLibraryPrivate::suffixes_sys(QString());
+    auto suffixes = QLibraryPrivate::suffixes_sys(QString());
     suffixes.prepend(QString());
 
     // Split up "subdir/filename"
-    const int slash = fileName.lastIndexOf(QLatin1Char('/'));
-    const QStringRef baseName = fileName.midRef(slash + 1);
-    const QStringRef basePath = isAbsolute ? QStringRef() : fileName.leftRef(slash + 1); // keep the '/'
+    const auto slash = fileName.lastIndexOf(QLatin1Char('/'));
+    const auto baseName = fileName.midRef(slash + 1);
+    const auto basePath = isAbsolute ? QStringRef() : fileName.leftRef(slash + 1); // keep the '/'
 
-    const bool debug = qt_debug_component();
+    const auto debug = qt_debug_component();
 
     QStringList paths;
     if (isAbsolute) {
@@ -356,7 +356,7 @@ void QPluginLoader::setFileName(const QString &fileName)
         did_load = false;
     }
 
-    const QString fn = locatePlugin(fileName);
+    const auto fn = locatePlugin(fileName);
 
     d = QLibraryPrivate::findOrCreate(fn, QString(), lh);
     if (!fn.isEmpty())
@@ -441,11 +441,11 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin plugin)
 QObjectList QPluginLoader::staticInstances()
 {
     QObjectList instances;
-    const StaticPluginList *plugins = staticPluginList();
+    auto plugins = staticPluginList();
     if (plugins) {
-        const int numPlugins = plugins->size();
+        const auto numPlugins = plugins->size();
         instances.reserve(numPlugins);
-        for (int i = 0; i < numPlugins; ++i)
+        for (auto i = 0; i < numPlugins; ++i)
             instances += plugins->at(i).instance();
     }
     return instances;
@@ -460,7 +460,7 @@ QObjectList QPluginLoader::staticInstances()
 */
 QVector<QStaticPlugin> QPluginLoader::staticPlugins()
 {
-    StaticPluginList *plugins = staticPluginList();
+    auto plugins = staticPluginList();
     if (plugins)
         return *plugins;
     return QVector<QStaticPlugin>();

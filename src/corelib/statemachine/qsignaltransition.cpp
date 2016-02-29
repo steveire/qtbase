@@ -125,7 +125,7 @@ void QSignalTransitionPrivate::unregister()
 void QSignalTransitionPrivate::maybeRegister()
 {
     Q_Q(QSignalTransition);
-    if (QStateMachine *mach = machine())
+    if (auto mach = machine())
         QStateMachinePrivate::get(mach)->maybeRegisterSignalTransition(q);
 }
 
@@ -230,7 +230,7 @@ bool QSignalTransition::eventTest(QEvent *event)
     if (event->type() == QEvent::StateMachineSignal) {
         if (d->signalIndex == -1)
             return false;
-        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(event);
+        auto se = static_cast<QStateMachine::SignalEvent*>(event);
         return (se->sender() == d->sender)
             && (se->signalIndex() == d->signalIndex);
     }
@@ -276,8 +276,8 @@ void QSignalTransitionPrivate::callOnTransition(QEvent *e)
     Q_Q(QSignalTransition);
 
     if (e->type() == QEvent::StateMachineSignal) {
-        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent *>(e);
-        int savedSignalIndex = se->m_signalIndex;
+        auto se = static_cast<QStateMachine::SignalEvent *>(e);
+        auto savedSignalIndex = se->m_signalIndex;
         se->m_signalIndex = originalSignalIndex;
         q->onTransition(e);
         se->m_signalIndex = savedSignalIndex;

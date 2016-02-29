@@ -102,7 +102,7 @@ public:
 #endif
     static QSettings *configuration()
     {
-        QLibrarySettings *ls = qt_library_settings();
+        auto ls = qt_library_settings();
         if (ls) {
 #ifndef QT_BUILD_QMAKE
             if (ls->reloadOnQAppAvailable && QCoreApplication::instance() != 0)
@@ -135,13 +135,13 @@ void QLibrarySettings::load()
     if (settings) {
         // This code needs to be in the regular library, as otherwise a qt.conf that
         // works for qmake would break things for dynamically built Qt tools.
-        QStringList children = settings->childGroups();
+        auto children = settings->childGroups();
         haveDevicePaths = children.contains(QLatin1String("DevicePaths"));
 #ifdef QT_BUILD_QMAKE
         haveEffectiveSourcePaths = children.contains(QLatin1String("EffectiveSourcePaths"));
 #else
         // EffectiveSourcePaths is for the Qt build only, so needs no backwards compat trickery.
-        bool haveEffectiveSourcePaths = false;
+        auto haveEffectiveSourcePaths = false;
 #endif
         haveEffectivePaths = haveEffectiveSourcePaths || children.contains(QLatin1String("EffectivePaths"));
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
@@ -163,7 +163,7 @@ void QLibrarySettings::load()
 
 QSettings *QLibraryInfoPrivate::findConfiguration()
 {
-    QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
+    auto qtconfig = QStringLiteral(":/qt/etc/qt.conf");
     if (QFile::exists(qtconfig))
         return new QSettings(qtconfig, QSettings::IniFormat);
 #ifdef QT_BUILD_QMAKE
@@ -237,7 +237,7 @@ QLibraryInfo::QLibraryInfo()
 QString
 QLibraryInfo::licensee()
 {
-    const char * volatile str = QT_CONFIGURE_LICENSEE;
+    auto str = QT_CONFIGURE_LICENSEE;
     return QString::fromLocal8Bit(str);
 }
 
@@ -250,7 +250,7 @@ QLibraryInfo::licensee()
 QString
 QLibraryInfo::licensedProducts()
 {
-    const char * volatile str = QT_CONFIGURE_LICENSED_PRODUCTS;
+    auto str = QT_CONFIGURE_LICENSED_PRODUCTS;
     return QString::fromLatin1(str);
 }
 
@@ -490,7 +490,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 #endif
 
         if(!key.isNull()) {
-            QSettings *config = QLibraryInfoPrivate::configuration();
+            auto config = QLibraryInfoPrivate::configuration();
             config->beginGroup(QLatin1String(
 #ifdef QT_BUILD_QMAKE
                    group == DevicePaths ? "DevicePaths" :

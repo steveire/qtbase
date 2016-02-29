@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
 static void bm_init_skiptable(const ushort *uc, int len, uchar *skiptable, Qt::CaseSensitivity cs)
 {
-    int l = qMin(len, 255);
+    auto l = qMin(len, 255);
     memset(skiptable, l, 256*sizeof(uchar));
     uc += len - l;
     if (cs == Qt::CaseSensitive) {
@@ -52,7 +52,7 @@ static void bm_init_skiptable(const ushort *uc, int len, uchar *skiptable, Qt::C
             uc++;
         }
     } else {
-        const ushort *start = uc;
+        auto start = uc;
         while (l--) {
             skiptable[foldCase(uc, start) & 0xff] = l;
             uc++;
@@ -65,10 +65,10 @@ static inline int bm_find(const ushort *uc, uint l, int index, const ushort *puc
 {
     if (pl == 0)
         return index > (int)l ? -1 : index;
-    const uint pl_minus_one = pl - 1;
+    const auto pl_minus_one = pl - 1;
 
-    const ushort *current = uc + index + pl_minus_one;
-    const ushort *end = uc + l;
+    auto current = uc + index + pl_minus_one;
+    auto end = uc + l;
     if (cs == Qt::CaseSensitive) {
         while (current < end) {
             uint skip = skiptable[*current & 0xff];

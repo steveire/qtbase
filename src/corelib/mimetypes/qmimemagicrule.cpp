@@ -101,13 +101,13 @@ bool QMimeMagicRule::matchSubstring(const char *dataPtr, int dataSize, int range
 {
     // Size of searched data.
     // Example: value="ABC", rangeLength=3 -> we need 3+3-1=5 bytes (ABCxx,xABCx,xxABC would match)
-    const int dataNeeded = qMin(rangeLength + valueLength - 1, dataSize - rangeStart);
+    const auto dataNeeded = qMin(rangeLength + valueLength - 1, dataSize - rangeStart);
 
     if (!mask) {
         // callgrind says QByteArray::indexOf is much slower, since our strings are typically too
         // short for be worth Boyer-Moore matching (1 to 71 bytes, 11 bytes on average).
-        bool found = false;
-        for (int i = rangeStart; i < rangeStart + rangeLength; ++i) {
+        auto found = false;
+        for (auto i = rangeStart; i < rangeStart + rangeLength; ++i) {
             if (i + valueLength > dataSize)
                 break;
 
@@ -119,17 +119,17 @@ bool QMimeMagicRule::matchSubstring(const char *dataPtr, int dataSize, int range
         if (!found)
             return false;
     } else {
-        bool found = false;
-        const char *readDataBase = dataPtr + rangeStart;
+        auto found = false;
+        auto readDataBase = dataPtr + rangeStart;
         // Example (continued from above):
         // deviceSize is 4, so dataNeeded was max'ed to 4.
         // maxStartPos = 4 - 3 + 1 = 2, and indeed
         // we need to check for a match a positions 0 and 1 (ABCx and xABC).
-        const int maxStartPos = dataNeeded - valueLength + 1;
-        for (int i = 0; i < maxStartPos; ++i) {
-            const char *d = readDataBase + i;
-            bool valid = true;
-            for (int idx = 0; idx < valueLength; ++idx) {
+        const auto maxStartPos = dataNeeded - valueLength + 1;
+        for (auto i = 0; i < maxStartPos; ++i) {
+            auto d = readDataBase + i;
+            auto valid = true;
+            for (auto idx = 0; idx < valueLength; ++idx) {
                 if (((*d++) & mask[idx]) != (valueData[idx] & mask[idx])) {
                     valid = false;
                     break;
@@ -147,7 +147,7 @@ bool QMimeMagicRule::matchSubstring(const char *dataPtr, int dataSize, int range
 
 bool QMimeMagicRule::matchString(const QByteArray &data) const
 {
-    const int rangeLength = m_endPos - m_startPos + 1;
+    const auto rangeLength = m_endPos - m_startPos + 1;
     return QMimeMagicRule::matchSubstring(data.constData(), data.size(), m_startPos, rangeLength, m_pattern.size(), m_pattern.constData(), m_mask.constData());
 }
 
@@ -160,8 +160,8 @@ bool QMimeMagicRule::matchNumber(const QByteArray &data) const
     //qDebug() << "matchNumber" << "0x" << QString::number(m_number, 16) << "size" << sizeof(T);
     //qDebug() << "mask" << QString::number(m_numberMask, 16);
 
-    const char *p = data.constData() + m_startPos;
-    const char *e = data.constData() + qMin(data.size() - int(sizeof(T)), m_endPos + 1);
+    auto p = data.constData() + m_startPos;
+    auto e = data.constData() + qMin(data.size() - int(sizeof(T)), m_endPos + 1);
     for ( ; p <= e; ++p) {
         if ((*reinterpret_cast<const T*>(p) & mask) == (value & mask))
             return true;
@@ -173,15 +173,15 @@ bool QMimeMagicRule::matchNumber(const QByteArray &data) const
 static inline QByteArray makePattern(const QByteArray &value)
 {
     QByteArray pattern(value.size(), Qt::Uninitialized);
-    char *data = pattern.data();
+    auto data = pattern.data();
 
-    const char *p = value.constData();
-    const char *e = p + value.size();
+    auto p = value.constData();
+    auto e = p + value.size();
     for ( ; p < e; ++p) {
         if (*p == '\\' && ++p < e) {
             if (*p == 'x') { // hex (\\xff)
                 char c = 0;
-                for (int i = 0; i < 2 && p + 1 < e; ++i) {
+                for (auto i = 0; i < 2 && p + 1 < e; ++i) {
                     ++p;
                     if (*p >= '0' && *p <= '9')
                         c = (c << 4) + *p - '0';
@@ -237,9 +237,9 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
         *errorString = QLatin1String("Type ") + type + QLatin1String(" is not supported");
 
     // Parse for offset as "1" or "1:10"
-    const int colonIndex = offsets.indexOf(QLatin1Char(':'));
-    const QStringRef startPosStr = offsets.midRef(0, colonIndex); // \ These decay to returning 'offsets'
-    const QStringRef endPosStr   = offsets.midRef(colonIndex + 1);// / unchanged when colonIndex == -1
+    const auto colonIndex = offsets.indexOf(QLatin1Char(':'));
+    const auto startPosStr = offsets.midRef(0, colonIndex); // \ These decay to returning 'offsets'
+    const auto endPosStr   = offsets.midRef(colonIndex + 1);// / unchanged when colonIndex == -1
     if (Q_UNLIKELY(!QMimeTypeParserBase::parseNumber(startPosStr, &m_startPos, errorString)) ||
         Q_UNLIKELY(!QMimeTypeParserBase::parseNumber(endPosStr, &m_endPos, errorString))) {
         m_type = Invalid;
@@ -325,7 +325,7 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
 
 QByteArray QMimeMagicRule::mask() const
 {
-    QByteArray result = m_mask;
+    auto result = m_mask;
     if (m_type == String) {
         // restore '0x'
         result = "0x" + result.toHex();
@@ -335,7 +335,7 @@ QByteArray QMimeMagicRule::mask() const
 
 bool QMimeMagicRule::matches(const QByteArray &data) const
 {
-    const bool ok = m_matchFunction && (this->*m_matchFunction)(data);
+    const auto ok = m_matchFunction && (this->*m_matchFunction)(data);
     if (!ok)
         return false;
 
@@ -345,7 +345,7 @@ bool QMimeMagicRule::matches(const QByteArray &data) const
 
     //qDebug() << "Checking" << m_subMatches.count() << "sub-rules";
     // Check that one of the submatches matches too
-    for ( QList<QMimeMagicRule>::const_iterator it = m_subMatches.begin(), end = m_subMatches.end() ;
+    for ( auto it = m_subMatches.begin(), end = m_subMatches.end() ;
           it != end ; ++it ) {
         if ((*it).matches(data)) {
             // One of the hierarchies matched -> mimetype recognized.

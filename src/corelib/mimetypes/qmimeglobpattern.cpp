@@ -61,7 +61,7 @@ void QMimeGlobMatchResult::addMatch(const QString &mimeType, int weight, const Q
     // Is this a lower-weight pattern than the last match? Skip this match then.
     if (weight < m_weight)
         return;
-    bool replace = weight > m_weight;
+    auto replace = weight > m_weight;
     if (!replace) {
         // Compare the length of the match
         if (pattern.length() < m_matchingPatternLength)
@@ -98,23 +98,23 @@ bool QMimeGlobPattern::matchFileName(const QString &inputFilename) const
     // "Applications MUST match globs case-insensitively, except when the case-sensitive
     // attribute is set to true."
     // The constructor takes care of putting case-insensitive patterns in lowercase.
-    const QString filename = m_caseSensitivity == Qt::CaseInsensitive ? inputFilename.toLower() : inputFilename;
+    const auto filename = m_caseSensitivity == Qt::CaseInsensitive ? inputFilename.toLower() : inputFilename;
 
-    const int pattern_len = m_pattern.length();
+    const auto pattern_len = m_pattern.length();
     if (!pattern_len)
         return false;
-    const int len = filename.length();
+    const auto len = filename.length();
 
-    const int starCount = m_pattern.count(QLatin1Char('*'));
+    const auto starCount = m_pattern.count(QLatin1Char('*'));
 
     // Patterns like "*~", "*.extension"
     if (m_pattern[0] == QLatin1Char('*') && m_pattern.indexOf(QLatin1Char('[')) == -1 && starCount == 1)
     {
         if (len + 1 < pattern_len) return false;
 
-        const QChar *c1 = m_pattern.unicode() + pattern_len - 1;
-        const QChar *c2 = filename.unicode() + len - 1;
-        int cnt = 1;
+        auto c1 = m_pattern.unicode() + pattern_len - 1;
+        auto c2 = filename.unicode() + len - 1;
+        auto cnt = 1;
         while (cnt < pattern_len && *c1-- == *c2--)
             ++cnt;
         return cnt == pattern_len;
@@ -126,9 +126,9 @@ bool QMimeGlobPattern::matchFileName(const QString &inputFilename) const
         if (m_pattern.at(0) == QLatin1Char('*'))
             return filename.indexOf(m_pattern.mid(1, pattern_len - 2)) != -1;
 
-        const QChar *c1 = m_pattern.unicode();
-        const QChar *c2 = filename.unicode();
-        int cnt = 1;
+        auto c1 = m_pattern.unicode();
+        auto c2 = filename.unicode();
+        auto cnt = 1;
         while (cnt < pattern_len && *c1++ == *c2++)
            ++cnt;
         return cnt == pattern_len;
@@ -165,7 +165,7 @@ void QMimeAllGlobPatterns::addGlob(const QMimeGlobPattern &glob)
 
     if (glob.weight() == 50 && isFastPattern(pattern) && !glob.isCaseSensitive()) {
         // The bulk of the patterns is *.foo with weight 50 --> those go into the fast patterns hash.
-        const QString extension = pattern.mid(2).toLower();
+        const auto extension = pattern.mid(2).toLower();
         QStringList &patterns = m_fastPatterns[extension]; // find or create
         if (!patterns.contains(glob.mimeType()))
             patterns.append(glob.mimeType());
@@ -194,8 +194,8 @@ void QMimeGlobPatternList::match(QMimeGlobMatchResult &result,
                                  const QString &fileName) const
 {
 
-    QMimeGlobPatternList::const_iterator it = this->constBegin();
-    const QMimeGlobPatternList::const_iterator endIt = this->constEnd();
+    auto it = this->constBegin();
+    const auto endIt = this->constEnd();
     for (; it != endIt; ++it) {
         const QMimeGlobPattern &glob = *it;
         if (glob.matchFileName(fileName))
@@ -212,13 +212,13 @@ QStringList QMimeAllGlobPatterns::matchingGlobs(const QString &fileName, QString
 
         // Now use the "fast patterns" dict, for simple *.foo patterns with weight 50
         // (which is most of them, so this optimization is definitely worth it)
-        const int lastDot = fileName.lastIndexOf(QLatin1Char('.'));
+        const auto lastDot = fileName.lastIndexOf(QLatin1Char('.'));
         if (lastDot != -1) { // if no '.', skip the extension lookup
-            const int ext_len = fileName.length() - lastDot - 1;
-            const QString simpleExtension = fileName.right(ext_len).toLower();
+            const auto ext_len = fileName.length() - lastDot - 1;
+            const auto simpleExtension = fileName.right(ext_len).toLower();
             // (toLower because fast patterns are always case-insensitive and saved as lowercase)
 
-            const QStringList matchingMimeTypes = m_fastPatterns.value(simpleExtension);
+            const auto matchingMimeTypes = m_fastPatterns.value(simpleExtension);
             const QString simplePattern = QLatin1String("*.") + simpleExtension;
             for (const QString &mime : matchingMimeTypes)
                 result.addMatch(mime, 50, simplePattern);

@@ -210,10 +210,10 @@ void QAbstractProxyModel::revert()
  */
 QItemSelection QAbstractProxyModel::mapSelectionToSource(const QItemSelection &proxySelection) const
 {
-    QModelIndexList proxyIndexes = proxySelection.indexes();
+    auto proxyIndexes = proxySelection.indexes();
     QItemSelection sourceSelection;
-    for (int i = 0; i < proxyIndexes.size(); ++i) {
-        const QModelIndex proxyIdx = mapToSource(proxyIndexes.at(i));
+    for (auto i = 0; i < proxyIndexes.size(); ++i) {
+        const auto proxyIdx = mapToSource(proxyIndexes.at(i));
         if (!proxyIdx.isValid())
             continue;
         sourceSelection << QItemSelectionRange(proxyIdx);
@@ -228,10 +228,10 @@ QItemSelection QAbstractProxyModel::mapSelectionToSource(const QItemSelection &p
 */
 QItemSelection QAbstractProxyModel::mapSelectionFromSource(const QItemSelection &sourceSelection) const
 {
-    QModelIndexList sourceIndexes = sourceSelection.indexes();
+    auto sourceIndexes = sourceSelection.indexes();
     QItemSelection proxySelection;
-    for (int i = 0; i < sourceIndexes.size(); ++i) {
-        const QModelIndex srcIdx = mapFromSource(sourceIndexes.at(i));
+    for (auto i = 0; i < sourceIndexes.size(); ++i) {
+        const auto srcIdx = mapFromSource(sourceIndexes.at(i));
         if (!srcIdx.isValid())
             continue;
         proxySelection << QItemSelectionRange(srcIdx);
@@ -256,10 +256,10 @@ QVariant QAbstractProxyModel::headerData(int section, Qt::Orientation orientatio
     Q_D(const QAbstractProxyModel);
     int sourceSection;
     if (orientation == Qt::Horizontal) {
-        const QModelIndex proxyIndex = index(0, section);
+        const auto proxyIndex = index(0, section);
         sourceSection = mapToSource(proxyIndex).column();
     } else {
-        const QModelIndex proxyIndex = index(section, 0);
+        const auto proxyIndex = index(section, 0);
         sourceSection = mapToSource(proxyIndex).row();
     }
     return d->model->headerData(sourceSection, orientation, role);
@@ -307,10 +307,10 @@ bool QAbstractProxyModel::setHeaderData(int section, Qt::Orientation orientation
     Q_D(QAbstractProxyModel);
     int sourceSection;
     if (orientation == Qt::Horizontal) {
-        const QModelIndex proxyIndex = index(0, section);
+        const auto proxyIndex = index(0, section);
         sourceSection = mapToSource(proxyIndex).column();
     } else {
-        const QModelIndex proxyIndex = index(section, 0);
+        const auto proxyIndex = index(section, 0);
         sourceSection = mapToSource(proxyIndex).row();
     }
     return d->model->setHeaderData(sourceSection, orientation, value, role);
@@ -403,8 +403,8 @@ void QAbstractProxyModelPrivate::mapDropCoordinatesToSource(int row, int column,
         *sourceParent = q->mapToSource(parent);
         *sourceRow = model->rowCount(*sourceParent);
     } else {
-        QModelIndex proxyIndex = q->index(row, column, parent);
-        QModelIndex sourceIndex = q->mapToSource(proxyIndex);
+        auto proxyIndex = q->index(row, column, parent);
+        auto sourceIndex = q->mapToSource(proxyIndex);
         *sourceRow = sourceIndex.row();
         *sourceColumn = sourceIndex.column();
         *sourceParent = sourceIndex.parent();

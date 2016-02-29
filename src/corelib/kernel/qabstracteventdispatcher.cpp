@@ -97,7 +97,7 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
 {
     // this function may be called by a global destructor after
     // timerIdFreeList() has been destructed
-    if (QtTimerIdFreeList *fl = timerIdFreeList())
+    if (auto fl = timerIdFreeList())
         fl->release(timerId);
 }
 
@@ -169,7 +169,7 @@ QAbstractEventDispatcher::~QAbstractEventDispatcher()
  */
 QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
 {
-    QThreadData *data = thread ? QThreadData::get2(thread) : QThreadData::current();
+    auto data = thread ? QThreadData::get2(thread) : QThreadData::current();
     return data->eventDispatcher.load();
 }
 
@@ -255,7 +255,7 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
 */
 int QAbstractEventDispatcher::registerTimer(int interval, Qt::TimerType timerType, QObject *object)
 {
-    int id = QAbstractEventDispatcherPrivate::allocateTimerId();
+    auto id = QAbstractEventDispatcherPrivate::allocateTimerId();
     registerTimer(id, interval, timerType, object);
     return id;
 }
@@ -425,7 +425,7 @@ void QAbstractEventDispatcher::installNativeEventFilter(QAbstractNativeEventFilt
 void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilter *filter)
 {
     Q_D(QAbstractEventDispatcher);
-    for (int i = 0; i < d->eventFilters.count(); ++i) {
+    for (auto i = 0; i < d->eventFilters.count(); ++i) {
         if (d->eventFilters.at(i) == filter) {
             d->eventFilters[i] = 0;
             break;
@@ -459,8 +459,8 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
         // Raise the loopLevel so that deleteLater() calls in or triggered
         // by event_filter() will be processed from the main event loop.
         QScopedScopeLevelCounter scopeLevelCounter(d->threadData);
-        for (int i = 0; i < d->eventFilters.size(); ++i) {
-            QAbstractNativeEventFilter *filter = d->eventFilters.at(i);
+        for (auto i = 0; i < d->eventFilters.size(); ++i) {
+            auto filter = d->eventFilters.at(i);
             if (!filter)
                 continue;
             if (filter->nativeEventFilter(eventType, message, result))

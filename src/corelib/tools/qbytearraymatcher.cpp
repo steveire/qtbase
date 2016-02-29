@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 static inline void bm_init_skiptable(const uchar *cc, int len, uchar *skiptable)
 {
-    int l = qMin(len, 255);
+    auto l = qMin(len, 255);
     memset(skiptable, l, 256*sizeof(uchar));
     cc += len - l;
     while (l--)
@@ -57,10 +57,10 @@ static inline int bm_find(const uchar *cc, int l, int index, const uchar *puc, u
 {
     if (pl == 0)
         return index > l ? -1 : index;
-    const uint pl_minus_one = pl - 1;
+    const auto pl_minus_one = pl - 1;
 
-    const uchar *current = cc + index + pl_minus_one;
-    const uchar *end = cc + l;
+    auto current = cc + index + pl_minus_one;
+    auto end = cc + l;
     while (current < end) {
         uint skip = skiptable[*current];
         if (!skip) {
@@ -231,13 +231,13 @@ int QByteArrayMatcher::indexIn(const char *str, int len, int from) const
 
 static int findChar(const char *str, int len, char ch, int from)
 {
-    const uchar *s = (const uchar *)str;
-    uchar c = (uchar)ch;
+    auto s = (const uchar *)str;
+    auto c = (uchar)ch;
     if (from < 0)
         from = qMax(from + len, 0);
     if (from < len) {
-        const uchar *n = s + from - 1;
-        const uchar *e = s + len;
+        auto n = s + from - 1;
+        auto e = s + len;
         while (++n != e)
             if (*n == c)
                 return  n - s;
@@ -272,8 +272,8 @@ int qFindByteArray(
     const char *haystack0, int haystackLen, int from,
     const char *needle, int needleLen)
 {
-    const int l = haystackLen;
-    const int sl = needleLen;
+    const auto l = haystackLen;
+    const auto sl = needleLen;
     if (from < 0)
         from += l;
     if (uint(sl + from) > (uint)l)
@@ -300,8 +300,8 @@ int qFindByteArray(
       comparing strings, we compare the hash value of str with that
       of a part of this QString. Only if that matches, we call memcmp().
     */
-    const char *haystack = haystack0 + from;
-    const char *end = haystack0 + (l - sl);
+    auto haystack = haystack0 + from;
+    auto end = haystack0 + (l - sl);
     const uint sl_minus_1 = sl - 1;
     uint hashNeedle = 0, hashHaystack = 0;
     int idx;

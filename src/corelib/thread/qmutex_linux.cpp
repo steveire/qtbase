@@ -106,7 +106,7 @@ static QBasicAtomicInt futexFlagSupport = Q_BASIC_ATOMIC_INITIALIZER(-1);
 
 static int checkFutexPrivateSupport()
 {
-    int value = 0;
+    auto value = 0;
 #if defined(FUTEX_PRIVATE_FLAG)
     // check if the kernel supports extra futex flags
     // FUTEX_PRIVATE_FLAG appeared in v2.6.22
@@ -132,7 +132,7 @@ static int checkFutexPrivateSupport()
 
 static inline int futexFlags()
 {
-    int value = futexFlagSupport.load();
+    auto value = futexFlagSupport.load();
     if (Q_LIKELY(value != -1))
         return value;
     return checkFutexPrivateSupport();
@@ -140,12 +140,12 @@ static inline int futexFlags()
 
 static inline int _q_futex(void *addr, int op, int val, const struct timespec *timeout) Q_DECL_NOTHROW
 {
-    volatile int *int_addr = reinterpret_cast<volatile int *>(addr);
+    auto int_addr = reinterpret_cast<volatile int *>(addr);
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN && QT_POINTER_SIZE == 8
     int_addr++; //We want a pointer to the 32 least significant bit of QMutex::d
 #endif
     int *addr2 = 0;
-    int val2 = 0;
+    auto val2 = 0;
 
     // we use __NR_futex because some libcs (like Android's bionic) don't
     // provide SYS_futex etc.
@@ -177,7 +177,7 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
     while (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) != 0) {
         if (IsTimed && pts == &ts) {
             // recalculate the timeout
-            qint64 xtimeout = qint64(timeout) * 1000 * 1000;
+            auto xtimeout = qint64(timeout) * 1000 * 1000;
             xtimeout -= elapsedTimer->nsecsElapsed();
             if (xtimeout <= 0) {
                 // timer expired after we returned
@@ -190,7 +190,7 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
             pts = &ts;
 
         // successfully set the waiting bit, now sleep
-        int r = _q_futex(&d_ptr, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
+        auto r = _q_futex(&d_ptr, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
         if (IsTimed && r != 0 && errno == ETIMEDOUT)
             return false;
 
@@ -219,7 +219,7 @@ bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
 
 void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
 {
-    QMutexData *d = d_ptr.load();
+    auto d = d_ptr.load();
     Q_ASSERT(d); //we must be locked
     Q_ASSERT(d != dummyLocked()); // testAndSetRelease(dummyLocked(), 0) failed
     Q_UNUSED(d);

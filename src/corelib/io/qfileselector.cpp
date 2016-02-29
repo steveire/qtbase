@@ -230,7 +230,7 @@ QString QFileSelector::select(const QString &filePath) const
 
 static bool isLocalScheme(const QString &file)
 {
-    bool local = file == QLatin1String("qrc");
+    auto local = file == QLatin1String("qrc");
 #ifdef Q_OS_ANDROID
     local |= file == QLatin1String("assets");
 #endif
@@ -259,7 +259,7 @@ QUrl QFileSelector::select(const QUrl &filePath) const
 #endif
 
         QString equivalentPath = scheme + filePath.path();
-        QString selectedPath = d->select(equivalentPath);
+        auto selectedPath = d->select(equivalentPath);
         ret.setPath(selectedPath.remove(0, scheme.size()));
     } else {
         ret = QUrl::fromLocalFile(d->select(ret.toLocalFile()));
@@ -277,11 +277,11 @@ static QString selectionHelper(const QString &path, const QString &fileName, con
 
     for (const QString &s : selectors) {
         QString prospectiveBase = path + QLatin1Char(selectorIndicator) + s + QLatin1Char('/');
-        QStringList remainingSelectors = selectors;
+        auto remainingSelectors = selectors;
         remainingSelectors.removeAll(s);
         if (!QDir(prospectiveBase).exists())
             continue;
-        QString prospectiveFile = selectionHelper(prospectiveBase, fileName, remainingSelectors);
+        auto prospectiveFile = selectionHelper(prospectiveBase, fileName, remainingSelectors);
         if (!prospectiveFile.isEmpty())
             return prospectiveFile;
     }
@@ -301,7 +301,7 @@ QString QFileSelectorPrivate::select(const QString &filePath) const
     if (!fi.exists())
         return filePath;
 
-    QString ret = selectionHelper(fi.path().isEmpty() ? QString() : fi.path() + QLatin1Char('/'),
+    auto ret = selectionHelper(fi.path().isEmpty() ? QString() : fi.path() + QLatin1Char('/'),
             fi.fileName(), q->allSelectors());
 
     if (!ret.isEmpty())
@@ -346,7 +346,7 @@ void QFileSelectorPrivate::updateSelectors()
         return; //Already loaded
 
     QLatin1Char pathSep(',');
-    QStringList envSelectors = QString::fromLatin1(qgetenv("QT_FILE_SELECTORS"))
+    auto envSelectors = QString::fromLatin1(qgetenv("QT_FILE_SELECTORS"))
                                 .split(pathSep, QString::SkipEmptyParts);
     if (envSelectors.count())
         sharedData->staticSelectors << envSelectors;
@@ -385,7 +385,7 @@ QStringList QFileSelectorPrivate::platformSelectors()
     ret << QStringLiteral("mac"); // compatibility, since kernelType() is "darwin"
 #     endif
 #  endif
-    QString productName = QSysInfo::productType();
+    auto productName = QSysInfo::productType();
     if (productName != QLatin1String("unknown"))
         ret << productName; // "opensuse", "fedora", "osx", "ios", "android"
 #endif

@@ -51,7 +51,7 @@ public:
 
 static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int length, QCharAttributes *attributes)
 {
-    const ushort *string = reinterpret_cast<const ushort *>(chars);
+    auto string = reinterpret_cast<const ushort *>(chars);
 
     QVarLengthArray<QUnicodeTools::ScriptItem> scriptItems;
     {
@@ -59,8 +59,8 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
 
         QUnicodeTools::initScripts(string, length, scripts.data());
 
-        int start = 0;
-        for (int i = start + 1; i <= length; ++i) {
+        auto start = 0;
+        for (auto i = start + 1; i <= length; ++i) {
             if (i == length || scripts[i] != scripts[start]) {
                 QUnicodeTools::ScriptItem item;
                 item.position = start;
@@ -199,7 +199,7 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
     if (other.d) {
         Q_ASSERT(other.length > 0);
         uint newCapacity = (other.length + 1) * sizeof(QCharAttributes);
-        QTextBoundaryFinderPrivate *newD = (QTextBoundaryFinderPrivate *) realloc(freePrivate ? d : 0, newCapacity);
+        auto newD = (QTextBoundaryFinderPrivate *) realloc(freePrivate ? d : 0, newCapacity);
         Q_CHECK_PTR(newD);
         freePrivate = true;
         d = newD;
@@ -457,7 +457,7 @@ QTextBoundaryFinder::BoundaryReasons QTextBoundaryFinder::boundaryReasons() cons
     if (!d || pos < 0 || pos > length)
         return reasons;
 
-    const QCharAttributes attr = d->attributes[pos];
+    const auto attr = d->attributes[pos];
     switch (t) {
     case Grapheme:
         if (attr.graphemeBoundary) {

@@ -382,7 +382,7 @@ qreal QEasingCurveFunction::value(qreal t)
 
 QEasingCurveFunction *QEasingCurveFunction::copy() const
 {
-    QEasingCurveFunction *rv = new QEasingCurveFunction(_t, _p, _a, _o);
+    auto rv = new QEasingCurveFunction(_t, _p, _a, _o);
     rv->_bezierCurves = _bezierCurves;
     rv->_tcbPoints = _tcbPoints;
     return rv;
@@ -448,7 +448,7 @@ struct BezierEase : public QEasingCurveFunction
             _init = true;
             _curveCount = _bezierCurves.count() / 3;
 
-            for (int i=0; i < _curveCount; i++) {
+            for (auto i=0; i < _curveCount; i++) {
                 _intervals[i] = _bezierCurves.at(i * 3 + 2).x();
 
                 if (i == 0) {
@@ -498,7 +498,7 @@ struct BezierEase : public QEasingCurveFunction
 
     QEasingCurveFunction *copy() const Q_DECL_OVERRIDE
     {
-        BezierEase *rv = new BezierEase();
+        auto rv = new BezierEase();
         rv->_t = _t;
         rv->_p = _p;
         rv->_a = _a;
@@ -511,7 +511,7 @@ struct BezierEase : public QEasingCurveFunction
     void getBezierSegment(SingleCubicBezier * &singleCubicBezier, qreal x)
     {
 
-        int currentSegment = 0;
+        auto currentSegment = 0;
 
         while (currentSegment < _curveCount) {
             if (x <= _intervals.data()[currentSegment])
@@ -525,9 +525,9 @@ struct BezierEase : public QEasingCurveFunction
 
     qreal static inline newtonIteration(const SingleCubicBezier &singleCubicBezier, qreal t, qreal x)
     {
-        qreal currentXValue = evaluateForX(singleCubicBezier, t);
+        auto currentXValue = evaluateForX(singleCubicBezier, t);
 
-        const qreal newT = t - (currentXValue - x) / evaluateDerivateForX(singleCubicBezier, t);
+        const auto newT = t - (currentXValue - x) / evaluateDerivateForX(singleCubicBezier, t);
 
         return newT;
     }
@@ -555,48 +555,48 @@ struct BezierEase : public QEasingCurveFunction
 
     qreal static inline evaluateSegmentForY(const SingleCubicBezier &singleCubicBezier, qreal t)
     {
-        const qreal p0 = singleCubicBezier.p0y;
-        const qreal p1 = singleCubicBezier.p1y;
-        const qreal p2 = singleCubicBezier.p2y;
-        const qreal p3 = singleCubicBezier.p3y;
+        const auto p0 = singleCubicBezier.p0y;
+        const auto p1 = singleCubicBezier.p1y;
+        const auto p2 = singleCubicBezier.p2y;
+        const auto p3 = singleCubicBezier.p3y;
 
-        const qreal s = 1 - t;
+        const auto s = 1 - t;
 
-        const qreal s_squared = s*s;
-        const qreal t_squared = t*t;
+        const auto s_squared = s*s;
+        const auto t_squared = t*t;
 
-        const qreal s_cubic = s_squared * s;
-        const qreal t_cubic = t_squared * t;
+        const auto s_cubic = s_squared * s;
+        const auto t_cubic = t_squared * t;
 
         return s_cubic * p0 + 3 * s_squared * t * p1 + 3 * s * t_squared * p2 + t_cubic * p3;
     }
 
     qreal static inline evaluateForX(const SingleCubicBezier &singleCubicBezier, qreal t)
     {
-        const qreal p0 = singleCubicBezier.p0x;
-        const qreal p1 = singleCubicBezier.p1x;
-        const qreal p2 = singleCubicBezier.p2x;
-        const qreal p3 = singleCubicBezier.p3x;
+        const auto p0 = singleCubicBezier.p0x;
+        const auto p1 = singleCubicBezier.p1x;
+        const auto p2 = singleCubicBezier.p2x;
+        const auto p3 = singleCubicBezier.p3x;
 
-        const qreal s = 1 - t;
+        const auto s = 1 - t;
 
-        const qreal s_squared = s*s;
-        const qreal t_squared = t*t;
+        const auto s_squared = s*s;
+        const auto t_squared = t*t;
 
-        const qreal s_cubic = s_squared * s;
-        const qreal t_cubic = t_squared * t;
+        const auto s_cubic = s_squared * s;
+        const auto t_cubic = t_squared * t;
 
         return s_cubic * p0 + 3 * s_squared * t * p1 + 3 * s * t_squared * p2 + t_cubic * p3;
     }
 
     qreal static inline evaluateDerivateForX(const SingleCubicBezier &singleCubicBezier, qreal t)
     {
-        const qreal p0 = singleCubicBezier.p0x;
-        const qreal p1 = singleCubicBezier.p1x;
-        const qreal p2 = singleCubicBezier.p2x;
-        const qreal p3 = singleCubicBezier.p3x;
+        const auto p0 = singleCubicBezier.p0x;
+        const auto p1 = singleCubicBezier.p1x;
+        const auto p2 = singleCubicBezier.p2x;
+        const auto p3 = singleCubicBezier.p3x;
 
-        const qreal t_squared = t*t;
+        const auto t_squared = t*t;
 
         return -3*p0 + 3*p1 + 6*p0*t - 12*p1*t + 6*p2*t + 3*p3*t_squared - 3*p0*t_squared + 9*p1*t_squared - 9*p2*t_squared;
     }
@@ -608,11 +608,11 @@ struct BezierEase : public QEasingCurveFunction
             sign = -1;
         d = d * sign;
 
-        qreal t = _fast_cbrt(d);
+        auto t = _fast_cbrt(d);
 
         //one step of Halley's Method to get a better approximation
-        const qreal t_cubic = t * t * t;
-        const qreal f = t_cubic + t_cubic + d;
+        const auto t_cubic = t * t * t;
+        const auto f = t_cubic + t_cubic + d;
         if (f != qreal(0.0))
             t = t * (t_cubic + d + d) / f;
 
@@ -649,14 +649,14 @@ struct BezierEase : public QEasingCurveFunction
         const unsigned int B1 = 715094163;
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        const int h0 = 1;
+        const auto h0 = 1;
 #else
         const int h0 = 0;
 #endif
         ut.d = 0.0;
         ux.d = d;
 
-        quint32 hx = ux.pt[h0]; //high word of d
+        auto hx = ux.pt[h0]; //high word of d
         ut.pt[h0] = hx / 3 + B1;
 
         return ut.d;
@@ -669,9 +669,9 @@ struct BezierEase : public QEasingCurveFunction
 
     qreal static inline _cos(qreal x) //super fast _cos
     {
-        const qreal pi_times2 = 2 * M_PI;
-        const qreal pi_neg = -1 * M_PI;
-        const qreal pi_by2 = M_PI / 2.0;
+        const auto pi_times2 = 2 * M_PI;
+        const auto pi_neg = -1 * M_PI;
+        const auto pi_by2 = M_PI / 2.0;
 
         x += pi_by2; //the polynom is for sin
 
@@ -680,20 +680,20 @@ struct BezierEase : public QEasingCurveFunction
         else if (x > M_PI)
             x -= pi_times2;
 
-        const qreal a = 0.405284735;
-        const qreal b = 1.27323954;
+        const auto a = 0.405284735;
+        const auto b = 1.27323954;
 
-        const qreal x_squared = x * x;
+        const auto x_squared = x * x;
 
         if (x < 0) {
-            qreal cos = b * x + a * x_squared;
+            auto cos = b * x + a * x_squared;
 
             if (cos < 0)
                 return 0.225 * (cos * -1 * cos - cos) + cos;
             return 0.225 * (cos * cos - cos) + cos;
         } //else
 
-        qreal cos = b * x - a * x_squared;
+        auto cos = b * x - a * x_squared;
 
         if (cos < 0)
             return 0.225 * (cos * 1 *-cos - cos) + cos;
@@ -710,9 +710,9 @@ struct BezierEase : public QEasingCurveFunction
         //This function has no proper algebraic representation in real numbers.
         //We use approximations instead
 
-        const qreal x_squared = x * x;
-        const qreal x_plus_one_sqrt = qSqrt(1.0 + x);
-        const qreal one_minus_x_sqrt = qSqrt(1.0 - x);
+        const auto x_squared = x * x;
+        const auto x_plus_one_sqrt = qSqrt(1.0 + x);
+        const auto one_minus_x_sqrt = qSqrt(1.0 - x);
 
         //cos(acos(x) / 3)
         //s1 = _cos(_acos(x) / 3);
@@ -738,43 +738,43 @@ struct BezierEase : public QEasingCurveFunction
         if (c < 0.000001 && c > -0.000001)
             return 0;
 
-        const qreal a_by3 = a / 3.0;
+        const auto a_by3 = a / 3.0;
 
-        const qreal a_cubic = a * a * a;
+        const auto a_cubic = a * a * a;
 
-        const qreal p = b - a * a_by3;
-        const qreal q = 2.0 * a_cubic / 27.0 - a * b / 3.0 + c;
+        const auto p = b - a * a_by3;
+        const auto q = 2.0 * a_cubic / 27.0 - a * b / 3.0 + c;
 
-        const qreal q_squared = q * q;
-        const qreal p_cubic = p * p * p;
-        const qreal D = 0.25 * q_squared + p_cubic / 27.0;
+        const auto q_squared = q * q;
+        const auto p_cubic = p * p * p;
+        const auto D = 0.25 * q_squared + p_cubic / 27.0;
 
         if (D >= 0) {
-            const qreal D_sqrt = qSqrt(D);
-            qreal u = _cbrt( -q * 0.5 + D_sqrt);
-            qreal v = _cbrt( -q * 0.5 - D_sqrt);
-            qreal z1 = u + v;
+            const auto D_sqrt = qSqrt(D);
+            auto u = _cbrt( -q * 0.5 + D_sqrt);
+            auto v = _cbrt( -q * 0.5 - D_sqrt);
+            auto z1 = u + v;
 
-            qreal t1 = z1 - a_by3;
+            auto t1 = z1 - a_by3;
 
             if (inRange(t1))
                 return t1;
-            qreal z2 = -1 *u;
-            qreal t2 = z2 - a_by3;
+            auto z2 = -1 *u;
+            auto t2 = z2 - a_by3;
             return t2;
         }
 
         //casus irreducibilis
-        const qreal p_minus_sqrt = qSqrt(-p);
+        const auto p_minus_sqrt = qSqrt(-p);
 
         //const qreal f = sqrt(4.0 / 3.0 * -p);
-        const qreal f = qSqrt(4.0 / 3.0) * p_minus_sqrt;
+        const auto f = qSqrt(4.0 / 3.0) * p_minus_sqrt;
 
         //const qreal sqrtP = sqrt(27.0 / -p_cubic);
-        const qreal sqrtP = -3.0*qSqrt(3.0) / (p_minus_sqrt * p);
+        const auto sqrtP = -3.0*qSqrt(3.0) / (p_minus_sqrt * p);
 
 
-        const qreal g = -q * 0.5 * sqrtP;
+        const auto g = -q * 0.5 * sqrtP;
 
         qreal s1;
         qreal s2;
@@ -782,36 +782,36 @@ struct BezierEase : public QEasingCurveFunction
 
         cosacos(g, s1, s2, s3);
 
-        qreal z1 = -1* f * s2;
-        qreal t1 = z1 - a_by3;
+        auto z1 = -1* f * s2;
+        auto t1 = z1 - a_by3;
         if (inRange(t1))
             return t1;
 
-        qreal z2 = f * s1;
-        qreal t2 = z2 - a_by3;
+        auto z2 = f * s1;
+        auto t2 = z2 - a_by3;
         if (inRange(t2))
             return t2;
 
-        qreal z3 = -1 * f * s3;
-        qreal t3 = z3 - a_by3;
+        auto z3 = -1 * f * s3;
+        auto t3 = z3 - a_by3;
         return t3;
     }
 
      qreal static inline findTForX(const SingleCubicBezier &singleCubicBezier, qreal x)
      {
-         const qreal p0 = singleCubicBezier.p0x;
-         const qreal p1 = singleCubicBezier.p1x;
-         const qreal p2 = singleCubicBezier.p2x;
-         const qreal p3 = singleCubicBezier.p3x;
+         const auto p0 = singleCubicBezier.p0x;
+         const auto p1 = singleCubicBezier.p1x;
+         const auto p2 = singleCubicBezier.p2x;
+         const auto p3 = singleCubicBezier.p3x;
 
-         const qreal factorT3 = p3 - p0 + 3 * p1 - 3 * p2;
-         const qreal factorT2 = 3 * p0 - 6 * p1 + 3 * p2;
-         const qreal factorT1 = -3 * p0 + 3 * p1;
-         const qreal factorT0 = p0 - x;
+         const auto factorT3 = p3 - p0 + 3 * p1 - 3 * p2;
+         const auto factorT2 = 3 * p0 - 6 * p1 + 3 * p2;
+         const auto factorT1 = -3 * p0 + 3 * p1;
+         const auto factorT0 = p0 - x;
 
-         const qreal a = factorT2 / factorT3;
-         const qreal b = factorT1 / factorT3;
-         const qreal c = factorT0 / factorT3;
+         const auto a = factorT2 / factorT3;
+         const auto b = factorT1 / factorT3;
+         const auto c = factorT0 / factorT3;
 
          return singleRealSolutionForCubic(a, b, c);
 
@@ -848,7 +848,7 @@ struct ElasticEase : public QEasingCurveFunction
 
     QEasingCurveFunction *copy() const Q_DECL_OVERRIDE
     {
-        ElasticEase *rv = new ElasticEase(_t);
+        auto rv = new ElasticEase(_t);
         rv->_p = _p;
         rv->_a = _a;
         rv->_bezierCurves = _bezierCurves;
@@ -858,8 +858,8 @@ struct ElasticEase : public QEasingCurveFunction
 
     qreal value(qreal t) Q_DECL_OVERRIDE
     {
-        qreal p = (_p < 0) ? qreal(0.3) : _p;
-        qreal a = (_a < 0) ? qreal(1.0) : _a;
+        auto p = (_p < 0) ? qreal(0.3) : _p;
+        auto a = (_a < 0) ? qreal(1.0) : _a;
         switch(_t) {
         case QEasingCurve::InElastic:
             return easeInElastic(t, a, p);
@@ -883,7 +883,7 @@ struct BounceEase : public QEasingCurveFunction
 
     QEasingCurveFunction *copy() const Q_DECL_OVERRIDE
     {
-        BounceEase *rv = new BounceEase(_t);
+        auto rv = new BounceEase(_t);
         rv->_a = _a;
         rv->_bezierCurves = _bezierCurves;
         rv->_tcbPoints = _tcbPoints;
@@ -892,7 +892,7 @@ struct BounceEase : public QEasingCurveFunction
 
     qreal value(qreal t) Q_DECL_OVERRIDE
     {
-        qreal a = (_a < 0) ? qreal(1.0) : _a;
+        auto a = (_a < 0) ? qreal(1.0) : _a;
         switch(_t) {
         case QEasingCurve::InBounce:
             return easeInBounce(t, a);
@@ -916,7 +916,7 @@ struct BackEase : public QEasingCurveFunction
 
     QEasingCurveFunction *copy() const Q_DECL_OVERRIDE
     {
-        BackEase *rv = new BackEase(_t);
+        auto rv = new BackEase(_t);
         rv->_o = _o;
         rv->_bezierCurves = _bezierCurves;
         rv->_tcbPoints = _tcbPoints;
@@ -925,7 +925,7 @@ struct BackEase : public QEasingCurveFunction
 
     qreal value(qreal t) Q_DECL_OVERRIDE
     {
-        qreal o = (_o < 0) ? qreal(1.70158) : _o;
+        auto o = (_o < 0) ? qreal(1.70158) : _o;
         switch(_t) {
         case QEasingCurve::InBack:
             return easeInBack(t, o);
@@ -1108,7 +1108,7 @@ QEasingCurve::~QEasingCurve()
  */
 bool QEasingCurve::operator==(const QEasingCurve &other) const
 {
-    bool res = d_ptr->func == other.d_ptr->func
+    auto res = d_ptr->func == other.d_ptr->func
             && d_ptr->type == other.d_ptr->type;
     if (res) {
         if (d_ptr->config && other.d_ptr->config) {
@@ -1224,17 +1224,17 @@ void QEasingCurve::addCubicBezierSegment(const QPointF & c1, const QPointF & c2,
 
 QVector<QPointF> static inline tcbToBezier(const TCBPoints &tcbPoints)
 {
-    const int count = tcbPoints.count();
+    const auto count = tcbPoints.count();
     QVector<QPointF> bezierPoints;
     bezierPoints.reserve(3 * (count - 1));
 
-    for (int i = 1; i < count; i++) {
-        const qreal t_0 = tcbPoints.at(i - 1)._t;
-        const qreal c_0 = tcbPoints.at(i - 1)._c;
+    for (auto i = 1; i < count; i++) {
+        const auto t_0 = tcbPoints.at(i - 1)._t;
+        const auto c_0 = tcbPoints.at(i - 1)._c;
         qreal b_0 = -1;
 
-        qreal const t_1 = tcbPoints.at(i)._t;
-        qreal const c_1 = tcbPoints.at(i)._c;
+        const auto t_1 = tcbPoints.at(i)._t;
+        const auto c_1 = tcbPoints.at(i)._c;
         qreal b_1 = 1;
 
         QPointF c_minusOne;                                   //P1 last segment - not available for the first point
@@ -1252,17 +1252,17 @@ QVector<QPointF> static inline tcbToBezier(const TCBPoints &tcbPoints)
             b_1 = tcbPoints.at(i)._b;
         }
 
-        const qreal dx_0 = 0.5 * (1-t_0) *  ((1 + b_0) * (1 + c_0) * (c0.x() - c_minusOne.x()) + (1- b_0) * (1 - c_0) * (c3.x() - c0.x()));
-        const qreal dy_0 = 0.5 * (1-t_0) *  ((1 + b_0) * (1 + c_0) * (c0.y() - c_minusOne.y()) + (1- b_0) * (1 - c_0) * (c3.y() - c0.y()));
+        const auto dx_0 = 0.5 * (1-t_0) *  ((1 + b_0) * (1 + c_0) * (c0.x() - c_minusOne.x()) + (1- b_0) * (1 - c_0) * (c3.x() - c0.x()));
+        const auto dy_0 = 0.5 * (1-t_0) *  ((1 + b_0) * (1 + c_0) * (c0.y() - c_minusOne.y()) + (1- b_0) * (1 - c_0) * (c3.y() - c0.y()));
 
-        const qreal dx_1 =  0.5 * (1-t_1) * ((1 + b_1) * (1 - c_1) * (c3.x() - c0.x()) + (1 - b_1) * (1 + c_1) * (c4.x() - c3.x()));
-        const qreal dy_1 =  0.5 * (1-t_1) * ((1 + b_1) * (1 - c_1) * (c3.y() - c0.y()) + (1 - b_1) * (1 + c_1) * (c4.y() - c3.y()));
+        const auto dx_1 =  0.5 * (1-t_1) * ((1 + b_1) * (1 - c_1) * (c3.x() - c0.x()) + (1 - b_1) * (1 + c_1) * (c4.x() - c3.x()));
+        const auto dy_1 =  0.5 * (1-t_1) * ((1 + b_1) * (1 - c_1) * (c3.y() - c0.y()) + (1 - b_1) * (1 + c_1) * (c4.y() - c3.y()));
 
-        const QPointF d_0 = QPointF(dx_0, dy_0);
-        const QPointF d_1 = QPointF(dx_1, dy_1);
+        const auto d_0 = QPointF(dx_0, dy_0);
+        const auto d_1 = QPointF(dx_1, dy_1);
 
-        QPointF c1 = (3 * c0 + d_0) / 3;
-        QPointF c2 = (3 * c3 - d_1) / 3;
+        auto c1 = (3 * c0 + d_0) / 3;
+        auto c2 = (3 * c3 - d_1) / 3;
         bezierPoints << c1 << c2 << c3;
     }
     return bezierPoints;
@@ -1323,9 +1323,9 @@ QEasingCurve::Type QEasingCurve::type() const
 
 void QEasingCurvePrivate::setType_helper(QEasingCurve::Type newType)
 {
-    qreal amp = -1.0;
-    qreal period = -1.0;
-    qreal overshoot = -1.0;
+    auto amp = -1.0;
+    auto period = -1.0;
+    auto overshoot = -1.0;
     QVector<QPointF> bezierCurves;
     QVector<TCBPoint> tcbPoints;
 
@@ -1490,7 +1490,7 @@ QDataStream &operator>>(QDataStream &stream, QEasingCurve &easing)
     delete easing.d_ptr->config;
     easing.d_ptr->config = Q_NULLPTR;
     if (hasConfig) {
-        QEasingCurveFunction *config = curveToFunctionObject(type);
+        auto config = curveToFunctionObject(type);
         stream >> config->_p;
         stream >> config->_a;
         stream >> config->_o;

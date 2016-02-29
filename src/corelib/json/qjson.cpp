@@ -62,24 +62,24 @@ void Data::compact()
     if (!compactionCounter)
         return;
 
-    Base *base = header->root();
-    int reserve = 0;
+    auto base = header->root();
+    auto reserve = 0;
     if (base->is_object) {
-        Object *o = static_cast<Object *>(base);
-        for (int i = 0; i < (int)o->length; ++i)
+        auto o = static_cast<Object *>(base);
+        for (auto i = 0; i < (int)o->length; ++i)
             reserve += o->entryAt(i)->usedStorage(o);
     } else {
-        Array *a = static_cast<Array *>(base);
-        for (int i = 0; i < (int)a->length; ++i)
+        auto a = static_cast<Array *>(base);
+        for (auto i = 0; i < (int)a->length; ++i)
             reserve += (*a)[i].usedStorage(a);
     }
 
     int size = sizeof(Base) + reserve + base->length*sizeof(offset);
     int alloc = sizeof(Header) + size;
-    Header *h = (Header *) malloc(alloc);
+    auto h = (Header *) malloc(alloc);
     h->tag = QJsonDocument::BinaryFormatTag;
     h->version = 1;
-    Base *b = h->root();
+    auto b = h->root();
     b->size = size;
     b->is_object = header->root()->is_object;
     b->length = base->length;
@@ -87,18 +87,18 @@ void Data::compact()
 
     int offset = sizeof(Base);
     if (b->is_object) {
-        Object *o = static_cast<Object *>(base);
-        Object *no = static_cast<Object *>(b);
+        auto o = static_cast<Object *>(base);
+        auto no = static_cast<Object *>(b);
 
-        for (int i = 0; i < (int)o->length; ++i) {
+        for (auto i = 0; i < (int)o->length; ++i) {
             no->table()[i] = offset;
 
-            const Entry *e = o->entryAt(i);
-            Entry *ne = no->entryAt(i);
-            int s = e->size();
+            auto e = o->entryAt(i);
+            auto ne = no->entryAt(i);
+            auto s = e->size();
             memcpy(ne, e, s);
             offset += s;
-            int dataSize = e->value.usedStorage(o);
+            auto dataSize = e->value.usedStorage(o);
             if (dataSize) {
                 memcpy((char *)no + offset, e->value.data(o), dataSize);
                 ne->value.value = offset;
@@ -106,14 +106,14 @@ void Data::compact()
             }
         }
     } else {
-        Array *a = static_cast<Array *>(base);
-        Array *na = static_cast<Array *>(b);
+        auto a = static_cast<Array *>(base);
+        auto na = static_cast<Array *>(b);
 
-        for (int i = 0; i < (int)a->length; ++i) {
+        for (auto i = 0; i < (int)a->length; ++i) {
             const Value &v = (*a)[i];
             Value &nv = (*na)[i];
             nv = v;
-            int dataSize = v.usedStorage(a);
+            auto dataSize = v.usedStorage(a);
             if (dataSize) {
                 memcpy((char *)na + offset, v.data(a), dataSize);
                 nv.value = offset;
@@ -134,7 +134,7 @@ bool Data::valid() const
     if (header->tag != QJsonDocument::BinaryFormatTag || header->version != 1u)
         return false;
 
-    bool res = false;
+    auto res = false;
     if (header->root()->is_object)
         res = static_cast<Object *>(header->root())->isValid();
     else
@@ -152,7 +152,7 @@ int Base::reserveSpace(uint dataSize, int posInTable, uint numItems, bool replac
         return 0;
     }
 
-    offset off = tableOffset;
+    auto off = tableOffset;
     // move table to new position
     if (replace) {
         memmove((char *)(table()) + dataSize, table(), length*sizeof(offset));
@@ -161,7 +161,7 @@ int Base::reserveSpace(uint dataSize, int posInTable, uint numItems, bool replac
         memmove((char *)(table()) + dataSize, table(), posInTable*sizeof(offset));
     }
     tableOffset += dataSize;
-    for (int i = 0; i < (int)numItems; ++i)
+    for (auto i = 0; i < (int)numItems; ++i)
         table()[posInTable + i] = off;
     size += dataSize;
     if (!replace) {
@@ -181,11 +181,11 @@ void Base::removeItems(int pos, int numItems)
 
 int Object::indexOf(const QString &key, bool *exists)
 {
-    int min = 0;
+    auto min = 0;
     int n = length;
     while (n > 0) {
-        int half = n >> 1;
-        int middle = min + half;
+        auto half = n >> 1;
+        auto middle = min + half;
         if (*entryAt(middle) >= key) {
             n = half;
         } else {
@@ -208,14 +208,14 @@ bool Object::isValid() const
 
     QString lastKey;
     for (uint i = 0; i < length; ++i) {
-        offset entryOffset = table()[i];
+        auto entryOffset = table()[i];
         if (entryOffset + sizeof(Entry) >= tableOffset)
             return false;
-        Entry *e = entryAt(i);
-        int s = e->size();
+        auto e = entryAt(i);
+        auto s = e->size();
         if (table()[i] + s > tableOffset)
             return false;
-        QString key = e->key();
+        auto key = e->key();
         if (key < lastKey)
             return false;
         if (!e->value.isValid(this))
@@ -275,7 +275,7 @@ bool Entry::operator >=(const Entry &other) const
 
 int Value::usedStorage(const Base *b) const
 {
-    int s = 0;
+    auto s = 0;
     switch (type) {
     case QJsonValue::Double:
         if (latinOrIntValue)
@@ -283,7 +283,7 @@ int Value::usedStorage(const Base *b) const
         s = sizeof(double);
         break;
     case QJsonValue::String: {
-        char *d = data(b);
+        auto d = data(b);
         if (latinOrIntValue)
             s = sizeof(ushort) + qFromLittleEndian(*(ushort *)d);
         else
@@ -304,7 +304,7 @@ int Value::usedStorage(const Base *b) const
 
 bool Value::isValid(const Base *b) const
 {
-    int offset = 0;
+    auto offset = 0;
     switch (type) {
     case QJsonValue::Double:
         if (latinOrIntValue)
@@ -326,7 +326,7 @@ bool Value::isValid(const Base *b) const
     if (offset + sizeof(uint) > b->tableOffset)
         return false;
 
-    int s = usedStorage(b);
+    auto s = usedStorage(b);
     if (!s)
         return true;
     if (s < 0 || offset + s > (int)b->tableOffset)
@@ -352,7 +352,7 @@ int Value::requiredStorage(QJsonValue &v, bool *compressed)
         }
         return sizeof(double);
     case QJsonValue::String: {
-        QString s = v.toString();
+        auto s = v.toString();
         *compressed = QJsonPrivate::useCompressed(s);
         return QJsonPrivate::qStringSize(s, *compressed);
     }
@@ -384,7 +384,7 @@ uint Value::valueToStore(const QJsonValue &v, uint offset)
     case QJsonValue::Bool:
         return v.b;
     case QJsonValue::Double: {
-        int c = QJsonPrivate::compressedNumber(v.dbl);
+        auto c = QJsonPrivate::compressedNumber(v.dbl);
         if (c != INT_MAX)
             return c;
     }
@@ -409,7 +409,7 @@ void Value::copyData(const QJsonValue &v, char *dest, bool compressed)
         }
         break;
     case QJsonValue::String: {
-        QString str = v.toString();
+        auto str = v.toString();
         QJsonPrivate::copyString(dest, str, compressed);
         break;
     }

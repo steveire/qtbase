@@ -127,7 +127,7 @@ void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out
     }
 
     // we need to complement with UTF-8 appending
-    QString tmp = QString::fromUtf8(a, len);
+    auto tmp = QString::fromUtf8(a, len);
     memcpy(out, reinterpret_cast<const char *>(tmp.constData()), sizeof(QChar) * tmp.size());
     out += tmp.size();
 }

@@ -551,8 +551,8 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 */
 qreal QLineF::length() const
 {
-    qreal x = pt2.x() - pt1.x();
-    qreal y = pt2.y() - pt1.y();
+    auto x = pt2.x() - pt1.x();
+    auto y = pt2.y() - pt1.y();
     return qSqrt(x*x + y*y);
 }
 
@@ -569,12 +569,12 @@ qreal QLineF::length() const
 */
 qreal QLineF::angle() const
 {
-    const qreal dx = pt2.x() - pt1.x();
-    const qreal dy = pt2.y() - pt1.y();
+    const auto dx = pt2.x() - pt1.x();
+    const auto dy = pt2.y() - pt1.y();
 
-    const qreal theta = qAtan2(-dy, dx) * 360.0 / M_2PI;
+    const auto theta = qAtan2(-dy, dx) * 360.0 / M_2PI;
 
-    const qreal theta_normalized = theta < 0 ? theta + 360 : theta;
+    const auto theta_normalized = theta < 0 ? theta + 360 : theta;
 
     if (qFuzzyCompare(theta_normalized, qreal(360)))
         return qreal(0);
@@ -596,11 +596,11 @@ qreal QLineF::angle() const
 */
 void QLineF::setAngle(qreal angle)
 {
-    const qreal angleR = angle * M_2PI / 360.0;
-    const qreal l = length();
+    const auto angleR = angle * M_2PI / 360.0;
+    const auto l = length();
 
-    const qreal dx = qCos(angleR) * l;
-    const qreal dy = -qSin(angleR) * l;
+    const auto dx = qCos(angleR) * l;
+    const auto dy = -qSin(angleR) * l;
 
     pt2.rx() = pt1.x() + dx;
     pt2.ry() = pt1.y() + dy;
@@ -618,7 +618,7 @@ void QLineF::setAngle(qreal angle)
 */
 QLineF QLineF::fromPolar(qreal length, qreal angle)
 {
-    const qreal angleR = angle * M_2PI / 360.0;
+    const auto angleR = angle * M_2PI / 360.0;
     return QLineF(0, 0, qCos(angleR) * length, -qSin(angleR) * length);
 }
 
@@ -630,10 +630,10 @@ QLineF QLineF::fromPolar(qreal length, qreal angle)
 */
 QLineF QLineF::unitVector() const
 {
-    qreal x = pt2.x() - pt1.x();
-    qreal y = pt2.y() - pt1.y();
+    auto x = pt2.x() - pt1.x();
+    auto y = pt2.y() - pt1.y();
 
-    qreal len = qSqrt(x*x + y*y);
+    auto len = qSqrt(x*x + y*y);
     QLineF f(p1(), QPointF(pt1.x() + x/len, pt1.y() + y/len));
 
 #ifndef QT_NO_DEBUG
@@ -658,23 +658,23 @@ QLineF QLineF::unitVector() const
 QLineF::IntersectType QLineF::intersect(const QLineF &l, QPointF *intersectionPoint) const
 {
     // ipmlementation is based on Graphics Gems III's "Faster Line Segment Intersection"
-    const QPointF a = pt2 - pt1;
-    const QPointF b = l.pt1 - l.pt2;
-    const QPointF c = pt1 - l.pt1;
+    const auto a = pt2 - pt1;
+    const auto b = l.pt1 - l.pt2;
+    const auto c = pt1 - l.pt1;
 
-    const qreal denominator = a.y() * b.x() - a.x() * b.y();
+    const auto denominator = a.y() * b.x() - a.x() * b.y();
     if (denominator == 0 || !qt_is_finite(denominator))
         return NoIntersection;
 
-    const qreal reciprocal = 1 / denominator;
-    const qreal na = (b.y() * c.x() - b.x() * c.y()) * reciprocal;
+    const auto reciprocal = 1 / denominator;
+    const auto na = (b.y() * c.x() - b.x() * c.y()) * reciprocal;
     if (intersectionPoint)
         *intersectionPoint = pt1 + a * na;
 
     if (na < 0 || na > 1)
         return UnboundedIntersection;
 
-    const qreal nb = (a.x() * c.y() - a.y() * c.x()) * reciprocal;
+    const auto nb = (a.x() * c.y() - a.y() * c.x()) * reciprocal;
     if (nb < 0 || nb > 1)
         return UnboundedIntersection;
 
@@ -771,11 +771,11 @@ qreal QLineF::angleTo(const QLineF &l) const
     if (isNull() || l.isNull())
         return 0;
 
-    const qreal a1 = angle();
-    const qreal a2 = l.angle();
+    const auto a1 = angle();
+    const auto a2 = l.angle();
 
-    const qreal delta = a2 - a1;
-    const qreal delta_normalized = delta < 0 ? delta + 360 : delta;
+    const auto delta = a2 - a1;
+    const auto delta_normalized = delta < 0 ? delta + 360 : delta;
 
     if (qFuzzyCompare(delta, qreal(360)))
         return 0;
@@ -809,7 +809,7 @@ qreal QLineF::angle(const QLineF &l) const
 {
     if (isNull() || l.isNull())
         return 0;
-    qreal cos_line = (dx()*l.dx() + dy()*l.dy()) / (length()*l.length());
+    auto cos_line = (dx()*l.dx() + dy()*l.dy()) / (length()*l.length());
     qreal rad = 0;
     // only accept cos_line in the range [-1,1], if it is outside, use 0 (we return 0 rather than PI for those cases)
     if (cos_line >= -1.0 && cos_line <= 1.0) rad = qAcos( cos_line );

@@ -92,14 +92,14 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
 {
     Q_Q(QTimeLine);
 
-    qreal lastValue = q->currentValue();
-    int lastFrame = q->currentFrame();
+    auto lastValue = q->currentValue();
+    auto lastFrame = q->currentFrame();
 
     // Determine if we are looping.
-    int elapsed = (direction == QTimeLine::Backward) ? (-msecs +  duration) : msecs;
-    int loopCount = elapsed / duration;
+    auto elapsed = (direction == QTimeLine::Backward) ? (-msecs +  duration) : msecs;
+    auto loopCount = elapsed / duration;
 
-    bool looping = (loopCount != currentLoopCount);
+    auto looping = (loopCount != currentLoopCount);
 #ifdef QTIMELINE_DEBUG
     qDebug() << "QTimeLinePrivate::setCurrentTime:" << msecs << duration << "with loopCount" << loopCount
              << "currentLoopCount" << currentLoopCount
@@ -114,21 +114,21 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
         currentTime = duration - currentTime;
 
     // Check if we have reached the end of loopcount.
-    bool finished = false;
+    auto finished = false;
     if (totalLoopCount && currentLoopCount >= totalLoopCount) {
         finished = true;
         currentTime = (direction == QTimeLine::Backward) ? 0 : duration;
         currentLoopCount = totalLoopCount - 1;
     }
 
-    int currentFrame = q->frameForTime(currentTime);
+    auto currentFrame = q->frameForTime(currentTime);
 #ifdef QTIMELINE_DEBUG
     qDebug() << "QTimeLinePrivate::setCurrentTime: frameForTime" << currentTime << currentFrame;
 #endif
     if (!qFuzzyCompare(lastValue, q->currentValue()))
         emit q->valueChanged(q->currentValue(), QTimeLine::QPrivateSignal());
     if (lastFrame != currentFrame) {
-        const int transitionframe = (direction == QTimeLine::Forward ? endFrame : startFrame);
+        const auto transitionframe = (direction == QTimeLine::Forward ? endFrame : startFrame);
         if (looping && !finished && transitionframe != currentFrame) {
 #ifdef QTIMELINE_DEBUG
             qDebug() << "QTimeLinePrivate::setCurrentTime: transitionframe";
@@ -651,7 +651,7 @@ qreal QTimeLine::valueForTime(int msec) const
     Q_D(const QTimeLine);
     msec = qMin(qMax(msec, 0), d->duration);
 
-    qreal value = msec / qreal(d->duration);
+    auto value = msec / qreal(d->duration);
     return d->easingCurve.valueForProgress(value);
 }
 
@@ -675,7 +675,7 @@ void QTimeLine::start()
         qWarning("QTimeLine::start: already running");
         return;
     }
-    int curTime = 0;
+    auto curTime = 0;
     if (d->direction == Backward)
         curTime = d->duration;
     d->timerId = startTimer(d->updateInterval);

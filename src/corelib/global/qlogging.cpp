@@ -150,12 +150,12 @@ static bool isFatal(QtMsgType msgType)
         return true;
 
     if (msgType == QtCriticalMsg) {
-        static bool fatalCriticals = !qEnvironmentVariableIsEmpty("QT_FATAL_CRITICALS");
+        static auto fatalCriticals = !qEnvironmentVariableIsEmpty("QT_FATAL_CRITICALS");
         return fatalCriticals;
     }
 
     if (msgType == QtWarningMsg || msgType == QtCriticalMsg) {
-        static bool fatalWarnings = !qEnvironmentVariableIsEmpty("QT_FATAL_WARNINGS");
+        static auto fatalWarnings = !qEnvironmentVariableIsEmpty("QT_FATAL_WARNINGS");
         return fatalWarnings;
     }
 
@@ -178,8 +178,8 @@ static bool willLogToConsole()
     //     or a controlling TTY (Unix). This is done even if stderr was redirected
     //     to the blackhole device (NUL or /dev/null).
 
-    bool ok = true;
-    uint envcontrol = qgetenv("QT_LOGGING_TO_CONSOLE").toUInt(&ok);
+    auto ok = true;
+    auto envcontrol = qgetenv("QT_LOGGING_TO_CONSOLE").toUInt(&ok);
     if (ok)
         return envcontrol;
 
@@ -187,7 +187,7 @@ static bool willLogToConsole()
     return GetConsoleWindow();
 #  elif defined(Q_OS_UNIX)
     // if /dev/tty exists, we can only open it if we have a controlling TTY
-    int devtty = qt_safe_open("/dev/tty", O_RDONLY);
+    auto devtty = qt_safe_open("/dev/tty", O_RDONLY);
     if (devtty == -1 && (errno == ENOENT || errno == EPERM)) {
         // no /dev/tty, fall back to isatty on stderr
         return isatty(STDERR_FILENO);
@@ -207,7 +207,7 @@ static bool willLogToConsole()
 
 Q_CORE_EXPORT bool qt_logging_to_console()
 {
-    static const bool logToConsole = willLogToConsole();
+    static const auto logToConsole = willLogToConsole();
     return logToConsole;
 }
 
@@ -267,7 +267,7 @@ static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const cha
 Q_NEVER_INLINE
 static QString qt_message(QtMsgType msgType, const QMessageLogContext &context, const char *msg, va_list ap)
 {
-    QString buf = QString::vasprintf(msg, ap);
+    auto buf = QString::vasprintf(msg, ap);
     qt_message_print(msgType, context, buf);
     return buf;
 }
@@ -283,7 +283,7 @@ void QMessageLogger::debug(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtDebugMsg, context, msg, ap);
+    const auto message = qt_message(QtDebugMsg, context, msg, ap);
     va_end(ap);
 
     if (isFatal(QtDebugMsg))
@@ -303,7 +303,7 @@ void QMessageLogger::info(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtInfoMsg, context, msg, ap);
+    const auto message = qt_message(QtInfoMsg, context, msg, ap);
     va_end(ap);
 
     if (isFatal(QtInfoMsg))
@@ -342,7 +342,7 @@ void QMessageLogger::debug(const QLoggingCategory &cat, const char *msg, ...) co
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtDebugMsg, ctxt, msg, ap);
+    const auto message = qt_message(QtDebugMsg, ctxt, msg, ap);
     va_end(ap);
 
     if (isFatal(QtDebugMsg))
@@ -369,7 +369,7 @@ void QMessageLogger::debug(QMessageLogger::CategoryFunction catFunc,
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtDebugMsg, ctxt, msg, ap);
+    const auto message = qt_message(QtDebugMsg, ctxt, msg, ap);
     va_end(ap);
 
     if (isFatal(QtDebugMsg))
@@ -385,7 +385,7 @@ void QMessageLogger::debug(QMessageLogger::CategoryFunction catFunc,
 */
 QDebug QMessageLogger::debug() const
 {
-    QDebug dbg = QDebug(QtDebugMsg);
+    auto dbg = QDebug(QtDebugMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
     ctxt.copy(context);
     return dbg;
@@ -399,7 +399,7 @@ QDebug QMessageLogger::debug() const
 */
 QDebug QMessageLogger::debug(const QLoggingCategory &cat) const
 {
-    QDebug dbg = QDebug(QtDebugMsg);
+    auto dbg = QDebug(QtDebugMsg);
     if (!cat.isDebugEnabled())
         dbg.stream->message_output = false;
 
@@ -453,7 +453,7 @@ void QMessageLogger::info(const QLoggingCategory &cat, const char *msg, ...) con
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtInfoMsg, ctxt, msg, ap);
+    const auto message = qt_message(QtInfoMsg, ctxt, msg, ap);
     va_end(ap);
 
     if (isFatal(QtInfoMsg))
@@ -480,7 +480,7 @@ void QMessageLogger::info(QMessageLogger::CategoryFunction catFunc,
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtInfoMsg, ctxt, msg, ap);
+    const auto message = qt_message(QtInfoMsg, ctxt, msg, ap);
     va_end(ap);
 
     if (isFatal(QtInfoMsg))
@@ -497,7 +497,7 @@ void QMessageLogger::info(QMessageLogger::CategoryFunction catFunc,
 */
 QDebug QMessageLogger::info() const
 {
-    QDebug dbg = QDebug(QtInfoMsg);
+    auto dbg = QDebug(QtInfoMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
     ctxt.copy(context);
     return dbg;
@@ -511,7 +511,7 @@ QDebug QMessageLogger::info() const
 */
 QDebug QMessageLogger::info(const QLoggingCategory &cat) const
 {
-    QDebug dbg = QDebug(QtInfoMsg);
+    auto dbg = QDebug(QtInfoMsg);
     if (!cat.isInfoEnabled())
         dbg.stream->message_output = false;
 
@@ -546,7 +546,7 @@ void QMessageLogger::warning(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtWarningMsg, context, msg, ap);
+    const auto message = qt_message(QtWarningMsg, context, msg, ap);
     va_end(ap);
 
     if (isFatal(QtWarningMsg))
@@ -571,7 +571,7 @@ void QMessageLogger::warning(const QLoggingCategory &cat, const char *msg, ...) 
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtWarningMsg, ctxt, msg, ap);
+    const auto message = qt_message(QtWarningMsg, ctxt, msg, ap);
     va_end(ap);
 
     if (isFatal(QtWarningMsg))
@@ -598,7 +598,7 @@ void QMessageLogger::warning(QMessageLogger::CategoryFunction catFunc,
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtWarningMsg, ctxt, msg, ap);
+    const auto message = qt_message(QtWarningMsg, ctxt, msg, ap);
     va_end(ap);
 
     if (isFatal(QtWarningMsg))
@@ -613,7 +613,7 @@ void QMessageLogger::warning(QMessageLogger::CategoryFunction catFunc,
 */
 QDebug QMessageLogger::warning() const
 {
-    QDebug dbg = QDebug(QtWarningMsg);
+    auto dbg = QDebug(QtWarningMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
     ctxt.copy(context);
     return dbg;
@@ -626,7 +626,7 @@ QDebug QMessageLogger::warning() const
 */
 QDebug QMessageLogger::warning(const QLoggingCategory &cat) const
 {
-    QDebug dbg = QDebug(QtWarningMsg);
+    auto dbg = QDebug(QtWarningMsg);
     if (!cat.isWarningEnabled())
         dbg.stream->message_output = false;
 
@@ -662,7 +662,7 @@ void QMessageLogger::critical(const char *msg, ...) const
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtCriticalMsg, context, msg, ap);
+    const auto message = qt_message(QtCriticalMsg, context, msg, ap);
     va_end(ap);
 
     if (isFatal(QtCriticalMsg))
@@ -687,7 +687,7 @@ void QMessageLogger::critical(const QLoggingCategory &cat, const char *msg, ...)
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtCriticalMsg, ctxt, msg, ap);
+    const auto message = qt_message(QtCriticalMsg, ctxt, msg, ap);
     va_end(ap);
 
     if (isFatal(QtCriticalMsg))
@@ -714,7 +714,7 @@ void QMessageLogger::critical(QMessageLogger::CategoryFunction catFunc,
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    const QString message = qt_message(QtCriticalMsg, ctxt, msg, ap);
+    const auto message = qt_message(QtCriticalMsg, ctxt, msg, ap);
     va_end(ap);
 
     if (isFatal(QtCriticalMsg))
@@ -729,7 +729,7 @@ void QMessageLogger::critical(QMessageLogger::CategoryFunction catFunc,
 */
 QDebug QMessageLogger::critical() const
 {
-    QDebug dbg = QDebug(QtCriticalMsg);
+    auto dbg = QDebug(QtCriticalMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
     ctxt.copy(context);
     return dbg;
@@ -743,7 +743,7 @@ QDebug QMessageLogger::critical() const
 */
 QDebug QMessageLogger::critical(const QLoggingCategory &cat) const
 {
-    QDebug dbg = QDebug(QtCriticalMsg);
+    auto dbg = QDebug(QtCriticalMsg);
     if (!cat.isCriticalEnabled())
         dbg.stream->message_output = false;
 
@@ -822,7 +822,7 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
 
     // remove argument list
     forever {
-        int parencount = 0;
+        auto parencount = 0;
         pos = info.lastIndexOf(')');
         if (pos == -1) {
             // Don't know how to parse this function name
@@ -860,8 +860,8 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
     }
 
     // find the beginning of the function name
-    int parencount = 0;
-    int templatecount = 0;
+    auto parencount = 0;
+    auto templatecount = 0;
     --pos;
 
     // make sure special characters in operator names are kept
@@ -880,7 +880,7 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
                 --pos;
             break;
         case '=': {
-            int operatorLength = (int)strlen(operator_lessThanEqual);
+            auto operatorLength = (int)strlen(operator_lessThanEqual);
             if (info.indexOf(operator_lessThanEqual) == pos - operatorLength + 1)
                 pos -= 2;
             else if (info.indexOf(operator_greaterThanEqual) == pos - operatorLength + 1)
@@ -896,7 +896,7 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
         if (parencount < 0 || templatecount < 0)
             return info;
 
-        char c = info.at(pos);
+        auto c = info.at(pos);
         if (c == ')')
             ++parencount;
         else if (c == '(')
@@ -924,11 +924,11 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
             break;
 
         // find the matching close
-        int end = pos;
+        auto end = pos;
         templatecount = 1;
         --pos;
         while (pos && templatecount) {
-            char c = info.at(pos);
+            auto c = info.at(pos);
             if (c == '>')
                 ++templatecount;
             else if (c == '<')
@@ -1003,7 +1003,7 @@ QMessagePattern::QMessagePattern()
 #ifndef QT_BOOTSTRAPPED
     timer.start();
 #endif
-    const QString envPattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
+    const auto envPattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
     if (envPattern.isEmpty()) {
         setPattern(QLatin1String(defaultPattern));
     } else {
@@ -1014,7 +1014,7 @@ QMessagePattern::QMessagePattern()
 
 QMessagePattern::~QMessagePattern()
 {
-    for (int i = 0; literals[i]; ++i)
+    for (auto i = 0; literals[i]; ++i)
         delete [] literals[i];
     delete [] literals;
     literals = 0;
@@ -1025,7 +1025,7 @@ QMessagePattern::~QMessagePattern()
 void QMessagePattern::setPattern(const QString &pattern)
 {
     if (literals) {
-        for (int i = 0; literals[i]; ++i)
+        for (auto i = 0; literals[i]; ++i)
             delete [] literals[i];
         delete [] literals;
     }
@@ -1034,9 +1034,9 @@ void QMessagePattern::setPattern(const QString &pattern)
     // scanner
     QList<QString> lexemes;
     QString lexeme;
-    bool inPlaceholder = false;
-    for (int i = 0; i < pattern.size(); ++i) {
-        const QChar c = pattern.at(i);
+    auto inPlaceholder = false;
+    for (auto i = 0; i < pattern.size(); ++i) {
+        const auto c = pattern.at(i);
         if ((c == QLatin1Char('%'))
                 && !inPlaceholder) {
             if ((i + 1 < pattern.size())
@@ -1067,12 +1067,12 @@ void QMessagePattern::setPattern(const QString &pattern)
     tokens = new const char*[lexemes.size() + 1];
     tokens[lexemes.size()] = 0;
 
-    bool nestedIfError = false;
-    bool inIf = false;
+    auto nestedIfError = false;
+    auto inIf = false;
     QString error;
 
-    for (int i = 0; i < lexemes.size(); ++i) {
-        const QString lexeme = lexemes.at(i);
+    for (auto i = 0; i < lexemes.size(); ++i) {
+        const auto lexeme = lexemes.at(i);
         if (lexeme.startsWith(QLatin1String("%{"))
                 && lexeme.endsWith(QLatin1Char('}'))) {
             // placeholder
@@ -1098,7 +1098,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 tokens[i] = qthreadptrTokenC;
             else if (lexeme.startsWith(QLatin1String(timeTokenC))) {
                 tokens[i] = timeTokenC;
-                int spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
+                auto spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
                 if (spaceIdx > 0)
                     timeFormat = lexeme.mid(spaceIdx + 1, lexeme.length() - spaceIdx - 2);
             } else if (lexeme.startsWith(QLatin1String(backtraceTokenC))) {
@@ -1106,9 +1106,9 @@ void QMessagePattern::setPattern(const QString &pattern)
                 tokens[i] = backtraceTokenC;
                 QRegularExpression depthRx(QStringLiteral(" depth=(?|\"([^\"]*)\"|([^ }]*))"));
                 QRegularExpression separatorRx(QStringLiteral(" separator=(?|\"([^\"]*)\"|([^ }]*))"));
-                QRegularExpressionMatch m = depthRx.match(lexeme);
+                auto m = depthRx.match(lexeme);
                 if (m.hasMatch()) {
-                    int depth = m.capturedRef(1).toInt();
+                    auto depth = m.capturedRef(1).toInt();
                     if (depth <= 0)
                         error += QStringLiteral("QT_MESSAGE_PATTERN: %{backtrace} depth must be a number greater than 0\n");
                     else
@@ -1147,7 +1147,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                         .arg(lexeme);
             }
         } else {
-            char *literal = new char[lexeme.size() + 1];
+            auto literal = new char[lexeme.size() + 1];
             strncpy(literal, lexeme.toLatin1().constData(), lexeme.size());
             literal[lexeme.size()] = '\0';
             literalsVar.append(literal);
@@ -1250,18 +1250,18 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
 
     QMutexLocker lock(&QMessagePattern::mutex);
 
-    QMessagePattern *pattern = qMessagePattern();
+    auto pattern = qMessagePattern();
     if (!pattern) {
         // after destruction of static QMessagePattern instance
         message.append(str);
         return message;
     }
 
-    bool skip = false;
+    auto skip = false;
 
     // we do not convert file, function, line literals to local encoding due to overhead
-    for (int i = 0; pattern->tokens[i] != 0; ++i) {
-        const char *token = pattern->tokens[i];
+    for (auto i = 0; pattern->tokens[i] != 0; ++i) {
+        auto token = pattern->tokens[i];
         if (token == endifTokenC) {
             skip = false;
         } else if (skip) {
@@ -1304,12 +1304,12 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
 #ifdef QLOGGING_HAVE_BACKTRACE
         } else if (token == backtraceTokenC) {
             QVarLengthArray<void*, 32> buffer(7 + pattern->backtraceDepth);
-            int n = backtrace(buffer.data(), buffer.size());
+            auto n = backtrace(buffer.data(), buffer.size());
             if (n > 0) {
-                int numberPrinted = 0;
-                for (int i = 0; i < n && numberPrinted < pattern->backtraceDepth; ++i) {
+                auto numberPrinted = 0;
+                for (auto i = 0; i < n && numberPrinted < pattern->backtraceDepth; ++i) {
                     QScopedPointer<char*, QScopedPointerPodDeleter> strings(backtrace_symbols(buffer.data() + i, 1));
-                    QString trace = QString::fromLatin1(strings.data()[0]);
+                    auto trace = QString::fromLatin1(strings.data()[0]);
                     // The results of backtrace_symbols looks like this:
                     //    /lib/libc.so.6(__libc_start_main+0xf3) [0x4a937413]
                     // The offset and function name are optional.
@@ -1318,11 +1318,11 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
                     static QRegularExpression rx(QStringLiteral("^(?:[^(]*/)?([^(/]+)\\(([^+]*)(?:[\\+[a-f0-9x]*)?\\) \\[[a-f0-9x]*\\]$"),
                                                  QRegularExpression::OptimizeOnFirstUsageOption);
 
-                    QRegularExpressionMatch m = rx.match(trace);
+                    auto m = rx.match(trace);
                     if (m.hasMatch()) {
                         // skip the trace from QtCore that are because of the qDebug itself
-                        QString library = m.captured(1);
-                        QString function = m.captured(2);
+                        auto library = m.captured(1);
+                        auto function = m.captured(2);
                         if (!numberPrinted && library.contains(QLatin1String("Qt5Core"))
                             && (function.isEmpty() || function.contains(QLatin1String("Message"), Qt::CaseInsensitive)
                                 || function.contains(QLatin1String("QDebug")))) {
@@ -1493,7 +1493,7 @@ static void android_default_message_handler(QtMsgType type,
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context,
                                    const QString &buf)
 {
-    QString logMessage = qFormatLogMessage(type, context, buf);
+    auto logMessage = qFormatLogMessage(type, context, buf);
 
     // print nothing if message pattern didn't apply / was empty.
     // (still print empty lines, e.g. because message itself was empty)
@@ -1561,7 +1561,7 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
 #ifndef QT_BOOTSTRAPPED
     // qDebug, qWarning, ... macros do not check whether category is enabled
     if (!context.category || (strcmp(context.category, "default") == 0)) {
-        if (QLoggingCategory *defaultCategory = QLoggingCategory::defaultCategory()) {
+        if (auto defaultCategory = QLoggingCategory::defaultCategory()) {
             if (!defaultCategory->isEnabled(msgType))
                 return;
         }
@@ -1632,7 +1632,7 @@ void qErrnoWarning(const char *msg, ...)
     // to be careful here (like we do in plain qWarning())
     va_list ap;
     va_start(ap, msg);
-    QString buf = QString::vasprintf(msg, ap);
+    auto buf = QString::vasprintf(msg, ap);
     va_end(ap);
 
     buf += QLatin1String(" (") + qt_error_string(-1) + QLatin1Char(')');
@@ -1646,7 +1646,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     // to be careful here (like we do in plain qWarning())
     va_list ap;
     va_start(ap, msg);
-    QString buf = QString::vasprintf(msg, ap);
+    auto buf = QString::vasprintf(msg, ap);
     va_end(ap);
 
     buf += QLatin1String(" (") + qt_error_string(code) + QLatin1Char(')');

@@ -786,7 +786,7 @@ static const unsigned int qt_qregularexpression_optimize_after_use_count = 10;
 */
 static int convertToPcreOptions(QRegularExpression::PatternOptions patternOptions)
 {
-    int options = 0;
+    auto options = 0;
 
     if (patternOptions & QRegularExpression::CaseInsensitiveOption)
         options |= PCRE_CASELESS;
@@ -811,7 +811,7 @@ static int convertToPcreOptions(QRegularExpression::PatternOptions patternOption
 */
 static int convertToPcreOptions(QRegularExpression::MatchOptions matchOptions)
 {
-    int options = 0;
+    auto options = 0;
 
     if (matchOptions & QRegularExpression::AnchoredMatchOption)
         options |= PCRE_ANCHORED;
@@ -1002,7 +1002,7 @@ void QRegularExpressionPrivate::compilePattern()
     isDirty = false;
     cleanCompiledPattern();
 
-    int options = convertToPcreOptions(patternOptions);
+    auto options = convertToPcreOptions(patternOptions);
     options |= PCRE_UTF16;
 
     int errorCode;
@@ -1118,10 +1118,10 @@ static pcre16_jit_stack *qtPcreCallback(void *)
 */
 static bool isJitEnabled()
 {
-    QByteArray jitEnvironment = qgetenv("QT_ENABLE_REGEXP_JIT");
+    auto jitEnvironment = qgetenv("QT_ENABLE_REGEXP_JIT");
     if (!jitEnvironment.isEmpty()) {
         bool ok;
-        int enableJit = jitEnvironment.toInt(&ok);
+        auto enableJit = jitEnvironment.toInt(&ok);
         return ok ? (enableJit != 0) : true;
     }
 
@@ -1166,14 +1166,14 @@ void QRegularExpressionPrivate::optimizePattern(OptimizePatternOption option)
     if ((option == LazyOptimizeOption) && (++usedCount != qt_qregularexpression_optimize_after_use_count))
         return;
 
-    static const bool enableJit = isJitEnabled();
+    static const auto enableJit = isJitEnabled();
 
-    int studyOptions = 0;
+    auto studyOptions = 0;
     if (enableJit)
         studyOptions |= (PCRE_STUDY_JIT_COMPILE | PCRE_STUDY_JIT_PARTIAL_SOFT_COMPILE | PCRE_STUDY_JIT_PARTIAL_HARD_COMPILE);
 
     const char *err;
-    pcre16_extra * const localStudyData = pcre16_study(compiledPattern, studyOptions, &err);
+    const auto localStudyData = pcre16_study(compiledPattern, studyOptions, &err);
 
     if (localStudyData && localStudyData->flags & PCRE_EXTRA_EXECUTABLE_JIT)
         pcre16_assign_jit_stack(localStudyData, qtPcreCallback, 0);
@@ -1197,7 +1197,7 @@ int QRegularExpressionPrivate::captureIndexForName(const QString &name) const
     if (!compiledPattern)
         return -1;
 
-    int index = pcre16_get_stringnumber(compiledPattern, name.utf16());
+    auto index = pcre16_get_stringnumber(compiledPattern, name.utf16());
     if (index >= 0)
         return index;
 
@@ -1216,11 +1216,11 @@ static int pcre16SafeExec(const pcre16 *code, const pcre16_extra *extra,
                           int startOffset, int options,
                           int *ovector, int ovecsize)
 {
-    int result = pcre16_exec(code, extra, subject, length,
+    auto result = pcre16_exec(code, extra, subject, length,
                              startOffset, options, ovector, ovecsize);
 
     if (result == PCRE_ERROR_JIT_STACKLIMIT && !jitStacks()->hasLocalData()) {
-        QPcreJitStackPointer *p = new QPcreJitStackPointer;
+        auto p = new QPcreJitStackPointer;
         jitStacks()->setLocalData(p);
 
         result = pcre16_exec(code, extra, subject, length,
@@ -1283,7 +1283,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
 
     // skip optimizing and doing the actual matching if NoMatch type was requested
     if (matchType == QRegularExpression::NoMatch) {
-        QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
+        auto priv = new QRegularExpressionMatchPrivate(re, subject,
                                                                                   subjectStart, subjectLength,
                                                                                   matchType, matchOptions);
         priv->isValid = true;
@@ -1291,13 +1291,13 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     }
 
     // capturingCount doesn't include the implicit "0" capturing group
-    QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
+    auto priv = new QRegularExpressionMatchPrivate(re, subject,
                                                                               subjectStart, subjectLength,
                                                                               matchType, matchOptions,
                                                                               capturingCount + 1);
 
     if (!(patternOptions & QRegularExpression::DontAutomaticallyOptimizeOption)) {
-        const OptimizePatternOption optimizePatternOption =
+        const auto optimizePatternOption =
                 (patternOptions & QRegularExpression::OptimizeOnFirstUsageOption)
                     ? ImmediateOptimizeOption
                     : LazyOptimizeOption;
@@ -1309,9 +1309,9 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     // work with a local copy of the study data, as we are running pcre_exec
     // potentially more than once, and we don't want to run call it
     // with different study data
-    const pcre16_extra * const currentStudyData = studyData.loadAcquire();
+    const auto currentStudyData = studyData.loadAcquire();
 
-    int pcreOptions = convertToPcreOptions(matchOptions);
+    auto pcreOptions = convertToPcreOptions(matchOptions);
 
     if (matchType == QRegularExpression::PartialPreferCompleteMatch)
         pcreOptions |= PCRE_PARTIAL_SOFT;
@@ -1323,16 +1323,16 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
         pcreOptions |= PCRE_NO_UTF16_CHECK;
     }
 
-    bool previousMatchWasEmpty = false;
+    auto previousMatchWasEmpty = false;
     if (previous && previous->hasMatch &&
             (previous->capturedOffsets.at(0) == previous->capturedOffsets.at(1))) {
         previousMatchWasEmpty = true;
     }
 
-    int * const captureOffsets = priv->capturedOffsets.data();
-    const int captureOffsetsCount = priv->capturedOffsets.size();
+    const auto captureOffsets = priv->capturedOffsets.data();
+    const auto captureOffsetsCount = priv->capturedOffsets.size();
 
-    const unsigned short * const subjectUtf16 = subject.utf16() + subjectStart;
+    const auto subjectUtf16 = subject.utf16() + subjectStart;
 
     int result;
 
@@ -1422,7 +1422,7 @@ QRegularExpressionMatchPrivate::QRegularExpressionMatchPrivate(const QRegularExp
 {
     Q_ASSERT(capturingCount >= 0);
     if (capturingCount > 0) {
-        const int captureOffsetsCount = capturingCount * 3;
+        const auto captureOffsetsCount = capturingCount * 3;
         capturedOffsets.resize(captureOffsetsCount);
     }
 }
@@ -1440,7 +1440,7 @@ QRegularExpressionMatch QRegularExpressionMatchPrivate::nextMatch() const
     // if we're advancing a match on the same subject,
     // then that subject was already checked at least once (when this object
     // was created, or when the object that created this one was created, etc.)
-    QRegularExpressionMatchPrivate *nextPrivate = regularExpression.d->doMatch(subject,
+    auto nextPrivate = regularExpression.d->doMatch(subject,
                                                                                subjectStart,
                                                                                subjectLength,
                                                                                capturedOffsets.at(1),
@@ -1644,11 +1644,11 @@ QStringList QRegularExpression::namedCaptureGroups() const
 
     // no QList::resize nor fill is available. The +1 is for the implicit group #0
     result.reserve(d->capturingCount + 1);
-    for (int i = 0; i < d->capturingCount + 1; ++i)
+    for (auto i = 0; i < d->capturingCount + 1; ++i)
         result.append(QString());
 
-    for (int i = 0; i < namedCapturingTableEntryCount; ++i) {
-        const ushort * const currentNamedCapturingTableRow = namedCapturingTable +
+    for (auto i = 0; i < namedCapturingTableEntryCount; ++i) {
+        const auto currentNamedCapturingTableRow = namedCapturingTable +
                                                              namedCapturingTableEntrySize * i;
 
         const int index = *currentNamedCapturingTableRow;
@@ -1715,7 +1715,7 @@ QRegularExpressionMatch QRegularExpression::match(const QString &subject,
 {
     d.data()->compilePattern();
 
-    QRegularExpressionMatchPrivate *priv = d->doMatch(subject, 0, subject.length(), offset, matchType, matchOptions);
+    auto priv = d->doMatch(subject, 0, subject.length(), offset, matchType, matchOptions);
     return QRegularExpressionMatch(*priv);
 }
 
@@ -1739,9 +1739,9 @@ QRegularExpressionMatch QRegularExpression::match(const QStringRef &subjectRef,
 {
     d.data()->compilePattern();
 
-    const QString subject = subjectRef.string() ? *subjectRef.string() : QString();
+    const auto subject = subjectRef.string() ? *subjectRef.string() : QString();
 
-    QRegularExpressionMatchPrivate *priv = d->doMatch(subject, subjectRef.position(), subjectRef.length(), offset, matchType, matchOptions);
+    auto priv = d->doMatch(subject, subjectRef.position(), subjectRef.length(), offset, matchType, matchOptions);
     return QRegularExpressionMatch(*priv);
 }
 
@@ -1761,7 +1761,7 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QString &s
                                                                 MatchType matchType,
                                                                 MatchOptions matchOptions) const
 {
-    QRegularExpressionMatchIteratorPrivate *priv =
+    auto priv =
             new QRegularExpressionMatchIteratorPrivate(*this,
                                                        matchType,
                                                        matchOptions,
@@ -1789,7 +1789,7 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QStringRef
                                                                 MatchType matchType,
                                                                 MatchOptions matchOptions) const
 {
-    QRegularExpressionMatchIteratorPrivate *priv =
+    auto priv =
             new QRegularExpressionMatchIteratorPrivate(*this,
                                                        matchType,
                                                        matchOptions,
@@ -1884,13 +1884,13 @@ uint qHash(const QRegularExpression &key, uint seed) Q_DECL_NOTHROW
 QString QRegularExpression::escape(const QString &str)
 {
     QString result;
-    const int count = str.size();
+    const auto count = str.size();
     result.reserve(count * 2);
 
     // everything but [a-zA-Z0-9_] gets escaped,
     // cf. perldoc -f quotemeta
-    for (int i = 0; i < count; ++i) {
-        const QChar current = str.at(i);
+    for (auto i = 0; i < count; ++i) {
+        const auto current = str.at(i);
 
         if (current == QChar::Null) {
             // unlike Perl, a literal NUL must be escaped with
@@ -2055,7 +2055,7 @@ QString QRegularExpressionMatch::captured(int nth) const
     if (nth < 0 || nth > lastCapturedIndex())
         return QString();
 
-    int start = capturedStart(nth);
+    auto start = capturedStart(nth);
 
     if (start == -1) // didn't capture
         return QString();
@@ -2076,7 +2076,7 @@ QStringRef QRegularExpressionMatch::capturedRef(int nth) const
     if (nth < 0 || nth > lastCapturedIndex())
         return QStringRef();
 
-    int start = capturedStart(nth);
+    auto start = capturedStart(nth);
 
     if (start == -1) // didn't capture
         return QStringRef();
@@ -2098,7 +2098,7 @@ QString QRegularExpressionMatch::captured(const QString &name) const
         qWarning("QRegularExpressionMatch::captured: empty capturing group name passed");
         return QString();
     }
-    int nth = d->regularExpression.d->captureIndexForName(name);
+    auto nth = d->regularExpression.d->captureIndexForName(name);
     if (nth == -1)
         return QString();
     return captured(nth);
@@ -2118,7 +2118,7 @@ QStringRef QRegularExpressionMatch::capturedRef(const QString &name) const
         qWarning("QRegularExpressionMatch::capturedRef: empty capturing group name passed");
         return QStringRef();
     }
-    int nth = d->regularExpression.d->captureIndexForName(name);
+    auto nth = d->regularExpression.d->captureIndexForName(name);
     if (nth == -1)
         return QStringRef();
     return capturedRef(nth);
@@ -2132,7 +2132,7 @@ QStringList QRegularExpressionMatch::capturedTexts() const
 {
     QStringList texts;
     texts.reserve(d->capturedCount);
-    for (int i = 0; i < d->capturedCount; ++i)
+    for (auto i = 0; i < d->capturedCount; ++i)
         texts << captured(i);
     return texts;
 }
@@ -2196,7 +2196,7 @@ int QRegularExpressionMatch::capturedStart(const QString &name) const
         qWarning("QRegularExpressionMatch::capturedStart: empty capturing group name passed");
         return -1;
     }
-    int nth = d->regularExpression.d->captureIndexForName(name);
+    auto nth = d->regularExpression.d->captureIndexForName(name);
     if (nth == -1)
         return -1;
     return capturedStart(nth);
@@ -2217,7 +2217,7 @@ int QRegularExpressionMatch::capturedLength(const QString &name) const
         qWarning("QRegularExpressionMatch::capturedLength: empty capturing group name passed");
         return 0;
     }
-    int nth = d->regularExpression.d->captureIndexForName(name);
+    auto nth = d->regularExpression.d->captureIndexForName(name);
     if (nth == -1)
         return 0;
     return capturedLength(nth);
@@ -2237,7 +2237,7 @@ int QRegularExpressionMatch::capturedEnd(const QString &name) const
         qWarning("QRegularExpressionMatch::capturedEnd: empty capturing group name passed");
         return -1;
     }
-    int nth = d->regularExpression.d->captureIndexForName(name);
+    auto nth = d->regularExpression.d->captureIndexForName(name);
     if (nth == -1)
         return -1;
     return capturedEnd(nth);
@@ -2401,7 +2401,7 @@ QRegularExpressionMatch QRegularExpressionMatchIterator::next()
         return d->next;
     }
 
-    QRegularExpressionMatch current = d->next;
+    auto current = d->next;
     d->next = d->next.d.constData()->nextMatch();
     return current;
 }
@@ -2553,7 +2553,7 @@ QDebug operator<<(QDebug debug, const QRegularExpressionMatch &match)
 
     if (match.hasMatch()) {
         debug << ", has match: ";
-        for (int i = 0; i <= match.lastCapturedIndex(); ++i) {
+        for (auto i = 0; i <= match.lastCapturedIndex(); ++i) {
             debug << i
                   << ":(" << match.capturedStart(i) << ", " << match.capturedEnd(i)
                   << ", " << match.captured(i) << ')';

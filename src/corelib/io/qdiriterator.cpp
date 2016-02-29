@@ -159,7 +159,7 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QFileSystemEntry &entry, const QS
 {
 #ifndef QT_NO_REGEXP
     nameRegExps.reserve(nameFilters.size());
-    for (int i = 0; i < nameFilters.size(); ++i)
+    for (auto i = 0; i < nameFilters.size(); ++i)
         nameRegExps.append(
             QRegExp(nameFilters.at(i),
                     (filters & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive,
@@ -180,7 +180,7 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QFileSystemEntry &entry, const QS
 */
 void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
 {
-    QString path = fileInfo.filePath();
+    auto path = fileInfo.filePath();
 
 #ifdef Q_OS_WIN
     if (fileInfo.isSymLink())
@@ -192,7 +192,7 @@ void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
 
     if (engine) {
         engine->setFileName(path);
-        QAbstractFileEngineIterator *it = engine->beginEntryList(filters, nameFilters);
+        auto it = engine->beginEntryList(filters, nameFilters);
         if (it) {
             it->setPath(path);
             fileEngineIterators << it;
@@ -201,7 +201,7 @@ void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
         }
     } else {
 #ifndef QT_NO_FILESYSTEMITERATOR
-        QFileSystemIterator *it = new QFileSystemIterator(fileInfo.d_ptr->fileEntry,
+        auto it = new QFileSystemIterator(fileInfo.d_ptr->fileEntry,
             filters, nameFilters, iteratorFlags);
         nativeIterators << it;
 #endif
@@ -284,7 +284,7 @@ void QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
         return;
 
     // Never follow . and ..
-    QString fileName = fileInfo.fileName();
+    auto fileName = fileInfo.fileName();
     if (QLatin1String(".") == fileName || QLatin1String("..") == fileName)
         return;
 
@@ -316,8 +316,8 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
     Q_ASSERT(!fileName.isEmpty());
 
     // filter . and ..?
-    const int fileNameSize = fileName.size();
-    const bool dotOrDotDot = fileName[0] == QLatin1Char('.')
+    const auto fileNameSize = fileName.size();
+    const auto dotOrDotDot = fileName[0] == QLatin1Char('.')
                              && ((fileNameSize == 1)
                                  ||(fileNameSize == 2 && fileName[1] == QLatin1Char('.')));
     if ((filters & QDir::NoDot) && dotOrDotDot && fileNameSize == 1)
@@ -329,12 +329,12 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
 #ifndef QT_NO_REGEXP
     // Pass all entries through name filters, except dirs if the AllDirs
     if (!nameFilters.isEmpty() && !((filters & QDir::AllDirs) && fi.isDir())) {
-        bool matched = false;
-        for (QVector<QRegExp>::const_iterator iter = nameRegExps.constBegin(),
+        auto matched = false;
+        for (auto iter = nameRegExps.constBegin(),
                                               end = nameRegExps.constEnd();
                 iter != end; ++iter) {
 
-            QRegExp copy = *iter;
+            auto copy = *iter;
             if (copy.exactMatch(fileName)) {
                 matched = true;
                 break;
@@ -364,22 +364,22 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
         return false;
 
     // skip directories
-    const bool skipDirs = !(filters & (QDir::Dirs | QDir::AllDirs));
+    const auto skipDirs = !(filters & (QDir::Dirs | QDir::AllDirs));
     if (skipDirs && fi.isDir())
         return false;
 
     // skip files
-    const bool skipFiles    = !(filters & QDir::Files);
+    const auto skipFiles    = !(filters & QDir::Files);
     if (skipFiles && fi.isFile())
         // Basically we need a reason not to exclude this file otherwise we just eliminate it.
         return false;
 
     // filter permissions
-    const bool filterPermissions = ((filters & QDir::PermissionMask)
+    const auto filterPermissions = ((filters & QDir::PermissionMask)
                                     && (filters & QDir::PermissionMask) != QDir::PermissionMask);
-    const bool doWritable = !filterPermissions || (filters & QDir::Writable);
-    const bool doExecutable = !filterPermissions || (filters & QDir::Executable);
-    const bool doReadable = !filterPermissions || (filters & QDir::Readable);
+    const auto doWritable = !filterPermissions || (filters & QDir::Writable);
+    const auto doExecutable = !filterPermissions || (filters & QDir::Executable);
+    const auto doReadable = !filterPermissions || (filters & QDir::Readable);
     if (filterPermissions
         && ((doReadable && !fi.isReadable())
             || (doWritable && !fi.isWritable())
@@ -407,7 +407,7 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
 */
 QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
 {
-    const QDirPrivate *other = dir.d_ptr.constData();
+    auto other = dir.d_ptr.constData();
     d.reset(new QDirIteratorPrivate(other->dirEntry, other->nameFilters, other->filters, flags, !other->fileEngine.isNull()));
 }
 

@@ -90,7 +90,7 @@ void debugBinaryString(const char *data, qint64 maxlen)
 static void checkWarnMessage(const QIODevice *device, const char *function, const char *what)
 {
 #ifndef QT_NO_WARNING_OUTPUT
-    QDebug d = qWarning();
+    auto d = qWarning();
     d.noquote();
     d.nospace();
     d << "QIODevice::" << function;
@@ -98,7 +98,7 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
     d << " (" << device->metaObject()->className();
     if (!device->objectName().isEmpty())
         d << ", \"" << device->objectName() << '"';
-    if (const QFile *f = qobject_cast<const QFile *>(device))
+    if (auto f = qobject_cast<const QFile *>(device))
         d << ", \"" << QDir::toNativeSeparators(f->fileName()) << '"';
     d << ')';
 #else
@@ -874,7 +874,7 @@ bool QIODevice::seek(qint64 pos)
 */
 void QIODevicePrivate::seekBuffer(qint64 newPos)
 {
-    const qint64 offset = newPos - pos;
+    const auto offset = newPos - pos;
     pos = newPos;
 
     if (offset < 0 || offset >= buffer.size()) {
@@ -902,7 +902,7 @@ void QIODevicePrivate::seekBuffer(qint64 newPos)
 bool QIODevice::atEnd() const
 {
     Q_D(const QIODevice);
-    const bool result = (d->openMode == NotOpen || (d->isBufferEmpty()
+    const auto result = (d->openMode == NotOpen || (d->isBufferEmpty()
                                                     && bytesAvailable() == 0));
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::atEnd() returns %s, d->openMode == %d, d->pos == %lld\n", this,
@@ -986,8 +986,8 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
            this, data, maxSize, d->pos, d->buffer.size());
 #endif
 
-    const bool sequential = d->isSequential();
-    const bool keepDataInBuffer = sequential && d->transactionStarted;
+    const auto sequential = d->isSequential();
+    const auto keepDataInBuffer = sequential && d->transactionStarted;
 
     // Short circuit for getChar()
     if (maxSize == 1 && !keepDataInBuffer) {
@@ -996,7 +996,7 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
             if (!sequential)
                 ++d->pos;
 
-            char c = char(uchar(chint));
+            auto c = char(uchar(chint));
             if (c == '\r' && (d->openMode & Text))
                 continue;
             *data = c;
@@ -1012,12 +1012,12 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
 
     CHECK_MAXLEN(read, qint64(-1));
     qint64 readSoFar = 0;
-    bool madeBufferReadsOnly = true;
-    bool deviceAtEof = false;
-    char *readPtr = data;
+    auto madeBufferReadsOnly = true;
+    auto deviceAtEof = false;
+    auto readPtr = data;
     forever {
         // Try reading from the buffer.
-        qint64 bufferReadChunkSize = keepDataInBuffer
+        auto bufferReadChunkSize = keepDataInBuffer
                                      ? d->buffer.peek(data, maxSize, d->transactionPos)
                                      : d->buffer.read(data, maxSize);
         if (bufferReadChunkSize > 0) {
@@ -1061,7 +1061,7 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
                     }
                 } else {
                     // Do not read more than maxSize on unbuffered devices
-                    const qint64 bytesToBuffer = (d->openMode & Unbuffered)
+                    const auto bytesToBuffer = (d->openMode & Unbuffered)
                             ? qMin(maxSize, qint64(d->readBufferChunkSize))
                             : qint64(d->readBufferChunkSize);
                     // Try to fill QIODevice buffer by single read
@@ -1089,7 +1089,7 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
         }
 
         if ((d->openMode & Text) && readPtr < data) {
-            const char *endPtr = data;
+            auto endPtr = data;
 
             // optimization to avoid initial self-assignment
             while (*readPtr != '\r') {
@@ -1097,10 +1097,10 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
                     break;
             }
 
-            char *writePtr = readPtr;
+            auto writePtr = readPtr;
 
             while (readPtr < endPtr) {
-                char ch = *readPtr++;
+                auto ch = *readPtr++;
                 if (ch != '\r')
                     *writePtr++ = ch;
                 else {
@@ -1204,10 +1204,10 @@ QByteArray QIODevice::readAll()
 #endif
 
     QByteArray result;
-    qint64 readBytes = (d->isSequential() ? Q_INT64_C(0) : size());
+    auto readBytes = (d->isSequential() ? Q_INT64_C(0) : size());
     if (readBytes == 0) {
         // Size is unknown, read incrementally.
-        qint64 readChunkSize = qMax(qint64(d->readBufferChunkSize),
+        auto readChunkSize = qMax(qint64(d->readBufferChunkSize),
                                     d->isSequential() ? (d->buffer.size() - d->transactionPos)
                                                       : d->buffer.size());
         qint64 readResult;
@@ -1293,14 +1293,14 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
     // Leave room for a '\0'
     --maxSize;
 
-    const bool sequential = d->isSequential();
-    const bool keepDataInBuffer = sequential && d->transactionStarted;
+    const auto sequential = d->isSequential();
+    const auto keepDataInBuffer = sequential && d->transactionStarted;
 
     qint64 readSoFar = 0;
     if (keepDataInBuffer) {
         if (d->transactionPos < d->buffer.size()) {
             // Peek line from the specified position
-            const qint64 i = d->buffer.indexOf('\n', maxSize, d->transactionPos);
+            const auto i = d->buffer.indexOf('\n', maxSize, d->transactionPos);
             readSoFar = d->buffer.peek(data, i >= 0 ? (i - d->transactionPos + 1) : maxSize,
                                        d->transactionPos);
             d->transactionPos += readSoFar;
@@ -1340,7 +1340,7 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
     d->baseReadLineDataCalled = false;
     // Force base implementation for transaction on sequential device
     // as it stores the data in internal buffer automatically.
-    qint64 readBytes = keepDataInBuffer
+    auto readBytes = keepDataInBuffer
                        ? QIODevice::readLineData(data + readSoFar, maxSize - readSoFar)
                        : readLineData(data + readSoFar, maxSize - readSoFar);
 #if defined QIODEVICE_DEBUG
@@ -1457,7 +1457,7 @@ qint64 QIODevice::readLineData(char *data, qint64 maxSize)
     Q_D(QIODevice);
     qint64 readSoFar = 0;
     char c;
-    int lastReadReturn = 0;
+    auto lastReadReturn = 0;
     d->baseReadLineDataCalled = true;
 
     while (readSoFar < maxSize && (lastReadReturn = read(&c, 1)) == 1) {
@@ -1599,7 +1599,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
     CHECK_WRITABLE(write, qint64(-1));
     CHECK_MAXLEN(write, qint64(-1));
 
-    const bool sequential = d->isSequential();
+    const auto sequential = d->isSequential();
     // Make sure the device is positioned correctly.
     if (d->pos != d->devicePos && !sequential && !seek(d->pos))
         return qint64(-1);
@@ -1656,7 +1656,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
     }
 #endif
 
-    qint64 written = writeData(data, maxSize);
+    auto written = writeData(data, maxSize);
     if (!sequential && written > 0) {
         d->pos += written;
         d->devicePos += written;
@@ -1754,10 +1754,10 @@ qint64 QIODevicePrivate::peek(char *data, qint64 maxSize)
     Q_Q(QIODevice);
 
     if (transactionStarted) {
-        const qint64 savedTransactionPos = transactionPos;
-        const qint64 savedPos = pos;
+        const auto savedTransactionPos = transactionPos;
+        const auto savedPos = pos;
 
-        qint64 readBytes = q->read(data, maxSize);
+        auto readBytes = q->read(data, maxSize);
 
         // Restore initial position
         if (isSequential())
@@ -1768,7 +1768,7 @@ qint64 QIODevicePrivate::peek(char *data, qint64 maxSize)
     }
 
     q->startTransaction();
-    qint64 readBytes = q->read(data, maxSize);
+    auto readBytes = q->read(data, maxSize);
     q->rollbackTransaction();
 
     return readBytes;
@@ -1782,10 +1782,10 @@ QByteArray QIODevicePrivate::peek(qint64 maxSize)
     Q_Q(QIODevice);
 
     if (transactionStarted) {
-        const qint64 savedTransactionPos = transactionPos;
-        const qint64 savedPos = pos;
+        const auto savedTransactionPos = transactionPos;
+        const auto savedPos = pos;
 
-        QByteArray result = q->read(maxSize);
+        auto result = q->read(maxSize);
 
         // Restore initial position
         if (isSequential())
@@ -1796,7 +1796,7 @@ QByteArray QIODevicePrivate::peek(qint64 maxSize)
     }
 
     q->startTransaction();
-    QByteArray result = q->read(maxSize);
+    auto result = q->read(maxSize);
     q->rollbackTransaction();
 
     return result;

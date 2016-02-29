@@ -82,7 +82,7 @@ QThreadData::~QThreadData()
     thread = 0;
     delete t;
 
-    for (int i = 0; i < postEventList.size(); ++i) {
+    for (auto i = 0; i < postEventList.size(); ++i) {
         const QPostEvent &pe = postEventList.at(i);
         if (pe.event) {
             --pe.receiver->d_func()->postedEvents;
@@ -370,7 +370,7 @@ QThreadPrivate::~QThreadPrivate()
 */
 QThread *QThread::currentThread()
 {
-    QThreadData *data = QThreadData::current();
+    auto data = QThreadData::current();
     Q_ASSERT(data != 0);
     return data->thread;
 }
@@ -507,7 +507,7 @@ int QThread::exec()
     locker.unlock();
 
     QEventLoop eventLoop;
-    int returnCode = eventLoop.exec();
+    auto returnCode = eventLoop.exec();
 
     locker.relock();
     d->exited = false;
@@ -543,8 +543,8 @@ void QThread::exit(int returnCode)
     d->exited = true;
     d->returnCode = returnCode;
     d->data->quitNow = true;
-    for (int i = 0; i < d->data->eventLoops.size(); ++i) {
-        QEventLoop *eventLoop = d->data->eventLoops.at(i);
+    for (auto i = 0; i < d->data->eventLoops.size(); ++i) {
+        auto eventLoop = d->data->eventLoops.at(i);
         eventLoop->exit(returnCode);
     }
 }

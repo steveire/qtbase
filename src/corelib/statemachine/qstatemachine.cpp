@@ -210,7 +210,7 @@ struct CalculationCache {
     {
         Q_ASSERT(targets);
 
-        TransitionInfoCache::const_iterator cacheIt = cache.find(t);
+        auto cacheIt = cache.find(t);
         if (cacheIt == cache.end() || !cacheIt->effectiveTargetStatesIsKnown)
             return false;
 
@@ -220,7 +220,7 @@ struct CalculationCache {
 
     void insert(QAbstractTransition *t, const QList<QAbstractState *> &targets)
     {
-        TransitionInfoCache::iterator cacheIt = cache.find(t);
+        auto cacheIt = cache.find(t);
         TransitionInfo &ti = cacheIt == cache.end()
                 ? *cache.insert(t, TransitionInfo())
                 : *cacheIt;
@@ -234,7 +234,7 @@ struct CalculationCache {
     {
         Q_ASSERT(exits);
 
-        TransitionInfoCache::const_iterator cacheIt = cache.find(t);
+        auto cacheIt = cache.find(t);
         if (cacheIt == cache.end() || !cacheIt->exitSetIsKnown)
             return false;
 
@@ -244,7 +244,7 @@ struct CalculationCache {
 
     void insert(QAbstractTransition *t, const QSet<QAbstractState *> &exits)
     {
-        TransitionInfoCache::iterator cacheIt = cache.find(t);
+        auto cacheIt = cache.find(t);
         TransitionInfo &ti = cacheIt == cache.end()
                 ? *cache.insert(t, TransitionInfo())
                 : *cacheIt;
@@ -258,7 +258,7 @@ struct CalculationCache {
     {
         Q_ASSERT(domain);
 
-        TransitionInfoCache::const_iterator cacheIt = cache.find(t);
+        auto cacheIt = cache.find(t);
         if (cacheIt == cache.end() || !cacheIt->transitionDomainIsKnown)
             return false;
 
@@ -268,7 +268,7 @@ struct CalculationCache {
 
     void insert(QAbstractTransition *t, QAbstractState *domain)
     {
-        TransitionInfoCache::iterator cacheIt = cache.find(t);
+        auto cacheIt = cache.find(t);
         TransitionInfo &ti = cacheIt == cache.end()
                 ? *cache.insert(t, TransitionInfo())
                 : *cacheIt;
@@ -290,7 +290,7 @@ static inline bool isDescendant(const QAbstractState *state1, const QAbstractSta
 {
     Q_ASSERT(state1 != 0);
 
-    for (QAbstractState *it = state1->parentState(); it != 0; it = it->parentState()) {
+    for (auto it = state1->parentState(); it != 0; it = it->parentState()) {
         if (it == state2)
             return true;
     }
@@ -300,7 +300,7 @@ static inline bool isDescendant(const QAbstractState *state1, const QAbstractSta
 
 static bool containsDecendantOf(const QSet<QAbstractState *> &states, const QAbstractState *node)
 {
-    for (QAbstractState *s : states)
+    for (auto s : states)
         if (isDescendant(s, node))
             return true;
 
@@ -309,8 +309,8 @@ static bool containsDecendantOf(const QSet<QAbstractState *> &states, const QAbs
 
 static int descendantDepth(const QAbstractState *state, const QAbstractState *ancestor)
 {
-    int depth = 0;
-    for (const QAbstractState *it = state; it != 0; it = it->parentState()) {
+    auto depth = 0;
+    for (auto it = state; it != 0; it = it->parentState()) {
         if (it == ancestor)
             break;
         ++depth;
@@ -334,7 +334,7 @@ static QVector<QState*> getProperAncestors(const QAbstractState *state, const QA
     Q_ASSERT(state != 0);
     QVector<QState*> result;
     result.reserve(16);
-    for (QState *it = state->parentState(); it && it != upperBound; it = it->parentState()) {
+    for (auto it = state->parentState(); it && it != upperBound; it = it->parentState()) {
         result.append(it);
     }
     return result;
@@ -368,18 +368,18 @@ static QList<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *tra
 
     QSet<QAbstractState *> targets;
     const auto targetStates = transition->targetStates();
-    for (QAbstractState *s : targetStates) {
-        if (QHistoryState *historyState = QStateMachinePrivate::toHistoryState(s)) {
-            QList<QAbstractState*> historyConfiguration = QHistoryStatePrivate::get(historyState)->configuration;
+    for (auto s : targetStates) {
+        if (auto historyState = QStateMachinePrivate::toHistoryState(s)) {
+            auto historyConfiguration = QHistoryStatePrivate::get(historyState)->configuration;
             if (!historyConfiguration.isEmpty()) {
                 // There is a saved history, so apply that.
                 targets.unite(historyConfiguration.toSet());
-            } else if (QAbstractTransition *defaultTransition = historyState->defaultTransition()) {
+            } else if (auto defaultTransition = historyState->defaultTransition()) {
                 // No saved history, take all default transition targets.
                 targets.unite(defaultTransition->targetStates().toSet());
             } else {
                 // Woops, we found a history state without a default state. That's not valid!
-                QStateMachinePrivate *m = QStateMachinePrivate::get(historyState->machine());
+                auto m = QStateMachinePrivate::get(historyState->machine());
                 m->setError(QStateMachine::NoDefaultStateInHistoryStateError, historyState);
             }
         } else {
@@ -451,9 +451,9 @@ Q_CORE_EXPORT const QStateMachinePrivate::Handler *qcoreStateMachineHandler()
 
 static int indexOfDescendant(QState *s, QAbstractState *desc)
 {
-    QList<QAbstractState*> childStates = QStatePrivate::get(s)->childStates();
-    for (int i = 0; i < childStates.size(); ++i) {
-        QAbstractState *c = childStates.at(i);
+    auto childStates = QStatePrivate::get(s)->childStates();
+    for (auto i = 0; i < childStates.size(); ++i) {
+        auto c = childStates.at(i);
         if ((c == desc) || isDescendant(desc, c)) {
             return i;
         }
@@ -463,9 +463,9 @@ static int indexOfDescendant(QState *s, QAbstractState *desc)
 
 bool QStateMachinePrivate::transitionStateEntryLessThan(QAbstractTransition *t1, QAbstractTransition *t2)
 {
-    QState *s1 = t1->sourceState(), *s2 = t2->sourceState();
+    auto s1 = t1->sourceState(), s2 = t2->sourceState();
     if (s1 == s2) {
-        QList<QAbstractTransition*> transitions = QStatePrivate::get(s1)->transitions();
+        auto transitions = QStatePrivate::get(s1)->transitions();
         return transitions.indexOf(t1) < transitions.indexOf(t2);
     } else if (isDescendant(s1, s2)) {
         return true;
@@ -473,11 +473,11 @@ bool QStateMachinePrivate::transitionStateEntryLessThan(QAbstractTransition *t1,
         return false;
     } else {
         Q_ASSERT(s1->machine() != 0);
-        QStateMachinePrivate *mach = QStateMachinePrivate::get(s1->machine());
-        QState *lca = mach->findLCA(QList<QAbstractState*>() << s1 << s2);
+        auto mach = QStateMachinePrivate::get(s1->machine());
+        auto lca = mach->findLCA(QList<QAbstractState*>() << s1 << s2);
         Q_ASSERT(lca != 0);
-        int s1Depth = descendantDepth(s1, lca);
-        int s2Depth = descendantDepth(s2, lca);
+        auto s1Depth = descendantDepth(s1, lca);
+        auto s2Depth = descendantDepth(s2, lca);
         if (s1Depth == s2Depth)
             return (indexOfDescendant(lca, s1) < indexOfDescendant(lca, s2));
         else
@@ -496,8 +496,8 @@ bool QStateMachinePrivate::stateEntryLessThan(QAbstractState *s1, QAbstractState
         return true;
     } else {
         Q_ASSERT(s1->machine() != 0);
-        QStateMachinePrivate *mach = QStateMachinePrivate::get(s1->machine());
-        QState *lca = mach->findLCA(QList<QAbstractState*>() << s1 << s2);
+        auto mach = QStateMachinePrivate::get(s1->machine());
+        auto lca = mach->findLCA(QList<QAbstractState*>() << s1 << s2);
         Q_ASSERT(lca != 0);
         return (indexOfDescendant(lca, s1) < indexOfDescendant(lca, s2));
     }
@@ -514,8 +514,8 @@ bool QStateMachinePrivate::stateExitLessThan(QAbstractState *s1, QAbstractState 
         return false;
     } else {
         Q_ASSERT(s1->machine() != 0);
-        QStateMachinePrivate *mach = QStateMachinePrivate::get(s1->machine());
-        QState *lca = mach->findLCA(QList<QAbstractState*>() << s1 << s2);
+        auto mach = QStateMachinePrivate::get(s1->machine());
+        auto lca = mach->findLCA(QList<QAbstractState*>() << s1 << s2);
         Q_ASSERT(lca != 0);
         return (indexOfDescendant(lca, s2) < indexOfDescendant(lca, s1));
     }
@@ -525,15 +525,15 @@ QState *QStateMachinePrivate::findLCA(const QList<QAbstractState*> &states, bool
 {
     if (states.isEmpty())
         return 0;
-    QVector<QState*> ancestors = getProperAncestors(states.at(0), rootState()->parentState());
-    for (int i = 0; i < ancestors.size(); ++i) {
-        QState *anc = ancestors.at(i);
+    auto ancestors = getProperAncestors(states.at(0), rootState()->parentState());
+    for (auto i = 0; i < ancestors.size(); ++i) {
+        auto anc = ancestors.at(i);
         if (onlyCompound && !isCompound(anc))
             continue;
 
-        bool ok = true;
-        for (int j = states.size() - 1; (j > 0) && ok; --j) {
-            const QAbstractState *s = states.at(j);
+        auto ok = true;
+        for (auto j = states.size() - 1; (j > 0) && ok; --j) {
+            auto s = states.at(j);
             if (!isDescendant(s, anc))
                 ok = false;
         }
@@ -554,7 +554,7 @@ QList<QAbstractTransition*> QStateMachinePrivate::selectTransitions(QEvent *even
     Q_Q(const QStateMachine);
 
     QVarLengthArray<QAbstractState *> configuration_sorted;
-    for (QAbstractState *s : qAsConst(configuration)) {
+    for (auto s : qAsConst(configuration)) {
         if (isAtomic(s))
             configuration_sorted.append(s);
     }
@@ -562,16 +562,16 @@ QList<QAbstractTransition*> QStateMachinePrivate::selectTransitions(QEvent *even
 
     QList<QAbstractTransition*> enabledTransitions;
     const_cast<QStateMachine*>(q)->beginSelectTransitions(event);
-    for (QAbstractState *state : qAsConst(configuration_sorted)) {
-        QVector<QState*> lst = getProperAncestors(state, Q_NULLPTR);
-        if (QState *grp = toStandardState(state))
+    for (auto state : qAsConst(configuration_sorted)) {
+        auto lst = getProperAncestors(state, Q_NULLPTR);
+        if (auto grp = toStandardState(state))
             lst.prepend(grp);
-        bool found = false;
-        for (int j = 0; (j < lst.size()) && !found; ++j) {
-            QState *s = lst.at(j);
-            QList<QAbstractTransition*> transitions = QStatePrivate::get(s)->transitions();
-            for (int k = 0; k < transitions.size(); ++k) {
-                QAbstractTransition *t = transitions.at(k);
+        auto found = false;
+        for (auto j = 0; (j < lst.size()) && !found; ++j) {
+            auto s = lst.at(j);
+            auto transitions = QStatePrivate::get(s)->transitions();
+            for (auto k = 0; k < transitions.size(); ++k) {
+                auto t = transitions.at(k);
                 if (QAbstractTransitionPrivate::get(t)->callEventTest(event)) {
 #ifdef QSTATEMACHINE_DEBUG
                     qDebug() << q << ": selecting transition" << t;
@@ -629,12 +629,12 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
     filteredTransitions.reserve(enabledTransitions.size());
     std::sort(enabledTransitions.begin(), enabledTransitions.end(), transitionStateEntryLessThan);
 
-    for (QAbstractTransition *t1 : qAsConst(enabledTransitions)) {
-        bool t1Preempted = false;
-        const QSet<QAbstractState*> exitSetT1 = computeExitSet_Unordered(t1, cache);
-        QList<QAbstractTransition*>::iterator t2It = filteredTransitions.begin();
+    for (auto t1 : qAsConst(enabledTransitions)) {
+        auto t1Preempted = false;
+        const auto exitSetT1 = computeExitSet_Unordered(t1, cache);
+        auto t2It = filteredTransitions.begin();
         while (t2It != filteredTransitions.end()) {
-            QAbstractTransition *t2 = *t2It;
+            auto t2 = *t2It;
             if (t1 == t2) {
                 // Special case: someone added the same transition object to a state twice. In this
                 // case, t2 (which is already in the list) "preempts" t1.
@@ -642,7 +642,7 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
                 break;
             }
 
-            QSet<QAbstractState*> exitSetT2 = computeExitSet_Unordered(t2, cache);
+            auto exitSetT2 = computeExitSet_Unordered(t2, cache);
             if (!exitSetT1.intersects(exitSetT2)) {
                 // No conflict, no cry. Next patient please.
                 ++t2It;
@@ -675,24 +675,24 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
     qDebug() << q_func() << ": begin microstep( enabledTransitions:" << enabledTransitions << ')';
     qDebug() << q_func() << ": configuration before exiting states:" << configuration;
 #endif
-    QList<QAbstractState*> exitedStates = computeExitSet(enabledTransitions, cache);
-    QHash<RestorableId, QVariant> pendingRestorables = computePendingRestorables(exitedStates);
+    auto exitedStates = computeExitSet(enabledTransitions, cache);
+    auto pendingRestorables = computePendingRestorables(exitedStates);
 
     QSet<QAbstractState*> statesForDefaultEntry;
-    QList<QAbstractState*> enteredStates = computeEntrySet(enabledTransitions, statesForDefaultEntry, cache);
+    auto enteredStates = computeEntrySet(enabledTransitions, statesForDefaultEntry, cache);
 
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": computed exit set:" << exitedStates;
     qDebug() << q_func() << ": computed entry set:" << enteredStates;
 #endif
 
-    QHash<QAbstractState*, QVector<QPropertyAssignment> > assignmentsForEnteredStates =
+    auto assignmentsForEnteredStates =
             computePropertyAssignments(enteredStates, pendingRestorables);
     if (!pendingRestorables.isEmpty()) {
         // Add "implicit" assignments for restored properties to the first
         // (outermost) entered state
         Q_ASSERT(!enteredStates.isEmpty());
-        QAbstractState *s = enteredStates.first();
+        auto s = enteredStates.first();
         assignmentsForEnteredStates[s] << restorablesToPropertyList(pendingRestorables);
     }
 
@@ -704,7 +704,7 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
     executeTransitionContent(event, enabledTransitions);
 
 #ifndef QT_NO_ANIMATION
-    QList<QAbstractAnimation *> selectedAnimations = selectAnimations(enabledTransitions);
+    auto selectedAnimations = selectAnimations(enabledTransitions);
 #endif
 
     enterStates(event, exitedStates, enteredStates, statesForDefaultEntry, assignmentsForEnteredStates
@@ -743,7 +743,7 @@ QList<QAbstractState*> QStateMachinePrivate::computeExitSet(const QList<QAbstrac
 {
     Q_ASSERT(cache);
 
-    QList<QAbstractState*> statesToExit_sorted = computeExitSet_Unordered(enabledTransitions, cache).toList();
+    auto statesToExit_sorted = computeExitSet_Unordered(enabledTransitions, cache).toList();
     std::sort(statesToExit_sorted.begin(), statesToExit_sorted.end(), stateExitLessThan);
     return statesToExit_sorted;
 }
@@ -754,7 +754,7 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(const QList
     Q_ASSERT(cache);
 
     QSet<QAbstractState*> statesToExit;
-    for (QAbstractTransition *t : enabledTransitions)
+    for (auto t : enabledTransitions)
         statesToExit.unite(computeExitSet_Unordered(t, cache));
     return statesToExit;
 }
@@ -768,8 +768,8 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(QAbstractTr
     if (cache->exitSet(t, &statesToExit))
         return statesToExit;
 
-    QList<QAbstractState *> effectiveTargetStates = getEffectiveTargetStates(t, cache);
-    QAbstractState *domain = getTransitionDomain(t, effectiveTargetStates, cache);
+    auto effectiveTargetStates = getEffectiveTargetStates(t, cache);
+    auto domain = getTransitionDomain(t, effectiveTargetStates, cache);
     if (domain == Q_NULLPTR && !t->targetStates().isEmpty()) {
         // So we didn't find the least common ancestor for the source and target states of the
         // transition. If there were not target states, that would be fine: then the transition
@@ -780,14 +780,14 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(QAbstractTr
         // makes the state machine invalid.
         if (error == QStateMachine::NoError)
             setError(QStateMachine::NoCommonAncestorForTransitionError, t->sourceState());
-        QList<QAbstractState *> lst = pendingErrorStates.toList();
+        auto lst = pendingErrorStates.toList();
         lst.prepend(t->sourceState());
 
         domain = findLCCA(lst);
         Q_ASSERT(domain != 0);
     }
 
-    for (QAbstractState* s : qAsConst(configuration)) {
+    for (auto s : qAsConst(configuration)) {
         if (isDescendant(s, domain))
             statesToExit.insert(s);
     }
@@ -799,16 +799,16 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(QAbstractTr
 void QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractState*> &statesToExit_sorted,
                                       const QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates)
 {
-    for (int i = 0; i < statesToExit_sorted.size(); ++i) {
-        QAbstractState *s = statesToExit_sorted.at(i);
-        if (QState *grp = toStandardState(s)) {
-            QList<QHistoryState*> hlst = QStatePrivate::get(grp)->historyStates();
-            for (int j = 0; j < hlst.size(); ++j) {
-                QHistoryState *h = hlst.at(j);
+    for (auto i = 0; i < statesToExit_sorted.size(); ++i) {
+        auto s = statesToExit_sorted.at(i);
+        if (auto grp = toStandardState(s)) {
+            auto hlst = QStatePrivate::get(grp)->historyStates();
+            for (auto j = 0; j < hlst.size(); ++j) {
+                auto h = hlst.at(j);
                 QHistoryStatePrivate::get(h)->configuration.clear();
                 QSet<QAbstractState*>::const_iterator it;
                 for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
-                    QAbstractState *s0 = *it;
+                    auto s0 = *it;
                     if (QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) {
                         if (isAtomic(s0) && isDescendant(s0, s))
                             QHistoryStatePrivate::get(h)->configuration.append(s0);
@@ -823,8 +823,8 @@ void QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractState*
             }
         }
     }
-    for (int i = 0; i < statesToExit_sorted.size(); ++i) {
-        QAbstractState *s = statesToExit_sorted.at(i);
+    for (auto i = 0; i < statesToExit_sorted.size(); ++i) {
+        auto s = statesToExit_sorted.at(i);
 #ifdef QSTATEMACHINE_DEBUG
         qDebug() << q_func() << ": exiting" << s;
 #endif
@@ -843,8 +843,8 @@ void QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractState*
 
 void QStateMachinePrivate::executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions)
 {
-    for (int i = 0; i < enabledTransitions.size(); ++i) {
-        QAbstractTransition *t = enabledTransitions.at(i);
+    for (auto i = 0; i < enabledTransitions.size(); ++i) {
+        auto t = enabledTransitions.at(i);
 #ifdef QSTATEMACHINE_DEBUG
         qDebug() << q_func() << ": triggering" << t;
 #endif
@@ -861,14 +861,14 @@ QList<QAbstractState*> QStateMachinePrivate::computeEntrySet(const QList<QAbstra
 
     QSet<QAbstractState*> statesToEnter;
     if (pendingErrorStates.isEmpty()) {
-        for (QAbstractTransition *t : enabledTransitions) {
+        for (auto t : enabledTransitions) {
             const auto targetStates = t->targetStates();
-            for (QAbstractState *s : targetStates)
+            for (auto s : targetStates)
                 addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
 
-            const QList<QAbstractState *> effectiveTargetStates = getEffectiveTargetStates(t, cache);
-            QAbstractState *ancestor = getTransitionDomain(t, effectiveTargetStates, cache);
-            for (QAbstractState *s : effectiveTargetStates)
+            const auto effectiveTargetStates = getEffectiveTargetStates(t, cache);
+            auto ancestor = getTransitionDomain(t, effectiveTargetStates, cache);
+            for (auto s : effectiveTargetStates)
                 addAncestorStatesToEnter(s, ancestor, statesToEnter, statesForDefaultEntry);
         }
     }
@@ -882,7 +882,7 @@ QList<QAbstractState*> QStateMachinePrivate::computeEntrySet(const QList<QAbstra
         pendingErrorStatesForDefaultEntry.clear();
     }
 
-    QList<QAbstractState*> statesToEnter_sorted = statesToEnter.toList();
+    auto statesToEnter_sorted = statesToEnter.toList();
     std::sort(statesToEnter_sorted.begin(), statesToEnter_sorted.end(), stateEntryLessThan);
     return statesToEnter_sorted;
 }
@@ -917,10 +917,10 @@ QAbstractState *QStateMachinePrivate::getTransitionDomain(QAbstractTransition *t
         return domain;
 
     if (t->transitionType() == QAbstractTransition::InternalTransition) {
-        if (QState *tSource = t->sourceState()) {
+        if (auto tSource = t->sourceState()) {
             if (isCompound(tSource)) {
-                bool allDescendants = true;
-                for (QAbstractState *s : effectiveTargetStates) {
+                auto allDescendants = true;
+                for (auto s : effectiveTargetStates) {
                     if (!isDescendant(s, tSource)) {
                         allDescendants = false;
                         break;
@@ -934,7 +934,7 @@ QAbstractState *QStateMachinePrivate::getTransitionDomain(QAbstractTransition *t
     }
 
     QList<QAbstractState *> states(effectiveTargetStates);
-    if (QAbstractState *src = t->sourceState())
+    if (auto src = t->sourceState())
         states.prepend(src);
     domain = findLCCA(states);
     cache->insert(t, domain);
@@ -953,8 +953,8 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
 #ifdef QSTATEMACHINE_DEBUG
     Q_Q(QStateMachine);
 #endif
-    for (int i = 0; i < statesToEnter_sorted.size(); ++i) {
-        QAbstractState *s = statesToEnter_sorted.at(i);
+    for (auto i = 0; i < statesToEnter_sorted.size(); ++i) {
+        auto s = statesToEnter_sorted.at(i);
 #ifdef QSTATEMACHINE_DEBUG
         qDebug() << q << ": entering" << s;
 #endif
@@ -967,13 +967,13 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
 
         // Immediately set the properties that are not animated.
         {
-            QVector<QPropertyAssignment> assignments = propertyAssignmentsForState.value(s);
-            for (int i = 0; i < assignments.size(); ++i) {
+            auto assignments = propertyAssignmentsForState.value(s);
+            for (auto i = 0; i < assignments.size(); ++i) {
                 const QPropertyAssignment &assn = assignments.at(i);
                 if (globalRestorePolicy == QState::RestoreProperties) {
                     if (assn.explicitlySet) {
                         if (!hasRestorable(s, assn.object, assn.propertyName)) {
-                            QVariant value = savedValueForRestorable(exitedStates_sorted, assn.object, assn.propertyName);
+                            auto value = savedValueForRestorable(exitedStates_sorted, assn.object, assn.propertyName);
                             unregisterRestorables(exitedStates_sorted, assn.object, assn.propertyName);
                             registerRestorable(s, assn.object, assn.propertyName, value);
                         }
@@ -998,12 +998,12 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
 //        }
         Q_UNUSED(statesForDefaultEntry);
 
-        if (QHistoryState *h = toHistoryState(s))
+        if (auto h = toHistoryState(s))
             QAbstractTransitionPrivate::get(h->defaultTransition())->callOnTransition(event);
 
         // Emit propertiesAssigned signal if the state has no animated properties.
         {
-            QState *ss = toStandardState(s);
+            auto ss = toStandardState(s);
             if (ss
     #ifndef QT_NO_ANIMATION
                 && !animationsForState.contains(s)
@@ -1013,26 +1013,26 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
         }
 
         if (isFinal(s)) {
-            QState *parent = s->parentState();
+            auto parent = s->parentState();
             if (parent) {
                 if (parent != rootState()) {
-                    QFinalState *finalState = qobject_cast<QFinalState *>(s);
+                    auto finalState = qobject_cast<QFinalState *>(s);
                     Q_ASSERT(finalState);
                     emitStateFinished(parent, finalState);
                 }
-                QState *grandparent = parent->parentState();
+                auto grandparent = parent->parentState();
                 if (grandparent && isParallel(grandparent)) {
-                    bool allChildStatesFinal = true;
-                    QList<QAbstractState*> childStates = QStatePrivate::get(grandparent)->childStates();
-                    for (int j = 0; j < childStates.size(); ++j) {
-                        QAbstractState *cs = childStates.at(j);
+                    auto allChildStatesFinal = true;
+                    auto childStates = QStatePrivate::get(grandparent)->childStates();
+                    for (auto j = 0; j < childStates.size(); ++j) {
+                        auto cs = childStates.at(j);
                         if (!isInFinalState(cs)) {
                             allChildStatesFinal = false;
                             break;
                         }
                     }
                     if (allChildStatesFinal && (grandparent != rootState())) {
-                        QFinalState *finalState = qobject_cast<QFinalState *>(s);
+                        auto finalState = qobject_cast<QFinalState *>(s);
                         Q_ASSERT(finalState);
                         emitStateFinished(grandparent, finalState);
                     }
@@ -1044,7 +1044,7 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
         QSet<QAbstractState*>::const_iterator it;
         for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
             if (isFinal(*it)) {
-                QState *parent = (*it)->parentState();
+                auto parent = (*it)->parentState();
                 if (((parent == rootState())
                      && (rootState()->childMode() == QState::ExclusiveStates))
                     || ((parent->parentState() == rootState())
@@ -1095,12 +1095,12 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
                                                       QSet<QAbstractState*> &statesToEnter,
                                                       QSet<QAbstractState*> &statesForDefaultEntry)
 {
-    if (QHistoryState *h = toHistoryState(state)) {
-        const QList<QAbstractState*> historyConfiguration = QHistoryStatePrivate::get(h)->configuration;
+    if (auto h = toHistoryState(state)) {
+        const auto historyConfiguration = QHistoryStatePrivate::get(h)->configuration;
         if (!historyConfiguration.isEmpty()) {
-            for (QAbstractState *s : historyConfiguration)
+            for (auto s : historyConfiguration)
                 addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
-            for (QAbstractState *s : historyConfiguration)
+            for (auto s : historyConfiguration)
                 addAncestorStatesToEnter(s, state->parentState(), statesToEnter, statesForDefaultEntry);
 
 #ifdef QSTATEMACHINE_DEBUG
@@ -1110,15 +1110,15 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
 #endif
         } else {
             QList<QAbstractState*> defaultHistoryContent;
-            if (QAbstractTransition *t = QHistoryStatePrivate::get(h)->defaultTransition)
+            if (auto t = QHistoryStatePrivate::get(h)->defaultTransition)
                 defaultHistoryContent = t->targetStates();
 
             if (defaultHistoryContent.isEmpty()) {
                 setError(QStateMachine::NoDefaultStateInHistoryStateError, h);
             } else {
-                for (QAbstractState *s : qAsConst(defaultHistoryContent))
+                for (auto s : qAsConst(defaultHistoryContent))
                     addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
-                for (QAbstractState *s : qAsConst(defaultHistoryContent))
+                for (auto s : qAsConst(defaultHistoryContent))
                     addAncestorStatesToEnter(s, state->parentState(), statesToEnter, statesForDefaultEntry);
 #ifdef QSTATEMACHINE_DEBUG
                 qDebug() << q_func() << ": initial history targets for" << state << ':' << defaultHistoryContent;
@@ -1134,7 +1134,7 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
         statesToEnter.insert(state);
         if (isCompound(state)) {
             statesForDefaultEntry.insert(state);
-            if (QAbstractState *initial = toStandardState(state)->initialState()) {
+            if (auto initial = toStandardState(state)->initialState()) {
                 Q_ASSERT(initial->machine() == q_func());
 
                 // FIXME:
@@ -1150,9 +1150,9 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
                 return;
             }
         } else if (isParallel(state)) {
-            QState *grp = toStandardState(state);
+            auto grp = toStandardState(state);
             const auto childStates = QStatePrivate::get(grp)->childStates();
-            for (QAbstractState *child : childStates) {
+            for (auto child : childStates) {
                 if (!containsDecendantOf(statesToEnter, child))
                     addDescendantStatesToEnter(child, statesToEnter, statesForDefaultEntry);
             }
@@ -1176,13 +1176,13 @@ void QStateMachinePrivate::addAncestorStatesToEnter(QAbstractState *s, QAbstract
                                                     QSet<QAbstractState*> &statesForDefaultEntry)
 {
     const auto properAncestors = getProperAncestors(s, ancestor);
-    for (QState *anc : properAncestors) {
+    for (auto anc : properAncestors) {
         if (!anc->parentState())
             continue;
         statesToEnter.insert(anc);
         if (isParallel(anc)) {
             const auto childStates = QStatePrivate::get(anc)->childStates();
-            for (QAbstractState *child : childStates) {
+            for (auto child : childStates) {
                 if (!containsDecendantOf(statesToEnter, child))
                     addDescendantStatesToEnter(child, statesToEnter, statesForDefaultEntry);
             }
@@ -1197,13 +1197,13 @@ bool QStateMachinePrivate::isFinal(const QAbstractState *s)
 
 bool QStateMachinePrivate::isParallel(const QAbstractState *s)
 {
-    const QState *ss = toStandardState(s);
+    auto ss = toStandardState(s);
     return ss && (QStatePrivate::get(ss)->childMode == QState::ParallelStates);
 }
 
 bool QStateMachinePrivate::isCompound(const QAbstractState *s) const
 {
-    const QState *group = toStandardState(s);
+    auto group = toStandardState(s);
     if (!group)
         return false;
     bool isMachine = QStatePrivate::get(group)->isMachine;
@@ -1215,7 +1215,7 @@ bool QStateMachinePrivate::isCompound(const QAbstractState *s) const
 
 bool QStateMachinePrivate::isAtomic(const QAbstractState *s) const
 {
-    const QState *ss = toStandardState(s);
+    auto ss = toStandardState(s);
     return (ss && QStatePrivate::get(ss)->childStates().isEmpty())
         || isFinal(s)
         // Treat the machine as atomic if it's a sub-state of this machine
@@ -1253,19 +1253,19 @@ QHistoryState *QStateMachinePrivate::toHistoryState(QAbstractState *state)
 bool QStateMachinePrivate::isInFinalState(QAbstractState* s) const
 {
     if (isCompound(s)) {
-        QState *grp = toStandardState(s);
-        QList<QAbstractState*> lst = QStatePrivate::get(grp)->childStates();
-        for (int i = 0; i < lst.size(); ++i) {
-            QAbstractState *cs = lst.at(i);
+        auto grp = toStandardState(s);
+        auto lst = QStatePrivate::get(grp)->childStates();
+        for (auto i = 0; i < lst.size(); ++i) {
+            auto cs = lst.at(i);
             if (isFinal(cs) && configuration.contains(cs))
                 return true;
         }
         return false;
     } else if (isParallel(s)) {
-        QState *grp = toStandardState(s);
-        QList<QAbstractState*> lst = QStatePrivate::get(grp)->childStates();
-        for (int i = 0; i < lst.size(); ++i) {
-            QAbstractState *cs = lst.at(i);
+        auto grp = toStandardState(s);
+        auto lst = QStatePrivate::get(grp)->childStates();
+        for (auto i = 0; i < lst.size(); ++i) {
+            auto cs = lst.at(i);
             if (!isInFinalState(cs))
                 return false;
         }
@@ -1303,10 +1303,10 @@ QVariant QStateMachinePrivate::savedValueForRestorable(const QList<QAbstractStat
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
     qDebug() << q_func() << ": savedValueForRestorable(" << exitedStates_sorted << object << propertyName << ')';
 #endif
-    for (int i = exitedStates_sorted.size() - 1; i >= 0; --i) {
-        QAbstractState *s = exitedStates_sorted.at(i);
-        QHash<RestorableId, QVariant> restorables = registeredRestorablesForState.value(s);
-        QHash<RestorableId, QVariant>::const_iterator it = restorables.constFind(RestorableId(object, propertyName));
+    for (auto i = exitedStates_sorted.size() - 1; i >= 0; --i) {
+        auto s = exitedStates_sorted.at(i);
+        auto restorables = registeredRestorablesForState.value(s);
+        auto it = restorables.constFind(RestorableId(object, propertyName));
         if (it != restorables.constEnd()) {
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
             qDebug() << q_func() << ":   using" << it.value() << "from" << s;
@@ -1343,8 +1343,8 @@ void QStateMachinePrivate::unregisterRestorables(const QList<QAbstractState *> &
     qDebug() << q_func() << ": unregisterRestorables(" << states << object << propertyName << ')';
 #endif
     RestorableId id(object, propertyName);
-    for (int i = 0; i < states.size(); ++i) {
-        QAbstractState *s = states.at(i);
+    for (auto i = 0; i < states.size(); ++i) {
+        auto s = states.at(i);
         QHash<QAbstractState*, QHash<RestorableId, QVariant> >::iterator it;
         it = registeredRestorablesForState.find(s);
         if (it == registeredRestorablesForState.end())
@@ -1400,9 +1400,9 @@ QHash<QStateMachinePrivate::RestorableId, QVariant> QStateMachinePrivate::comput
         const QList<QAbstractState*> &statesToExit_sorted) const
 {
     QHash<QStateMachinePrivate::RestorableId, QVariant> restorables;
-    for (int i = statesToExit_sorted.size() - 1; i >= 0; --i) {
-        QAbstractState *s = statesToExit_sorted.at(i);
-        QHash<QStateMachinePrivate::RestorableId, QVariant> rs = registeredRestorablesForState.value(s);
+    for (auto i = statesToExit_sorted.size() - 1; i >= 0; --i) {
+        auto s = statesToExit_sorted.at(i);
+        auto rs = registeredRestorablesForState.value(s);
         QHash<QStateMachinePrivate::RestorableId, QVariant>::const_iterator it;
         for (it = rs.constBegin(); it != rs.constEnd(); ++it) {
             if (!restorables.contains(it.key()))
@@ -1423,13 +1423,13 @@ QHash<QAbstractState*, QVector<QPropertyAssignment> > QStateMachinePrivate::comp
         const QList<QAbstractState*> &statesToEnter_sorted, QHash<RestorableId, QVariant> &pendingRestorables) const
 {
     QHash<QAbstractState*, QVector<QPropertyAssignment> > assignmentsForState;
-    for (int i = 0; i < statesToEnter_sorted.size(); ++i) {
-        QState *s = toStandardState(statesToEnter_sorted.at(i));
+    for (auto i = 0; i < statesToEnter_sorted.size(); ++i) {
+        auto s = toStandardState(statesToEnter_sorted.at(i));
         if (!s)
             continue;
 
         QVector<QPropertyAssignment> &assignments = QStatePrivate::get(s)->propertyAssignments;
-        for (int j = 0; j < assignments.size(); ++j) {
+        for (auto j = 0; j < assignments.size(); ++j) {
             const QPropertyAssignment &assn = assignments.at(j);
             if (assn.objectDeleted()) {
                 assignments.removeAt(j--);
@@ -1449,7 +1449,7 @@ QAbstractState *QStateMachinePrivate::findErrorState(QAbstractState *context)
     // Find error state recursively in parent hierarchy if not set explicitly for context state
     QAbstractState *errorState = 0;
     if (context != 0) {
-        QState *s = toStandardState(context);
+        auto s = toStandardState(context);
         if (s != 0)
             errorState = s->errorState();
 
@@ -1493,7 +1493,7 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
     pendingErrorStates.clear();
     pendingErrorStatesForDefaultEntry.clear();
 
-    QAbstractState *currentErrorState = findErrorState(currentContext);
+    auto currentErrorState = findErrorState(currentContext);
 
     // Avoid infinite loop if the error state itself has an error
     if (currentContext == currentErrorState)
@@ -1523,16 +1523,16 @@ QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation,
                                           const QPropertyAssignment &prop)
 {
     InitializeAnimationResult result;
-    QAnimationGroup *group = qobject_cast<QAnimationGroup*>(abstractAnimation);
+    auto group = qobject_cast<QAnimationGroup*>(abstractAnimation);
     if (group) {
-        for (int i = 0; i < group->animationCount(); ++i) {
-            QAbstractAnimation *animationChild = group->animationAt(i);
+        for (auto i = 0; i < group->animationCount(); ++i) {
+            auto animationChild = group->animationAt(i);
             const auto ret = initializeAnimation(animationChild, prop);
             result.handledAnimations << ret.handledAnimations;
             result.localResetEndValues << ret.localResetEndValues;
         }
     } else {
-        QPropertyAnimation *animation = qobject_cast<QPropertyAnimation *>(abstractAnimation);
+        auto animation = qobject_cast<QPropertyAnimation *>(abstractAnimation);
         if (animation != 0
             && prop.object == animation->targetObject()
             && prop.propertyName == animation->propertyName()) {
@@ -1551,7 +1551,7 @@ QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation,
 void QStateMachinePrivate::_q_animationFinished()
 {
     Q_Q(QStateMachine);
-    QAbstractAnimation *anim = qobject_cast<QAbstractAnimation*>(q->sender());
+    auto anim = qobject_cast<QAbstractAnimation*>(q->sender());
     Q_ASSERT(anim != 0);
     QObject::disconnect(anim, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
     if (resetAnimationEndValues.contains(anim)) {
@@ -1559,12 +1559,12 @@ void QStateMachinePrivate::_q_animationFinished()
         resetAnimationEndValues.remove(anim);
     }
 
-    QAbstractState *state = stateForAnimation.take(anim);
+    auto state = stateForAnimation.take(anim);
     Q_ASSERT(state != 0);
 
 #ifndef QT_NO_PROPERTIES
     // Set the final property value.
-    QPropertyAssignment assn = propertyForAnimation.take(anim);
+    auto assn = propertyForAnimation.take(anim);
     assn.write();
     if (!assn.explicitlySet)
         unregisterRestorables(QList<QAbstractState*>() << state, assn.object, assn.propertyName);
@@ -1585,14 +1585,14 @@ QList<QAbstractAnimation *> QStateMachinePrivate::selectAnimations(const QList<Q
 {
     QList<QAbstractAnimation *> selectedAnimations;
     if (animated) {
-        for (int i = 0; i < transitionList.size(); ++i) {
-            QAbstractTransition *transition = transitionList.at(i);
+        for (auto i = 0; i < transitionList.size(); ++i) {
+            auto transition = transitionList.at(i);
 
             selectedAnimations << transition->animations();
             selectedAnimations << defaultAnimationsForSource.values(transition->sourceState());
 
-            QList<QAbstractState *> targetStates = transition->targetStates();
-            for (int j=0; j<targetStates.size(); ++j)
+            auto targetStates = transition->targetStates();
+            for (auto j=0; j<targetStates.size(); ++j)
                 selectedAnimations << defaultAnimationsForTarget.values(targetStates.at(j));
         }
         selectedAnimations << defaultAnimations;
@@ -1604,16 +1604,16 @@ void QStateMachinePrivate::terminateActiveAnimations(QAbstractState *state,
     const QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates)
 {
     Q_Q(QStateMachine);
-    QList<QAbstractAnimation*> animations = animationsForState.take(state);
-    for (int i = 0; i < animations.size(); ++i) {
-        QAbstractAnimation *anim = animations.at(i);
+    auto animations = animationsForState.take(state);
+    for (auto i = 0; i < animations.size(); ++i) {
+        auto anim = animations.at(i);
         QObject::disconnect(anim, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
         stateForAnimation.remove(anim);
 
         // Stop the (top-level) animation.
         // ### Stopping nested animation has weird behavior.
-        QAbstractAnimation *topLevelAnim = anim;
-        while (QAnimationGroup *group = topLevelAnim->group())
+        auto topLevelAnim = anim;
+        while (auto group = topLevelAnim->group())
             topLevelAnim = group;
         topLevelAnim->stop();
 
@@ -1621,15 +1621,15 @@ void QStateMachinePrivate::terminateActiveAnimations(QAbstractState *state,
             qobject_cast<QVariantAnimation*>(anim)->setEndValue(QVariant()); // ### generalize
             resetAnimationEndValues.remove(anim);
         }
-        QPropertyAssignment assn = propertyForAnimation.take(anim);
+        auto assn = propertyForAnimation.take(anim);
         Q_ASSERT(assn.object != 0);
         // If there is no property assignment that sets this property,
         // set the property to its target value.
-        bool found = false;
+        auto found = false;
         QHash<QAbstractState*, QVector<QPropertyAssignment> >::const_iterator it;
         for (it = assignmentsForEnteredStates.constBegin(); it != assignmentsForEnteredStates.constEnd(); ++it) {
             const QVector<QPropertyAssignment> &assignments = it.value();
-            for (int j = 0; j < assignments.size(); ++j) {
+            for (auto j = 0; j < assignments.size(); ++j) {
                 if (assignments.at(j).hasTarget(assn.object, assn.propertyName)) {
                     found = true;
                     break;
@@ -1652,15 +1652,15 @@ void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QLi
     if (!assignmentsForEnteredStates.contains(state))
         return;
     QVector<QPropertyAssignment> &assignments = assignmentsForEnteredStates[state];
-    for (int i = 0; i < selectedAnimations.size(); ++i) {
-        QAbstractAnimation *anim = selectedAnimations.at(i);
+    for (auto i = 0; i < selectedAnimations.size(); ++i) {
+        auto anim = selectedAnimations.at(i);
         QVector<QPropertyAssignment>::iterator it;
         for (it = assignments.begin(); it != assignments.end(); ) {
             const QPropertyAssignment &assn = *it;
             const auto ret = initializeAnimation(anim, assn);
             if (!ret.handledAnimations.isEmpty()) {
-                for (int j = 0; j < ret.handledAnimations.size(); ++j) {
-                    QAbstractAnimation *a = ret.handledAnimations.at(j);
+                for (auto j = 0; j < ret.handledAnimations.size(); ++j) {
+                    auto a = ret.handledAnimations.at(j);
                     propertyForAnimation.insert(a, assn);
                     stateForAnimation.insert(a, state);
                     animationsForState[state].append(a);
@@ -1669,7 +1669,7 @@ void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QLi
                 }
                 if ((globalRestorePolicy == QState::RestoreProperties)
                         && !hasRestorable(state, assn.object, assn.propertyName)) {
-                    QVariant value = savedValueForRestorable(exitedStates_sorted, assn.object, assn.propertyName);
+                    auto value = savedValueForRestorable(exitedStates_sorted, assn.object, assn.propertyName);
                     unregisterRestorables(exitedStates_sorted, assn.object, assn.propertyName);
                     registerRestorable(state, assn.object, assn.propertyName, value);
                 }
@@ -1677,17 +1677,17 @@ void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QLi
             } else {
                 ++it;
             }
-            for (int j = 0; j < ret.localResetEndValues.size(); ++j)
+            for (auto j = 0; j < ret.localResetEndValues.size(); ++j)
                 resetAnimationEndValues.insert(ret.localResetEndValues.at(j));
         }
         // We require that at least one animation is valid.
         // ### generalize
-        QList<QVariantAnimation*> variantAnims = anim->findChildren<QVariantAnimation*>();
-        if (QVariantAnimation *va = qobject_cast<QVariantAnimation*>(anim))
+        auto variantAnims = anim->findChildren<QVariantAnimation*>();
+        if (auto va = qobject_cast<QVariantAnimation*>(anim))
             variantAnims.append(va);
 
-        bool hasValidEndValue = false;
-        for (int j = 0; j < variantAnims.size(); ++j) {
+        auto hasValidEndValue = false;
+        for (auto j = 0; j < variantAnims.size(); ++j) {
             if (variantAnims.at(j)->endValue().isValid()) {
                 hasValidEndValue = true;
                 break;
@@ -1728,7 +1728,7 @@ QAbstractTransition *QStateMachinePrivate::createInitialTransition() const
         virtual void onTransition(QEvent *) Q_DECL_OVERRIDE {}
     };
 
-    QState *root = rootState();
+    auto root = rootState();
     Q_ASSERT(root != 0);
     QList<QAbstractState *> targets;
     switch (root->childMode()) {
@@ -1745,9 +1745,9 @@ QAbstractTransition *QStateMachinePrivate::createInitialTransition() const
 void QStateMachinePrivate::clearHistory()
 {
     Q_Q(QStateMachine);
-    QList<QHistoryState*> historyStates = q->findChildren<QHistoryState*>();
-    for (int i = 0; i < historyStates.size(); ++i) {
-        QHistoryState *h = historyStates.at(i);
+    auto historyStates = q->findChildren<QHistoryState*>();
+    for (auto i = 0; i < historyStates.size(); ++i) {
+        auto h = historyStates.at(i);
         QHistoryStatePrivate::get(h)->configuration.clear();
     }
 }
@@ -1766,9 +1766,9 @@ void QStateMachinePrivate::clearHistory()
 void QStateMachinePrivate::registerMultiThreadedSignalTransitions()
 {
     Q_Q(QStateMachine);
-    QList<QSignalTransition*> transitions = rootState()->findChildren<QSignalTransition*>();
-    for (int i = 0; i < transitions.size(); ++i) {
-        QSignalTransition *t = transitions.at(i);
+    auto transitions = rootState()->findChildren<QSignalTransition*>();
+    for (auto i = 0; i < transitions.size(); ++i) {
+        auto t = transitions.at(i);
         if ((t->machine() == q) && t->senderObject() && (t->senderObject()->thread() != q->thread()))
             registerSignalTransition(t);
     }
@@ -1779,7 +1779,7 @@ void QStateMachinePrivate::_q_start()
     Q_Q(QStateMachine);
     Q_ASSERT(state == Starting);
     foreach (QAbstractState *state, configuration) {
-        QAbstractStatePrivate *abstractStatePrivate = QAbstractStatePrivate::get(state);
+        auto abstractStatePrivate = QAbstractStatePrivate::get(state);
         abstractStatePrivate->active = false;
         emit state->activeChanged(false);
     }
@@ -1802,19 +1802,19 @@ void QStateMachinePrivate::_q_start()
 
     QList<QAbstractTransition*> transitions;
     CalculationCache calculationCache;
-    QAbstractTransition *initialTransition = createInitialTransition();
+    auto initialTransition = createInitialTransition();
     transitions.append(initialTransition);
 
     QEvent nullEvent(QEvent::None);
     executeTransitionContent(&nullEvent, transitions);
-    QList<QAbstractState*> exitedStates = QList<QAbstractState*>();
+    auto exitedStates = QList<QAbstractState*>();
     QSet<QAbstractState*> statesForDefaultEntry;
-    QList<QAbstractState*> enteredStates = computeEntrySet(transitions, statesForDefaultEntry, &calculationCache);
+    auto enteredStates = computeEntrySet(transitions, statesForDefaultEntry, &calculationCache);
     QHash<RestorableId, QVariant> pendingRestorables;
-    QHash<QAbstractState*, QVector<QPropertyAssignment> > assignmentsForEnteredStates =
+    auto assignmentsForEnteredStates =
             computePropertyAssignments(enteredStates, pendingRestorables);
 #ifndef QT_NO_ANIMATION
-    QList<QAbstractAnimation*> selectedAnimations = selectAnimations(transitions);
+    auto selectedAnimations = selectAnimations(transitions);
 #endif
     // enterStates() will set stopProcessingReason to Finished if a final
     // state is entered.
@@ -1858,7 +1858,7 @@ void QStateMachinePrivate::_q_process()
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": starting the event processing loop";
 #endif
-    bool didChange = false;
+    auto didChange = false;
     while (processing) {
         if (stop) {
             processing = false;
@@ -1867,7 +1867,7 @@ void QStateMachinePrivate::_q_process()
         QList<QAbstractTransition*> enabledTransitions;
         CalculationCache calculationCache;
 
-        QEvent *e = new QEvent(QEvent::None);
+        auto e = new QEvent(QEvent::None);
         enabledTransitions = selectTransitions(e, &calculationCache);
         if (enabledTransitions.isEmpty()) {
             delete e;
@@ -1946,7 +1946,7 @@ void QStateMachinePrivate::_q_startDelayedEventTimer(int id, int delay)
 {
     Q_Q(QStateMachine);
     QMutexLocker locker(&delayedEventsMutex);
-    QHash<int, DelayedEvent>::iterator it = delayedEvents.find(id);
+    auto it = delayedEvents.find(id);
     if (it != delayedEvents.end()) {
         DelayedEvent &e = it.value();
         Q_ASSERT(!e.timerId);
@@ -2164,7 +2164,7 @@ void QStateMachinePrivate::goToState(QAbstractState *targetState)
     Q_ASSERT(sourceState != 0);
     // Reuse previous GoToStateTransition in case of several calls to
     // goToState() in a row.
-    GoToStateTransition *trans = sourceState->findChild<GoToStateTransition*>();
+    auto trans = sourceState->findChild<GoToStateTransition*>();
     if (!trans) {
         trans = new GoToStateTransition(targetState);
         sourceState->addTransition(trans);
@@ -2177,23 +2177,23 @@ void QStateMachinePrivate::goToState(QAbstractState *targetState)
 
 void QStateMachinePrivate::registerTransitions(QAbstractState *state)
 {
-    QState *group = toStandardState(state);
+    auto group = toStandardState(state);
     if (!group)
         return;
-    QList<QAbstractTransition*> transitions = QStatePrivate::get(group)->transitions();
-    for (int i = 0; i < transitions.size(); ++i) {
-        QAbstractTransition *t = transitions.at(i);
+    auto transitions = QStatePrivate::get(group)->transitions();
+    for (auto i = 0; i < transitions.size(); ++i) {
+        auto t = transitions.at(i);
         registerTransition(t);
     }
 }
 
 void QStateMachinePrivate::maybeRegisterTransition(QAbstractTransition *transition)
 {
-    if (QSignalTransition *st = qobject_cast<QSignalTransition*>(transition)) {
+    if (auto st = qobject_cast<QSignalTransition*>(transition)) {
         maybeRegisterSignalTransition(st);
     }
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
-    else if (QEventTransition *et = qobject_cast<QEventTransition*>(transition)) {
+    else if (auto et = qobject_cast<QEventTransition*>(transition)) {
         maybeRegisterEventTransition(et);
     }
 #endif
@@ -2201,11 +2201,11 @@ void QStateMachinePrivate::maybeRegisterTransition(QAbstractTransition *transiti
 
 void QStateMachinePrivate::registerTransition(QAbstractTransition *transition)
 {
-    if (QSignalTransition *st = qobject_cast<QSignalTransition*>(transition)) {
+    if (auto st = qobject_cast<QSignalTransition*>(transition)) {
         registerSignalTransition(st);
     }
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
-    else if (QEventTransition *oet = qobject_cast<QEventTransition*>(transition)) {
+    else if (auto oet = qobject_cast<QEventTransition*>(transition)) {
         registerEventTransition(oet);
     }
 #endif
@@ -2213,11 +2213,11 @@ void QStateMachinePrivate::registerTransition(QAbstractTransition *transition)
 
 void QStateMachinePrivate::unregisterTransition(QAbstractTransition *transition)
 {
-    if (QSignalTransition *st = qobject_cast<QSignalTransition*>(transition)) {
+    if (auto st = qobject_cast<QSignalTransition*>(transition)) {
         unregisterSignalTransition(st);
     }
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
-    else if (QEventTransition *oet = qobject_cast<QEventTransition*>(transition)) {
+    else if (auto oet = qobject_cast<QEventTransition*>(transition)) {
         unregisterEventTransition(oet);
     }
 #endif
@@ -2237,17 +2237,17 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     Q_Q(QStateMachine);
     if (QSignalTransitionPrivate::get(transition)->signalIndex != -1)
         return; // already registered
-    const QObject *sender = QSignalTransitionPrivate::get(transition)->sender;
+    auto sender = QSignalTransitionPrivate::get(transition)->sender;
     if (!sender)
         return;
-    QByteArray signal = QSignalTransitionPrivate::get(transition)->signal;
+    auto signal = QSignalTransitionPrivate::get(transition)->signal;
     if (signal.isEmpty())
         return;
     if (signal.startsWith('0'+QSIGNAL_CODE))
         signal.remove(0, 1);
-    const QMetaObject *meta = sender->metaObject();
-    int signalIndex = meta->indexOfSignal(signal);
-    int originalSignalIndex = signalIndex;
+    auto meta = sender->metaObject();
+    auto signalIndex = meta->indexOfSignal(signal);
+    auto originalSignalIndex = signalIndex;
     if (signalIndex == -1) {
         signalIndex = meta->indexOfSignal(QMetaObject::normalizedSignature(signal));
         if (signalIndex == -1) {
@@ -2269,7 +2269,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     if (connectedSignalIndexes.at(signalIndex) == 0) {
         if (!signalEventGenerator)
             signalEventGenerator = new QSignalEventGenerator(q);
-        static const int generatorMethodOffset = QSignalEventGenerator::staticMetaObject.methodOffset();
+        static const auto generatorMethodOffset = QSignalEventGenerator::staticMetaObject.methodOffset();
         bool ok = QMetaObject::connect(sender, signalIndex, signalEventGenerator, generatorMethodOffset);
         if (!ok) {
 #ifdef QSTATEMACHINE_DEBUG
@@ -2294,10 +2294,10 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
 
 void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transition)
 {
-    int signalIndex = QSignalTransitionPrivate::get(transition)->signalIndex;
+    auto signalIndex = QSignalTransitionPrivate::get(transition)->signalIndex;
     if (signalIndex == -1)
         return; // not registered
-    const QObject *sender = QSignalTransitionPrivate::get(transition)->sender;
+    auto sender = QSignalTransitionPrivate::get(transition)->sender;
     QSignalTransitionPrivate::get(transition)->signalIndex = -1;
 
     connectionsMutex.lock();
@@ -2306,10 +2306,10 @@ void QStateMachinePrivate::unregisterSignalTransition(QSignalTransition *transit
     Q_ASSERT(connectedSignalIndexes.at(signalIndex) != 0);
     if (--connectedSignalIndexes[signalIndex] == 0) {
         Q_ASSERT(signalEventGenerator != 0);
-        static const int generatorMethodOffset = QSignalEventGenerator::staticMetaObject.methodOffset();
+        static const auto generatorMethodOffset = QSignalEventGenerator::staticMetaObject.methodOffset();
         QMetaObject::disconnect(sender, signalIndex, signalEventGenerator, generatorMethodOffset);
-        int sum = 0;
-        for (int i = 0; i < connectedSignalIndexes.size(); ++i)
+        auto sum = 0;
+        for (auto i = 0; i < connectedSignalIndexes.size(); ++i)
             sum += connectedSignalIndexes.at(i);
         if (sum == 0)
             connections.remove(sender);
@@ -2321,17 +2321,17 @@ void QStateMachinePrivate::unregisterAllTransitions()
 {
     Q_Q(QStateMachine);
     {
-        QList<QSignalTransition*> transitions = rootState()->findChildren<QSignalTransition*>();
-        for (int i = 0; i < transitions.size(); ++i) {
-            QSignalTransition *t = transitions.at(i);
+        auto transitions = rootState()->findChildren<QSignalTransition*>();
+        for (auto i = 0; i < transitions.size(); ++i) {
+            auto t = transitions.at(i);
             if (t->machine() == q)
                 unregisterSignalTransition(t);
         }
     }
     {
-        QList<QEventTransition*> transitions = rootState()->findChildren<QEventTransition*>();
-        for (int i = 0; i < transitions.size(); ++i) {
-            QEventTransition *t = transitions.at(i);
+        auto transitions = rootState()->findChildren<QEventTransition*>();
+        for (auto i = 0; i < transitions.size(); ++i) {
+            auto t = transitions.at(i);
             if (t->machine() == q)
                 unregisterEventTransition(t);
         }
@@ -2354,10 +2354,10 @@ void QStateMachinePrivate::registerEventTransition(QEventTransition *transition)
         qWarning("QObject event transitions are not supported for custom types");
         return;
     }
-    QObject *object = QEventTransitionPrivate::get(transition)->object;
+    auto object = QEventTransitionPrivate::get(transition)->object;
     if (!object)
         return;
-    QObjectPrivate *od = QObjectPrivate::get(object);
+    auto od = QObjectPrivate::get(object);
     if (!od->extraData || !od->extraData->eventFilters.contains(q))
         object->installEventFilter(q);
     ++qobjectEvents[object][transition->eventType()];
@@ -2374,12 +2374,12 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
     Q_Q(QStateMachine);
     if (!QEventTransitionPrivate::get(transition)->registered)
         return;
-    QObject *object = QEventTransitionPrivate::get(transition)->object;
+    auto object = QEventTransitionPrivate::get(transition)->object;
     QHash<QEvent::Type, int> &events = qobjectEvents[object];
     Q_ASSERT(events.value(transition->eventType()) > 0);
     if (--events[transition->eventType()] == 0) {
         events.remove(transition->eventType());
-        int sum = 0;
+        auto sum = 0;
         QHash<QEvent::Type, int>::const_iterator it;
         for (it = events.constBegin(); it != events.constEnd(); ++it)
             sum += it.value();
@@ -2408,13 +2408,13 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
     Q_ASSERT(connections[sender].at(signalIndex) != 0);
     connectionsMutex.unlock();
 #endif
-    const QMetaObject *meta = sender->metaObject();
-    QMetaMethod method = meta->method(signalIndex);
-    int argc = method.parameterCount();
+    auto meta = sender->metaObject();
+    auto method = meta->method(signalIndex);
+    auto argc = method.parameterCount();
     QList<QVariant> vargs;
     vargs.reserve(argc);
-    for (int i = 0; i < argc; ++i) {
-        int type = method.parameterType(i);
+    for (auto i = 0; i < argc; ++i) {
+        auto type = method.parameterType(i);
         vargs.append(QVariant(type, argv[i+1]));
     }
 
@@ -2744,9 +2744,9 @@ int QStateMachine::postDelayedEvent(QEvent *event, int delay)
     qDebug() << this << ": posting event" << event << "with delay" << delay;
 #endif
     QMutexLocker locker(&d->delayedEventsMutex);
-    int id = d->delayedEventIdFreeList.next();
-    bool inMachineThread = (QThread::currentThread() == thread());
-    int timerId = inMachineThread ? startTimer(delay) : 0;
+    auto id = d->delayedEventIdFreeList.next();
+    auto inMachineThread = (QThread::currentThread() == thread());
+    auto timerId = inMachineThread ? startTimer(delay) : 0;
     if (inMachineThread && !timerId) {
         qWarning("QStateMachine::postDelayedEvent: failed to start timer with interval %d", delay);
         d->delayedEventIdFreeList.release(id);
@@ -2783,12 +2783,12 @@ bool QStateMachine::cancelDelayedEvent(int id)
         return false;
     }
     QMutexLocker locker(&d->delayedEventsMutex);
-    QStateMachinePrivate::DelayedEvent e = d->delayedEvents.take(id);
+    auto e = d->delayedEvents.take(id);
     if (!e.event)
         return false;
     if (e.timerId) {
         d->timerIdToDelayedEventId.remove(e.timerId);
-        bool inMachineThread = (QThread::currentThread() == thread());
+        auto inMachineThread = (QThread::currentThread() == thread());
         if (inMachineThread) {
             killTimer(e.timerId);
             d->delayedEventIdFreeList.release(id);
@@ -2842,8 +2842,8 @@ bool QStateMachine::event(QEvent *e)
 {
     Q_D(QStateMachine);
     if (e->type() == QEvent::Timer) {
-        QTimerEvent *te = static_cast<QTimerEvent*>(e);
-        int tid = te->timerId();
+        auto te = static_cast<QTimerEvent*>(e);
+        auto tid = te->timerId();
         if (d->state != QStateMachinePrivate::Running) {
             // This event has been cancelled already
             QMutexLocker locker(&d->delayedEventsMutex);
@@ -2851,8 +2851,8 @@ bool QStateMachine::event(QEvent *e)
             return true;
         }
         d->delayedEventsMutex.lock();
-        int id = d->timerIdToDelayedEventId.take(tid);
-        QStateMachinePrivate::DelayedEvent ee = d->delayedEvents.take(id);
+        auto id = d->timerIdToDelayedEventId.take(tid);
+        auto ee = d->delayedEvents.take(id);
         if (ee.event != 0) {
             Q_ASSERT(ee.timerId == tid);
             killTimer(tid);
@@ -3048,7 +3048,7 @@ void QSignalEventGenerator::qt_static_metacall(QObject *_o, QMetaObject::Call _c
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
         Q_ASSERT(staticMetaObject.cast(_o));
-        QSignalEventGenerator *_t = static_cast<QSignalEventGenerator *>(_o);
+        auto _t = static_cast<QSignalEventGenerator *>(_o);
         switch (_id) {
         case 0: _t->execute(_a); break; // HAND EDIT: add the _a parameter
         default: ;
@@ -3091,9 +3091,9 @@ int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 
 void QSignalEventGenerator::execute(void **_a)
 {
-    int signalIndex = senderSignalIndex();
+    auto signalIndex = senderSignalIndex();
     Q_ASSERT(signalIndex != -1);
-    QStateMachine *machine = qobject_cast<QStateMachine*>(parent());
+    auto machine = qobject_cast<QStateMachine*>(parent());
     QStateMachinePrivate::get(machine)->handleTransitionSignal(sender(), signalIndex, _a);
 }
 

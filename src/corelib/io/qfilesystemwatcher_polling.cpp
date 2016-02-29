@@ -55,10 +55,10 @@ QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                       QStringList *files,
                                                       QStringList *directories)
 {
-    QStringList p = paths;
+    auto p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
-        QString path = it.next();
+        auto path = it.next();
         QFileInfo fi(path);
         if (!fi.exists())
             continue;
@@ -91,10 +91,10 @@ QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &path
                                                          QStringList *files,
                                                          QStringList *directories)
 {
-    QStringList p = paths;
+    auto p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
-        QString path = it.next();
+        auto path = it.next();
         if (this->directories.remove(path)) {
             directories->removeAll(path);
             it.remove();
@@ -116,8 +116,8 @@ void QPollingFileSystemWatcherEngine::timeout()
 {
     QMutableHashIterator<QString, FileInfo> fit(files);
     while (fit.hasNext()) {
-        QHash<QString, FileInfo>::iterator x = fit.next();
-        QString path = x.key();
+        auto x = fit.next();
+        auto path = x.key();
         QFileInfo fi(path);
         if (!fi.exists()) {
             fit.remove();
@@ -129,8 +129,8 @@ void QPollingFileSystemWatcherEngine::timeout()
     }
     QMutableHashIterator<QString, FileInfo> dit(directories);
     while (dit.hasNext()) {
-        QHash<QString, FileInfo>::iterator x = dit.next();
-        QString path = x.key();
+        auto x = dit.next();
+        auto path = x.key();
         QFileInfo fi(path);
         if (!path.endsWith(QLatin1Char('/')))
             fi = QFileInfo(path + QLatin1Char('/'));

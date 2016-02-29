@@ -293,7 +293,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
 {
     QStringMatcher matcher(str, cs);
     QStringList res;
-    for (int i = 0; i < that->size(); ++i)
+    for (auto i = 0; i < that->size(); ++i)
         if (matcher.indexIn(that->at(i)) != -1)
             res << that->at(i);
     return res;
@@ -312,7 +312,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
 bool QtPrivate::QStringList_contains(const QStringList *that, const QString &str,
                                      Qt::CaseSensitivity cs)
 {
-    for (int i = 0; i < that->size(); ++i) {
+    for (auto i = 0; i < that->size(); ++i) {
         const QString & string = that->at(i);
         if (string.length() == str.length() && str.compare(string, cs) == 0)
             return true;
@@ -332,7 +332,7 @@ bool QtPrivate::QStringList_contains(const QStringList *that, const QString &str
 QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegExp &rx)
 {
     QStringList res;
-    for (int i = 0; i < that->size(); ++i)
+    for (auto i = 0; i < that->size(); ++i)
         if (that->at(i).contains(rx))
             res << that->at(i);
     return res;
@@ -352,7 +352,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegExp
 QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegularExpression &re)
 {
     QStringList res;
-    for (int i = 0; i < that->size(); ++i) {
+    for (auto i = 0; i < that->size(); ++i) {
         if (that->at(i).contains(re))
             res << that->at(i);
     }
@@ -379,7 +379,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &before,
                                              const QString &after, Qt::CaseSensitivity cs)
 {
-    for (int i = 0; i < that->size(); ++i)
+    for (auto i = 0; i < that->size(); ++i)
         (*that)[i].replace(before, after, cs);
 }
 
@@ -409,7 +409,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &b
 */
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &rx, const QString &after)
 {
-    for (int i = 0; i < that->size(); ++i)
+    for (auto i = 0; i < that->size(); ++i)
         (*that)[i].replace(rx, after);
 }
 #endif
@@ -441,7 +441,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &r
 */
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularExpression &re, const QString &after)
 {
-    for (int i = 0; i < that->size(); ++i)
+    for (auto i = 0; i < that->size(); ++i)
         (*that)[i].replace(re, after);
 }
 #endif // QT_NO_REGULAREXPRESSION
@@ -464,10 +464,10 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularEx
 */
 QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, int seplen)
 {
-    int totalLength = 0;
-    const int size = that->size();
+    auto totalLength = 0;
+    const auto size = that->size();
 
-    for (int i = 0; i < size; ++i)
+    for (auto i = 0; i < size; ++i)
         totalLength += that->at(i).size();
 
     if(size > 0)
@@ -477,7 +477,7 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, i
     if (totalLength == 0)
         return res;
     res.reserve(totalLength);
-    for (int i = 0; i < size; ++i) {
+    for (auto i = 0; i < size; ++i) {
         if (i)
             res.append(sep, seplen);
         res += that->at(i);
@@ -527,7 +527,7 @@ static int indexOfMutating(const QStringList *that, QRegExp &rx, int from)
 {
     if (from < 0)
         from = qMax(from + that->size(), 0);
-    for (int i = from; i < that->size(); ++i) {
+    for (auto i = from; i < that->size(); ++i) {
         if (rx.exactMatch(that->at(i)))
             return i;
     }
@@ -540,7 +540,7 @@ static int lastIndexOfMutating(const QStringList *that, QRegExp &rx, int from)
         from += that->size();
     else if (from >= that->size())
         from = that->size() - 1;
-    for (int i = from; i >= 0; --i) {
+    for (auto i = from; i >= 0; --i) {
         if (rx.exactMatch(that->at(i)))
             return i;
         }
@@ -647,8 +647,8 @@ int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegularExpres
     QString exactPattern = QLatin1String("\\A(?:") + re.pattern() + QLatin1String(")\\z");
     QRegularExpression exactRe(exactPattern, re.patternOptions());
 
-    for (int i = from; i < that->size(); ++i) {
-        QRegularExpressionMatch m = exactRe.match(that->at(i));
+    for (auto i = from; i < that->size(); ++i) {
+        auto m = exactRe.match(that->at(i));
         if (m.hasMatch())
             return i;
     }
@@ -677,8 +677,8 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularEx
     QString exactPattern = QLatin1String("\\A(?:") + re.pattern() + QLatin1String(")\\z");
     QRegularExpression exactRe(exactPattern, re.patternOptions());
 
-    for (int i = from; i >= 0; --i) {
-        QRegularExpressionMatch m = exactRe.match(that->at(i));
+    for (auto i = from; i >= 0; --i) {
+        auto m = exactRe.match(that->at(i));
         if (m.hasMatch())
             return i;
     }
@@ -700,12 +700,12 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularEx
 */
 int QtPrivate::QStringList_removeDuplicates(QStringList *that)
 {
-    int n = that->size();
-    int j = 0;
+    auto n = that->size();
+    auto j = 0;
     QSet<QString> seen;
     seen.reserve(n);
-    int setSize = 0;
-    for (int i = 0; i < n; ++i) {
+    auto setSize = 0;
+    for (auto i = 0; i < n; ++i) {
         const QString &s = that->at(i);
         seen.insert(s);
         if (setSize == seen.size()) // unchanged size => was already seen

@@ -162,7 +162,7 @@ QStringList QProcessEnvironmentPrivate::toList() const
 {
     QStringList result;
     result.reserve(hash.size());
-    for (Hash::const_iterator it = hash.cbegin(), end = hash.cend(); it != end; ++it)
+    for (auto it = hash.cbegin(), end = hash.cend(); it != end; ++it)
         result << nameToString(it.key()) + QLatin1Char('=') + valueToString(it.value());
     return result;
 }
@@ -170,15 +170,15 @@ QStringList QProcessEnvironmentPrivate::toList() const
 QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list)
 {
     QProcessEnvironment env;
-    QStringList::ConstIterator it = list.constBegin(),
+    auto it = list.constBegin(),
                               end = list.constEnd();
     for ( ; it != end; ++it) {
-        int pos = it->indexOf(QLatin1Char('='), 1);
+        auto pos = it->indexOf(QLatin1Char('='), 1);
         if (pos < 1)
             continue;
 
-        QString value = it->mid(pos + 1);
-        QString name = *it;
+        auto value = it->mid(pos + 1);
+        auto name = *it;
         name.truncate(pos);
         env.insert(name, value);
     }
@@ -189,7 +189,7 @@ QStringList QProcessEnvironmentPrivate::keys() const
 {
     QStringList result;
     result.reserve(hash.size());
-    Hash::ConstIterator it = hash.constBegin(),
+    auto it = hash.constBegin(),
                        end = hash.constEnd();
     for ( ; it != end; ++it)
         result << nameToString(it.key());
@@ -198,13 +198,13 @@ QStringList QProcessEnvironmentPrivate::keys() const
 
 void QProcessEnvironmentPrivate::insert(const QProcessEnvironmentPrivate &other)
 {
-    Hash::ConstIterator it = other.hash.constBegin(),
+    auto it = other.hash.constBegin(),
                        end = other.hash.constEnd();
     for ( ; it != end; ++it)
         hash.insert(it.key(), it.value());
 
 #ifdef Q_OS_UNIX
-    QHash<QString, Key>::ConstIterator nit = other.nameMap.constBegin(),
+    auto nit = other.nameMap.constBegin(),
                                       nend = other.nameMap.constEnd();
     for ( ; nit != nend; ++nit)
         nameMap.insert(nit.key(), nit.value());
@@ -376,7 +376,7 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
         return defaultValue;
 
     QProcessEnvironmentPrivate::MutexLocker locker(d);
-    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(d->prepareName(name));
+    auto it = d->hash.constFind(d->prepareName(name));
     if (it == d->hash.constEnd())
         return defaultValue;
 
@@ -1014,17 +1014,17 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
     if (channel->pipe[0] == INVALID_Q_PIPE)
         return false;
 
-    qint64 available = bytesAvailableInChannel(channel);
+    auto available = bytesAvailableInChannel(channel);
     if (available == 0)
         available = 1;      // always try to read at least one byte
 
-    QProcess::ProcessChannel channelIdx = (channel == &stdoutChannel
+    auto channelIdx = (channel == &stdoutChannel
                                            ? QProcess::StandardOutput
                                            : QProcess::StandardError);
     Q_ASSERT(readBuffers.size() > int(channelIdx));
     QRingBuffer &readBuffer = readBuffers[int(channelIdx)];
-    char *ptr = readBuffer.reserve(available);
-    qint64 readBytes = readFromChannel(channel, ptr, available);
+    auto ptr = readBuffer.reserve(available);
+    auto readBytes = readFromChannel(channel, ptr, available);
     if (readBytes <= 0)
         readBuffer.chop(available);
     if (readBytes == -2) {
@@ -1060,7 +1060,7 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
 
     readBuffer.chop(available - readBytes);
 
-    bool didRead = false;
+    auto didRead = false;
     if (readBytes == 0) {
         if (channel->notifier)
             channel->notifier->setEnabled(false);
@@ -1112,7 +1112,7 @@ bool QProcessPrivate::_q_canWrite()
         return false;
     }
 
-    qint64 written = writeToStdin(writeBuffer.readPointer(), writeBuffer.nextDataBlockSize());
+    auto written = writeToStdin(writeBuffer.readPointer(), writeBuffer.nextDataBlockSize());
     if (written < 0) {
         closeChannel(&stdinChannel);
         setErrorAndEmit(QProcess::WriteError);
@@ -1199,7 +1199,7 @@ bool QProcessPrivate::_q_processDied()
 #endif
     }
 
-    bool wasRunning = (processState == QProcess::Running);
+    auto wasRunning = (processState == QProcess::Running);
 
     cleanup();
 
@@ -1558,8 +1558,8 @@ void QProcess::setStandardErrorFile(const QString &fileName, OpenMode mode)
 */
 void QProcess::setStandardOutputProcess(QProcess *destination)
 {
-    QProcessPrivate *dfrom = d_func();
-    QProcessPrivate *dto = destination->d_func();
+    auto dfrom = d_func();
+    auto dto = destination->d_func();
     dfrom->stdoutChannel.pipeTo(dto);
     dto->stdinChannel.pipeFrom(dfrom);
 }
@@ -1760,7 +1760,7 @@ qint64 QProcess::bytesAvailable() const
 */
 qint64 QProcess::bytesToWrite() const
 {
-    qint64 size = QIODevice::bytesToWrite();
+    auto size = QIODevice::bytesToWrite();
 #ifdef Q_OS_WIN
     size += d_func()->pipeWriterBytesToWrite();
 #endif
@@ -1918,7 +1918,7 @@ bool QProcess::waitForBytesWritten(int msecs)
     if (d->processState == QProcess::Starting) {
         QElapsedTimer stopWatch;
         stopWatch.start();
-        bool started = waitForStarted(msecs);
+        auto started = waitForStarted(msecs);
         if (!started)
             return false;
         msecs = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
@@ -1954,7 +1954,7 @@ bool QProcess::waitForFinished(int msecs)
     if (d->processState == QProcess::Starting) {
         QElapsedTimer stopWatch;
         stopWatch.start();
-        bool started = waitForStarted(msecs);
+        auto started = waitForStarted(msecs);
         if (!started)
             return false;
         msecs = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
@@ -2064,9 +2064,9 @@ qint64 QProcess::writeData(const char *data, qint64 len)
 */
 QByteArray QProcess::readAllStandardOutput()
 {
-    ProcessChannel tmp = readChannel();
+    auto tmp = readChannel();
     setReadChannel(StandardOutput);
-    QByteArray data = readAll();
+    auto data = readAll();
     setReadChannel(tmp);
     return data;
 }
@@ -2080,9 +2080,9 @@ QByteArray QProcess::readAllStandardOutput()
 */
 QByteArray QProcess::readAllStandardError()
 {
-    ProcessChannel tmp = readChannel();
+    auto tmp = readChannel();
     setReadChannel(StandardError);
-    QByteArray data = readAll();
+    auto data = readAll();
     setReadChannel(tmp);
     return data;
 }
@@ -2236,13 +2236,13 @@ static QStringList parseCombinedArgString(const QString &program)
 {
     QStringList args;
     QString tmp;
-    int quoteCount = 0;
-    bool inQuote = false;
+    auto quoteCount = 0;
+    auto inQuote = false;
 
     // handle quoting. tokens can be surrounded by double quotes
     // "hello world". three consecutive double quotes represent
     // the quote character itself.
-    for (int i = 0; i < program.size(); ++i) {
+    for (auto i = 0; i < program.size(); ++i) {
         if (program.at(i) == QLatin1Char('"')) {
             ++quoteCount;
             if (quoteCount == 3) {
@@ -2313,14 +2313,14 @@ static QStringList parseCombinedArgString(const QString &program)
 #if !defined(QT_NO_PROCESS_COMBINED_ARGUMENT_START)
 void QProcess::start(const QString &command, OpenMode mode)
 {
-    QStringList args = parseCombinedArgString(command);
+    auto args = parseCombinedArgString(command);
     if (args.isEmpty()) {
         Q_D(QProcess);
         d->setErrorAndEmit(QProcess::FailedToStart, tr("No program defined"));
         return;
     }
 
-    QString prog = args.first();
+    auto prog = args.first();
     args.removeFirst();
 
     start(prog, args, mode);
@@ -2559,11 +2559,11 @@ bool QProcess::startDetached(const QString &program,
 */
 bool QProcess::startDetached(const QString &command)
 {
-    QStringList args = parseCombinedArgString(command);
+    auto args = parseCombinedArgString(command);
     if (args.isEmpty())
         return false;
 
-    QString prog = args.first();
+    auto prog = args.first();
     args.removeFirst();
 
     return QProcessPrivate::startDetached(prog, args);
@@ -2604,7 +2604,7 @@ QStringList QProcess::systemEnvironment()
 {
     QStringList tmp;
     char *entry = 0;
-    int count = 0;
+    auto count = 0;
     while ((entry = environ[count++]))
         tmp << QString::fromLocal8Bit(entry);
     return tmp;

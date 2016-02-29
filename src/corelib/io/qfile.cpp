@@ -77,7 +77,7 @@ QFilePrivate::openExternalFile(int flags, int fd, QFile::FileHandleFlags handleF
 #else
     delete fileEngine;
     fileEngine = 0;
-    QFSFileEngine *fe = new QFSFileEngine;
+    auto fe = new QFSFileEngine;
     fileEngine = fe;
     return fe->open(QIODevice::OpenMode(flags), fd, handleFlags);
 #endif
@@ -93,7 +93,7 @@ QFilePrivate::openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handl
 #else
     delete fileEngine;
     fileEngine = 0;
-    QFSFileEngine *fe = new QFSFileEngine;
+    auto fe = new QFSFileEngine;
     fileEngine = fe;
     return fe->open(QIODevice::OpenMode(flags), fh, handleFlags);
 #endif
@@ -627,7 +627,7 @@ QFile::rename(const QString &newName)
         QFile out(newName);
         if (open(QIODevice::ReadOnly)) {
             if (out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-                bool error = false;
+                auto error = false;
                 char block[4096];
                 qint64 bytes;
                 while ((bytes = read(block, sizeof(block))) > 0) {
@@ -767,7 +767,7 @@ QFile::copy(const QString &newName)
             unsetError();
             return true;
         } else {
-            bool error = false;
+            auto error = false;
             if(!open(QFile::ReadOnly)) {
                 error = true;
                 d->setError(QFile::CopyError, tr("Cannot open %1 for input").arg(d->fileName));
@@ -793,7 +793,7 @@ QFile::copy(const QString &newName)
                     char block[4096];
                     qint64 totalRead = 0;
                     while(!atEnd()) {
-                        qint64 in = read(block, sizeof(block));
+                        auto in = read(block, sizeof(block));
                         if (in <= 0)
                             break;
                         totalRead += in;
@@ -890,7 +890,7 @@ bool QFile::open(OpenMode mode)
             seek(size());
         return true;
     }
-    QFile::FileError err = d->fileEngine->error();
+    auto err = d->fileEngine->error();
     if(err == QFile::UnspecifiedError)
         err = QFile::OpenError;
     d->setError(err, d->fileEngine->errorString());
@@ -958,7 +958,7 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
     if (d->openExternalFile(mode, fh, handleFlags)) {
         QIODevice::open(mode);
         if (!(mode & Append) && !isSequential()) {
-            qint64 pos = (qint64)QT_FTELL(fh);
+            auto pos = (qint64)QT_FTELL(fh);
             if (pos != -1) {
                 // Skip redundant checks in QFileDevice::seek().
                 QIODevice::seek(pos);
@@ -1017,7 +1017,7 @@ bool QFile::open(int fd, OpenMode mode, FileHandleFlags handleFlags)
     if (d->openExternalFile(mode, fd, handleFlags)) {
         QIODevice::open(mode);
         if (!(mode & Append) && !isSequential()) {
-            qint64 pos = (qint64)QT_LSEEK(fd, QT_OFF_T(0), SEEK_CUR);
+            auto pos = (qint64)QT_LSEEK(fd, QT_OFF_T(0), SEEK_CUR);
             if (pos != -1) {
                 // Skip redundant checks in QFileDevice::seek().
                 QIODevice::seek(pos);

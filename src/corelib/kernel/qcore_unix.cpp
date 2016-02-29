@@ -69,7 +69,7 @@ static inline bool time_update(struct timespec *tv, const struct timespec &start
 {
     // clock source is (hopefully) monotonic, so we can recalculate how much timeout is left;
     // if it isn't monotonic, we'll simply hope that it hasn't jumped, because we have no alternative
-    struct timespec now = qt_gettime();
+    auto now = qt_gettime();
     *tv = timeout + start - now;
     return tv->tv_sec >= 0;
 }
@@ -113,12 +113,12 @@ int qt_safe_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout
         return ret;
     }
 
-    timespec start = qt_gettime();
-    timespec timeout = *timeout_ts;
+    auto start = qt_gettime();
+    auto timeout = *timeout_ts;
 
     // loop and recalculate the timeout as needed
     forever {
-        const int ret = qt_ppoll(fds, nfds, &timeout);
+        const auto ret = qt_ppoll(fds, nfds, &timeout);
         if (ret != -1 || errno != EINTR)
             return ret;
 

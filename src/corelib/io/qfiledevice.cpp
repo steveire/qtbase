@@ -290,12 +290,12 @@ bool QFileDevice::flush()
     }
 
     if (!d->writeBuffer.isEmpty()) {
-        qint64 size = d->writeBuffer.nextDataBlockSize();
-        qint64 written = d->fileEngine->write(d->writeBuffer.readPointer(), size);
+        auto size = d->writeBuffer.nextDataBlockSize();
+        auto written = d->fileEngine->write(d->writeBuffer.readPointer(), size);
         if (written > 0)
             d->writeBuffer.free(written);
         if (written != size) {
-            QFileDevice::FileError err = d->fileEngine->error();
+            auto err = d->fileEngine->error();
             if (err == QFileDevice::UnspecifiedError)
                 err = QFileDevice::WriteError;
             d->setError(err, d->fileEngine->errorString());
@@ -304,7 +304,7 @@ bool QFileDevice::flush()
     }
 
     if (!d->fileEngine->flush()) {
-        QFileDevice::FileError err = d->fileEngine->error();
+        auto err = d->fileEngine->error();
         if (err == QFileDevice::UnspecifiedError)
             err = QFileDevice::WriteError;
         d->setError(err, d->fileEngine->errorString());
@@ -323,7 +323,7 @@ void QFileDevice::close()
     Q_D(QFileDevice);
     if (!isOpen())
         return;
-    bool flushed = flush();
+    auto flushed = flush();
     QIODevice::close();
 
     // reset write buffer
@@ -411,7 +411,7 @@ bool QFileDevice::seek(qint64 off)
         return false;
 
     if (!d->fileEngine->seek(off) || !QIODevice::seek(off)) {
-        QFileDevice::FileError err = d->fileEngine->error();
+        auto err = d->fileEngine->error();
         if (err == QFileDevice::UnspecifiedError)
             err = QFileDevice::PositionError;
         d->setError(err, d->fileEngine->errorString());
@@ -459,9 +459,9 @@ qint64 QFileDevice::readData(char *data, qint64 len)
     if (!d->ensureFlushed())
         return -1;
 
-    const qint64 read = d->fileEngine->read(data, len);
+    const auto read = d->fileEngine->read(data, len);
     if (read < 0) {
-        QFileDevice::FileError err = d->fileEngine->error();
+        auto err = d->fileEngine->error();
         if (err == QFileDevice::UnspecifiedError)
             err = QFileDevice::ReadError;
         d->setError(err, d->fileEngine->errorString());
@@ -485,7 +485,7 @@ bool QFileDevicePrivate::putCharHelper(char c)
 #else
 
     // Cutoff for code that doesn't only touch the buffer.
-    qint64 writeBufferSize = writeBuffer.size();
+    auto writeBufferSize = writeBuffer.size();
     if ((openMode & QIODevice::Unbuffered) || writeBufferSize + 1 >= writeBufferChunkSize
 #ifdef Q_OS_WIN
         || ((openMode & QIODevice::Text) && c == '\n'
@@ -504,13 +504,13 @@ bool QFileDevicePrivate::putCharHelper(char c)
     }
 
     // Make sure the device is positioned correctly.
-    const bool sequential = isSequential();
+    const auto sequential = isSequential();
     if (pos != devicePos && !sequential && !q_func()->seek(pos))
         return false;
 
     lastWasWrite = true;
 
-    int len = 1;
+    auto len = 1;
 #ifdef Q_OS_WIN
     if ((openMode & QIODevice::Text) && c == '\n') {
         ++len;
@@ -540,7 +540,7 @@ qint64 QFileDevice::writeData(const char *data, qint64 len)
     Q_D(QFileDevice);
     unsetError();
     d->lastWasWrite = true;
-    bool buffered = !(d->openMode & Unbuffered);
+    auto buffered = !(d->openMode & Unbuffered);
 
     // Flush buffered data if this read will overflow.
     if (buffered && (d->writeBuffer.size() + len) > d->writeBufferChunkSize) {
@@ -551,9 +551,9 @@ qint64 QFileDevice::writeData(const char *data, qint64 len)
     // Write directly to the engine if the block size is larger than
     // the write buffer size.
     if (!buffered || len > d->writeBufferChunkSize) {
-        const qint64 ret = d->fileEngine->write(data, len);
+        const auto ret = d->fileEngine->write(data, len);
         if (ret < 0) {
-            QFileDevice::FileError err = d->fileEngine->error();
+            auto err = d->fileEngine->error();
             if (err == QFileDevice::UnspecifiedError)
                 err = QFileDevice::WriteError;
             d->setError(err, d->fileEngine->errorString());
@@ -643,7 +643,7 @@ bool QFileDevice::resize(qint64 sz)
 QFile::Permissions QFileDevice::permissions() const
 {
     Q_D(const QFileDevice);
-    QAbstractFileEngine::FileFlags perms = d->engine()->fileFlags(QAbstractFileEngine::PermsMask) & QAbstractFileEngine::PermsMask;
+    auto perms = d->engine()->fileFlags(QAbstractFileEngine::PermsMask) & QAbstractFileEngine::PermsMask;
     return QFile::Permissions((int)perms); //ewww
 }
 
@@ -710,7 +710,7 @@ uchar *QFileDevice::map(qint64 offset, qint64 size, MemoryMapFlags flags)
     if (d->engine()
             && d->fileEngine->supportsExtension(QAbstractFileEngine::MapExtension)) {
         unsetError();
-        uchar *address = d->fileEngine->map(offset, size, flags);
+        auto address = d->fileEngine->map(offset, size, flags);
         if (address == 0)
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return address;
@@ -731,7 +731,7 @@ bool QFileDevice::unmap(uchar *address)
     if (d->engine()
         && d->fileEngine->supportsExtension(QAbstractFileEngine::UnMapExtension)) {
         unsetError();
-        bool success = d->fileEngine->unmap(address);
+        auto success = d->fileEngine->unmap(address);
         if (!success)
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return success;

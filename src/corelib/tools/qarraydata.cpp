@@ -77,7 +77,7 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         return const_cast<QArrayData *>(&qt_array_empty);
     }
 
-    size_t headerSize = sizeof(QArrayData);
+    auto headerSize = sizeof(QArrayData);
 
     // Allocate extra (alignment - Q_ALIGNOF(QArrayData)) padding bytes so we
     // can properly align the data array. This assumes malloc is able to
@@ -93,7 +93,7 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         if (capacity > std::numeric_limits<size_t>::max() / objectSize)
             return 0;
 
-        size_t alloc = objectSize * capacity;
+        auto alloc = objectSize * capacity;
 
         // Make sure qAllocMore won't overflow.
         if (headerSize > size_t(MaxAllocSize) || alloc > size_t(MaxAllocSize) - headerSize)
@@ -102,11 +102,11 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         capacity = qAllocMore(int(alloc), int(headerSize)) / int(objectSize);
     }
 
-    size_t allocSize = headerSize + objectSize * capacity;
+    auto allocSize = headerSize + objectSize * capacity;
 
-    QArrayData *header = static_cast<QArrayData *>(::malloc(allocSize));
+    auto header = static_cast<QArrayData *>(::malloc(allocSize));
     if (header) {
-        quintptr data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
+        auto data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
                 & ~(alignment - 1);
 
 #if QT_SUPPORTS(UNSHARABLE_CONTAINERS)

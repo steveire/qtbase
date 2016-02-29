@@ -127,7 +127,7 @@ QJsonValue::QJsonValue(QJsonPrivate::Data *data, QJsonPrivate::Base *base, const
         dbl = v.toDouble(base);
         break;
     case String: {
-        QString s = v.toString(base);
+        auto s = v.toString(base);
         stringData = s.data_ptr();
         stringData->ref.ref();
         break;
@@ -434,14 +434,14 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
     case QMetaType::QJsonArray:
         return variant.toJsonArray();
     case QMetaType::QJsonDocument: {
-        QJsonDocument doc = variant.toJsonDocument();
+        auto doc = variant.toJsonDocument();
         return doc.isArray() ? QJsonValue(doc.array()) : QJsonValue(doc.object());
     }
 #endif
     default:
         break;
     }
-    QString string = variant.toString();
+    auto string = variant.toString();
     if (string.isEmpty())
         return QJsonValue();
     return QJsonValue(string);
@@ -669,7 +669,7 @@ void QJsonValue::detach()
     if (!d)
         return;
 
-    QJsonPrivate::Data *x = d->clone(base);
+    auto x = d->clone(base);
     x->ref.ref();
     if (!d->ref.deref())
         delete d;

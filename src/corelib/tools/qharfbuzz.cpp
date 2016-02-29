@@ -48,7 +48,7 @@ extern "C" {
 
 void HB_GetUnicodeCharProperties(HB_UChar32 ch, HB_CharCategory *category, int *combiningClass)
 {
-    const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ch);
+    auto prop = QUnicodeTables::properties(ch);
     *category = (HB_CharCategory)prop->category;
     *combiningClass = prop->combiningClass;
 }

@@ -247,7 +247,7 @@ QJsonArray &QJsonArray::operator =(const QJsonArray &other)
 QJsonArray QJsonArray::fromStringList(const QStringList &list)
 {
     QJsonArray array;
-    for (QStringList::const_iterator it = list.constBegin(); it != list.constEnd(); ++it)
+    for (auto it = list.constBegin(); it != list.constEnd(); ++it)
         array.append(QJsonValue(*it));
     return array;
 }
@@ -269,19 +269,19 @@ QJsonArray QJsonArray::fromVariantList(const QVariantList &list)
 
     QVector<QJsonPrivate::Value> values;
     values.resize(list.size());
-    QJsonPrivate::Value *valueData = values.data();
+    auto valueData = values.data();
     uint currentOffset = sizeof(QJsonPrivate::Base);
 
-    for (int i = 0; i < list.size(); ++i) {
-        QJsonValue val = QJsonValue::fromVariant(list.at(i));
+    for (auto i = 0; i < list.size(); ++i) {
+        auto val = QJsonValue::fromVariant(list.at(i));
 
         bool latinOrIntValue;
-        int valueSize = QJsonPrivate::Value::requiredStorage(val, &latinOrIntValue);
+        auto valueSize = QJsonPrivate::Value::requiredStorage(val, &latinOrIntValue);
 
         if (!array.detach2(valueSize))
             return QJsonArray();
 
-        QJsonPrivate::Value *v = valueData + i;
+        auto v = valueData + i;
         v->type = (val.t == QJsonValue::Undefined ? QJsonValue::Null : val.t);
         v->latinOrIntValue = latinOrIntValue;
         v->latinKey = false;
@@ -315,7 +315,7 @@ QVariantList QJsonArray::toVariantList() const
 
     if (a) {
         list.reserve(a->length);
-        for (int i = 0; i < (int)a->length; ++i)
+        for (auto i = 0; i < (int)a->length; ++i)
             list.append(QJsonValue(d, a, a->at(i)).toVariant());
     }
     return list;
@@ -480,10 +480,10 @@ QJsonValue QJsonArray::takeAt(int i)
 void QJsonArray::insert(int i, const QJsonValue &value)
 {
     Q_ASSERT (i >= 0 && i <= (a ? (int)a->length : 0));
-    QJsonValue val = value;
+    auto val = value;
 
     bool compressed;
-    int valueSize = QJsonPrivate::Value::requiredStorage(val, &compressed);
+    auto valueSize = QJsonPrivate::Value::requiredStorage(val, &compressed);
 
     if (!detach2(valueSize + sizeof(QJsonPrivate::Value)))
         return;
@@ -491,7 +491,7 @@ void QJsonArray::insert(int i, const QJsonValue &value)
     if (!a->length)
         a->tableOffset = sizeof(QJsonPrivate::Array);
 
-    int valueOffset = a->reserveSpace(valueSize, i, 1, false);
+    auto valueOffset = a->reserveSpace(valueSize, i, 1, false);
     if (!valueOffset)
         return;
 
@@ -531,10 +531,10 @@ void QJsonArray::insert(int i, const QJsonValue &value)
 void QJsonArray::replace(int i, const QJsonValue &value)
 {
     Q_ASSERT (a && i >= 0 && i < (int)(a->length));
-    QJsonValue val = value;
+    auto val = value;
 
     bool compressed;
-    int valueSize = QJsonPrivate::Value::requiredStorage(val, &compressed);
+    auto valueSize = QJsonPrivate::Value::requiredStorage(val, &compressed);
 
     if (!detach2(valueSize))
         return;
@@ -542,7 +542,7 @@ void QJsonArray::replace(int i, const QJsonValue &value)
     if (!a->length)
         a->tableOffset = sizeof(QJsonPrivate::Array);
 
-    int valueOffset = a->reserveSpace(valueSize, i, 1, true);
+    auto valueOffset = a->reserveSpace(valueSize, i, 1, true);
     if (!valueOffset)
         return;
 
@@ -566,7 +566,7 @@ void QJsonArray::replace(int i, const QJsonValue &value)
  */
 bool QJsonArray::contains(const QJsonValue &value) const
 {
-    for (int i = 0; i < size(); i++) {
+    for (auto i = 0; i < size(); i++) {
         if (at(i) == value)
             return true;
     }
@@ -617,7 +617,7 @@ bool QJsonArray::operator==(const QJsonArray &other) const
     if (a->length != other.a->length)
         return false;
 
-    for (int i = 0; i < (int)a->length; ++i) {
+    for (auto i = 0; i < (int)a->length; ++i) {
         if (QJsonValue(d, a, a->at(i)) != QJsonValue(other.d, other.a, other.a->at(i)))
             return false;
     }
@@ -1191,7 +1191,7 @@ bool QJsonArray::detach2(uint reserve)
     if (reserve == 0 && d->ref.load() == 1)
         return true;
 
-    QJsonPrivate::Data *x = d->clone(a, reserve);
+    auto x = d->clone(a, reserve);
     if (!x)
         return false;
     x->ref.ref();

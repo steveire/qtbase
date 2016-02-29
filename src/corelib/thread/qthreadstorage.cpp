@@ -76,7 +76,7 @@ Q_GLOBAL_STATIC(DestructorMap, destructors)
 QThreadStorageData::QThreadStorageData(void (*func)(void *))
 {
     QMutexLocker locker(&destructorsMutex);
-    DestructorMap *destr = destructors();
+    auto destr = destructors();
     if (!destr) {
         /*
          the destructors vector has already been destroyed, yet a new
@@ -87,7 +87,7 @@ QThreadStorageData::QThreadStorageData(void (*func)(void *))
          current thread's tls vector. the destructor is ignored, since we have
          no where to store it, and no way to actually call it.
          */
-        QThreadData *data = QThreadData::current();
+        auto data = QThreadData::current();
         id = data->tls.count();
         DEBUG_MSG("QThreadStorageData: Allocated id %d, destructor %p cannot be stored", id, func);
         return;
@@ -114,7 +114,7 @@ QThreadStorageData::~QThreadStorageData()
 
 void **QThreadStorageData::get() const
 {
-    QThreadData *data = QThreadData::current();
+    auto data = QThreadData::current();
     if (!data) {
         qWarning("QThreadStorage::get: QThreadStorage can only be used with threads started with QThread");
         return 0;
@@ -122,7 +122,7 @@ void **QThreadStorageData::get() const
     QVector<void *> &tls = data->tls;
     if (tls.size() <= id)
         tls.resize(id + 1);
-    void **v = &tls[id];
+    auto v = &tls[id];
 
     DEBUG_MSG("QThreadStorageData: Returning storage %d, data %p, for thread %p",
           id,
@@ -134,7 +134,7 @@ void **QThreadStorageData::get() const
 
 void **QThreadStorageData::set(void *p)
 {
-    QThreadData *data = QThreadData::current();
+    auto data = QThreadData::current();
     if (!data) {
         qWarning("QThreadStorage::set: QThreadStorage can only be used with threads started with QThread");
         return 0;
@@ -152,11 +152,11 @@ void **QThreadStorageData::set(void *p)
                 data->thread.load());
 
         QMutexLocker locker(&destructorsMutex);
-        DestructorMap *destr = destructors();
+        auto destr = destructors();
         void (*destructor)(void *) = destr ? destr->value(id) : 0;
         locker.unlock();
 
-        void *q = value;
+        auto q = value;
         value = 0;
 
         if (destructor)
@@ -171,16 +171,16 @@ void **QThreadStorageData::set(void *p)
 
 void QThreadStorageData::finish(void **p)
 {
-    QVector<void *> *tls = reinterpret_cast<QVector<void *> *>(p);
+    auto tls = reinterpret_cast<QVector<void *> *>(p);
     if (!tls || tls->isEmpty() || !destructors())
         return; // nothing to do
 
     DEBUG_MSG("QThreadStorageData: Destroying storage for thread %p", QThread::currentThread());
     while (!tls->isEmpty()) {
         void *&value = tls->last();
-        void *q = value;
+        auto q = value;
         value = 0;
-        int i = tls->size() - 1;
+        auto i = tls->size() - 1;
         tls->resize(i);
 
         if (!q) {

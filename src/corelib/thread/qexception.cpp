@@ -125,7 +125,7 @@ QException::~QException()
 
 void QException::raise() const
 {
-    QException e = *this;
+    auto e = *this;
     throw e;
 }
 
@@ -146,7 +146,7 @@ QUnhandledException::~QUnhandledException()
 
 void QUnhandledException::raise() const
 {
-    QUnhandledException e = *this;
+    auto e = *this;
     throw e;
 }
 

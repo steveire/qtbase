@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
 static inline bool isRecursive(QMutexData *d)
 {
-    quintptr u = quintptr(d);
+    auto u = quintptr(d);
     if (Q_LIKELY(u <= 0x3))
         return false;
 #ifdef QT_LINUX_FUTEX
@@ -192,7 +192,7 @@ QMutex::QMutex(RecursionMode mode)
 */
 QMutex::~QMutex()
 {
-    QMutexData *d = d_ptr.load();
+    auto d = d_ptr.load();
     if (isRecursive()) {
         delete static_cast<QRecursiveMutexPrivate *>(d);
     } else if (d) {
@@ -650,13 +650,13 @@ void QMutexPrivate::derefWaiters(int value) Q_DECL_NOTHROW
  */
 inline bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
-    Qt::HANDLE self = QThread::currentThreadId();
+    auto self = QThread::currentThreadId();
     if (owner.load() == self) {
         ++count;
         Q_ASSERT_X(count != 0, "QMutex::lock", "Overflow in recursion counter");
         return true;
     }
-    bool success = true;
+    auto success = true;
     if (timeout == -1) {
         mutex.QBasicMutex::lock();
     } else {

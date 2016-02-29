@@ -120,7 +120,7 @@ int qsnprintf(char *str, size_t n, const char *fmt, ...)
     va_list ap;
     va_start(ap, fmt);
 
-    int ret = qvsnprintf(str, n, fmt, ap);
+    auto ret = qvsnprintf(str, n, fmt, ap);
     va_end(ap);
 
     return ret;

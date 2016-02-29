@@ -54,7 +54,7 @@ void _q_toHex(Char *&dst, Integral value)
 {
     value = qToBigEndian(value);
 
-    const char* p = reinterpret_cast<const char*>(&value);
+    auto p = reinterpret_cast<const char*>(&value);
 
     for (uint i = 0; i < sizeof(Integral); ++i, dst += 2) {
         dst[0] = Char(QtMiscUtils::toHexLower((p[i] >> 4) & 0xf));
@@ -69,7 +69,7 @@ bool _q_fromHex(const Char *&src, Integral &value)
 
     for (uint i = 0; i < sizeof(Integral) * 2; ++i) {
         uint ch = *src++;
-        int tmp = QtMiscUtils::fromHex(ch);
+        auto tmp = QtMiscUtils::fromHex(ch);
         if (tmp == -1)
             return false;
 
@@ -89,10 +89,10 @@ void _q_uuidToHex(Char *&dst, const uint &d1, const ushort &d2, const ushort &d3
     *dst++ = Char('-');
     _q_toHex(dst, d3);
     *dst++ = Char('-');
-    for (int i = 0; i < 2; i++)
+    for (auto i = 0; i < 2; i++)
         _q_toHex(dst, d4[i]);
     *dst++ = Char('-');
-    for (int i = 2; i < 8; i++)
+    for (auto i = 2; i < 8; i++)
         _q_toHex(dst, d4[i]);
     *dst = Char('}');
 }
@@ -137,7 +137,7 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
     }
     hashResult.resize(16); // Sha1 will be too long
 
-    QUuid result = QUuid::fromRfc4122(hashResult);
+    auto result = QUuid::fromRfc4122(hashResult);
 
     result.data3 &= 0x0FFF;
     result.data3 |= (version << 12);
@@ -346,7 +346,7 @@ QUuid::QUuid(const QString &text)
         return;
     }
 
-    const ushort *data = reinterpret_cast<const ushort *>(text.unicode());
+    auto data = reinterpret_cast<const ushort *>(text.unicode());
 
     if (*data == '{' && text.length() < 37) {
         *this = QUuid();
@@ -395,7 +395,7 @@ QUuid::QUuid(const QByteArray &text)
         return;
     }
 
-    const char *data = text.constData();
+    auto data = text.constData();
 
     if (*data == '{' && text.length() < 37) {
         *this = QUuid();
@@ -481,7 +481,7 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
     ushort d2, d3;
     uchar d4[8];
 
-    const uchar *data = reinterpret_cast<const uchar *>(bytes.constData());
+    auto data = reinterpret_cast<const uchar *>(bytes.constData());
 
     d1 = qFromBigEndian<quint32>(data);
     data += sizeof(quint32);
@@ -490,7 +490,7 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
     d3 = qFromBigEndian<quint16>(data);
     data += sizeof(quint16);
 
-    for (int i = 0; i < 8; ++i) {
+    for (auto i = 0; i < 8; ++i) {
         d4[i] = *(data);
         data++;
     }
@@ -549,7 +549,7 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 QString QUuid::toString() const
 {
     QString result(38, Qt::Uninitialized);
-    ushort *data = (ushort *)result.data();
+    auto data = (ushort *)result.data();
 
     _q_uuidToHex(data, data1, data2, data3, data4);
 
@@ -595,7 +595,7 @@ QString QUuid::toString() const
 QByteArray QUuid::toByteArray() const
 {
     QByteArray result(38, Qt::Uninitialized);
-    char *data = result.data();
+    auto data = result.data();
 
     _q_uuidToHex(data, data1, data2, data3, data4);
 
@@ -638,7 +638,7 @@ QByteArray QUuid::toRfc4122() const
 {
     // we know how many bytes a UUID has, I hope :)
     QByteArray bytes(16, Qt::Uninitialized);
-    uchar *data = reinterpret_cast<uchar*>(bytes.data());
+    auto data = reinterpret_cast<uchar*>(bytes.data());
 
     qToBigEndian(data1, data);
     data += sizeof(quint32);
@@ -647,7 +647,7 @@ QByteArray QUuid::toRfc4122() const
     qToBigEndian(data3, data);
     data += sizeof(quint16);
 
-    for (int i = 0; i < 8; ++i) {
+    for (auto i = 0; i < 8; ++i) {
         *(data) = data4[i];
         data++;
     }
@@ -668,7 +668,7 @@ QDataStream &operator<<(QDataStream &s, const QUuid &id)
     } else {
         // we know how many bytes a UUID has, I hope :)
         bytes = QByteArray(16, Qt::Uninitialized);
-        uchar *data = reinterpret_cast<uchar*>(bytes.data());
+        auto data = reinterpret_cast<uchar*>(bytes.data());
 
         qToLittleEndian(id.data1, data);
         data += sizeof(quint32);
@@ -677,7 +677,7 @@ QDataStream &operator<<(QDataStream &s, const QUuid &id)
         qToLittleEndian(id.data3, data);
         data += sizeof(quint16);
 
-        for (int i = 0; i < 8; ++i) {
+        for (auto i = 0; i < 8; ++i) {
             *(data) = id.data4[i];
             data++;
         }
@@ -704,7 +704,7 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
     if (s.byteOrder() == QDataStream::BigEndian) {
         id = QUuid::fromRfc4122(bytes);
     } else {
-        const uchar *data = reinterpret_cast<const uchar *>(bytes.constData());
+        auto data = reinterpret_cast<const uchar *>(bytes.constData());
 
         id.data1 = qFromLittleEndian<quint32>(data);
         data += sizeof(quint32);
@@ -713,7 +713,7 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
         id.data3 = qFromLittleEndian<quint16>(data);
         data += sizeof(quint16);
 
-        for (int i = 0; i < 8; ++i) {
+        for (auto i = 0; i < 8; ++i) {
             id.data4[i] = *(data);
             data++;
         }
@@ -800,7 +800,7 @@ QUuid::Variant QUuid::variant() const Q_DECL_NOTHROW
 QUuid::Version QUuid::version() const Q_DECL_NOTHROW
 {
     // Check the 4 MSB of data3
-    Version ver = (Version)(data3>>12);
+    auto ver = (Version)(data3>>12);
     if (isNull()
          || (variant() != DCE)
          || ver < Time
@@ -862,7 +862,7 @@ bool QUuid::operator<(const QUuid &other) const Q_DECL_NOTHROW
     ISLESS(data1, other.data1);
     ISLESS(data2, other.data2);
     ISLESS(data3, other.data3);
-    for (int n = 0; n < 8; n++) {
+    for (auto n = 0; n < 8; n++) {
         ISLESS(data4[n], other.data4[n]);
     }
 #undef ISLESS
@@ -960,7 +960,7 @@ Q_GLOBAL_STATIC(QThreadStorage<QFile *>, devUrandomStorage);
 QUuid QUuid::createUuid()
 {
     QUuid result;
-    uint *data = &(result.data1);
+    auto data = &(result.data1);
 
 #if defined(Q_OS_UNIX)
     QFile *devUrandom;
@@ -985,10 +985,10 @@ QUuid QUuid::createUuid()
 #endif
     {
         static const int intbits = sizeof(int)*8;
-        static int randbits = 0;
+        static auto randbits = 0;
         if (!randbits) {
-            int r = 0;
-            int max = RAND_MAX;
+            auto r = 0;
+            auto max = RAND_MAX;
             do { ++r; } while ((max=max>>1));
             randbits = r;
         }
@@ -1000,7 +1000,7 @@ QUuid QUuid::createUuid()
         static QThreadStorage<int *> uuidseed;
         if (!uuidseed.hasLocalData())
         {
-            int *pseed = new int;
+            auto pseed = new int;
             static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
             qsrand(*pseed = QDateTime::currentDateTimeUtc().toTime_t()
                    + quintptr(&pseed)
@@ -1008,7 +1008,7 @@ QUuid QUuid::createUuid()
             uuidseed.setLocalData(pseed);
         }
 #else
-        static bool seeded = false;
+        static auto seeded = false;
         if (!seeded)
             qsrand(QDateTime::currentDateTimeUtc().toTime_t()
                    + quintptr(&seeded));
@@ -1017,7 +1017,7 @@ QUuid QUuid::createUuid()
         int chunks = 16 / sizeof(uint);
         while (chunks--) {
             uint randNumber = 0;
-            for (int filled = 0; filled < intbits; filled += randbits)
+            for (auto filled = 0; filled < intbits; filled += randbits)
                 randNumber |= qrand()<<filled;
             *(data+chunks) = randNumber;
         }

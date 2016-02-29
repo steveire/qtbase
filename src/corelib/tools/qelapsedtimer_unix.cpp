@@ -129,7 +129,7 @@ static int unixCheckClockType()
 #  endif
 
     static QBasicAtomicInt clockToUse = Q_BASIC_ATOMIC_INITIALIZER(INVALID_CLOCK);
-    int clock = clockToUse.loadAcquire();
+    auto clock = clockToUse.loadAcquire();
     if (Q_LIKELY(IS_VALID_CLOCK(clock)))
         return clock;
 
@@ -232,8 +232,8 @@ qint64 QElapsedTimer::msecsSinceReference() const Q_DECL_NOTHROW
 
 qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
 {
-    qint64 secs = other.t1 - t1;
-    qint64 fraction = other.t2 - t2;
+    auto secs = other.t1 - t1;
+    auto fraction = other.t2 - t2;
     return (secs * Q_INT64_C(1000000000) + fraction) / Q_INT64_C(1000000);
 }
 

@@ -443,13 +443,13 @@ void QStorageInfoPrivate::initRootPath()
         return;
     }
 
-    int maxLength = 0;
-    const QString oldRootPath = rootPath;
+    auto maxLength = 0;
+    const auto oldRootPath = rootPath;
     rootPath.clear();
 
     while (it.next()) {
-        const QString mountDir = it.rootPath();
-        const QByteArray fsName = it.fileSystemType();
+        const auto mountDir = it.rootPath();
+        const auto fsName = it.fileSystemType();
         if (isPseudoFs(mountDir, fsName))
             continue;
         // we try to find most suitable entry
@@ -542,8 +542,8 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     QList<QStorageInfo> volumes;
 
     while (it.next()) {
-        const QString mountDir = it.rootPath();
-        const QByteArray fsName = it.fileSystemType();
+        const auto mountDir = it.rootPath();
+        const auto fsName = it.fileSystemType();
         if (isPseudoFs(mountDir, fsName))
             continue;
 

@@ -71,7 +71,7 @@ static QString qdlerror()
 #if defined(QT_NO_DYNAMIC_LIBRARY)
     const char *err = "This platform does not support dynamic libraries.";
 #elif !defined(QT_HPUX_LD)
-    const char *err = dlerror();
+    auto err = dlerror();
 #else
     const char *err = strerror(errno);
 #endif
@@ -138,8 +138,8 @@ bool QLibraryPrivate::load_sys()
 #if !defined(QT_NO_DYNAMIC_LIBRARY)
     QFileSystemEntry fsEntry(fileName);
 
-    QString path = fsEntry.path();
-    QString name = fsEntry.fileName();
+    auto path = fsEntry.path();
+    auto name = fsEntry.fileName();
     if (path == QLatin1String(".") && !fileName.startsWith(path))
         path.clear();
     else
@@ -151,7 +151,7 @@ bool QLibraryPrivate::load_sys()
         prefixes = prefixes_sys();
         suffixes = suffixes_sys(fullVersion);
     }
-    int dlFlags = 0;
+    auto dlFlags = 0;
 #if defined(QT_HPUX_LD)
     dlFlags = DYNAMIC_PATH | BIND_NONFATAL;
     if (loadHints & QLibrary::ResolveAllSymbolsHint) {
@@ -211,16 +211,16 @@ bool QLibraryPrivate::load_sys()
         prefixes.append(QString());
     }
 
-    bool retry = true;
-    for(int prefix = 0; retry && !pHnd && prefix < prefixes.size(); prefix++) {
-        for(int suffix = 0; retry && !pHnd && suffix < suffixes.size(); suffix++) {
+    auto retry = true;
+    for(auto prefix = 0; retry && !pHnd && prefix < prefixes.size(); prefix++) {
+        for(auto suffix = 0; retry && !pHnd && suffix < suffixes.size(); suffix++) {
             if (!prefixes.at(prefix).isEmpty() && name.startsWith(prefixes.at(prefix)))
                 continue;
             if (!suffixes.at(suffix).isEmpty() && name.endsWith(suffixes.at(suffix)))
                 continue;
             if (loadHints & QLibrary::LoadArchiveMemberHint) {
                 attempt = name;
-                int lparen = attempt.indexOf(QLatin1Char('('));
+                auto lparen = attempt.indexOf(QLatin1Char('('));
                 if (lparen == -1)
                     lparen = attempt.count();
                 attempt = path + prefixes.at(prefix) + attempt.insert(lparen, suffixes.at(suffix));

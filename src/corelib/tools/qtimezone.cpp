@@ -771,7 +771,7 @@ QTimeZone::OffsetDataList QTimeZone::transitions(const QDateTime &fromDateTime,
 {
     OffsetDataList list;
     if (hasTransitions()) {
-        const QTimeZonePrivate::DataList plist = d->transitions(fromDateTime.toMSecsSinceEpoch(),
+        const auto plist = d->transitions(fromDateTime.toMSecsSinceEpoch(),
                                                                 toDateTime.toMSecsSinceEpoch());
         list.reserve(plist.count());
         for (const QTimeZonePrivate::Data &pdata : plist)
@@ -831,7 +831,7 @@ bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
     // IDs as availableTimeZoneIds() may be slow
     if (!QTimeZonePrivate::isValidId(ianaId))
         return false;
-    const QList<QByteArray> tzIds = availableTimeZoneIds();
+    const auto tzIds = availableTimeZoneIds();
     return std::binary_search(tzIds.begin(), tzIds.end(), ianaId);
 }
 

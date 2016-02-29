@@ -69,7 +69,7 @@ QAbstractNativeEventFilter::QAbstractNativeEventFilter()
 */
 QAbstractNativeEventFilter::~QAbstractNativeEventFilter()
 {
-    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+    auto eventDispatcher = QAbstractEventDispatcher::instance();
     if (eventDispatcher)
         eventDispatcher->removeNativeEventFilter(this);
 }

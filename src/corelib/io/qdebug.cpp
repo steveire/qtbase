@@ -196,9 +196,9 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
     QChar quote(QLatin1Char('"'));
     d->write(&quote, 1);
 
-    bool lastWasHexEscape = false;
+    auto lastWasHexEscape = false;
     const Char *end = begin + length;
-    for (const Char *p = begin; p != end; ++p) {
+    for (auto p = begin; p != end; ++p) {
         // check if we need to insert "" to break an hex escape sequence
         if (Q_UNLIKELY(lastWasHexEscape)) {
             if (fromHex(*p) != -1) {
@@ -211,7 +211,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
 
         if (sizeof(Char) == sizeof(QChar)) {
             // Surrogate characters are category Cs (Other_Surrogate), so isPrintable = false for them
-            int runLength = 0;
+            auto runLength = 0;
             while (p + runLength != end &&
                    isPrintable(p[runLength]) && p[runLength] != '\\' && p[runLength] != '"')
                 ++runLength;
@@ -227,7 +227,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
         }
 
         // print as an escape sequence (maybe, see below for surrogate pairs)
-        int buflen = 2;
+        auto buflen = 2;
         ushort buf[sizeof "\\U12345678" - 1];
         buf[0] = '\\';
 
@@ -326,7 +326,7 @@ void QDebug::putByteArray(const char *begin, size_t length, Latin1Content conten
     if (stream->testFlag(Stream::NoQuotes)) {
         // no quotes, write the string directly too (no pretty-printing)
         // this respects the QTextStream state, though
-        QString string = content == ContainsLatin1 ? QString::fromLatin1(begin, int(length)) : QString::fromUtf8(begin, int(length));
+        auto string = content == ContainsLatin1 ? QString::fromLatin1(begin, int(length)) : QString::fromUtf8(begin, int(length));
         stream->ts.d_ptr->putString(string);
     } else {
         // we'll reset the QTextStream formatting mechanisms, so save the state
@@ -826,7 +826,7 @@ public:
     }
     void restoreState()
     {
-        const bool currentSpaces = m_dbg.autoInsertSpaces();
+        const auto currentSpaces = m_dbg.autoInsertSpaces();
         if (currentSpaces && !m_spaces)
             if (m_dbg.stream->buffer.endsWith(QLatin1Char(' ')))
                 m_dbg.stream->buffer.chop(1);
@@ -893,8 +893,8 @@ void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value)
 QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, int value, const QMetaObject *meta, const char *name)
 {
     QDebugStateSaver saver(dbg);
-    QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
-    const char *key = me.valueToKey(value);
+    auto me = meta->enumerator(meta->indexOfEnumerator(name));
+    auto key = me.valueToKey(value);
     dbg.nospace() << meta->className() << "::" << name << '(';
     if (key)
         dbg << key;
@@ -911,8 +911,8 @@ QDebug qt_QMetaEnum_flagDebugOperator(QDebug &debug, quint64 value, const QMetaO
     debug.noquote();
     debug.nospace();
     debug << "QFlags<";
-    const QMetaEnum me = meta->enumerator(meta->indexOfEnumerator(name));
-    if (const char *scope = me.scope())
+    const auto me = meta->enumerator(meta->indexOfEnumerator(name));
+    if (auto scope = me.scope())
         debug << scope << "::";
     debug << me.name() << ">(" << me.valueToKeys(value) << ')';
     return debug;

@@ -317,7 +317,7 @@ QDataStream::QDataStream(QIODevice *d)
 
 QDataStream::QDataStream(QByteArray *a, QIODevice::OpenMode flags)
 {
-    QBuffer *buf = new QBuffer(a);
+    auto buf = new QBuffer(a);
 #ifndef QT_NO_QOBJECT
     buf->blockSignals(true);
 #endif
@@ -340,7 +340,7 @@ QDataStream::QDataStream(QByteArray *a, QIODevice::OpenMode flags)
 */
 QDataStream::QDataStream(const QByteArray &a)
 {
-    QBuffer *buf = new QBuffer;
+    auto buf = new QBuffer;
 #ifndef QT_NO_QOBJECT
     buf->blockSignals(true);
 #endif
@@ -1202,7 +1202,7 @@ QDataStream &QDataStream::operator<<(float f)
     }
 
     CHECK_STREAM_WRITE_PRECOND(*this)
-    float g = f;                                // fixes float-on-stack problem
+    auto g = f;                                // fixes float-on-stack problem
     if (!noswap) {
         union {
             float val1;
@@ -1274,7 +1274,7 @@ QDataStream &QDataStream::operator<<(const char *s)
         *this << (quint32)0;
         return *this;
     }
-    uint len = qstrlen(s) + 1;                        // also write null terminator
+    auto len = qstrlen(s) + 1;                        // also write null terminator
     *this << (quint32)len;                        // write length specifier
     writeRawData(s, len);
     return *this;
@@ -1335,11 +1335,11 @@ int QDataStream::skipRawData(int len)
 
     if (dev->isSequential()) {
         char buf[4096];
-        int sumRead = 0;
+        auto sumRead = 0;
 
         while (len > 0) {
-            int blockSize = qMin(len, (int)sizeof(buf));
-            int n = readBlock(buf, blockSize);
+            auto blockSize = qMin(len, (int)sizeof(buf));
+            auto n = readBlock(buf, blockSize);
             if (n == -1)
                 return -1;
             if (n == 0)
@@ -1350,8 +1350,8 @@ int QDataStream::skipRawData(int len)
         }
         return sumRead;
     } else {
-        qint64 pos = dev->pos();
-        qint64 size = dev->size();
+        auto pos = dev->pos();
+        auto size = dev->size();
         if (pos + len > size)
             len = size - pos;
         if (!dev->seek(pos + len))

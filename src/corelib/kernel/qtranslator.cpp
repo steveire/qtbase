@@ -146,7 +146,7 @@ static bool isValidNumerusRules(const uchar *rules, uint rulesSize)
 
     quint32 offset = 0;
     do {
-        uchar opcode = rules[offset];
+        auto opcode = rules[offset];
         uchar op = opcode & Q_OP_MASK;
 
         if (opcode & 0x80)
@@ -213,16 +213,16 @@ static uint numerusHelper(int n, const uchar *rules, uint rulesSize)
         return 0;
 
     for (;;) {
-        bool orExprTruthValue = false;
+        auto orExprTruthValue = false;
 
         for (;;) {
-            bool andExprTruthValue = true;
+            auto andExprTruthValue = true;
 
             for (;;) {
-                bool truthValue = true;
+                auto truthValue = true;
                 int opcode = rules[i++];
 
-                int leftOperand = n;
+                auto leftOperand = n;
                 if (opcode & Q_MOD_10) {
                     leftOperand %= 10;
                 } else if (opcode & Q_MOD_100) {
@@ -232,7 +232,7 @@ static uint numerusHelper(int n, const uchar *rules, uint rulesSize)
                         leftOperand /= 1000;
                 }
 
-                int op = opcode & Q_OP_MASK;
+                auto op = opcode & Q_OP_MASK;
                 int rightOperand = rules[i++];
 
                 switch (op) {
@@ -246,7 +246,7 @@ static uint numerusHelper(int n, const uchar *rules, uint rulesSize)
                     truthValue = (leftOperand <= rightOperand);
                     break;
                 case Q_BETWEEN:
-                    int bottom = rightOperand;
+                    auto bottom = rightOperand;
                     int top = rules[i++];
                     truthValue = (leftOperand >= bottom && leftOperand <= top);
                 }
@@ -486,8 +486,8 @@ bool QTranslator::load(const QString & filename, const QString & directory,
             prefix += QLatin1Char('/');
     }
 
-    const QString suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
-    QString fname = filename;
+    const auto suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
+    auto fname = filename;
     QString realname;
     QString delims;
     delims = search_delimiters.isNull() ? QStringLiteral("_.") : search_delimiters;
@@ -505,9 +505,9 @@ bool QTranslator::load(const QString & filename, const QString & directory,
         if (fi.isReadable() && fi.isFile())
             break;
 
-        int rightmost = 0;
-        for (int i = 0; i < (int)delims.length(); i++) {
-            int k = fname.lastIndexOf(delims[i]);
+        auto rightmost = 0;
+        for (auto i = 0; i < (int)delims.length(); i++) {
+            auto k = fname.lastIndexOf(delims[i]);
             if (k > rightmost)
                 rightmost = k;
         }
@@ -525,8 +525,8 @@ bool QTranslator::load(const QString & filename, const QString & directory,
 
 bool QTranslatorPrivate::do_load(const QString &realname, const QString &directory)
 {
-    QTranslatorPrivate *d = this;
-    bool ok = false;
+    auto d = this;
+    auto ok = false;
 
     if (realname.startsWith(QLatin1Char(':'))) {
         // If the translation is in a non-compressed resource file, the data is already in
@@ -552,7 +552,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
         if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered))
             return false;
 
-        qint64 fileSize = file.size();
+        auto fileSize = file.size();
         if (fileSize <= MagicLength || quint32(-1) <= fileSize)
             return false;
 
@@ -574,7 +574,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
 #define MAP_FAILED -1
 #endif
 
-        int fd = file.handle();
+        auto fd = file.handle();
         if (fd >= 0) {
             char *ptr;
             ptr = reinterpret_cast<char *>(
@@ -595,7 +595,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
             d->unmapPointer = new char[d->unmapLength];
             if (d->unmapPointer) {
                 file.seek(0);
-                qint64 readResult = file.read(d->unmapPointer, d->unmapLength);
+                auto readResult = file.read(d->unmapPointer, d->unmapLength);
                 if (readResult == qint64(unmapLength))
                     ok = true;
             }
@@ -641,27 +641,27 @@ static QString find_translation(const QLocale & locale,
         if (!path.isEmpty() && !path.endsWith(QLatin1Char('/')))
             path += QLatin1Char('/');
     }
-    const QString suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
+    const auto suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
 
     QString realname;
     realname += path + filename + prefix; // using += in the hope for some reserve capacity
-    const int realNameBaseSize = realname.size();
+    const auto realNameBaseSize = realname.size();
     QStringList fuzzyLocales;
 
     // see http://www.unicode.org/reports/tr35/#LanguageMatching for inspiration
 
-    QStringList languages = locale.uiLanguages();
+    auto languages = locale.uiLanguages();
 #if defined(Q_OS_UNIX)
-    for (int i = languages.size()-1; i >= 0; --i) {
-        QString lang = languages.at(i);
-        QString lowerLang = lang.toLower();
+    for (auto i = languages.size()-1; i >= 0; --i) {
+        auto lang = languages.at(i);
+        auto lowerLang = lang.toLower();
         if (lang != lowerLang)
             languages.insert(i+1, lowerLang);
     }
 #endif
 
     // try explicit locales names first
-    for (QString localeName : qAsConst(languages)) {
+    for (auto localeName : qAsConst(languages)) {
         localeName.replace(QLatin1Char('-'), QLatin1Char('_'));
 
         realname += localeName + suffixOrDotQM;
@@ -680,7 +680,7 @@ static QString find_translation(const QLocale & locale,
     for (const QString &fuzzyLocale : qAsConst(fuzzyLocales)) {
         QStringRef localeName(&fuzzyLocale);
         for (;;) {
-            int rightmost = localeName.lastIndexOf(QLatin1Char('_'));
+            auto rightmost = localeName.lastIndexOf(QLatin1Char('_'));
             // no truncations? fail
             if (rightmost <= 0)
                 break;
@@ -698,7 +698,7 @@ static QString find_translation(const QLocale & locale,
         }
     }
 
-    const int realNameBaseSizeFallbacks = path.size() + filename.size();
+    const auto realNameBaseSizeFallbacks = path.size() + filename.size();
 
     // realname == path + filename + prefix;
     if (!suffix.isNull()) {
@@ -773,7 +773,7 @@ bool QTranslator::load(const QLocale & locale,
 {
     Q_D(QTranslator);
     d->clear();
-    QString fname = find_translation(locale, filename, prefix, directory, suffix);
+    auto fname = find_translation(locale, filename, prefix, directory, suffix);
     return !fname.isEmpty() && d->do_load(fname, directory);
 }
 
@@ -817,15 +817,15 @@ static quint32 read32(const uchar *data)
 
 bool QTranslatorPrivate::do_load(const uchar *data, int len, const QString &directory)
 {
-    bool ok = true;
-    const uchar *end = data + len;
+    auto ok = true;
+    auto end = data + len;
 
     data += MagicLength;
 
     QStringList dependencies;
     while (data < end - 4) {
-        quint8 tag = read8(data++);
-        quint32 blockLen = read32(data);
+        auto tag = read8(data++);
+        auto blockLen = read32(data);
         data += 4;
         if (!tag || !blockLen)
             break;
@@ -863,10 +863,10 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len, const QString &dire
     if (ok && !isValidNumerusRules(numerusRulesArray, numerusRulesLength))
         ok = false;
     if (ok) {
-        const int dependenciesCount = dependencies.count();
+        const auto dependenciesCount = dependencies.count();
         subTranslators.reserve(dependenciesCount);
-        for (int i = 0 ; i < dependenciesCount; ++i) {
-            QTranslator *translator = new QTranslator;
+        for (auto i = 0 ; i < dependenciesCount; ++i) {
+            auto translator = new QTranslator;
             subTranslators.append(translator);
             ok = translator->load(dependencies.at(i), directory);
             if (!ok)
@@ -899,9 +899,9 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
 {
     const uchar *tn = 0;
     uint tn_length = 0;
-    const uint sourceTextLen = uint(strlen(sourceText));
-    const uint contextLen = uint(strlen(context));
-    const uint commentLen = uint(strlen(comment));
+    const auto sourceTextLen = uint(strlen(sourceText));
+    const auto contextLen = uint(strlen(context));
+    const auto commentLen = uint(strlen(comment));
 
     for (;;) {
         uchar tag = 0;
@@ -926,7 +926,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
             m += 4;
             break;
         case Tag_SourceText: {
-            quint32 len = read32(m);
+            auto len = read32(m);
             m += 4;
             if (!match(m, len, sourceText, sourceTextLen))
                 return QString();
@@ -934,7 +934,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
         }
             break;
         case Tag_Context: {
-            quint32 len = read32(m);
+            auto len = read32(m);
             m += 4;
             if (!match(m, len, context, contextLen))
                 return QString();
@@ -942,7 +942,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
         }
             break;
         case Tag_Comment: {
-            quint32 len = read32(m);
+            auto len = read32(m);
             m += 4;
             if (*m && !match(m, len, comment, commentLen))
                 return QString();
@@ -956,9 +956,9 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
 end:
     if (!tn)
         return QString();
-    QString str = QString((const QChar *)tn, tn_length/2);
+    auto str = QString((const QChar *)tn, tn_length/2);
     if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
-        for (int i = 0; i < str.length(); ++i)
+        for (auto i = 0; i < str.length(); ++i)
             str[i] = QChar((str.at(i).unicode() >> 8) + ((str.at(i).unicode() << 8) & 0xff00));
     }
     return str;
@@ -985,18 +985,18 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
         translators are installed, this step is necessary.
     */
     if (contextLength) {
-        quint16 hTableSize = read16(contextArray);
-        uint g = elfHash(context) % hTableSize;
-        const uchar *c = contextArray + 2 + (g << 1);
-        quint16 off = read16(c);
+        auto hTableSize = read16(contextArray);
+        auto g = elfHash(context) % hTableSize;
+        auto c = contextArray + 2 + (g << 1);
+        auto off = read16(c);
         c += 2;
         if (off == 0)
             return QString();
         c = contextArray + (2 + (hTableSize << 1) + (off << 1));
 
-        const uint contextLen = uint(strlen(context));
+        const auto contextLen = uint(strlen(context));
         for (;;) {
-            quint8 len = read8(c++);
+            auto len = read8(c++);
             if (len == 0)
                 return QString();
             if (match(c, len, context, contextLen))
@@ -1018,11 +1018,11 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
         elfHash_continue(comment, h);
         elfHash_finish(h);
 
-        const uchar *start = offsetArray;
-        const uchar *end = start + ((numItems-1) << 3);
+        auto start = offsetArray;
+        auto end = start + ((numItems-1) << 3);
         while (start <= end) {
-            const uchar *middle = start + (((end - start) >> 4) << 3);
-            uint hash = read32(middle);
+            auto middle = start + (((end - start) >> 4) << 3);
+            auto hash = read32(middle);
             if (h == hash) {
                 start = middle;
                 break;
@@ -1039,13 +1039,13 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
                 start -= 8;
 
             while (start < offsetArray + offsetLength) {
-                quint32 rh = read32(start);
+                auto rh = read32(start);
                 start += 4;
                 if (rh != h)
                     break;
-                quint32 ro = read32(start);
+                auto ro = read32(start);
                 start += 4;
-                QString tn = getMessage(messageArray + ro, messageArray + messageLength, context,
+                auto tn = getMessage(messageArray + ro, messageArray + messageLength, context,
                                         sourceText, comment, numerus);
                 if (!tn.isNull())
                     return tn;
@@ -1057,8 +1057,8 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
     }
 
 searchDependencies:
-    for (QTranslator *translator : subTranslators) {
-        QString tn = translator->translate(context, sourceText, comment, n);
+    for (auto translator : subTranslators) {
+        auto tn = translator->translate(context, sourceText, comment, n);
         if (!tn.isNull())
             return tn;
     }

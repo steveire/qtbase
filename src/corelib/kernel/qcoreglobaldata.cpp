@@ -52,7 +52,7 @@ QCoreGlobalData::QCoreGlobalData()
 QCoreGlobalData::~QCoreGlobalData()
 {
     codecForLocale = 0;
-    for (QList<QTextCodec *>::const_iterator it = allCodecs.constBegin(); it != allCodecs.constEnd(); ++it)
+    for (auto it = allCodecs.constBegin(); it != allCodecs.constEnd(); ++it)
         delete *it;
 }
 

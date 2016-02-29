@@ -55,11 +55,11 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
 {
     Q_ASSERT(out);
 
-    int32_t size = str.size();
+    auto size = str.size();
     size += size >> 2; // add 25% for possible expansions
     QString result(size, Qt::Uninitialized);
 
-    UErrorCode status = U_ZERO_ERROR;
+    auto status = U_ZERO_ERROR;
 
     size = caseFunc(reinterpret_cast<UChar *>(result.data()), result.size(),
             reinterpret_cast<const UChar *>(str.constData()), str.size(),
@@ -94,7 +94,7 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
 QString QIcu::toUpper(const QByteArray &localeID, const QString &str, bool *ok)
 {
     QString out;
-    bool err = qt_u_strToCase(str, &out, localeID, u_strToUpper);
+    auto err = qt_u_strToCase(str, &out, localeID, u_strToUpper);
     if (ok)
         *ok = err;
     return out;
@@ -103,7 +103,7 @@ QString QIcu::toUpper(const QByteArray &localeID, const QString &str, bool *ok)
 QString QIcu::toLower(const QByteArray &localeID, const QString &str, bool *ok)
 {
     QString out;
-    bool err = qt_u_strToCase(str, &out, localeID, u_strToLower);
+    auto err = qt_u_strToCase(str, &out, localeID, u_strToLower);
     if (ok)
         *ok = err;
     return out;

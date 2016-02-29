@@ -185,10 +185,10 @@ struct CreateMagicMatchRuleResult {
 
 static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttributes &atts)
 {
-    const QStringRef type = atts.value(QLatin1String(matchTypeAttributeC));
-    const QStringRef value = atts.value(QLatin1String(matchValueAttributeC));
-    const QStringRef offsets = atts.value(QLatin1String(matchOffsetAttributeC));
-    const QStringRef mask = atts.value(QLatin1String(matchMaskAttributeC));
+    const auto type = atts.value(QLatin1String(matchTypeAttributeC));
+    const auto value = atts.value(QLatin1String(matchValueAttributeC));
+    const auto offsets = atts.value(QLatin1String(matchOffsetAttributeC));
+    const auto mask = atts.value(QLatin1String(matchMaskAttributeC));
     return CreateMagicMatchRuleResult(type, value, offsets, mask);
 }
 #endif
@@ -201,19 +201,19 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
     return false;
 #else
     QMimeTypePrivate data;
-    int priority = 50;
+    auto priority = 50;
     QStack<QMimeMagicRule *> currentRules; // stack for the nesting of rules
     QList<QMimeMagicRule> rules; // toplevel rules
     QXmlStreamReader reader(dev);
-    ParseState ps = ParseBeginning;
+    auto ps = ParseBeginning;
     while (!reader.atEnd()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement: {
             ps = nextState(ps, reader.name());
-            const QXmlStreamAttributes atts = reader.attributes();
+            const auto atts = reader.attributes();
             switch (ps) {
             case ParseMimeType: { // start parsing a MIME type name
-                const QString name = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
+                const auto name = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
                 if (name.isEmpty()) {
                     reader.raiseError(QStringLiteral("Missing 'type'-attribute"));
                 } else {
@@ -228,9 +228,9 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
                 data.iconName = atts.value(QLatin1String(nameAttributeC)).toString();
                 break;
             case ParseGlobPattern: {
-                const QString pattern = atts.value(QLatin1String(patternAttributeC)).toString();
+                const auto pattern = atts.value(QLatin1String(patternAttributeC)).toString();
                 unsigned weight = atts.value(QLatin1String(weightAttributeC)).toInt();
-                const bool caseSensitive = atts.value(QLatin1String(caseSensitiveAttributeC)) == QLatin1String("true");
+                const auto caseSensitive = atts.value(QLatin1String(caseSensitiveAttributeC)) == QLatin1String("true");
 
                 if (weight == 0)
                     weight = QMimeGlobPattern::DefaultWeight;
@@ -243,29 +243,29 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             }
                 break;
             case ParseSubClass: {
-                const QString inheritsFrom = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
+                const auto inheritsFrom = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
                 if (!inheritsFrom.isEmpty())
                     processParent(data.name, inheritsFrom);
             }
                 break;
             case ParseComment: {
                 // comments have locale attributes. We want the default, English one
-                QString locale = atts.value(QLatin1String(localeAttributeC)).toString();
-                const QString comment = reader.readElementText();
+                auto locale = atts.value(QLatin1String(localeAttributeC)).toString();
+                const auto comment = reader.readElementText();
                 if (locale.isEmpty())
                     locale = QString::fromLatin1("en_US");
                 data.localeComments.insert(locale, comment);
             }
                 break;
             case ParseAlias: {
-                const QString alias = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
+                const auto alias = atts.value(QLatin1String(mimeTypeAttributeC)).toString();
                 if (!alias.isEmpty())
                     processAlias(alias, data.name);
             }
                 break;
             case ParseMagic: {
                 priority = 50;
-                const QStringRef priorityS = atts.value(QLatin1String(priorityAttributeC));
+                const auto priorityS = atts.value(QLatin1String(priorityAttributeC));
                 if (!priorityS.isEmpty()) {
                     if (!parseNumber(priorityS, &priority, errorMessage))
                         return false;
@@ -301,7 +301,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
         // continue switch QXmlStreamReader::Token...
         case QXmlStreamReader::EndElement: // Finished element
         {
-            const QStringRef elementName = reader.name();
+            const auto elementName = reader.name();
             if (elementName == QLatin1String(mimeTypeTagC)) {
                 if (!process(QMimeType(data), errorMessage))
                     return false;

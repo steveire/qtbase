@@ -55,7 +55,7 @@ const char *QRingBuffer::readPointerAtPosition(qint64 pos, qint64 &length) const
 {
     if (pos >= 0) {
         pos += head;
-        for (int i = 0; i < buffers.size(); ++i) {
+        for (auto i = 0; i < buffers.size(); ++i) {
             length = (i == tailBuffer ? tail : buffers[i].size());
             if (length > pos) {
                 length -= pos;
@@ -112,7 +112,7 @@ char *QRingBuffer::reserve(qint64 bytes)
         buffers.append(QByteArray());
         buffers.first().resize(qMax(basicBlockSize, int(bytes)));
     } else {
-        const qint64 newSize = bytes + tail;
+        const auto newSize = bytes + tail;
         // if need buffer reallocation
         if (newSize > buffers.last().size()) {
             if (newSize > buffers.last().capacity() && (tail >= basicBlockSize
@@ -129,7 +129,7 @@ char *QRingBuffer::reserve(qint64 bytes)
         }
     }
 
-    char *writePtr = buffers.last().data() + tail;
+    auto writePtr = buffers.last().data() + tail;
     bufferSize += bytes;
     Q_ASSERT(bytes < MaxByteArraySize);
     tail += int(bytes);
@@ -220,19 +220,19 @@ qint64 QRingBuffer::indexOf(char c, qint64 maxLength, qint64 pos) const
     if (maxLength <= 0 || pos < 0)
         return -1;
 
-    qint64 index = -(pos + head);
-    for (int i = 0; i < buffers.size(); ++i) {
-        const qint64 nextBlockIndex = qMin(index + (i == tailBuffer ? tail : buffers[i].size()),
+    auto index = -(pos + head);
+    for (auto i = 0; i < buffers.size(); ++i) {
+        const auto nextBlockIndex = qMin(index + (i == tailBuffer ? tail : buffers[i].size()),
                                            maxLength);
 
         if (nextBlockIndex > 0) {
-            const char *ptr = buffers[i].constData();
+            auto ptr = buffers[i].constData();
             if (index < 0) {
                 ptr -= index;
                 index = 0;
             }
 
-            const char *findPtr = reinterpret_cast<const char *>(memchr(ptr, c,
+            auto findPtr = reinterpret_cast<const char *>(memchr(ptr, c,
                                                                         nextBlockIndex - index));
             if (findPtr)
                 return qint64(findPtr - ptr) + index + pos;
@@ -247,10 +247,10 @@ qint64 QRingBuffer::indexOf(char c, qint64 maxLength, qint64 pos) const
 
 qint64 QRingBuffer::read(char *data, qint64 maxLength)
 {
-    const qint64 bytesToRead = qMin(size(), maxLength);
+    const auto bytesToRead = qMin(size(), maxLength);
     qint64 readSoFar = 0;
     while (readSoFar < bytesToRead) {
-        const qint64 bytesToReadFromThisBlock = qMin(bytesToRead - readSoFar,
+        const auto bytesToReadFromThisBlock = qMin(bytesToRead - readSoFar,
                                                      nextDataBlockSize());
         if (data)
             memcpy(data + readSoFar, readPointer(), bytesToReadFromThisBlock);
@@ -296,7 +296,7 @@ qint64 QRingBuffer::peek(char *data, qint64 maxLength, qint64 pos) const
 
     if (pos >= 0) {
         pos += head;
-        for (int i = 0; readSoFar < maxLength && i < buffers.size(); ++i) {
+        for (auto i = 0; readSoFar < maxLength && i < buffers.size(); ++i) {
             qint64 blockLength = (i == tailBuffer ? tail : buffers[i].size());
 
             if (pos < blockLength) {
@@ -320,7 +320,7 @@ qint64 QRingBuffer::peek(char *data, qint64 maxLength, qint64 pos) const
 */
 void QRingBuffer::append(const char *data, qint64 size)
 {
-    char *writePointer = reserve(size);
+    auto writePointer = reserve(size);
     if (size == 1)
         *writePointer = *data;
     else if (size)
@@ -353,7 +353,7 @@ qint64 QRingBuffer::readLine(char *data, qint64 maxLength)
     if (!data || --maxLength <= 0)
         return -1;
 
-    qint64 i = indexOf('\n', maxLength);
+    auto i = indexOf('\n', maxLength);
     i = read(data, i >= 0 ? (i + 1) : maxLength);
 
     // Terminate it.

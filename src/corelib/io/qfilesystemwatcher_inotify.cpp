@@ -228,7 +228,7 @@ QT_BEGIN_NAMESPACE
 
 QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create(QObject *parent)
 {
-    int fd = -1;
+    auto fd = -1;
 #ifdef IN_CLOEXEC
     fd = inotify_init1(IN_CLOEXEC);
 #endif
@@ -252,7 +252,7 @@ QInotifyFileSystemWatcherEngine::QInotifyFileSystemWatcherEngine(int fd, QObject
 QInotifyFileSystemWatcherEngine::~QInotifyFileSystemWatcherEngine()
 {
     notifier.setEnabled(false);
-    for (int id : qAsConst(pathToID))
+    for (auto id : qAsConst(pathToID))
         inotify_rm_watch(inotifyFd, id < 0 ? -id : id);
 
     ::close(inotifyFd);
@@ -262,12 +262,12 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                       QStringList *files,
                                                       QStringList *directories)
 {
-    QStringList p = paths;
+    auto p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
-        QString path = it.next();
+        auto path = it.next();
         QFileInfo fi(path);
-        bool isDir = fi.isDir();
+        auto isDir = fi.isDir();
         if (isDir) {
             if (directories->contains(path))
                 continue;
@@ -276,7 +276,7 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
                 continue;
         }
 
-        int wd = inotify_add_watch(inotifyFd,
+        auto wd = inotify_add_watch(inotifyFd,
                                    QFile::encodeName(path),
                                    (isDir
                                     ? (0
@@ -300,7 +300,7 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
 
         it.remove();
 
-        int id = isDir ? -wd : wd;
+        auto id = isDir ? -wd : wd;
         if (id < 0) {
             directories->append(path);
         } else {
@@ -318,16 +318,16 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
                                                          QStringList *files,
                                                          QStringList *directories)
 {
-    QStringList p = paths;
+    auto p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
-        QString path = it.next();
-        int id = pathToID.take(path);
-        QString x = idToPath.take(id);
+        auto path = it.next();
+        auto id = pathToID.take(path);
+        auto x = idToPath.take(id);
         if (x.isEmpty() || x != path)
             continue;
 
-        int wd = id < 0 ? -id : id;
+        auto wd = id < 0 ? -id : id;
         // qDebug() << "removing watch for path" << path << "wd" << wd;
         inotify_rm_watch(inotifyFd, wd);
 
@@ -346,16 +346,16 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
 {
     // qDebug() << "QInotifyFileSystemWatcherEngine::readFromInotify";
 
-    int buffSize = 0;
+    auto buffSize = 0;
     ioctl(inotifyFd, FIONREAD, (char *) &buffSize);
     QVarLengthArray<char, 4096> buffer(buffSize);
     buffSize = read(inotifyFd, buffer.data(), buffSize);
-    char *at = buffer.data();
-    char * const end = at + buffSize;
+    auto at = buffer.data();
+    const auto end = at + buffSize;
 
     QHash<int, inotify_event *> eventForId;
     while (at < end) {
-        inotify_event *event = reinterpret_cast<inotify_event *>(at);
+        auto event = reinterpret_cast<inotify_event *>(at);
 
         if (eventForId.contains(event->wd))
             eventForId[event->wd]->mask |= event->mask;
@@ -365,15 +365,15 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
         at += sizeof(inotify_event) + event->len;
     }
 
-    QHash<int, inotify_event *>::const_iterator it = eventForId.constBegin();
+    auto it = eventForId.constBegin();
     while (it != eventForId.constEnd()) {
         const inotify_event &event = **it;
         ++it;
 
         // qDebug() << "inotify event, wd" << event.wd << "mask" << hex << event.mask;
 
-        int id = event.wd;
-        QString path = getPathFromID(id);
+        auto id = event.wd;
+        auto path = getPathFromID(id);
         if (path.isEmpty()) {
             // perhaps a directory?
             id = -id;
@@ -405,7 +405,7 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
 
 QString QInotifyFileSystemWatcherEngine::getPathFromID(int id) const
 {
-    QHash<int, QString>::const_iterator i = idToPath.find(id);
+    auto i = idToPath.find(id);
     while (i != idToPath.constEnd() && i.key() == id) {
         if ((i + 1) == idToPath.constEnd() || (i + 1).key() != id) {
             return i.value();

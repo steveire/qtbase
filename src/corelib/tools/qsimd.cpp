@@ -315,16 +315,16 @@ static quint64 detectProcessorFeatures()
         AVXState        = XMM0_15 | YMM0_15Hi128,
         AVX512State     = AVXState | OpMask | ZMM0_15Hi256 | ZMM16_31
     };
-    static const quint64 AllAVX512 = (Q_UINT64_C(1) << CpuFeatureAVX512F) | (Q_UINT64_C(1) << CpuFeatureAVX512CD) |
+    static const auto AllAVX512 = (Q_UINT64_C(1) << CpuFeatureAVX512F) | (Q_UINT64_C(1) << CpuFeatureAVX512CD) |
             (Q_UINT64_C(1) << CpuFeatureAVX512ER) | (Q_UINT64_C(1) << CpuFeatureAVX512PF) |
             (Q_UINT64_C(1) << CpuFeatureAVX512BW) | (Q_UINT64_C(1) << CpuFeatureAVX512DQ) |
             (Q_UINT64_C(1) << CpuFeatureAVX512VL) |
             (Q_UINT64_C(1) << CpuFeatureAVX512IFMA) | (Q_UINT64_C(1) << CpuFeatureAVX512VBMI);
-    static const quint64 AllAVX2 = (Q_UINT64_C(1) << CpuFeatureAVX2) | AllAVX512;
-    static const quint64 AllAVX = (Q_UINT64_C(1) << CpuFeatureAVX) | AllAVX2;
+    static const auto AllAVX2 = (Q_UINT64_C(1) << CpuFeatureAVX2) | AllAVX512;
+    static const auto AllAVX = (Q_UINT64_C(1) << CpuFeatureAVX) | AllAVX2;
 
     quint64 features = 0;
-    int cpuidLevel = maxBasicCpuidSupported();
+    auto cpuidLevel = maxBasicCpuidSupported();
 #if Q_PROCESSOR_X86 < 5
     if (cpuidLevel < 1)
         return 0;
@@ -707,11 +707,11 @@ void qDetectCpuFeatures()
     return;
 # endif
 #endif
-    quint64 f = detectProcessorFeatures();
-    QByteArray disable = qgetenv("QT_NO_CPU_FEATURE");
+    auto f = detectProcessorFeatures();
+    auto disable = qgetenv("QT_NO_CPU_FEATURE");
     if (!disable.isEmpty()) {
         disable.prepend(' ');
-        for (int i = 0; i < features_count; ++i) {
+        for (auto i = 0; i < features_count; ++i) {
             if (disable.contains(features_string + features_indices[i]))
                 f &= ~(Q_UINT64_C(1) << i);
         }
@@ -723,9 +723,9 @@ void qDetectCpuFeatures()
     bool runningOnValgrind = false;
 #endif
     if (Q_UNLIKELY(!runningOnValgrind && minFeature != 0 && (f & minFeature) != minFeature)) {
-        quint64 missing = minFeature & ~f;
+        auto missing = minFeature & ~f;
         fprintf(stderr, "Incompatible processor. This Qt build requires the following features:\n   ");
-        for (int i = 0; i < features_count; ++i) {
+        for (auto i = 0; i < features_count; ++i) {
             if (missing & (Q_UINT64_C(1) << i))
                 fprintf(stderr, "%s", features_string + features_indices[i]);
         }
@@ -743,9 +743,9 @@ void qDetectCpuFeatures()
 
 void qDumpCPUFeatures()
 {
-    quint64 features = qCpuFeatures() & ~quint64(QSimdInitialized);
+    auto features = qCpuFeatures() & ~quint64(QSimdInitialized);
     printf("Processor features: ");
-    for (int i = 0; i < features_count; ++i) {
+    for (auto i = 0; i < features_count; ++i) {
         if (features & (Q_UINT64_C(1) << i))
             printf("%s%s", features_string + features_indices[i],
                    minFeature & (Q_UINT64_C(1) << i) ? "[required]" : "");

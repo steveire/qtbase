@@ -314,7 +314,7 @@ bool QFutureWatcherBase::event(QEvent *event)
 {
     Q_D(QFutureWatcherBase);
     if (event->type() == QEvent::FutureCallOut) {
-        QFutureCallOutEvent *callOutEvent = static_cast<QFutureCallOutEvent *>(event);
+        auto callOutEvent = static_cast<QFutureCallOutEvent *>(event);
 
         if (futureInterface().isPaused()) {
             d->pendingCallOutEvents.append(callOutEvent->clone());
@@ -327,7 +327,7 @@ bool QFutureWatcherBase::event(QEvent *event)
             d->sendCallOutEvent(callOutEvent);
 
             // next send all pending call outs
-            for (int i = 0; i < d->pendingCallOutEvents.count(); ++i)
+            for (auto i = 0; i < d->pendingCallOutEvents.count(); ++i)
                 d->sendCallOutEvent(d->pendingCallOutEvents.at(i));
             qDeleteAll(d->pendingCallOutEvents);
             d->pendingCallOutEvents.clear();
@@ -356,7 +356,7 @@ void QFutureWatcherBase::setPendingResultsLimit(int limit)
 void QFutureWatcherBase::connectNotify(const QMetaMethod &signal)
 {
     Q_D(QFutureWatcherBase);
-    static const QMetaMethod resultReadyAtSignal = QMetaMethod::fromSignal(&QFutureWatcherBase::resultReadyAt);
+    static const auto resultReadyAtSignal = QMetaMethod::fromSignal(&QFutureWatcherBase::resultReadyAt);
     if (signal == resultReadyAtSignal)
         d->resultAtConnected.ref();
 #ifndef QT_NO_DEBUG
@@ -374,7 +374,7 @@ void QFutureWatcherBase::connectNotify(const QMetaMethod &signal)
 void QFutureWatcherBase::disconnectNotify(const QMetaMethod &signal)
 {
     Q_D(QFutureWatcherBase);
-    static const QMetaMethod resultReadyAtSignal = QMetaMethod::fromSignal(&QFutureWatcherBase::resultReadyAt);
+    static const auto resultReadyAtSignal = QMetaMethod::fromSignal(&QFutureWatcherBase::resultReadyAt);
     if (signal == resultReadyAtSignal)
         d->resultAtConnected.deref();
 }
@@ -462,15 +462,15 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
             if (pendingResultsReady.fetchAndAddRelaxed(-1) <= maximumPendingResultsReady)
                 q->futureInterface().setThrottled(false);
 
-            const int beginIndex = event->index1;
-            const int endIndex = event->index2;
+            const auto beginIndex = event->index1;
+            const auto endIndex = event->index2;
 
             emit q->resultsReadyAt(beginIndex, endIndex);
 
             if (resultAtConnected.load() <= 0)
                 break;
 
-            for (int i = beginIndex; i < endIndex; ++i)
+            for (auto i = beginIndex; i < endIndex; ++i)
                 emit q->resultReadyAt(i);
 
         } break;

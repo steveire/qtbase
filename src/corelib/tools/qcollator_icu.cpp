@@ -55,8 +55,8 @@ void QCollatorPrivate::init()
 {
     cleanup();
 
-    UErrorCode status = U_ZERO_ERROR;
-    QByteArray name = locale.bcp47Name().replace(QLatin1Char('-'), QLatin1Char('_')).toLatin1();
+    auto status = U_ZERO_ERROR;
+    auto name = locale.bcp47Name().replace(QLatin1Char('-'), QLatin1Char('_')).toLatin1();
     collator = ucol_open(name.constData(), &status);
     if (U_FAILURE(status)) {
         qWarning("Could not create collator: %d", status);
@@ -75,7 +75,7 @@ void QCollatorPrivate::init()
     // and does case sensitive comparison.
     // UCOL_QUATERNARY is used as default in a few languages such as Japanese to take care of some
     // additional differences in those languages.
-    UColAttributeValue val = (caseSensitivity == Qt::CaseSensitive) ? UCOL_DEFAULT_STRENGTH : UCOL_SECONDARY;
+    auto val = (caseSensitivity == Qt::CaseSensitive) ? UCOL_DEFAULT_STRENGTH : UCOL_SECONDARY;
 
     status = U_ZERO_ERROR;
     ucol_setAttribute(collator, UCOL_STRENGTH, val, &status);
@@ -136,7 +136,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
     if (d->collator) {
         QByteArray result(16 + string.size() + (string.size() >> 2), Qt::Uninitialized);
-        int size = ucol_getSortKey(d->collator, (const UChar *)string.constData(),
+        auto size = ucol_getSortKey(d->collator, (const UChar *)string.constData(),
                                    string.size(), (uint8_t *)result.data(), result.size());
         if (size > result.size()) {
             result.resize(size);

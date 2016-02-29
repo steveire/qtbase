@@ -214,7 +214,7 @@ bool QSaveFile::open(OpenMode mode)
     // target even if the file does not exist
     d->finalFileName = d->fileName;
     if (existingFile.isSymLink()) {
-        int maxDepth = 128;
+        auto maxDepth = 128;
         while (--maxDepth && existingFile.isSymLink())
             existingFile.setFile(existingFile.symLinkTarget());
         if (maxDepth > 0)
@@ -225,7 +225,7 @@ bool QSaveFile::open(OpenMode mode)
     static_cast<QTemporaryFileEngine *>(d->fileEngine)->initialize(d->finalFileName, 0666);
     // Same as in QFile: QIODevice provides the buffering, so there's no need to request it from the file engine.
     if (!d->fileEngine->open(mode | QIODevice::Unbuffered)) {
-        QFileDevice::FileError err = d->fileEngine->error();
+        auto err = d->fileEngine->error();
 #ifdef Q_OS_UNIX
         if (d->directWriteFallback && err == QFileDevice::OpenError && errno == EACCES) {
             delete d->fileEngine;
@@ -351,7 +351,7 @@ qint64 QSaveFile::writeData(const char *data, qint64 len)
     if (d->writeError != QFileDevice::NoError)
         return -1;
 
-    const qint64 ret = QFileDevice::writeData(data, len);
+    const auto ret = QFileDevice::writeData(data, len);
 
     if (d->error != QFileDevice::NoError)
         d->writeError = d->error;

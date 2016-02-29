@@ -97,7 +97,7 @@ bool QSequentialAnimationGroupPrivate::atEnd() const
     // 2. the direction is forward
     // 3. the current animation is the last one
     // 4. the current animation has reached its end
-    const int animTotalCurrentTime = QAbstractAnimationPrivate::get(currentAnimation)->totalCurrentTime;
+    const auto animTotalCurrentTime = QAbstractAnimationPrivate::get(currentAnimation)->totalCurrentTime;
     return (currentLoop == loopCount - 1
         && direction == QAbstractAnimation::Forward
         && currentAnimation == animations.last()
@@ -106,8 +106,8 @@ bool QSequentialAnimationGroupPrivate::atEnd() const
 
 int QSequentialAnimationGroupPrivate::animationActualTotalDuration(int index) const
 {
-    QAbstractAnimation *anim = animations.at(index);
-    int ret = anim->totalDuration();
+    auto anim = animations.at(index);
+    auto ret = anim->totalDuration();
     if (ret == -1 && actualDuration.size() > index)
         ret = actualDuration.at(index); //we can try the actual duration there
     return ret;
@@ -118,9 +118,9 @@ QSequentialAnimationGroupPrivate::AnimationIndex QSequentialAnimationGroupPrivat
     Q_ASSERT(!animations.isEmpty());
 
     AnimationIndex ret;
-    int duration = 0;
+    auto duration = 0;
 
-    for (int i = 0; i < animations.size(); ++i) {
+    for (auto i = 0; i < animations.size(); ++i) {
         duration = animationActualTotalDuration(i);
 
         // 'animation' is the current animation if one of these reasons is true:
@@ -157,7 +157,7 @@ void QSequentialAnimationGroupPrivate::restart()
             setCurrentAnimation(0);
     } else { // direction == QAbstractAnimation::Backward
         lastLoop = loopCount - 1;
-        int index = animations.size() - 1;
+        auto index = animations.size() - 1;
         if (currentAnimationIndex == index)
             activateCurrentAnimation();
         else
@@ -175,8 +175,8 @@ void QSequentialAnimationGroupPrivate::advanceForwards(const AnimationIndex &new
 {
     if (lastLoop < currentLoop) {
         // we need to fast forward to the end
-        for (int i = currentAnimationIndex; i < animations.size(); ++i) {
-            QAbstractAnimation *anim = animations.at(i);
+        for (auto i = currentAnimationIndex; i < animations.size(); ++i) {
+            auto anim = animations.at(i);
             setCurrentAnimation(i, true);
             anim->setCurrentTime(animationActualTotalDuration(i));
         }
@@ -189,8 +189,8 @@ void QSequentialAnimationGroupPrivate::advanceForwards(const AnimationIndex &new
     }
 
     // and now we need to fast forward from the current position to
-    for (int i = currentAnimationIndex; i < newAnimationIndex.index; ++i) {     //### WRONG,
-        QAbstractAnimation *anim = animations.at(i);
+    for (auto i = currentAnimationIndex; i < newAnimationIndex.index; ++i) {     //### WRONG,
+        auto anim = animations.at(i);
         setCurrentAnimation(i, true);
         anim->setCurrentTime(animationActualTotalDuration(i));
     }
@@ -207,8 +207,8 @@ void QSequentialAnimationGroupPrivate::rewindForwards(const AnimationIndex &newA
 {
     if (lastLoop > currentLoop) {
         // we need to fast rewind to the beginning
-        for (int i = currentAnimationIndex; i >= 0 ; --i) {
-            QAbstractAnimation *anim = animations.at(i);
+        for (auto i = currentAnimationIndex; i >= 0 ; --i) {
+            auto anim = animations.at(i);
             setCurrentAnimation(i, true);
             anim->setCurrentTime(0);
         }
@@ -221,8 +221,8 @@ void QSequentialAnimationGroupPrivate::rewindForwards(const AnimationIndex &newA
     }
 
     // and now we need to fast rewind from the current position to
-    for (int i = currentAnimationIndex; i > newAnimationIndex.index; --i) {
-        QAbstractAnimation *anim = animations.at(i);
+    for (auto i = currentAnimationIndex; i > newAnimationIndex.index; --i) {
+        auto anim = animations.at(i);
         setCurrentAnimation(i, true);
         anim->setCurrentTime(0);
     }
@@ -274,7 +274,7 @@ QSequentialAnimationGroup::~QSequentialAnimationGroup()
 */
 QPauseAnimation *QSequentialAnimationGroup::addPause(int msecs)
 {
-    QPauseAnimation *pause = new QPauseAnimation(msecs);
+    auto pause = new QPauseAnimation(msecs);
     addAnimation(pause);
     return pause;
 }
@@ -294,7 +294,7 @@ QPauseAnimation *QSequentialAnimationGroup::insertPause(int index, int msecs)
         return 0;
     }
 
-    QPauseAnimation *pause = new QPauseAnimation(msecs);
+    auto pause = new QPauseAnimation(msecs);
     insertAnimation(index, pause);
     return pause;
 }
@@ -316,10 +316,10 @@ QAbstractAnimation *QSequentialAnimationGroup::currentAnimation() const
 int QSequentialAnimationGroup::duration() const
 {
     Q_D(const QSequentialAnimationGroup);
-    int ret = 0;
+    auto ret = 0;
 
-    for (AnimationListConstIt it = d->animations.constBegin(), cend = d->animations.constEnd(); it != cend; ++it) {
-        const int currentDuration = (*it)->totalDuration();
+    for (auto it = d->animations.constBegin(), cend = d->animations.constEnd(); it != cend; ++it) {
+        const auto currentDuration = (*it)->totalDuration();
         if (currentDuration == -1)
             return -1; // Undetermined length
 
@@ -338,7 +338,7 @@ void QSequentialAnimationGroup::updateCurrentTime(int currentTime)
     if (!d->currentAnimation)
         return;
 
-    const QSequentialAnimationGroupPrivate::AnimationIndex newAnimationIndex = d->indexForCurrentTime();
+    const auto newAnimationIndex = d->indexForCurrentTime();
 
     // remove unneeded animations from actualDuration list
     while (newAnimationIndex.index < d->actualDuration.size())
@@ -357,7 +357,7 @@ void QSequentialAnimationGroup::updateCurrentTime(int currentTime)
 
     d->setCurrentAnimation(newAnimationIndex.index);
 
-    const int newCurrentTime = currentTime - newAnimationIndex.timeOffset;
+    const auto newCurrentTime = currentTime - newAnimationIndex.timeOffset;
 
     if (d->currentAnimation) {
         d->currentAnimation->setCurrentTime(newCurrentTime);
@@ -546,7 +546,7 @@ void QSequentialAnimationGroupPrivate::animationRemoved(int index, QAbstractAnim
     if (actualDuration.size() > index)
         actualDuration.removeAt(index);
 
-    const int currentIndex = animations.indexOf(currentAnimation);
+    const auto currentIndex = animations.indexOf(currentAnimation);
     if (currentIndex == -1) {
         //we're removing the current animation
 
@@ -564,8 +564,8 @@ void QSequentialAnimationGroupPrivate::animationRemoved(int index, QAbstractAnim
 
     // duration of the previous animations up to the current animation
     currentTime = 0;
-    for (int i = 0; i < currentAnimationIndex; ++i) {
-        const int current = animationActualTotalDuration(i);
+    for (auto i = 0; i < currentAnimationIndex; ++i) {
+        const auto current = animationActualTotalDuration(i);
         currentTime += current;
     }
 

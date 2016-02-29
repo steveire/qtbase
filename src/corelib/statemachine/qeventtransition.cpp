@@ -123,7 +123,7 @@ void QEventTransitionPrivate::unregister()
 void QEventTransitionPrivate::maybeRegister()
 {
     Q_Q(QEventTransition);
-    if (QStateMachine *mach = machine())
+    if (auto mach = machine())
         QStateMachinePrivate::get(mach)->maybeRegisterEventTransition(q);
 }
 
@@ -231,7 +231,7 @@ bool QEventTransition::eventTest(QEvent *event)
 {
     Q_D(const QEventTransition);
     if (event->type() == QEvent::StateMachineWrapped) {
-        QStateMachine::WrappedEvent *we = static_cast<QStateMachine::WrappedEvent*>(event);
+        auto we = static_cast<QStateMachine::WrappedEvent*>(event);
         return (we->object() == d->object)
             && (we->event()->type() == d->eventType);
     }

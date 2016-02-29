@@ -396,7 +396,7 @@ static bool existsAsSpecified(const QString &path, QStandardPaths::LocateOptions
 QString QStandardPaths::locate(StandardLocation type, const QString &fileName, LocateOptions options)
 {
     const QStringList &dirs = standardLocations(type);
-    for (QStringList::const_iterator dir = dirs.constBegin(); dir != dirs.constEnd(); ++dir) {
+    for (auto dir = dirs.constBegin(); dir != dirs.constEnd(); ++dir) {
         const QString path = *dir + QLatin1Char('/') + fileName;
         if (existsAsSpecified(path, options))
             return path;
@@ -416,7 +416,7 @@ QStringList QStandardPaths::locateAll(StandardLocation type, const QString &file
 {
     const QStringList &dirs = standardLocations(type);
     QStringList result;
-    for (QStringList::const_iterator dir = dirs.constBegin(); dir != dirs.constEnd(); ++dir) {
+    for (auto dir = dirs.constBegin(); dir != dirs.constEnd(); ++dir) {
         const QString path = *dir + QLatin1Char('/') + fileName;
         if (existsAsSpecified(path, options))
             result.append(path);
@@ -449,10 +449,10 @@ static QString checkExecutable(const QString &path)
 static inline QString searchExecutable(const QStringList &searchPaths,
                                        const QString &executableName)
 {
-    const QDir currentDir = QDir::current();
+    const auto currentDir = QDir::current();
     for (const QString &searchPath : searchPaths) {
-        const QString candidate = currentDir.absoluteFilePath(searchPath + QLatin1Char('/') + executableName);
-        const QString absPath = checkExecutable(candidate);
+        const auto candidate = currentDir.absoluteFilePath(searchPath + QLatin1Char('/') + executableName);
+        const auto absPath = checkExecutable(candidate);
         if (!absPath.isEmpty())
             return absPath;
     }
@@ -506,14 +506,14 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
     if (QFileInfo(executableName).isAbsolute())
         return checkExecutable(executableName);
 
-    QStringList searchPaths = paths;
+    auto searchPaths = paths;
     if (paths.isEmpty()) {
-        QByteArray pEnv = qgetenv("PATH");
+        auto pEnv = qgetenv("PATH");
         // Remove trailing slashes, which occur on Windows.
-        const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(QDir::listSeparator(), QString::SkipEmptyParts);
+        const auto rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(QDir::listSeparator(), QString::SkipEmptyParts);
         searchPaths.reserve(rawPaths.size());
         for (const QString &rawPath : rawPaths) {
-            QString cleanPath = QDir::cleanPath(rawPath);
+            auto cleanPath = QDir::cleanPath(rawPath);
             if (cleanPath.size() > 1 && cleanPath.endsWith(QLatin1Char('/')))
                 cleanPath.truncate(cleanPath.size() - 1);
             searchPaths.push_back(cleanPath);

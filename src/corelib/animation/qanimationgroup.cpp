@@ -192,7 +192,7 @@ void QAnimationGroup::insertAnimation(int index, QAbstractAnimation *animation)
         return;
     }
 
-    if (QAnimationGroup *oldGroup = animation->group())
+    if (auto oldGroup = animation->group())
         oldGroup->removeAnimation(animation);
 
     d->animations.insert(index, animation);
@@ -216,7 +216,7 @@ void QAnimationGroup::removeAnimation(QAbstractAnimation *animation)
         qWarning("QAnimationGroup::remove: cannot remove null animation");
         return;
     }
-    int index = d->animations.indexOf(animation);
+    auto index = d->animations.indexOf(animation);
     if (index == -1) {
         qWarning("QAnimationGroup::remove: animation is not part of this group");
         return;
@@ -239,7 +239,7 @@ QAbstractAnimation *QAnimationGroup::takeAnimation(int index)
         qWarning("QAnimationGroup::takeAnimation: no animation at index %d", index);
         return 0;
     }
-    QAbstractAnimation *animation = d->animations.at(index);
+    auto animation = d->animations.at(index);
     QAbstractAnimationPrivate::get(animation)->group = 0;
     // ### removing from list before doing setParent to avoid inifinite recursion
     // in ChildRemoved event
@@ -268,17 +268,17 @@ bool QAnimationGroup::event(QEvent *event)
 {
     Q_D(QAnimationGroup);
     if (event->type() == QEvent::ChildAdded) {
-        QChildEvent *childEvent = static_cast<QChildEvent *>(event);
-        if (QAbstractAnimation *a = qobject_cast<QAbstractAnimation *>(childEvent->child())) {
+        auto childEvent = static_cast<QChildEvent *>(event);
+        if (auto a = qobject_cast<QAbstractAnimation *>(childEvent->child())) {
             if (a->group() != this)
                 addAnimation(a);
         }
     } else if (event->type() == QEvent::ChildRemoved) {
-        QChildEvent *childEvent = static_cast<QChildEvent *>(event);
+        auto childEvent = static_cast<QChildEvent *>(event);
         // You can only rely on the child being a QObject because in the QEvent::ChildRemoved
         // case it might be called from the destructor. Casting down to QAbstractAnimation then
         // entails undefined behavior, so compare items as QObjects (which std::find does internally):
-        const QList<QAbstractAnimation *>::const_iterator it
+        const auto it
             = std::find(d->animations.cbegin(), d->animations.cend(), childEvent->child());
         if (it != d->animations.cend())
             takeAnimation(it - d->animations.cbegin());

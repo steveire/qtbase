@@ -75,7 +75,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
             lib->errorString = QLibrary::tr("'%1' is not an ELF object (%2)").arg(library).arg(QLatin1String("file too small"));
         return NotElf;
     }
-    const char *data = dataStart;
+    auto data = dataStart;
     if (qstrncmp(data, "\177ELF", 4) != 0) {
         if (lib)
             lib->errorString = QLibrary::tr("'%1' is not an ELF object").arg(library);
@@ -112,11 +112,11 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
          +  sizeof(qelfaddr_t)  // e_entry
          +  sizeof(qelfoff_t);  // e_phoff
 
-    qelfoff_t e_shoff = read<qelfoff_t> (data);
+    auto e_shoff = read<qelfoff_t> (data);
     data += sizeof(qelfoff_t)    // e_shoff
          +  sizeof(qelfword_t);  // e_flags
 
-    qelfhalf_t e_shsize = read<qelfhalf_t> (data);
+    auto e_shsize = read<qelfhalf_t> (data);
 
     if (e_shsize > fdlen) {
         if (lib)
@@ -128,7 +128,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
          +  sizeof(qelfhalf_t)  // e_phentsize
          +  sizeof(qelfhalf_t); // e_phnum
 
-    qelfhalf_t e_shentsize = read<qelfhalf_t> (data);
+    auto e_shentsize = read<qelfhalf_t> (data);
 
     if (e_shentsize % 4){
         if (lib)
@@ -136,9 +136,9 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
         return Corrupt;
     }
     data += sizeof(qelfhalf_t); // e_shentsize
-    qelfhalf_t e_shnum     = read<qelfhalf_t> (data);
+    auto e_shnum     = read<qelfhalf_t> (data);
     data += sizeof(qelfhalf_t); // e_shnum
-    qelfhalf_t e_shtrndx   = read<qelfhalf_t> (data);
+    auto e_shtrndx   = read<qelfhalf_t> (data);
     data += sizeof(qelfhalf_t); // e_shtrndx
 
     if ((quint32)(e_shnum * e_shentsize) > fdlen) {
@@ -154,7 +154,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
 #endif
 
     ElfSectionHeader strtab;
-    qulonglong soff = e_shoff + qelfword_t(e_shentsize) * qelfword_t(e_shtrndx);
+    auto soff = e_shoff + qelfword_t(e_shentsize) * qelfword_t(e_shtrndx);
 
     if ((soff + e_shentsize) > fdlen || soff % 4 || soff == 0) {
         if (lib)
@@ -179,15 +179,15 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
     qDebug(".shstrtab at 0x%s", QByteArray::number(m_stringTableFileOffset, 16).data());
 #endif
 
-    const char *s = dataStart + e_shoff;
-    for (int i = 0; i < e_shnum; ++i) {
+    auto s = dataStart + e_shoff;
+    for (auto i = 0; i < e_shnum; ++i) {
         ElfSectionHeader sh;
         parseSectionHeader(s, &sh);
         if (sh.name == 0) {
             s += e_shentsize;
             continue;
         }
-        const char *shnam = dataStart + m_stringTableFileOffset + sh.name;
+        auto shnam = dataStart + m_stringTableFileOffset + sh.name;
 
         if (m_stringTableFileOffset + sh.name > fdlen) {
             if (lib)

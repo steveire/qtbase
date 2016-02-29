@@ -145,7 +145,7 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
     QWriteLocker locker(fileEngineHandlerMutex());
     // Remove this handler from the handler list only if the list is valid.
     if (!qt_abstractfileenginehandlerlist_shutDown) {
-        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
+        auto handlers = fileEngineHandlers();
         handlers->removeOne(this);
         if (handlers->isEmpty())
             qt_file_engine_handlers_in_use = false;
@@ -165,8 +165,8 @@ QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path)
         QReadLocker locker(fileEngineHandlerMutex());
 
         // check for registered handlers that can load the file
-        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
-        for (int i = 0; i < handlers->size(); i++) {
+        auto handlers = fileEngineHandlers();
+        for (auto i = 0; i < handlers->size(); i++) {
             if ((engine = handlers->at(i)->create(path)))
                 break;
         }
@@ -205,7 +205,7 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
 {
     QFileSystemEntry entry(fileName);
     QFileSystemMetaData metaData;
-    QAbstractFileEngine *engine = QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, metaData);
+    auto engine = QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, metaData);
 
 #ifndef QT_NO_FSFILEENGINE
     if (!engine)
@@ -990,9 +990,9 @@ QDir::Filters QAbstractFileEngineIterator::filters() const
 */
 QString QAbstractFileEngineIterator::currentFilePath() const
 {
-    QString name = currentFileName();
+    auto name = currentFileName();
     if (!name.isNull()) {
-        QString tmp = path();
+        auto tmp = path();
         if (!tmp.isEmpty()) {
             if (!tmp.endsWith(QLatin1Char('/')))
                 tmp.append(QLatin1Char('/'));
@@ -1013,7 +1013,7 @@ QString QAbstractFileEngineIterator::currentFilePath() const
 */
 QFileInfo QAbstractFileEngineIterator::currentFileInfo() const
 {
-    QString path = currentFilePath();
+    auto path = currentFilePath();
     if (d->fileInfo.filePath() != path)
         d->fileInfo.setFile(path);
 
@@ -1120,7 +1120,7 @@ qint64 QAbstractFileEngine::readLine(char *data, qint64 maxlen)
     qint64 readSoFar = 0;
     while (readSoFar < maxlen) {
         char c;
-        qint64 readResult = read(&c, 1);
+        auto readResult = read(&c, 1);
         if (readResult <= 0)
             return (readSoFar > 0) ? readSoFar : -1;
         ++readSoFar;

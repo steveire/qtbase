@@ -282,7 +282,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
     if (ret) {
         data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
         data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
-        QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
+        auto canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
         free(ret);
         return QFileSystemEntry(canonicalPath);
     } else if (errno == ENOENT) { // file doesn't exist
@@ -300,7 +300,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     if (entry.isAbsolute() && entry.isClean())
         return entry;
 
-    QByteArray orig = entry.nativeFilePath();
+    auto orig = entry.nativeFilePath();
     QByteArray result;
     if (orig.isEmpty() || !orig.startsWith('/')) {
         QFileSystemEntry cur(currentPath());
@@ -314,14 +314,14 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 
     if (result.length() == 1 && result[0] == '/')
         return QFileSystemEntry(result, QFileSystemEntry::FromNativePath());
-    const bool isDir = result.endsWith('/');
+    const auto isDir = result.endsWith('/');
 
     /* as long as QDir::cleanPath() operates on a QString we have to convert to a string here.
      * ideally we never convert to a string since that loses information. Please fix after
      * we get a QByteArray version of QDir::cleanPath()
      */
     QFileSystemEntry resultingEntry(result, QFileSystemEntry::FromNativePath());
-    QString stringVersion = QDir::cleanPath(resultingEntry.filePath());
+    auto stringVersion = QDir::cleanPath(resultingEntry.filePath());
     if (isDir)
         stringVersion.append(QLatin1Char('/'));
     return QFileSystemEntry(stringVersion);
@@ -335,7 +335,7 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
         qErrnoWarning("stat() failed for '%s'", entry.nativeFilePath().constData());
         return QByteArray();
     }
-    QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);
+    auto result = QByteArray::number(quint64(statResult.st_dev), 16);
     result += ':';
     result += QByteArray::number(quint64(statResult.st_ino));
     return result;
@@ -452,10 +452,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         Q_UNUSED(nativeFilePathLength);
     }
 
-    bool entryExists = true; // innocent until proven otherwise
+    auto entryExists = true; // innocent until proven otherwise
 
     QT_STATBUF statBuffer;
-    bool statBufferValid = false;
+    auto statBufferValid = false;
     if (what & QFileSystemMetaData::LinkType) {
         if (QT_LSTAT(nativeFilePath, &statBuffer) == 0) {
             if (S_ISLNK(statBuffer.st_mode)) {
@@ -523,7 +523,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
     if (what & QFileSystemMetaData::HiddenAttribute
             && !data.isHidden()) {
-        QString fileName = entry.fileName();
+        auto fileName = entry.fileName();
         if ((fileName.size() > 0 && fileName.at(0) == QLatin1Char('.'))
 #if defined(Q_OS_DARWIN)
                 || (entryExists && hasResourcePropertyFlag(data, entry, kCFURLIsHiddenKey))
@@ -551,10 +551,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 //static
 bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents)
 {
-    QString dirName = entry.filePath();
+    auto dirName = entry.filePath();
     if (createParents) {
         dirName = QDir::cleanPath(dirName);
-        for (int oldslash = -1, slash=0; slash != -1; oldslash = slash) {
+        for (auto oldslash = -1, slash=0; slash != -1; oldslash = slash) {
             slash = dirName.indexOf(QDir::separator(), oldslash+1);
             if (slash == -1) {
                 if (oldslash == dirName.length())
@@ -562,7 +562,7 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
                 slash = dirName.length();
             }
             if (slash) {
-                const QByteArray chunk = QFile::encodeName(dirName.left(slash));
+                const auto chunk = QFile::encodeName(dirName.left(slash));
                 if (QT_MKDIR(chunk.constData(), 0777) != 0) {
                     if (errno == EEXIST
 #if defined(Q_OS_QNX)
@@ -593,9 +593,9 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
 bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents)
 {
     if (removeEmptyParents) {
-        QString dirName = QDir::cleanPath(entry.filePath());
-        for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
-            const QByteArray chunk = QFile::encodeName(dirName.left(slash));
+        auto dirName = QDir::cleanPath(entry.filePath());
+        for (auto oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
+            const auto chunk = QFile::encodeName(dirName.left(slash));
             QT_STATBUF st;
             if (QT_STAT(chunk.constData(), &st) != -1) {
                 if ((st.st_mode & S_IFMT) != S_IFDIR)
@@ -672,7 +672,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
     if (permissions & QFile::ExeOther)
         mode |= S_IXOTH;
 
-    bool success = ::chmod(entry.nativeFilePath().constData(), mode) == 0;
+    auto success = ::chmod(entry.nativeFilePath().constData(), mode) == 0;
     if (success && data) {
         data->entryFlags &= ~QFileSystemMetaData::Permissions;
         data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions));
@@ -685,7 +685,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
 
 QString QFileSystemEngine::homePath()
 {
-    QString home = QFile::decodeName(qgetenv("HOME"));
+    auto home = QFile::decodeName(qgetenv("HOME"));
     if (home.isEmpty())
         home = rootPath();
     return QDir::cleanPath(home);
@@ -701,7 +701,7 @@ QString QFileSystemEngine::tempPath()
 #ifdef QT_UNIX_TEMP_PATH_OVERRIDE
     return QLatin1String(QT_UNIX_TEMP_PATH_OVERRIDE);
 #else
-    QString temp = QFile::decodeName(qgetenv("TMPDIR"));
+    auto temp = QFile::decodeName(qgetenv("TMPDIR"));
     if (temp.isEmpty())
         temp = QLatin1String("/tmp");
     return QDir::cleanPath(temp);

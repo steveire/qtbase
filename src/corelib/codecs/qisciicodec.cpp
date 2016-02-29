@@ -72,7 +72,7 @@ static const Codecs codecs [] = {
 
 QTextCodec *QIsciiCodec::create(const char *name)
 {
-    for (int i = 0; i < 9; ++i) {
+    for (auto i = 0; i < 9; ++i) {
         if (qTextCodecNameMatch(name, codecs[i].name))
             return new QIsciiCodec(i);
     }
@@ -186,23 +186,23 @@ static const uchar uni_to_iscii_pairs[] = {
 
 QByteArray QIsciiCodec::convertFromUnicode(const QChar *uc, int len, ConverterState *state) const
 {
-    char replacement = '?';
-    bool halant = false;
+    auto replacement = '?';
+    auto halant = false;
     if (state) {
         if (state->flags & ConvertInvalidToNull)
             replacement = 0;
         halant = state->state_data[0];
     }
-    int invalid = 0;
+    auto invalid = 0;
 
     QByteArray result(2 * len, Qt::Uninitialized); //worst case
 
-    uchar *ch = reinterpret_cast<uchar *>(result.data());
+    auto ch = reinterpret_cast<uchar *>(result.data());
 
     const int base = codecs[idx].base;
 
-    for (int i =0; i < len; ++i) {
-        const ushort codePoint = uc[i].unicode();
+    for (auto i =0; i < len; ++i) {
+        const auto codePoint = uc[i].unicode();
 
         /* The low 7 bits of ISCII is plain ASCII. However, we go all the
          * way up to 0xA0 such that we can roundtrip with convertToUnicode()'s
@@ -212,14 +212,14 @@ QByteArray QIsciiCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
             continue;
         }
 
-        const int pos = codePoint - base;
+        const auto pos = codePoint - base;
         if (pos > 0 && pos < 0x80) {
-            uchar iscii = uni_to_iscii_table[pos];
+            auto iscii = uni_to_iscii_table[pos];
             if (iscii > 0x80) {
                 *ch++ = iscii;
             } else if (iscii) {
                 Q_ASSERT((2 * iscii) < (sizeof(uni_to_iscii_pairs) / sizeof(uni_to_iscii_pairs[0])));
-                const uchar *pair = uni_to_iscii_pairs + 2*iscii;
+                auto pair = uni_to_iscii_pairs + 2*iscii;
                 *ch++ = *pair++;
                 *ch++ = *pair++;
             } else {
@@ -253,17 +253,17 @@ QByteArray QIsciiCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
 
 QString QIsciiCodec::convertToUnicode(const char* chars, int len, ConverterState *state) const
 {
-    bool halant = false;
+    auto halant = false;
     if (state) {
         halant = state->state_data[0];
     }
 
     QString result(len, Qt::Uninitialized);
-    QChar *uc = result.data();
+    auto uc = result.data();
 
     const int base = codecs[idx].base;
 
-    for (int i = 0; i < len; ++i) {
+    for (auto i = 0; i < len; ++i) {
         ushort ch = (uchar) chars[i];
         if (ch < 0xa0)
             *uc++ = ch;

@@ -52,13 +52,13 @@ const QMapDataBase QMapDataBase::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0
 
 const QMapNodeBase *QMapNodeBase::nextNode() const
 {
-    const QMapNodeBase *n = this;
+    auto n = this;
     if (n->right) {
         n = n->right;
         while (n->left)
             n = n->left;
     } else {
-        const QMapNodeBase *y = n->parent();
+        auto y = n->parent();
         while (y && n == y->right) {
             n = y;
             y = n->parent();
@@ -70,13 +70,13 @@ const QMapNodeBase *QMapNodeBase::nextNode() const
 
 const QMapNodeBase *QMapNodeBase::previousNode() const
 {
-    const QMapNodeBase *n = this;
+    auto n = this;
     if (n->left) {
         n = n->left;
         while (n->right)
             n = n->right;
     } else {
-        const QMapNodeBase *y = n->parent();
+        auto y = n->parent();
         while (y && n == y->left) {
             n = y;
             y = n->parent();
@@ -90,7 +90,7 @@ const QMapNodeBase *QMapNodeBase::previousNode() const
 void QMapDataBase::rotateLeft(QMapNodeBase *x)
 {
     QMapNodeBase *&root = header.left;
-    QMapNodeBase *y = x->right;
+    auto y = x->right;
     x->right = y->left;
     if (y->left != 0)
         y->left->setParent(x);
@@ -109,7 +109,7 @@ void QMapDataBase::rotateLeft(QMapNodeBase *x)
 void QMapDataBase::rotateRight(QMapNodeBase *x)
 {
     QMapNodeBase *&root = header.left;
-    QMapNodeBase *y = x->left;
+    auto y = x->left;
     x->left = y->right;
     if (y->right != 0)
         y->right->setParent(x);
@@ -131,7 +131,7 @@ void QMapDataBase::rebalance(QMapNodeBase *x)
     x->setColor(QMapNodeBase::Red);
     while (x != root && x->parent()->color() == QMapNodeBase::Red) {
         if (x->parent() == x->parent()->parent()->left) {
-            QMapNodeBase *y = x->parent()->parent()->right;
+            auto y = x->parent()->parent()->right;
             if (y && y->color() == QMapNodeBase::Red) {
                 x->parent()->setColor(QMapNodeBase::Black);
                 y->setColor(QMapNodeBase::Black);
@@ -147,7 +147,7 @@ void QMapDataBase::rebalance(QMapNodeBase *x)
                 rotateRight (x->parent()->parent());
             }
         } else {
-            QMapNodeBase *y = x->parent()->parent()->left;
+            auto y = x->parent()->parent()->left;
             if (y && y->color() == QMapNodeBase::Red) {
                 x->parent()->setColor(QMapNodeBase::Black);
                 y->setColor(QMapNodeBase::Black);
@@ -170,7 +170,7 @@ void QMapDataBase::rebalance(QMapNodeBase *x)
 void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
 {
     QMapNodeBase *&root = header.left;
-    QMapNodeBase *y = z;
+    auto y = z;
     QMapNodeBase *x;
     QMapNodeBase *x_parent;
     if (y->left == 0) {
@@ -212,7 +212,7 @@ void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
             z->parent()->right = y;
         y->setParent(z->parent());
         // Swap the colors
-        QMapNodeBase::Color c = y->color();
+        auto c = y->color();
         y->setColor(z->color());
         z->setColor(c);
         y = z;
@@ -230,7 +230,7 @@ void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
     if (y->color() != QMapNodeBase::Red) {
         while (x != root && (x == 0 || x->color() == QMapNodeBase::Black)) {
             if (x == x_parent->left) {
-                QMapNodeBase *w = x_parent->right;
+                auto w = x_parent->right;
                 if (w->color() == QMapNodeBase::Red) {
                     w->setColor(QMapNodeBase::Black);
                     x_parent->setColor(QMapNodeBase::Red);
@@ -258,7 +258,7 @@ void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
                     break;
                 }
             } else {
-            QMapNodeBase *w = x_parent->left;
+            auto w = x_parent->left;
             if (w->color() == QMapNodeBase::Red) {
                 w->setColor(QMapNodeBase::Black);
                 x_parent->setColor(QMapNodeBase::Red);
@@ -326,7 +326,7 @@ static inline void qMapDeallocate(QMapNodeBase *node, int alignment)
 
 QMapNodeBase *QMapDataBase::createNode(int alloc, int alignment, QMapNodeBase *parent, bool left)
 {
-    QMapNodeBase *node = static_cast<QMapNodeBase *>(qMapAllocate(alloc, alignment));
+    auto node = static_cast<QMapNodeBase *>(qMapAllocate(alloc, alignment));
     Q_CHECK_PTR(node);
 
     memset(node, 0, alloc);
@@ -357,7 +357,7 @@ void QMapDataBase::freeTree(QMapNodeBase *root, int alignment)
 
 QMapDataBase *QMapDataBase::createData()
 {
-    QMapDataBase *d = new QMapDataBase;
+    auto d = new QMapDataBase;
 
     d->ref.initializeOwned();
     d->size = 0;

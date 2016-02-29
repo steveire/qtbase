@@ -1342,17 +1342,17 @@ void QtSharedPointer::ExternalRefCountData::checkQObjectShared(const QObject *)
 QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::getAndRef(const QObject *obj)
 {
     Q_ASSERT(obj);
-    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
+    auto d = QObjectPrivate::get(const_cast<QObject *>(obj));
     Q_ASSERT_X(!d->wasDeleted, "QWeakPointer", "Detected QWeakPointer creation in a QObject being deleted");
 
-    ExternalRefCountData *that = d->sharedRefcount.load();
+    auto that = d->sharedRefcount.load();
     if (that) {
         that->weakref.ref();
         return that;
     }
 
     // we can create the refcount data because it doesn't exist
-    ExternalRefCountData *x = new ExternalRefCountData(Qt::Uninitialized);
+    auto x = new ExternalRefCountData(Qt::Uninitialized);
     x->strongref.store(-1);
     x->weakref.store(2);  // the QWeakPointer that called us plus the QObject itself
     if (!d->sharedRefcount.testAndSetRelease(0, x)) {
@@ -1505,7 +1505,7 @@ namespace QtSharedPointer {
 */
 void QtSharedPointer::internalSafetyCheckAdd(const void *d_ptr, const volatile void *ptr)
 {
-    KnownPointers *const kp = knownPointers();
+    const auto kp = knownPointers();
     if (!kp)
         return;                 // end-game: the application is being destroyed already
 
@@ -1514,7 +1514,7 @@ void QtSharedPointer::internalSafetyCheckAdd(const void *d_ptr, const volatile v
 
     //qDebug("Adding d=%p value=%p", d_ptr, ptr);
 
-    const void *other_d_ptr = kp->dataPointers.value(ptr, 0);
+    auto other_d_ptr = kp->dataPointers.value(ptr, 0);
     if (Q_UNLIKELY(other_d_ptr)) {
 #  ifdef BACKTRACE_SUPPORTED
         printBacktrace(knownPointers()->dPointers.value(other_d_ptr).backtrace);
@@ -1539,7 +1539,7 @@ void QtSharedPointer::internalSafetyCheckAdd(const void *d_ptr, const volatile v
 */
 void QtSharedPointer::internalSafetyCheckRemove(const void *d_ptr)
 {
-    KnownPointers *const kp = knownPointers();
+    const auto kp = knownPointers();
     if (!kp)
         return;                 // end-game: the application is being destroyed already
 

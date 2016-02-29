@@ -74,7 +74,7 @@ public:
 
 void QMimeDataPrivate::removeData(const QString &format)
 {
-    for (int i=0; i<dataList.size(); i++) {
+    for (auto i=0; i<dataList.size(); i++) {
         if (dataList.at(i).format == format) {
             dataList.removeAt(i);
             return;
@@ -96,7 +96,7 @@ void QMimeDataPrivate::setData(const QString &format, const QVariant &data)
 QVariant QMimeDataPrivate::getData(const QString &format) const
 {
     QVariant data;
-    for (int i=0; i<dataList.size(); i++) {
+    for (auto i=0; i<dataList.size(); i++) {
         if (dataList.at(i).format == format) {
             data = dataList.at(i).data;
             break;
@@ -109,7 +109,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
 {
     Q_Q(const QMimeData);
 
-    QVariant data = q->retrieveData(format, type);
+    auto data = q->retrieveData(format, type);
 
     // Text data requested: fallback to URL data if available
     if (format == QLatin1String("text/plain") && !data.isValid()) {
@@ -118,9 +118,9 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
             data = QVariant(data.toUrl().toDisplayString());
         } else if (data.type() == QVariant::List) {
             QString text;
-            int numUrls = 0;
-            const QList<QVariant> list = data.toList();
-            for (int i = 0; i < list.size(); ++i) {
+            auto numUrls = 0;
+            const auto list = data.toList();
+            for (auto i = 0; i < list.size(); ++i) {
                 if (list.at(i).type() == QVariant::Url) {
                     text.append(list.at(i).toUrl().toDisplayString() + QLatin1Char('\n'));
                     ++numUrls;
@@ -152,15 +152,15 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
         switch(type) {
 #ifndef QT_NO_TEXTCODEC
         case QVariant::String: {
-            const QByteArray ba = data.toByteArray();
-            QTextCodec *codec = QTextCodec::codecForName("utf-8");
+            const auto ba = data.toByteArray();
+            auto codec = QTextCodec::codecForName("utf-8");
             if (format == QLatin1String("text/html"))
                 codec = QTextCodec::codecForHtml(ba, codec);
             return codec->toUnicode(ba);
         }
 #endif // QT_NO_TEXTCODEC
         case QVariant::Color: {
-            QVariant newData = data;
+            auto newData = data;
             newData.convert(QVariant::Color);
             return newData;
         }
@@ -170,17 +170,17 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
             // fall through
         }
         case QVariant::Url: {
-            QByteArray ba = data.toByteArray();
+            auto ba = data.toByteArray();
             // Qt 3.x will send text/uri-list with a trailing
             // null-terminator (that is *not* sent for any other
             // text/* mime-type), so chop it off
             if (ba.endsWith('\0'))
                 ba.chop(1);
 
-            QList<QByteArray> urls = ba.split('\n');
+            auto urls = ba.split('\n');
             QList<QVariant> list;
-            for (int i = 0; i < urls.size(); ++i) {
-                QByteArray ba = urls.at(i).trimmed();
+            for (auto i = 0; i < urls.size(); ++i) {
+                auto ba = urls.at(i).trimmed();
                 if (!ba.isEmpty())
                     list.append(QUrl::fromEncoded(ba));
             }
@@ -204,8 +204,8 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
         case QVariant::List: {
             // has to be list of URLs
             QByteArray result;
-            QList<QVariant> list = data.toList();
-            for (int i = 0; i < list.size(); ++i) {
+            auto list = data.toList();
+            for (auto i = 0; i < list.size(); ++i) {
                 if (list.at(i).type() == QVariant::Url) {
                     result += list.at(i).toUrl().toEncoded();
                     result += "\r\n";
@@ -337,13 +337,13 @@ QMimeData::~QMimeData()
 QList<QUrl> QMimeData::urls() const
 {
     Q_D(const QMimeData);
-    QVariant data = d->retrieveTypedData(textUriListLiteral(), QVariant::List);
+    auto data = d->retrieveTypedData(textUriListLiteral(), QVariant::List);
     QList<QUrl> urls;
     if (data.type() == QVariant::Url)
         urls.append(data.toUrl());
     else if (data.type() == QVariant::List) {
-        QList<QVariant> list = data.toList();
-        for (int i = 0; i < list.size(); ++i) {
+        auto list = data.toList();
+        for (auto i = 0; i < list.size(); ++i) {
             if (list.at(i).type() == QVariant::Url)
                 urls.append(list.at(i).toUrl());
         }
@@ -366,9 +366,9 @@ void QMimeData::setUrls(const QList<QUrl> &urls)
 {
     Q_D(QMimeData);
     QList<QVariant> list;
-    const int numUrls = urls.size();
+    const auto numUrls = urls.size();
     list.reserve(numUrls);
-    for (int i = 0; i < numUrls; ++i)
+    for (auto i = 0; i < numUrls; ++i)
         list.append(urls.at(i));
 
     d->setData(textUriListLiteral(), list);
@@ -397,7 +397,7 @@ bool QMimeData::hasUrls() const
 QString QMimeData::text() const
 {
     Q_D(const QMimeData);
-    QVariant data = d->retrieveTypedData(textPlainLiteral(), QVariant::String);
+    auto data = d->retrieveTypedData(textPlainLiteral(), QVariant::String);
     return data.toString();
 }
 
@@ -433,7 +433,7 @@ bool QMimeData::hasText() const
 QString QMimeData::html() const
 {
     Q_D(const QMimeData);
-    QVariant data = d->retrieveTypedData(textHtmlLiteral(), QVariant::String);
+    auto data = d->retrieveTypedData(textHtmlLiteral(), QVariant::String);
     return data.toString();
 }
 
@@ -557,7 +557,7 @@ bool QMimeData::hasColor() const
 QByteArray QMimeData::data(const QString &mimeType) const
 {
     Q_D(const QMimeData);
-    QVariant data = d->retrieveTypedData(mimeType, QVariant::ByteArray);
+    auto data = d->retrieveTypedData(mimeType, QVariant::ByteArray);
     return data.toByteArray();
 }
 
@@ -582,13 +582,13 @@ void QMimeData::setData(const QString &mimeType, const QByteArray &data)
     Q_D(QMimeData);
 
     if (mimeType == QLatin1String("text/uri-list")) {
-        QByteArray ba = data;
+        auto ba = data;
         if (ba.endsWith('\0'))
             ba.chop(1);
-        QList<QByteArray> urls = ba.split('\n');
+        auto urls = ba.split('\n');
         QList<QVariant> list;
-        for (int i = 0; i < urls.size(); ++i) {
-            QByteArray ba = urls.at(i).trimmed();
+        for (auto i = 0; i < urls.size(); ++i) {
+            auto ba = urls.at(i).trimmed();
             if (!ba.isEmpty())
                 list.append(QUrl::fromEncoded(ba));
         }
@@ -628,9 +628,9 @@ QStringList QMimeData::formats() const
 {
     Q_D(const QMimeData);
     QStringList list;
-    const int size = d->dataList.size();
+    const auto size = d->dataList.size();
     list.reserve(size);
-    for (int i = 0; i < size; ++i)
+    for (auto i = 0; i < size; ++i)
         list += d->dataList.at(i).format;
     return list;
 }

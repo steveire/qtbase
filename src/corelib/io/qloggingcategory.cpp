@@ -50,7 +50,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
 #ifndef Q_ATOMIC_INT8_IS_SUPPORTED
 static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 {
-    const int bit = 1 << shift;
+    const auto bit = 1 << shift;
 
     if (enable)
         atomic->fetchAndOrRelaxed(bit);
@@ -235,7 +235,7 @@ void QLoggingCategory::init(const char *category, QtMsgType severityLevel)
     else
         name = qtDefaultCategoryName;
 
-    if (QLoggingRegistry *reg = QLoggingRegistry::instance())
+    if (auto reg = QLoggingRegistry::instance())
         reg->registerCategory(this, severityLevel);
 }
 
@@ -244,7 +244,7 @@ void QLoggingCategory::init(const char *category, QtMsgType severityLevel)
 */
 QLoggingCategory::~QLoggingCategory()
 {
-    if (QLoggingRegistry *reg = QLoggingRegistry::instance())
+    if (auto reg = QLoggingRegistry::instance())
         reg->unregisterCategory(this);
 }
 

@@ -192,7 +192,7 @@ int QThreadPipe::check(const pollfd &pfd)
     Q_ASSERT(pfd.fd == fds[0]);
 
     char c[16];
-    const int readyread = pfd.revents & POLLIN;
+    const auto readyread = pfd.revents & POLLIN;
 
     if (readyread) {
         // consume the data on the thread pipe so that
@@ -270,7 +270,7 @@ void QEventDispatcherUNIXPrivate::markPendingSocketNotifiers()
         };
 
         for (const auto &n : notifiers) {
-            QSocketNotifier *notifier = sn_set.notifiers[n.type];
+            auto notifier = sn_set.notifiers[n.type];
 
             if (!notifier)
                 continue;
@@ -296,11 +296,11 @@ int QEventDispatcherUNIXPrivate::activateSocketNotifiers()
     if (pendingNotifiers.isEmpty())
         return 0;
 
-    int n_activated = 0;
+    auto n_activated = 0;
     QEvent event(QEvent::SockAct);
 
     while (!pendingNotifiers.isEmpty()) {
-        QSocketNotifier *notifier = pendingNotifiers.takeFirst();
+        auto notifier = pendingNotifiers.takeFirst();
         QCoreApplication::sendEvent(notifier, &event);
         ++n_activated;
     }
@@ -396,7 +396,7 @@ void QEventDispatcherUNIX::registerSocketNotifier(QSocketNotifier *notifier)
 {
     Q_ASSERT(notifier);
     int sockfd = notifier->socket();
-    QSocketNotifier::Type type = notifier->type();
+    auto type = notifier->type();
 #ifndef QT_NO_DEBUG
     if (notifier->thread() != thread() || thread() != QThread::currentThread()) {
         qWarning("QSocketNotifier: socket notifiers cannot be enabled from another thread");
@@ -418,7 +418,7 @@ void QEventDispatcherUNIX::unregisterSocketNotifier(QSocketNotifier *notifier)
 {
     Q_ASSERT(notifier);
     int sockfd = notifier->socket();
-    QSocketNotifier::Type type = notifier->type();
+    auto type = notifier->type();
 #ifndef QT_NO_DEBUG
     if (notifier->thread() != thread() || thread() != QThread::currentThread()) {
         qWarning("QSocketNotifier: socket notifiers cannot be disabled from another thread");
@@ -460,11 +460,11 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     emit awake();
     QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
 
-    const bool include_timers = (flags & QEventLoop::X11ExcludeTimers) == 0;
-    const bool include_notifiers = (flags & QEventLoop::ExcludeSocketNotifiers) == 0;
+    const auto include_timers = (flags & QEventLoop::X11ExcludeTimers) == 0;
+    const auto include_notifiers = (flags & QEventLoop::ExcludeSocketNotifiers) == 0;
     const bool wait_for_events = flags & QEventLoop::WaitForMoreEvents;
 
-    const bool canWait = (d->threadData->canWaitLocked()
+    const auto canWait = (d->threadData->canWaitLocked()
                           && !d->interrupt.load()
                           && wait_for_events);
 
@@ -490,7 +490,7 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     // This must be last, as it's popped off the end below
     d->pollfds.append(d->threadPipe.prepare());
 
-    int nevents = 0;
+    auto nevents = 0;
 
     switch (qt_safe_poll(d->pollfds.data(), d->pollfds.size(), tm)) {
     case -1:

@@ -78,7 +78,7 @@ public:
     }
 
     inline QStringRef next() {
-        int start = m_pos;
+        auto start = m_pos;
         while (m_pos < m_len && m_data[m_pos] != m_splitChar)
             ++m_pos;
         return QStringRef(&m_string, start, m_pos - start);
@@ -135,7 +135,7 @@ protected:
 
 static QString cleanPath(const QString &_path)
 {
-    QString path = QDir::cleanPath(_path);
+    auto path = QDir::cleanPath(_path);
     // QDir::cleanPath does not remove two trailing slashes under _Windows_
     // due to support for UNC paths. Remove those manually.
     if (path.startsWith(QLatin1String("//")))
@@ -245,8 +245,8 @@ QResourcePrivate::clear()
     size = 0;
     children.clear();
     container = 0;
-    for(int i = 0; i < related.size(); ++i) {
-        QResourceRoot *root = related.at(i);
+    for(auto i = 0; i < related.size(); ++i) {
+        auto root = related.at(i);
         if(!root->ref.deref())
             delete root;
     }
@@ -258,11 +258,11 @@ QResourcePrivate::load(const QString &file)
 {
     related.clear();
     QMutexLocker lock(resourceMutex());
-    const ResourceList *list = resourceList();
-    QString cleaned = cleanPath(file);
-    for(int i = 0; i < list->size(); ++i) {
-        QResourceRoot *res = list->at(i);
-        const int node = res->findNode(cleaned, locale);
+    auto list = resourceList();
+    auto cleaned = cleanPath(file);
+    for(auto i = 0; i < list->size(); ++i) {
+        auto res = list->at(i);
+        const auto node = res->findNode(cleaned, locale);
         if(node != -1) {
             if(related.isEmpty()) {
                 container = res->isContainer(node);
@@ -296,14 +296,14 @@ QResourcePrivate::ensureInitialized() const
 {
     if(!related.isEmpty())
         return;
-    QResourcePrivate *that = const_cast<QResourcePrivate *>(this);
+    auto that = const_cast<QResourcePrivate *>(this);
     if(fileName == QLatin1String(":"))
         that->fileName += QLatin1Char('/');
     that->absoluteFilePath = fileName;
     if(!that->absoluteFilePath.startsWith(QLatin1Char(':')))
         that->absoluteFilePath.prepend(QLatin1Char(':'));
 
-    QString path = fileName;
+    auto path = fileName;
     if(path.startsWith(QLatin1Char(':')))
         path = path.mid(1);
 
@@ -311,9 +311,9 @@ QResourcePrivate::ensureInitialized() const
         that->load(path);
     } else {
         QMutexLocker lock(resourceMutex());
-        QStringList searchPaths = *resourceSearchPaths();
+        auto searchPaths = *resourceSearchPaths();
         searchPaths << QLatin1String("");
-        for(int i = 0; i < searchPaths.size(); ++i) {
+        for(auto i = 0; i < searchPaths.size(); ++i) {
             const QString searchPath(searchPaths.at(i) + QLatin1Char('/') + path);
             if(that->load(searchPath)) {
                 that->absoluteFilePath = QLatin1Char(':') + searchPath;
@@ -334,19 +334,19 @@ QResourcePrivate::ensureChildren() const
     if(path.startsWith(QLatin1Char(':')))
         path = path.mid(1);
     QSet<QString> kids;
-    QString cleaned = cleanPath(path);
-    for(int i = 0; i < related.size(); ++i) {
-        QResourceRoot *res = related.at(i);
+    auto cleaned = cleanPath(path);
+    for(auto i = 0; i < related.size(); ++i) {
+        auto res = related.at(i);
         if(res->mappingRootSubdir(path, &k) && !k.isEmpty()) {
             if(!kids.contains(k)) {
                 children += k;
                 kids.insert(k);
             }
         } else {
-            const int node = res->findNode(cleaned);
+            const auto node = res->findNode(cleaned);
             if(node != -1) {
-                QStringList related_children = res->children(node);
-                for(int kid = 0; kid < related_children.size(); ++kid) {
+                auto related_children = res->children(node);
+                for(auto kid = 0; kid < related_children.size(); ++kid) {
                     k = related_children.at(kid);
                     if(!kids.contains(k)) {
                         children += k;
@@ -587,8 +587,8 @@ inline uint QResourceRoot::hash(int node) const
 {
     if(!node) //root
         return 0;
-    const int offset = findOffset(node);
-    int name_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
+    const auto offset = findOffset(node);
+    auto name_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
                       (tree[offset+2] << 8) + (tree[offset+3] << 0);
     name_offset += 2; //jump past name length
     return (names[name_offset+0] << 24) + (names[name_offset+1] << 16) +
@@ -598,10 +598,10 @@ inline QString QResourceRoot::name(int node) const
 {
     if(!node) // root
         return QString();
-    const int offset = findOffset(node);
+    const auto offset = findOffset(node);
 
     QString ret;
-    int name_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
+    auto name_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
                       (tree[offset+2] << 8) + (tree[offset+3] << 0);
     const short name_length = (names[name_offset+0] << 8) +
                               (names[name_offset+1] << 0);
@@ -609,8 +609,8 @@ inline QString QResourceRoot::name(int node) const
     name_offset += 4; //jump past hash
 
     ret.resize(name_length);
-    QChar *strData = ret.data();
-    for(int i = 0; i < name_length*2; i+=2) {
+    auto strData = ret.data();
+    for(auto i = 0; i < name_length*2; i+=2) {
         QChar c(names[name_offset+i+1], names[name_offset+i]);
         *strData = c;
         ++strData;
@@ -620,9 +620,9 @@ inline QString QResourceRoot::name(int node) const
 
 int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 {
-    QString path = _path;
+    auto path = _path;
     {
-        QString root = mappingRoot();
+        auto root = mappingRoot();
         if(!root.isEmpty()) {
             if(root == path) {
                 path = QLatin1Char('/');
@@ -644,17 +644,17 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
         return 0;
 
     //the root node is always first
-    int child_count = (tree[6] << 24) + (tree[7] << 16) +
+    auto child_count = (tree[6] << 24) + (tree[7] << 16) +
                       (tree[8] << 8) + (tree[9] << 0);
-    int child       = (tree[10] << 24) + (tree[11] << 16) +
+    auto child       = (tree[10] << 24) + (tree[11] << 16) +
                       (tree[12] << 8) + (tree[13] << 0);
 
     //now iterate up the tree
-    int node = -1;
+    auto node = -1;
 
     QStringSplitter splitter(path);
     while (child_count && splitter.hasNext()) {
-        QStringRef segment = splitter.next();
+        auto segment = splitter.next();
 
 #ifdef DEBUG_RESOURCE_MATCH
         qDebug() << "  CHILDREN" << segment;
@@ -662,13 +662,13 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
             qDebug() << "   " << child+j << " :: " << name(child+j);
         }
 #endif
-        const uint h = qt_hash(segment);
+        const auto h = qt_hash(segment);
 
         //do the binary search for the hash
-        int l = 0, r = child_count-1;
-        int sub_node = (l+r+1)/2;
+        auto l = 0, r = child_count-1;
+        auto sub_node = (l+r+1)/2;
         while(r != l) {
-            const uint sub_node_hash = hash(child+sub_node);
+            const auto sub_node_hash = hash(child+sub_node);
             if(h == sub_node_hash)
                 break;
             else if(h < sub_node_hash)
@@ -680,14 +680,14 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
         sub_node += child;
 
         //now do the "harder" compares
-        bool found = false;
+        auto found = false;
         if(hash(sub_node) == h) {
             while(sub_node > child && hash(sub_node-1) == h) //backup for collisions
                 --sub_node;
             for(; sub_node < child+child_count && hash(sub_node) == h; ++sub_node) { //here we go...
                 if(name(sub_node) == segment) {
                     found = true;
-                    int offset = findOffset(sub_node);
+                    auto offset = findOffset(sub_node);
 #ifdef DEBUG_RESOURCE_MATCH
                     qDebug() << "  TRY" << sub_node << name(sub_node) << offset;
 #endif
@@ -752,7 +752,7 @@ short QResourceRoot::flags(int node) const
 {
     if(node == -1)
         return 0;
-    const int offset = findOffset(node) + 4; //jump past name
+    const auto offset = findOffset(node) + 4; //jump past name
     return (tree[offset+0] << 8) + (tree[offset+1] << 0);
 }
 const uchar *QResourceRoot::data(int node, qint64 *size) const
@@ -761,7 +761,7 @@ const uchar *QResourceRoot::data(int node, qint64 *size) const
         *size = 0;
         return 0;
     }
-    int offset = findOffset(node) + 4; //jump past name
+    auto offset = findOffset(node) + 4; //jump past name
 
     const short flags = (tree[offset+0] << 8) + (tree[offset+1] << 0);
     offset += 2;
@@ -769,11 +769,11 @@ const uchar *QResourceRoot::data(int node, qint64 *size) const
     offset += 4; //jump past locale
 
     if(!(flags & Directory)) {
-        const int data_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
+        const auto data_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
                                 (tree[offset+2] << 8) + (tree[offset+3] << 0);
         const uint data_length = (payloads[data_offset+0] << 24) + (payloads[data_offset+1] << 16) +
                                  (payloads[data_offset+2] << 8) + (payloads[data_offset+3] << 0);
-        const uchar *ret = payloads+data_offset+4;
+        auto ret = payloads+data_offset+4;
         *size = data_length;
         return ret;
     }
@@ -784,33 +784,33 @@ QStringList QResourceRoot::children(int node) const
 {
     if(node == -1)
         return QStringList();
-    int offset = findOffset(node) + 4; //jump past name
+    auto offset = findOffset(node) + 4; //jump past name
 
     const short flags = (tree[offset+0] << 8) + (tree[offset+1] << 0);
     offset += 2;
 
     QStringList ret;
     if(flags & Directory) {
-        const int child_count = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
+        const auto child_count = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
                                 (tree[offset+2] << 8) + (tree[offset+3] << 0);
         offset += 4;
-        const int child_off = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
+        const auto child_off = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
                               (tree[offset+2] << 8) + (tree[offset+3] << 0);
         ret.reserve(child_count);
-        for(int i = child_off; i < child_off+child_count; ++i)
+        for(auto i = child_off; i < child_off+child_count; ++i)
             ret << name(i);
     }
     return ret;
 }
 bool QResourceRoot::mappingRootSubdir(const QString &path, QString *match) const
 {
-    const QString root = mappingRoot();
+    const auto root = mappingRoot();
     if(!root.isEmpty()) {
-        const QVector<QStringRef> root_segments = root.splitRef(QLatin1Char('/'), QString::SkipEmptyParts),
+        const auto root_segments = root.splitRef(QLatin1Char('/'), QString::SkipEmptyParts),
                                   path_segments = path.splitRef(QLatin1Char('/'), QString::SkipEmptyParts);
         if(path_segments.size() <= root_segments.size()) {
-            int matched = 0;
-            for(int i = 0; i < path_segments.size(); ++i) {
+            auto matched = 0;
+            for(auto i = 0; i < path_segments.size(); ++i) {
                 if(root_segments[i] != path_segments[i])
                     break;
                 ++matched;
@@ -830,16 +830,16 @@ Q_CORE_EXPORT bool qRegisterResourceData(int version, const unsigned char *tree,
 {
     QMutexLocker lock(resourceMutex());
     if(version == 0x01 && resourceList()) {
-        bool found = false;
+        auto found = false;
         QResourceRoot res(tree, name, data);
-        for(int i = 0; i < resourceList()->size(); ++i) {
+        for(auto i = 0; i < resourceList()->size(); ++i) {
             if(*resourceList()->at(i) == res) {
                 found = true;
                 break;
             }
         }
         if(!found) {
-            QResourceRoot *root = new QResourceRoot(tree, name, data);
+            auto root = new QResourceRoot(tree, name, data);
             root->ref.ref();
             resourceList()->append(root);
         }
@@ -854,9 +854,9 @@ Q_CORE_EXPORT bool qUnregisterResourceData(int version, const unsigned char *tre
     QMutexLocker lock(resourceMutex());
     if(version == 0x01 && resourceList()) {
         QResourceRoot res(tree, name, data);
-        for(int i = 0; i < resourceList()->size(); ) {
+        for(auto i = 0; i < resourceList()->size(); ) {
             if(*resourceList()->at(i) == res) {
-                QResourceRoot *root = resourceList()->takeAt(i);
+                auto root = resourceList()->takeAt(i);
                 if(!root->ref.deref())
                     delete root;
             } else {
@@ -890,7 +890,7 @@ public:
             return false;
 
         //setup the data now
-        int offset = 0;
+        auto offset = 0;
 
         //magic number
         if(b[offset+0] != 'q' || b[offset+1] != 'r' ||
@@ -899,19 +899,19 @@ public:
         }
         offset += 4;
 
-        const int version = (b[offset+0] << 24) + (b[offset+1] << 16) +
+        const auto version = (b[offset+0] << 24) + (b[offset+1] << 16) +
                          (b[offset+2] << 8) + (b[offset+3] << 0);
         offset += 4;
 
-        const int tree_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
+        const auto tree_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
                                 (b[offset+2] << 8) + (b[offset+3] << 0);
         offset += 4;
 
-        const int data_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
+        const auto data_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
                                 (b[offset+2] << 8) + (b[offset+3] << 0);
         offset += 4;
 
-        const int name_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
+        const auto name_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
                                 (b[offset+2] << 8) + (b[offset+3] << 0);
         offset += 4;
 
@@ -969,7 +969,7 @@ public:
     virtual ResourceRootType type() const Q_DECL_OVERRIDE { return Resource_File; }
 
     bool registerSelf(const QString &f) {
-        bool fromMM = false;
+        auto fromMM = false;
         uchar *data = 0;
         unsigned int data_len = 0;
 
@@ -982,7 +982,7 @@ public:
 #define MAP_FAILED -1
 #endif
 
-        int fd = QT_OPEN(QFile::encodeName(f), O_RDONLY,
+        auto fd = QT_OPEN(QFile::encodeName(f), O_RDONLY,
 #if defined(Q_OS_WIN)
                          _S_IREAD | _S_IWRITE
 #else
@@ -1014,7 +1014,7 @@ public:
             data_len = file.size();
             data = new uchar[data_len];
 
-            bool ok = false;
+            auto ok = false;
             if (file.open(QIODevice::ReadOnly))
                 ok = (data_len == (uint)file.read((char*)data, data_len));
             if (!ok) {
@@ -1061,14 +1061,14 @@ static QString qt_resource_fixResourceRoot(QString r) {
 bool
 QResource::registerResource(const QString &rccFilename, const QString &resourceRoot)
 {
-    QString r = qt_resource_fixResourceRoot(resourceRoot);
+    auto r = qt_resource_fixResourceRoot(resourceRoot);
     if(!r.isEmpty() && r[0] != QLatin1Char('/')) {
         qWarning("QDir::registerResource: Registering a resource [%s] must be rooted in an absolute path (start with /) [%s]",
                  rccFilename.toLocal8Bit().data(), resourceRoot.toLocal8Bit().data());
         return false;
     }
 
-    QDynamicFileResourceRoot *root = new QDynamicFileResourceRoot(r);
+    auto root = new QDynamicFileResourceRoot(r);
     if(root->registerSelf(rccFilename)) {
         root->ref.ref();
         QMutexLocker lock(resourceMutex());
@@ -1093,14 +1093,14 @@ QResource::registerResource(const QString &rccFilename, const QString &resourceR
 bool
 QResource::unregisterResource(const QString &rccFilename, const QString &resourceRoot)
 {
-    QString r = qt_resource_fixResourceRoot(resourceRoot);
+    auto r = qt_resource_fixResourceRoot(resourceRoot);
 
     QMutexLocker lock(resourceMutex());
-    ResourceList *list = resourceList();
-    for(int i = 0; i < list->size(); ++i) {
-        QResourceRoot *res = list->at(i);
+    auto list = resourceList();
+    for(auto i = 0; i < list->size(); ++i) {
+        auto res = list->at(i);
         if(res->type() == QResourceRoot::Resource_File) {
-            QDynamicFileResourceRoot *root = reinterpret_cast<QDynamicFileResourceRoot*>(res);
+            auto root = reinterpret_cast<QDynamicFileResourceRoot*>(res);
             if (root->mappingFile() == rccFilename && root->mappingRoot() == r) {
                 resourceList()->removeAt(i);
                 if(!root->ref.deref()) {
@@ -1132,14 +1132,14 @@ QResource::unregisterResource(const QString &rccFilename, const QString &resourc
 bool
 QResource::registerResource(const uchar *rccData, const QString &resourceRoot)
 {
-    QString r = qt_resource_fixResourceRoot(resourceRoot);
+    auto r = qt_resource_fixResourceRoot(resourceRoot);
     if(!r.isEmpty() && r[0] != QLatin1Char('/')) {
         qWarning("QDir::registerResource: Registering a resource [%p] must be rooted in an absolute path (start with /) [%s]",
                  rccData, resourceRoot.toLocal8Bit().data());
         return false;
     }
 
-    QDynamicBufferResourceRoot *root = new QDynamicBufferResourceRoot(r);
+    auto root = new QDynamicBufferResourceRoot(r);
     if (root->registerSelf(rccData, -1)) {
         root->ref.ref();
         QMutexLocker lock(resourceMutex());
@@ -1164,14 +1164,14 @@ QResource::registerResource(const uchar *rccData, const QString &resourceRoot)
 bool
 QResource::unregisterResource(const uchar *rccData, const QString &resourceRoot)
 {
-    QString r = qt_resource_fixResourceRoot(resourceRoot);
+    auto r = qt_resource_fixResourceRoot(resourceRoot);
 
     QMutexLocker lock(resourceMutex());
-    ResourceList *list = resourceList();
-    for(int i = 0; i < list->size(); ++i) {
-        QResourceRoot *res = list->at(i);
+    auto list = resourceList();
+    for(auto i = 0; i < list->size(); ++i) {
+        auto res = list->at(i);
         if(res->type() == QResourceRoot::Resource_Buffer) {
-            QDynamicBufferResourceRoot *root = reinterpret_cast<QDynamicBufferResourceRoot*>(res);
+            auto root = reinterpret_cast<QDynamicBufferResourceRoot*>(res);
             if (root->mappingBuffer() == rccData && root->mappingRoot() == r) {
                 resourceList()->removeAt(i);
                 if(!root->ref.deref()) {
@@ -1389,13 +1389,13 @@ QString QResourceFileEngine::fileName(FileName file) const
 {
     Q_D(const QResourceFileEngine);
     if(file == BaseName) {
-        int slash = d->resource.fileName().lastIndexOf(QLatin1Char('/'));
+        auto slash = d->resource.fileName().lastIndexOf(QLatin1Char('/'));
         if (slash == -1)
             return d->resource.fileName();
         return d->resource.fileName().mid(slash + 1);
     } else if(file == PathName || file == AbsolutePathName) {
-        const QString path = (file == AbsolutePathName) ? d->resource.absoluteFilePath() : d->resource.fileName();
-        const int slash = path.lastIndexOf(QLatin1Char('/'));
+        const auto path = (file == AbsolutePathName) ? d->resource.absoluteFilePath() : d->resource.fileName();
+        const auto slash = path.lastIndexOf(QLatin1Char('/'));
         if (slash == -1)
             return QLatin1String(":");
         else if (slash <= 1)
@@ -1403,9 +1403,9 @@ QString QResourceFileEngine::fileName(FileName file) const
         return path.left(slash);
 
     } else if(file == CanonicalName || file == CanonicalPathName) {
-        const QString absoluteFilePath = d->resource.absoluteFilePath();
+        const auto absoluteFilePath = d->resource.absoluteFilePath();
         if(file == CanonicalPathName) {
-            const int slash = absoluteFilePath.lastIndexOf(QLatin1Char('/'));
+            const auto slash = absoluteFilePath.lastIndexOf(QLatin1Char('/'));
             if (slash != -1)
                 return absoluteFilePath.left(slash);
         }
@@ -1421,7 +1421,7 @@ bool QResourceFileEngine::isRelativePath() const
 
 uint QResourceFileEngine::ownerId(FileOwner) const
 {
-    static const uint nobodyID = (uint) -2;
+    static const auto nobodyID = (uint) -2;
     return nobodyID;
 }
 
@@ -1456,13 +1456,13 @@ bool QResourceFileEngine::extension(Extension extension, const ExtensionOption *
 {
     Q_D(QResourceFileEngine);
     if (extension == MapExtension) {
-        const MapExtensionOption *options = (const MapExtensionOption*)(option);
-        MapExtensionReturn *returnValue = static_cast<MapExtensionReturn*>(output);
+        auto options = (const MapExtensionOption*)(option);
+        auto returnValue = static_cast<MapExtensionReturn*>(output);
         returnValue->address = d->map(options->offset, options->size, options->flags);
         return (returnValue->address != 0);
     }
     if (extension == UnMapExtension) {
-        const UnMapExtensionOption *options = (const UnMapExtensionOption*)option;
+        auto options = (const UnMapExtensionOption*)option;
         return d->unmap(options->address);
     }
     return false;
@@ -1481,7 +1481,7 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
         q->setError(QFile::UnspecifiedError, QString());
         return 0;
     }
-    uchar *address = const_cast<uchar *>(resource.data());
+    auto address = const_cast<uchar *>(resource.data());
     return (address + offset);
 }
 

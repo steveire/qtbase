@@ -387,12 +387,12 @@ static QTextCodec *loadQtCodec(const char *name)
 QList<QByteArray> QIcuCodec::availableCodecs()
 {
     QList<QByteArray> codecs;
-    int n = ucnv_countAvailable();
-    for (int i = 0; i < n; ++i) {
-        const char *name = ucnv_getAvailableName(i);
+    auto n = ucnv_countAvailable();
+    for (auto i = 0; i < n; ++i) {
+        auto name = ucnv_getAvailableName(i);
 
-        UErrorCode error = U_ZERO_ERROR;
-        const char *standardName = ucnv_getStandardName(name, "MIME", &error);
+        auto error = U_ZERO_ERROR;
+        auto standardName = ucnv_getStandardName(name, "MIME", &error);
         if (U_FAILURE(error) || !standardName) {
             error = U_ZERO_ERROR;
             standardName = ucnv_getStandardName(name, "IANA", &error);
@@ -404,9 +404,9 @@ QList<QByteArray> QIcuCodec::availableCodecs()
         int ac = ucnv_countAliases(standardName, &error);
         if (U_FAILURE(error))
             continue;
-        for (int j = 0; j < ac; ++j) {
+        for (auto j = 0; j < ac; ++j) {
             error = U_ZERO_ERROR;
-            const char *alias = ucnv_getAlias(standardName, j, &error);
+            auto alias = ucnv_getAlias(standardName, j, &error);
             if (!U_SUCCESS(error))
                 continue;
             codecs += alias;
@@ -424,7 +424,7 @@ QList<int> QIcuCodec::availableMibs()
 {
     QList<int> mibs;
     mibs.reserve(mibToNameSize + 1);
-    for (int i = 0; i < mibToNameSize; ++i)
+    for (auto i = 0; i < mibToNameSize; ++i)
         mibs += mibToName[i].mib;
 
     // handled by Qt and not in ICU:
@@ -435,17 +435,17 @@ QList<int> QIcuCodec::availableMibs()
 
 QTextCodec *QIcuCodec::defaultCodecUnlocked()
 {
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    auto globalData = QCoreGlobalData::instance();
     if (!globalData)
         return 0;
-    QTextCodec *c = globalData->codecForLocale.loadAcquire();
+    auto c = globalData->codecForLocale.loadAcquire();
     if (c)
         return c;
 
 #if defined(QT_LOCALE_IS_UTF8)
     const char *name = "UTF-8";
 #else
-    const char *name = ucnv_getDefaultName();
+    auto name = ucnv_getDefaultName();
 #endif
     c = codecForNameUnlocked(name);
     globalData->codecForLocale.storeRelease(c);
@@ -468,14 +468,14 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
         || !qstrcmp(name, "ISO 8859-11"))
         name = "TIS-620";
 
-    UErrorCode error = U_ZERO_ERROR;
+    auto error = U_ZERO_ERROR;
     // MIME gives better default names
-    const char *standardName = ucnv_getStandardName(name, "MIME", &error);
+    auto standardName = ucnv_getStandardName(name, "MIME", &error);
     if (U_FAILURE(error) || !standardName) {
         error = U_ZERO_ERROR;
         standardName = ucnv_getStandardName(name, "IANA", &error);
     }
-    bool qt_only = false;
+    auto qt_only = false;
     if (U_FAILURE(error) || !standardName) {
         standardName = name;
         qt_only = true;
@@ -490,8 +490,8 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
             standardName = "windows-949";
     }
 
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
-    QTextCodecCache *cache = &globalData->codecCache;
+    auto globalData = QCoreGlobalData::instance();
+    auto cache = &globalData->codecCache;
 
     QTextCodec *codec;
     if (cache) {
@@ -500,15 +500,15 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
             return codec;
     }
 
-    for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
-        QTextCodec *cursor = *it;
+    for (auto it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
+        auto cursor = *it;
         if (qTextCodecNameMatch(cursor->name(), standardName)) {
             if (cache)
                 cache->insert(standardName, cursor);
             return cursor;
         }
-        QList<QByteArray> aliases = cursor->aliases();
-        for (ByteArrayListConstIt ait = aliases.constBegin(), acend = aliases.constEnd(); ait != acend; ++ait) {
+        auto aliases = cursor->aliases();
+        for (auto ait = aliases.constBegin(), acend = aliases.constEnd(); ait != acend; ++ait) {
             if (qTextCodecNameMatch(*ait, standardName)) {
                 if (cache)
                     cache->insert(standardName, cursor);
@@ -517,7 +517,7 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
         }
     }
 
-    QTextCodec *c = loadQtCodec(standardName);
+    auto c = loadQtCodec(standardName);
     if (c)
         return c;
 
@@ -525,7 +525,7 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
         return 0;
 
     // check whether there is really a converter for the name available.
-    UConverter *conv = ucnv_open(standardName, &error);
+    auto conv = ucnv_open(standardName, &error);
     if (!conv) {
         qDebug() << "codecForName: ucnv_open failed" << standardName << u_errorName(error);
         return 0;
@@ -543,7 +543,7 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
 
 QTextCodec *QIcuCodec::codecForMibUnlocked(int mib)
 {
-    for (int i = 0; i < mibToNameSize; ++i) {
+    for (auto i = 0; i < mibToNameSize; ++i) {
         if (mibToName[i].mib == mib)
             return codecForNameUnlocked(mibToNameTable + mibToName[i].index);
     }
@@ -572,7 +572,7 @@ UConverter *QIcuCodec::getConverter(QTextCodec::ConverterState *state) const
             // first time
             state->flags |= QTextCodec::FreeFunction;
             QTextCodecUnalignedPointer::encode(state->state_data, qIcuCodecStateFree);
-            UErrorCode error = U_ZERO_ERROR;
+            auto error = U_ZERO_ERROR;
             state->d = ucnv_open(m_name, &error);
             ucnv_setSubstChars(static_cast<UConverter *>(state->d),
                                state->flags & QTextCodec::ConvertInvalidToNull ? "\0" : "?", 1, &error);
@@ -583,7 +583,7 @@ UConverter *QIcuCodec::getConverter(QTextCodec::ConverterState *state) const
     }
     if (!conv) {
         // stateless conversion
-        UErrorCode error = U_ZERO_ERROR;
+        auto error = U_ZERO_ERROR;
         conv = ucnv_open(m_name, &error);
         ucnv_setSubstChars(conv, "?", 1, &error);
         if (U_FAILURE(error))
@@ -594,17 +594,17 @@ UConverter *QIcuCodec::getConverter(QTextCodec::ConverterState *state) const
 
 QString QIcuCodec::convertToUnicode(const char *chars, int length, QTextCodec::ConverterState *state) const
 {
-    UConverter *conv = getConverter(state);
+    auto conv = getConverter(state);
 
     QString string(length + 2, Qt::Uninitialized);
 
-    const char *end = chars + length;
-    int convertedChars = 0;
+    auto end = chars + length;
+    auto convertedChars = 0;
     while (1) {
-        UChar *uc = (UChar *)string.data();
-        UChar *ucEnd = uc + string.length();
+        auto uc = (UChar *)string.data();
+        auto ucEnd = uc + string.length();
         uc += convertedChars;
-        UErrorCode error = U_ZERO_ERROR;
+        auto error = U_ZERO_ERROR;
         ucnv_toUnicode(conv,
                        &uc, ucEnd,
                        &chars, end,
@@ -629,19 +629,19 @@ QString QIcuCodec::convertToUnicode(const char *chars, int length, QTextCodec::C
 
 QByteArray QIcuCodec::convertFromUnicode(const QChar *unicode, int length, QTextCodec::ConverterState *state) const
 {
-    UConverter *conv = getConverter(state);
+    auto conv = getConverter(state);
 
-    int requiredLength = UCNV_GET_MAX_BYTES_FOR_STRING(length, ucnv_getMaxCharSize(conv));
+    auto requiredLength = UCNV_GET_MAX_BYTES_FOR_STRING(length, ucnv_getMaxCharSize(conv));
     QByteArray string(requiredLength, Qt::Uninitialized);
 
-    const UChar *uc = (const UChar *)unicode;
-    const UChar *end = uc + length;
-    int convertedChars = 0;
+    auto uc = (const UChar *)unicode;
+    auto end = uc + length;
+    auto convertedChars = 0;
     while (1) {
-        char *ch = (char *)string.data();
-        char *chEnd = ch + string.length();
+        auto ch = (char *)string.data();
+        auto chEnd = ch + string.length();
         ch += convertedChars;
-        UErrorCode error = U_ZERO_ERROR;
+        auto error = U_ZERO_ERROR;
         ucnv_fromUnicode(conv,
                          &ch, chEnd,
                          &uc, end,
@@ -670,13 +670,13 @@ QByteArray QIcuCodec::name() const
 
 QList<QByteArray> QIcuCodec::aliases() const
 {
-    UErrorCode error = U_ZERO_ERROR;
+    auto error = U_ZERO_ERROR;
 
     int n = ucnv_countAliases(m_name, &error);
 
     QList<QByteArray> aliases;
-    for (int i = 0; i < n; ++i) {
-        const char *a = ucnv_getAlias(m_name, i, &error);
+    for (auto i = 0; i < n; ++i) {
+        auto a = ucnv_getAlias(m_name, i, &error);
         // skip the canonical name
         if (!a || !qstrcmp(a, m_name))
             continue;
@@ -689,7 +689,7 @@ QList<QByteArray> QIcuCodec::aliases() const
 
 int QIcuCodec::mibEnum() const
 {
-    for (int i = 0; i < mibToNameSize; ++i) {
+    for (auto i = 0; i < mibToNameSize; ++i) {
         if (qTextCodecNameMatch(m_name, (mibToNameTable + mibToName[i].index)))
             return mibToName[i].mib;
     }

@@ -262,7 +262,7 @@ namespace {
             if (Q_UNLIKELY(name.isEmpty()))
                 return warn("be empty");
 
-            const QChar c = name.at(0);
+            const auto c = name.at(0);
             if (Q_UNLIKELY(c == QLatin1Char('-')))
                 return warn("start with a '-'");
             if (Q_UNLIKELY(c == QLatin1Char('/')))

@@ -308,7 +308,7 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
     if (!(d->state & Running))
         return;
 
-    const int waitIndex = (resultIndex == -1) ? INT_MAX : resultIndex;
+    const auto waitIndex = (resultIndex == -1) ? INT_MAX : resultIndex;
     while ((d->state & Running) && d->internal_isResultReadyAt(waitIndex) == false)
         d->waitCondition.wait(&d->m_mutex);
 
@@ -318,7 +318,7 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
 void QFutureInterfaceBase::waitForFinished()
 {
     QMutexLocker lock(&d->m_mutex);
-    const bool alreadyFinished = !(d->state & Running);
+    const auto alreadyFinished = !(d->state & Running);
     lock.unlock();
 
     if (!alreadyFinished) {
@@ -514,7 +514,7 @@ void QFutureInterfaceBasePrivate::sendCallOut(const QFutureCallOutEvent &callOut
     if (outputConnections.isEmpty())
         return;
 
-    for (int i = 0; i < outputConnections.count(); ++i)
+    for (auto i = 0; i < outputConnections.count(); ++i)
         outputConnections.at(i)->postCallOutEvent(callOutEvent);
 }
 
@@ -524,8 +524,8 @@ void QFutureInterfaceBasePrivate::sendCallOuts(const QFutureCallOutEvent &callOu
     if (outputConnections.isEmpty())
         return;
 
-    for (int i = 0; i < outputConnections.count(); ++i) {
-        QFutureCallOutInterface *interface = outputConnections.at(i);
+    for (auto i = 0; i < outputConnections.count(); ++i) {
+        auto interface = outputConnections.at(i);
         interface->postCallOutEvent(callOutEvent1);
         interface->postCallOutEvent(callOutEvent2);
     }
@@ -549,10 +549,10 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
                                                         m_progressText));
     }
 
-    QtPrivate::ResultIteratorBase it = m_results.begin();
+    auto it = m_results.begin();
     while (it != m_results.end()) {
-        const int begin = it.resultIndex();
-        const int end = begin + it.batchSize();
+        const auto begin = it.resultIndex();
+        const auto end = begin + it.batchSize();
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ResultsReady,
                                                         begin,
                                                         end));
@@ -574,7 +574,7 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
 void QFutureInterfaceBasePrivate::disconnectOutputInterface(QFutureCallOutInterface *interface)
 {
     QMutexLocker lock(&m_mutex);
-    const int index = outputConnections.indexOf(interface);
+    const auto index = outputConnections.indexOf(interface);
     if (index == -1)
         return;
     outputConnections.removeAt(index);

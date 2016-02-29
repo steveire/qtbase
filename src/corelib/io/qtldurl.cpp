@@ -61,7 +61,7 @@ static bool containsTLDEntry(const QString &entry)
 
     // check all the entries from the given index
     while (chunkIndex < tldIndices[index+1] - offset) {
-        QString currentEntry = QString::fromUtf8(tldData[chunk] + chunkIndex);
+        auto currentEntry = QString::fromUtf8(tldData[chunk] + chunkIndex);
         if (currentEntry == entry)
             return true;
         chunkIndex += qstrlen(tldData[chunk] + chunkIndex) + 1; // +1 for the ending \0
@@ -78,13 +78,13 @@ static bool containsTLDEntry(const QString &entry)
 
 Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain)
 {
-    const QString domainLower = domain.toLower();
-    QVector<QStringRef> sections = domainLower.splitRef(QLatin1Char('.'), QString::SkipEmptyParts);
+    const auto domainLower = domain.toLower();
+    auto sections = domainLower.splitRef(QLatin1Char('.'), QString::SkipEmptyParts);
     if (sections.isEmpty())
         return QString();
 
     QString level, tld;
-    for (int j = sections.count() - 1; j >= 0; --j) {
+    for (auto j = sections.count() - 1; j >= 0; --j) {
         level.prepend(QLatin1Char('.') + sections.at(j));
         if (qIsEffectiveTLD(level.right(level.size() - 1)))
             tld = level;
@@ -105,9 +105,9 @@ Q_CORE_EXPORT bool qIsEffectiveTLD(const QString &domain)
     if (containsTLDEntry(domain))
         return true;
 
-    const int dot = domain.indexOf(QLatin1Char('.'));
+    const auto dot = domain.indexOf(QLatin1Char('.'));
     if (dot >= 0) {
-        int count = domain.size() - dot;
+        auto count = domain.size() - dot;
         QString wildCardDomain = QLatin1Char('*') + domain.rightRef(count);
         // 2. if table contains '*.bar.com',
         // test if table contains '!foo.bar.com'

@@ -195,8 +195,8 @@ static inline ushort decodeNibble(ushort c)
 // assumes that the range has been checked already
 static inline ushort decodePercentEncoding(const ushort *input)
 {
-    ushort c1 = input[1];
-    ushort c2 = input[2];
+    auto c1 = input[1];
+    auto c2 = input[2];
     if (!isHex(c1) || !isHex(c2))
         return ushort(-1);
     return decodeNibble(c1) << 4 | decodeNibble(c2);
@@ -216,7 +216,7 @@ static void ensureDetached(QString &result, ushort *&output, const ushort *begin
         int charsProcessed = input - begin;
         int charsRemaining = end - input;
         int spaceNeeded = end - begin + 2 * charsRemaining + add;
-        int origSize = result.size();
+        auto origSize = result.size();
         result.resize(origSize + spaceNeeded);
 
         // we know that resize() above detached, so we bypass the reference count check
@@ -270,8 +270,8 @@ static bool encodedUtf8ToUtf16(QString &result, ushort *&output, const ushort *b
                                const ushort *end, ushort decoded)
 {
     uint ucs4, *dst = &ucs4;
-    const ushort *src = input + 3;// skip the %XX that yielded \a decoded
-    int charsNeeded = QUtf8Functions::fromUtf8<QUrlUtf8Traits>(decoded, dst, src, end);
+    auto src = input + 3;// skip the %XX that yielded \a decoded
+    auto charsNeeded = QUtf8Functions::fromUtf8<QUrlUtf8Traits>(decoded, dst, src, end);
     if (charsNeeded < 0)
         return false;
 
@@ -297,7 +297,7 @@ static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort 
                                  const ushort *&input, const ushort *end, ushort decoded)
 {
     // calculate the utf8 length and ensure enough space is available
-    int utf8len = QChar::isHighSurrogate(decoded) ? 4 : decoded >= 0x800 ? 3 : 2;
+    auto utf8len = QChar::isHighSurrogate(decoded) ? 4 : decoded >= 0x800 ? 3 : 2;
 
     // detach
     if (!output) {
@@ -308,7 +308,7 @@ static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort 
         // verify that there's enough space or expand
         int charsRemaining = end - input - 1; // not including this one
         int pos = output - reinterpret_cast<const ushort *>(result.constData());
-        int spaceRemaining = result.size() - pos;
+        auto spaceRemaining = result.size() - pos;
         if (spaceRemaining < 3*charsRemaining + 3*utf8len) {
             // must resize
             result.resize(result.size() + 3*utf8len);
@@ -320,7 +320,7 @@ static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort 
     }
 
     ++input;
-    int res = QUtf8Functions::toUtf8<QUrlUtf8Traits>(decoded, output, input, end);
+    auto res = QUtf8Functions::toUtf8<QUrlUtf8Traits>(decoded, output, input, end);
     --input;
     if (res < 0) {
         // bad surrogate pair sequence
@@ -350,11 +350,11 @@ static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort 
 static int recode(QString &result, const ushort *begin, const ushort *end, QUrl::ComponentFormattingOptions encoding,
                   const uchar *actionTable, bool retryBadEncoding)
 {
-    const int origSize = result.size();
-    const ushort *input = begin;
+    const auto origSize = result.size();
+    auto input = begin;
     ushort *output = 0;
 
-    EncodingAction action = EncodeCharacter;
+    auto action = EncodeCharacter;
     for ( ; input != end; ++input) {
         ushort c;
         // try a run where no change is necessary
@@ -473,8 +473,8 @@ non_trivial:
 */
 static int decode(QString &appendTo, const ushort *begin, const ushort *end)
 {
-    const int origSize = appendTo.size();
-    const ushort *input = begin;
+    const auto origSize = appendTo.size();
+    auto input = begin;
     ushort *output = 0;
     while (input != end) {
         if (*input != '%') {
@@ -571,7 +571,7 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
         actionTable[0] = DecodeCharacter; // decode
 
     if (tableModifications) {
-        for (const ushort *p = tableModifications; *p; ++p)
+        for (auto p = tableModifications; *p; ++p)
             actionTable[uchar(*p) - ' '] = *p >> 8;
     }
 
@@ -597,8 +597,8 @@ QString qt_urlRecodeByteArray(const QByteArray &ba)
 
     // scan ba for anything above or equal to 0x80
     // control points below 0x20 are fine in QString
-    const char *in = ba.constData();
-    const char *const end = ba.constEnd();
+    auto in = ba.constData();
+    const auto end = ba.constEnd();
     for ( ; in < end; ++in) {
         if (*in & 0x80)
             break;
@@ -610,9 +610,9 @@ QString qt_urlRecodeByteArray(const QByteArray &ba)
     }
 
     // we found something that we need to encode
-    QByteArray intermediate = ba;
+    auto intermediate = ba;
     intermediate.resize(ba.size() * 3 - (in - ba.constData()));
-    uchar *out = reinterpret_cast<uchar *>(intermediate.data() + (in - ba.constData()));
+    auto out = reinterpret_cast<uchar *>(intermediate.data() + (in - ba.constData()));
     for ( ; in < end; ++in) {
         if (*in & 0x80) {
             // encode

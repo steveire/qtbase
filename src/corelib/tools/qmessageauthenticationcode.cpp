@@ -114,7 +114,7 @@ void QMessageAuthenticationCodePrivate::initMessageHash()
         return;
     messageHashInited = true;
 
-    const int blockSize = qt_hash_block_size(method);
+    const auto blockSize = qt_hash_block_size(method);
 
     if (key.size() > blockSize) {
         QCryptographicHash hash(method);
@@ -124,15 +124,15 @@ void QMessageAuthenticationCodePrivate::initMessageHash()
     }
 
     if (key.size() < blockSize) {
-        const int size = key.size();
+        const auto size = key.size();
         key.resize(blockSize);
         memset(key.data() + size, 0, blockSize - size);
     }
 
     QVarLengthArray<char> iKeyPad(blockSize);
-    const char * const keyData = key.constData();
+    const auto keyData = key.constData();
 
-    for (int i = 0; i < blockSize; ++i)
+    for (auto i = 0; i < blockSize; ++i)
         iKeyPad[i] = keyData[i] ^ 0x36;
 
     messageHash.addData(iKeyPad.data(), iKeyPad.size());
@@ -247,14 +247,14 @@ QByteArray QMessageAuthenticationCode::result() const
 
     d->initMessageHash();
 
-    const int blockSize = qt_hash_block_size(d->method);
+    const auto blockSize = qt_hash_block_size(d->method);
 
-    QByteArray hashedMessage = d->messageHash.result();
+    auto hashedMessage = d->messageHash.result();
 
     QVarLengthArray<char> oKeyPad(blockSize);
-    const char * const keyData = d->key.constData();
+    const auto keyData = d->key.constData();
 
-    for (int i = 0; i < blockSize; ++i)
+    for (auto i = 0; i < blockSize; ++i)
         oKeyPad[i] = keyData[i] ^ 0x5c;
 
     QCryptographicHash hash(d->method);

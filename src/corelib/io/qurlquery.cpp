@@ -165,7 +165,7 @@ public:
     { itemList.append(qMakePair(recodeFromUser(key), recodeFromUser(value))); }
     int findRecodedKey(const QString &key, int from = 0) const
     {
-        for (int i = from; i < itemList.size(); ++i)
+        for (auto i = from; i < itemList.size(); ++i)
             if (itemList.at(i).first == key)
                 return i;
         return itemList.size();
@@ -184,7 +184,7 @@ template<> void QSharedDataPointer<QUrlQueryPrivate>::detach()
 {
     if (d && d->ref.load() == 1)
         return;
-    QUrlQueryPrivate *x = (d ? new QUrlQueryPrivate(*d)
+    auto x = (d ? new QUrlQueryPrivate(*d)
                              : new QUrlQueryPrivate);
     x->ref.ref();
     if (d && !d->ref.deref())
@@ -279,10 +279,10 @@ void QUrlQueryPrivate::setQuery(const QString &query)
     };
 
     itemList.clear();
-    const QChar *pos = query.constData();
-    const QChar *const end = pos + query.size();
+    auto pos = query.constData();
+    const auto end = pos + query.size();
     while (pos != end) {
-        const QChar *begin = pos;
+        auto begin = pos;
         const QChar *delimiter = 0;
         while (pos != end) {
             // scan for the component parts of this pair
@@ -525,11 +525,11 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
     }
 
     QString result;
-    Map::const_iterator it = d->itemList.constBegin();
-    Map::const_iterator end = d->itemList.constEnd();
+    auto it = d->itemList.constBegin();
+    auto end = d->itemList.constEnd();
 
     {
-        int size = 0;
+        auto size = 0;
         for ( ; it != end; ++it)
             size += it->first.length() + 1 + it->second.length() + 1;
         result.reserve(size + size / 4);
@@ -623,7 +623,7 @@ void QUrlQuery::setQueryItems(const QList<QPair<QString, QString> > &query)
         return;
 
     QUrlQueryPrivate *dd = d;
-    QList<QPair<QString, QString> >::const_iterator it = query.constBegin(),
+    auto it = query.constBegin(),
             end = query.constEnd();
     for ( ; it != end; ++it)
         dd->addQueryItem(it->first, it->second);
@@ -645,8 +645,8 @@ QList<QPair<QString, QString> > QUrlQuery::queryItems(QUrl::ComponentFormattingO
         return d->itemList;
 
     QList<QPair<QString, QString> > result;
-    Map::const_iterator it = d->itemList.constBegin();
-    Map::const_iterator end = d->itemList.constEnd();
+    auto it = d->itemList.constBegin();
+    auto end = d->itemList.constEnd();
     result.reserve(d->itemList.count());
     for ( ; it != end; ++it)
         result << qMakePair(d->recodeToUser(it->first, encoding),
@@ -700,7 +700,7 @@ QString QUrlQuery::queryItemValue(const QString &key, QUrl::ComponentFormattingO
 {
     QString result;
     if (d) {
-        Map::const_iterator it = d->findKey(key);
+        auto it = d->findKey(key);
         if (it != d->itemList.constEnd())
             result = d->recodeToUser(it->second, encoding);
     }
@@ -718,8 +718,8 @@ QStringList QUrlQuery::allQueryItemValues(const QString &key, QUrl::ComponentFor
 {
     QStringList result;
     if (d) {
-        QString encodedKey = d->recodeFromUser(key);
-        int idx = d->findRecodedKey(encodedKey);
+        auto encodedKey = d->recodeFromUser(key);
+        auto idx = d->findRecodedKey(encodedKey);
         while (idx < d->itemList.size()) {
             result << d->recodeToUser(d->itemList.at(idx).second, encoding);
             idx = d->findRecodedKey(encodedKey, idx + 1);
@@ -739,7 +739,7 @@ QStringList QUrlQuery::allQueryItemValues(const QString &key, QUrl::ComponentFor
 void QUrlQuery::removeQueryItem(const QString &key)
 {
     if (d.constData()) {
-        Map::iterator it = d->findKey(key);
+        auto it = d->findKey(key);
         if (it != d->itemList.end())
             d->itemList.erase(it);
     }
@@ -754,8 +754,8 @@ void QUrlQuery::removeQueryItem(const QString &key)
 void QUrlQuery::removeAllQueryItems(const QString &key)
 {
     if (d.constData()) {
-        QString encodedKey = d->recodeFromUser(key);
-        Map::iterator it = d->itemList.begin();
+        auto encodedKey = d->recodeFromUser(key);
+        auto it = d->itemList.begin();
         while (it != d->itemList.end()) {
             if (it->first == encodedKey)
                 it = d->itemList.erase(it);

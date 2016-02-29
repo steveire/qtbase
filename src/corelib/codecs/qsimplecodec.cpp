@@ -617,9 +617,9 @@ QSimpleTextCodec::~QSimpleTextCodec()
 
 static QByteArray *buildReverseMap(int forwardIndex)
 {
-    QByteArray *map = new QByteArray();
-    int m = 0;
-    int i = 0;
+    auto map = new QByteArray();
+    auto m = 0;
+    auto i = 0;
     while(i < 128) {
         if (unicodevalues[forwardIndex].values[i] > m &&
              unicodevalues[forwardIndex].values[i] < 0xfffd)
@@ -645,12 +645,12 @@ QString QSimpleTextCodec::convertToUnicode(const char* chars, int len, Converter
     if (len <= 0 || chars == 0)
         return QString();
 
-    const unsigned char * c = (const unsigned char *)chars;
+    auto c = (const unsigned char *)chars;
 
     QString r(len, Qt::Uninitialized);
-    QChar* uc = r.data();
+    auto uc = r.data();
 
-    for (int i = 0; i < len; i++) {
+    for (auto i = 0; i < len; i++) {
         if (c[i] > 127)
             uc[i] = unicodevalues[forwardIndex].values[c[i]-128];
         else
@@ -662,9 +662,9 @@ QString QSimpleTextCodec::convertToUnicode(const char* chars, int len, Converter
 QByteArray QSimpleTextCodec::convertFromUnicode(const QChar *in, int length, ConverterState *state) const
 {
     const char replacement = (state && state->flags & ConvertInvalidToNull) ? 0 : '?';
-    int invalid = 0;
+    auto invalid = 0;
 
-    QByteArray *rmap = reverseMap.load();
+    auto rmap = reverseMap.load();
     if (!rmap){
         rmap = buildReverseMap(this->forwardIndex);
         if (!reverseMap.testAndSetRelease(0, rmap)) {
@@ -674,12 +674,12 @@ QByteArray QSimpleTextCodec::convertFromUnicode(const QChar *in, int length, Con
     }
 
     QByteArray r(length, Qt::Uninitialized);
-    int i = length;
+    auto i = length;
     int u;
-    const QChar* ucp = in;
-    unsigned char* rp = (unsigned char *)r.data();
-    const unsigned char* rmp = (const unsigned char *)rmap->constData();
-    int rmsize = (int) rmap->size();
+    auto ucp = in;
+    auto rp = (unsigned char *)r.data();
+    auto rmp = (const unsigned char *)rmap->constData();
+    auto rmsize = (int) rmap->size();
     while(i--)
     {
         u = ucp->unicode();

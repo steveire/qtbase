@@ -81,7 +81,7 @@ bool QXmlUtils::rangeContains(RangeIter begin, RangeIter end, const QChar c)
 
     while (begin != end) {
         int delta = (end - begin) / 2;
-        RangeIter mid = begin + delta;
+        auto mid = begin + delta;
 
         if (mid->min > cp)
             end = mid;
@@ -230,11 +230,11 @@ bool QXmlUtils::isBaseChar(const QChar c)
 bool QXmlUtils::isEncName(const QString &encName)
 {
     // Valid encoding names are given by "[A-Za-z][A-Za-z0-9._\\-]*"
-    const ushort *c = encName.utf16();
-    int l = encName.length();
+    auto c = encName.utf16();
+    auto l = encName.length();
     if (l < 1 || !((c[0] >= 'a' && c[0] <= 'z') || (c[0] >= 'A' && c[0] <= 'Z')))
         return false;
-    for (int i = 1; i < l; ++i) {
+    for (auto i = 1; i < l; ++i) {
         if ((c[i] >= 'a' && c[i] <= 'z')
             || (c[i] >= 'A' && c[i] <= 'Z')
             || (c[i] >= '0' && c[i] <= '9')
@@ -312,11 +312,11 @@ bool QXmlUtils::isNameChar(const QChar c)
  */
 bool QXmlUtils::isPublicID(const QString &candidate)
 {
-    const int len = candidate.length();
+    const auto len = candidate.length();
 
-    for(int i = 0; i < len; ++i)
+    for(auto i = 0; i < len; ++i)
     {
-        const ushort cp = candidate.at(i).unicode();
+        const auto cp = candidate.at(i).unicode();
 
         if ((cp >= 'a' && cp <= 'z')
             || (cp >= 'A' && cp <= 'Z')
@@ -379,10 +379,10 @@ bool QXmlUtils::isNCName(const QStringRef &ncName)
     if(!QXmlUtils::isLetter(first) && first.unicode() != '_' && first.unicode() != ':')
         return false;
 
-    const int len = ncName.size();
-    for(int i = 0; i < len; ++i)
+    const auto len = ncName.size();
+    for(auto i = 0; i < len; ++i)
     {
-        const QChar at = ncName.at(i);
+        const auto at = ncName.at(i);
         if(!QXmlUtils::isNameChar(at) || at == QLatin1Char(':'))
             return false;
     }

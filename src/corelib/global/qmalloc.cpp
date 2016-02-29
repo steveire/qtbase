@@ -81,10 +81,10 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
     // fake an aligned allocation
     Q_UNUSED(oldsize);
 
-    void *actualptr = oldptr ? static_cast<void **>(oldptr)[-1] : 0;
+    auto actualptr = oldptr ? static_cast<void **>(oldptr)[-1] : 0;
     if (alignment <= sizeof(void*)) {
         // special, fast case
-        void **newptr = static_cast<void **>(realloc(actualptr, newsize + sizeof(void*)));
+        auto newptr = static_cast<void **>(realloc(actualptr, newsize + sizeof(void*)));
         if (!newptr)
             return 0;
         if (newptr == actualptr) {
@@ -104,14 +104,14 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
     // However, we need to store the actual pointer, so we need to allocate actually size +
     // alignment anyway.
 
-    void *real = realloc(actualptr, newsize + alignment);
+    auto real = realloc(actualptr, newsize + alignment);
     if (!real)
         return 0;
 
-    quintptr faked = reinterpret_cast<quintptr>(real) + alignment;
+    auto faked = reinterpret_cast<quintptr>(real) + alignment;
     faked &= ~(alignment - 1);
 
-    void **faked_ptr = reinterpret_cast<void **>(faked);
+    auto faked_ptr = reinterpret_cast<void **>(faked);
 
     // now save the value of the real pointer at faked-sizeof(void*)
     // by construction, alignment > sizeof(void*) and is a power of 2, so
@@ -125,7 +125,7 @@ void qFreeAligned(void *ptr)
 {
     if (!ptr)
         return;
-    void **ptr2 = static_cast<void **>(ptr);
+    auto ptr2 = static_cast<void **>(ptr);
     free(ptr2[-1]);
 }
 

@@ -109,7 +109,7 @@ static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QF
 */
 static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
 {
-    int oflags = QT_OPEN_RDONLY;
+    auto oflags = QT_OPEN_RDONLY;
 #ifdef QT_LARGEFILE_SUPPORT
     oflags |= QT_OPEN_LARGEFILE;
 #endif
@@ -159,7 +159,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     Q_Q(QFSFileEngine);
 
     if (openMode & QIODevice::Unbuffered) {
-        int flags = openModeToOpenFlags(openMode);
+        auto flags = openModeToOpenFlags(openMode);
 
         // Try to open the file in unbuffered mode.
         do {
@@ -200,7 +200,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
 
         fh = 0;
     } else {
-        QByteArray fopenMode = openModeToFopenMode(openMode, fileEntry, metaData);
+        auto fopenMode = openModeToFopenMode(openMode, fileEntry, metaData);
 
         // Try to open the file in buffered mode.
         do {
@@ -273,7 +273,7 @@ bool QFSFileEnginePrivate::nativeSyncToDisk()
 {
     Q_Q(QFSFileEngine);
 #if defined(_POSIX_SYNCHRONIZED_IO) && _POSIX_SYNCHRONIZED_IO > 0
-    const int ret = fdatasync(nativeHandle());
+    const auto ret = fdatasync(nativeHandle());
 #else
     const int ret = fsync(nativeHandle());
 #endif
@@ -291,8 +291,8 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
 
     if (fh && nativeIsSequential()) {
         size_t readBytes = 0;
-        int oldFlags = fcntl(QT_FILENO(fh), F_GETFL);
-        for (int i = 0; i < 2; ++i) {
+        auto oldFlags = fcntl(QT_FILENO(fh), F_GETFL);
+        for (auto i = 0; i < 2; ++i) {
             // Unix: Make the underlying file descriptor non-blocking
             if ((oldFlags & O_NONBLOCK) == 0)
                 fcntl(QT_FILENO(fh), F_SETFL, oldFlags | O_NONBLOCK);
@@ -315,7 +315,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
             if ((oldFlags & O_NONBLOCK) == 0) {
                 fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
                 if (readBytes == 0) {
-                    int readByte = 0;
+                    auto readByte = 0;
                     do {
                         readByte = fgetc(fh);
                     } while (readByte == -1 && errno == EINTR);
@@ -395,7 +395,7 @@ bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
     QSystemError error;
-    bool ret = QFileSystemEngine::removeFile(d->fileEntry, error);
+    auto ret = QFileSystemEngine::removeFile(d->fileEntry, error);
     d->metaData.clear();
     if (!ret) {
         setError(QFile::RemoveError, error.toString());
@@ -407,7 +407,7 @@ bool QFSFileEngine::copy(const QString &newName)
 {
     Q_D(QFSFileEngine);
     QSystemError error;
-    bool ret = QFileSystemEngine::copyFile(d->fileEntry, QFileSystemEntry(newName), error);
+    auto ret = QFileSystemEngine::copyFile(d->fileEntry, QFileSystemEntry(newName), error);
     if (!ret) {
         setError(QFile::CopyError, error.toString());
     }
@@ -424,7 +424,7 @@ bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
     QSystemError error;
-    bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
+    auto ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
 
     if (!ret) {
         setError(QFile::RenameError, error.toString());
@@ -437,7 +437,7 @@ bool QFSFileEngine::link(const QString &newName)
 {
     Q_D(QFSFileEngine);
     QSystemError error;
-    bool ret = QFileSystemEngine::createLink(d->fileEntry, QFileSystemEntry(newName), error);
+    auto ret = QFileSystemEngine::createLink(d->fileEntry, QFileSystemEntry(newName), error);
     if (!ret) {
         setError(QFile::RenameError, error.toString());
     }
@@ -501,7 +501,7 @@ bool QFSFileEnginePrivate::doStat(QFileSystemMetaData::MetaDataFlags flags) cons
     if (!tried_stat || !metaData.hasFlags(flags)) {
         tried_stat = 1;
 
-        int localFd = fd;
+        auto localFd = fd;
         if (fh && fileEntry.isEmpty())
             localFd = QT_FILENO(fh);
         if (localFd != -1)
@@ -618,7 +618,7 @@ QString QFSFileEngine::fileName(FileName file) const
         return entry.filePath();
     } else if (file == LinkName) {
         if (d->isSymlink()) {
-            QFileSystemEntry entry = QFileSystemEngine::getLinkTarget(d->fileEntry, d->metaData);
+            auto entry = QFileSystemEngine::getLinkTarget(d->fileEntry, d->metaData);
             return entry.filePath();
         }
         return QString();
@@ -635,7 +635,7 @@ bool QFSFileEngine::isRelativePath() const
 uint QFSFileEngine::ownerId(FileOwner own) const
 {
     Q_D(const QFSFileEngine);
-    static const uint nobodyID = (uint) -2;
+    static const auto nobodyID = (uint) -2;
 
     if (d->doStat(QFileSystemMetaData::OwnerIds))
         return d->metaData.ownerId(own);
@@ -664,7 +664,7 @@ bool QFSFileEngine::setPermissions(uint perms)
 bool QFSFileEngine::setSize(qint64 size)
 {
     Q_D(QFSFileEngine);
-    bool ret = false;
+    auto ret = false;
     if (d->fd != -1)
         ret = QT_FTRUNCATE(d->fd, size) == 0;
     else if (d->fh)
@@ -707,11 +707,11 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
             && (QT_OFF_T(size) > metaData.size() - QT_OFF_T(offset)))
         qWarning("QFSFileEngine::map: Mapping a file beyond its size is not portable");
 
-    int access = 0;
+    auto access = 0;
     if (openMode & QIODevice::ReadOnly) access |= PROT_READ;
     if (openMode & QIODevice::WriteOnly) access |= PROT_WRITE;
 
-    int sharemode = MAP_SHARED;
+    auto sharemode = MAP_SHARED;
     if (flags & QFileDevice::MapPrivateOption) {
         sharemode = MAP_PRIVATE;
         access |= PROT_WRITE;
@@ -720,7 +720,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
 #if defined(Q_OS_INTEGRITY)
     int pageSize = sysconf(_SC_PAGESIZE);
 #else
-    int pageSize = getpagesize();
+    auto pageSize = getpagesize();
 #endif
     int extra = offset % pageSize;
 
@@ -729,14 +729,14 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
         return 0;
     }
 
-    size_t realSize = (size_t)size + extra;
+    auto realSize = (size_t)size + extra;
     QT_OFF_T realOffset = QT_OFF_T(offset);
     realOffset &= ~(QT_OFF_T(pageSize - 1));
 
-    void *mapAddress = QT_MMAP((void*)0, realSize,
+    auto mapAddress = QT_MMAP((void*)0, realSize,
                    access, sharemode, nativeHandle(), realOffset);
     if (MAP_FAILED != mapAddress) {
-        uchar *address = extra + static_cast<uchar*>(mapAddress);
+        auto address = extra + static_cast<uchar*>(mapAddress);
         maps[address] = QPair<int,size_t>(extra, realSize);
         return address;
     }
@@ -767,8 +767,8 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
         return false;
     }
 
-    uchar *start = ptr - maps[ptr].first;
-    size_t len = maps[ptr].second;
+    auto start = ptr - maps[ptr].first;
+    auto len = maps[ptr].second;
     if (-1 == munmap(start, len)) {
         q->setError(QFile::UnspecifiedError, qt_error_string(errno));
         return false;

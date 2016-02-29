@@ -188,7 +188,7 @@ QJsonDocument QJsonDocument::fromRawData(const char *data, int size, DataValidat
         return QJsonDocument();
     }
 
-    QJsonPrivate::Data *d = new QJsonPrivate::Data((char *)data, size);
+    auto d = new QJsonPrivate::Data((char *)data, size);
     d->ownsData = false;
 
     if (validation != BypassValidation && !d->valid()) {
@@ -241,12 +241,12 @@ QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidati
         return QJsonDocument();
 
     const uint size = sizeof(QJsonPrivate::Header) + root.size;
-    char *raw = (char *)malloc(size);
+    auto raw = (char *)malloc(size);
     if (!raw)
         return QJsonDocument();
 
     memcpy(raw, data.constData(), size);
-    QJsonPrivate::Data *d = new QJsonPrivate::Data(raw, size);
+    auto d = new QJsonPrivate::Data(raw, size);
 
     if (validation != BypassValidation && !d->valid()) {
         delete d;
@@ -415,7 +415,7 @@ bool QJsonDocument::isArray() const
     if (!d)
         return false;
 
-    QJsonPrivate::Header *h = (QJsonPrivate::Header *)d->rawData;
+    auto h = (QJsonPrivate::Header *)d->rawData;
     return h->root()->isArray();
 }
 
@@ -429,7 +429,7 @@ bool QJsonDocument::isObject() const
     if (!d)
         return false;
 
-    QJsonPrivate::Header *h = (QJsonPrivate::Header *)d->rawData;
+    auto h = (QJsonPrivate::Header *)d->rawData;
     return h->root()->isObject();
 }
 
@@ -444,7 +444,7 @@ bool QJsonDocument::isObject() const
 QJsonObject QJsonDocument::object() const
 {
     if (d) {
-        QJsonPrivate::Base *b = d->header->root();
+        auto b = d->header->root();
         if (b->isObject())
             return QJsonObject(d, static_cast<QJsonPrivate::Object *>(b));
     }
@@ -462,7 +462,7 @@ QJsonObject QJsonDocument::object() const
 QJsonArray QJsonDocument::array() const
 {
     if (d) {
-        QJsonPrivate::Base *b = d->header->root();
+        auto b = d->header->root();
         if (b->isArray())
             return QJsonArray(d, static_cast<QJsonPrivate::Array *>(b));
     }

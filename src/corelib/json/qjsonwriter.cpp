@@ -60,10 +60,10 @@ static QByteArray escapedString(const QString &s)
     const uchar replacement = '?';
     QByteArray ba(s.length(), Qt::Uninitialized);
 
-    uchar *cursor = reinterpret_cast<uchar *>(const_cast<char *>(ba.constData()));
+    auto cursor = reinterpret_cast<uchar *>(const_cast<char *>(ba.constData()));
     auto ba_end = static_cast<const uchar *>(cursor + ba.length());
-    const ushort *src = reinterpret_cast<const ushort *>(s.constBegin());
-    const ushort *const end = reinterpret_cast<const ushort *>(s.constEnd());
+    auto src = reinterpret_cast<const ushort *>(s.constBegin());
+    const auto end = reinterpret_cast<const ushort *>(s.constEnd());
 
     while (src != end) {
         if (cursor >= ba_end - 6) {
@@ -122,13 +122,13 @@ static QByteArray escapedString(const QString &s)
 
 static void valueToJson(const QJsonPrivate::Base *b, const QJsonPrivate::Value &v, QByteArray &json, int indent, bool compact)
 {
-    QJsonValue::Type type = (QJsonValue::Type)(uint)v.type;
+    auto type = (QJsonValue::Type)(uint)v.type;
     switch (type) {
     case QJsonValue::Bool:
         json += v.toBoolean() ? "true" : "false";
         break;
     case QJsonValue::Double: {
-        const double d = v.toDouble(b);
+        const auto d = v.toDouble(b);
         if (qIsFinite(d)) // +2 to format to ensure the expected precision
             json += QByteArray::number(d, 'g', QLocale::FloatingPointShortest);
         else
@@ -190,7 +190,7 @@ static void objectContentToJson(const QJsonPrivate::Object *o, QByteArray &json,
 
     uint i = 0;
     while (1) {
-        QJsonPrivate::Entry *e = o->entryAt(i);
+        auto e = o->entryAt(i);
         json += indentString;
         json += '"';
         json += escapedString(e->key());

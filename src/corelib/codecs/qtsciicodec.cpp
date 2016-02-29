@@ -74,17 +74,17 @@ QTsciiCodec::~QTsciiCodec()
 */
 QByteArray QTsciiCodec::convertFromUnicode(const QChar *uc, int len, ConverterState *state) const
 {
-    char replacement = '?';
+    auto replacement = '?';
     if (state) {
         if (state->flags & ConvertInvalidToNull)
             replacement = 0;
     }
-    int invalid = 0;
+    auto invalid = 0;
 
     QByteArray rstr(len, Qt::Uninitialized);
-    uchar* cursor = (uchar*)rstr.data();
-    for (int i = 0; i < len; i++) {
-        QChar ch = uc[i];
+    auto cursor = (uchar*)rstr.data();
+    for (auto i = 0; i < len; i++) {
+        auto ch = uc[i];
         uchar j;
         if (ch.row() == 0x00 && ch.cell() < 0x80) {
             // ASCII
@@ -126,10 +126,10 @@ QString QTsciiCodec::convertToUnicode(const char* chars, int len, ConverterState
         if (state->flags & ConvertInvalidToNull)
             replacement = QChar::Null;
     }
-    int invalid = 0;
+    auto invalid = 0;
 
     QString result;
-    for (int i = 0; i < len; i++) {
+    for (auto i = 0; i < len; i++) {
         uchar ch = chars[i];
         if (ch < 0x80) {
             // ASCII
@@ -137,10 +137,10 @@ QString QTsciiCodec::convertToUnicode(const char* chars, int len, ConverterState
         } else if (IsTSCIIChar(ch)) {
             // TSCII
             uint s[3];
-            uint u = qt_TSCIIToUnicode(ch, s);
+            auto u = qt_TSCIIToUnicode(ch, s);
             uint *p = s;
             while (u--) {
-                uint c = *p++;
+                auto c = *p++;
                 if (c)
                     result += QChar(c);
                 else {
@@ -444,7 +444,7 @@ static const ushort TsToUn [][3] = {
 
 static int cmp(const ushort *s1, const ushort *s2, size_t len)
 {
-    int diff = 0;
+    auto diff = 0;
 
     while (len-- && (diff = *s1++ - *s2++) == 0)
         ;
@@ -459,13 +459,13 @@ static unsigned char qt_UnicodeToTSCII(ushort u1, ushort u2, ushort u3)
     s[1] = u2;
     s[2] = u3;
 
-    int a = 0;  // start pos
-    int b = UnToTsLast; // end pos
+    auto a = 0;  // start pos
+    auto b = UnToTsLast; // end pos
 
     // do a binary search for the composed unicode in the list
     while (a <= b) {
-        int w = (a + b) / 2;
-        int j = cmp(UnToTs[w], s, 3);
+        auto w = (a + b) / 2;
+        auto j = cmp(UnToTs[w], s, 3);
 
         if (j == 0)
             // found it
@@ -482,8 +482,8 @@ static unsigned char qt_UnicodeToTSCII(ushort u1, ushort u2, ushort u3)
 
 static unsigned int qt_TSCIIToUnicode(uint code, uint *s)
 {
-    int len = 0;
-    for (int i = 0; i < 3; i++) {
+    auto len = 0;
+    for (auto i = 0; i < 3; i++) {
         uint u = TsToUn[code & 0x7f][i];
         s[i] = u;
         if (s[i]) len = i + 1;

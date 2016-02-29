@@ -61,9 +61,9 @@ QByteArray QLatin1Codec::convertFromUnicode(const QChar *ch, int len, ConverterS
 {
     const char replacement = (state && state->flags & ConvertInvalidToNull) ? 0 : '?';
     QByteArray r(len, Qt::Uninitialized);
-    char *d = r.data();
-    int invalid = 0;
-    for (int i = 0; i < len; ++i) {
+    auto d = r.data();
+    auto invalid = 0;
+    for (auto i = 0; i < len; ++i) {
         if (ch[i] > 0xff) {
             d[i] = replacement;
             ++invalid;
@@ -109,8 +109,8 @@ QString QLatin15Codec::convertToUnicode(const char* chars, int len, ConverterSta
     if (chars == 0)
         return QString();
 
-    QString str = QString::fromLatin1(chars, len);
-    QChar *uc = str.data();
+    auto str = QString::fromLatin1(chars, len);
+    auto uc = str.data();
     while(len--) {
         switch(uc->unicode()) {
             case 0xa4:
@@ -149,11 +149,11 @@ QByteArray QLatin15Codec::convertFromUnicode(const QChar *in, int length, Conver
 {
     const char replacement = (state && state->flags & ConvertInvalidToNull) ? 0 : '?';
     QByteArray r(length, Qt::Uninitialized);
-    char *d = r.data();
-    int invalid = 0;
-    for (int i = 0; i < length; ++i) {
+    auto d = r.data();
+    auto invalid = 0;
+    for (auto i = 0; i < length; ++i) {
         uchar c;
-        ushort uc = in[i].unicode();
+        auto uc = in[i].unicode();
         if (uc < 0x0100) {
             if (uc > 0xa3) {
                 switch(uc) {

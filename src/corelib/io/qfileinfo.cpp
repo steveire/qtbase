@@ -55,7 +55,7 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
         switch (name) {
             case QAbstractFileEngine::CanonicalName:
             case QAbstractFileEngine::CanonicalPathName: {
-                QFileSystemEntry entry = QFileSystemEngine::canonicalName(fileEntry, metaData);
+                auto entry = QFileSystemEngine::canonicalName(fileEntry, metaData);
                 if (cache_enabled) { // be smart and store both
                     fileNames[QAbstractFileEngine::CanonicalName] = entry.filePath();
                     fileNames[QAbstractFileEngine::CanonicalPathName] = entry.path();
@@ -74,7 +74,7 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
                 break;
             case QAbstractFileEngine::AbsoluteName:
             case QAbstractFileEngine::AbsolutePathName: {
-                QFileSystemEntry entry = QFileSystemEngine::absoluteName(fileEntry);
+                auto entry = QFileSystemEngine::absoluteName(fileEntry);
                 if (cache_enabled) { // be smart and store both
                     fileNames[QAbstractFileEngine::AbsoluteName] = entry.filePath();
                     fileNames[QAbstractFileEngine::AbsolutePathName] = entry.path();
@@ -174,7 +174,7 @@ uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) cons
         else
             req |= QAbstractFileEngine::Refresh;
 
-        QAbstractFileEngine::FileFlags flags = fileEngine->fileFlags(req);
+        auto flags = fileEngine->fileFlags(req);
         fileFlags |= uint(flags);
         setCachedFlag(cachedFlags);
     }
@@ -475,7 +475,7 @@ QFileInfo &QFileInfo::operator=(const QFileInfo &fileinfo)
 */
 void QFileInfo::setFile(const QString &file)
 {
-    bool caching = d_ptr.constData()->cache_enabled;
+    auto caching = d_ptr.constData()->cache_enabled;
     *this = QFileInfo(file);
     d_ptr->cache_enabled = caching;
 }
@@ -700,7 +700,7 @@ bool QFileInfo::exists(const QString &file)
 {
     QFileSystemEntry entry(file);
     QFileSystemMetaData data;
-    QAbstractFileEngine *engine =
+    auto engine =
         QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, data);
     // Expensive fallback to non-QFileSystemEngine implementation
     if (engine)
@@ -1246,7 +1246,7 @@ bool QFileInfo::permission(QFile::Permissions permissions) const
         return false;
     if (d->fileEngine == 0) {
         // the QFileSystemMetaData::MetaDataFlag and QFile::Permissions overlap, so just static cast.
-        QFileSystemMetaData::MetaDataFlag permissionFlags = static_cast<QFileSystemMetaData::MetaDataFlag>((int)permissions);
+        auto permissionFlags = static_cast<QFileSystemMetaData::MetaDataFlag>((int)permissions);
         if (!d->cache_enabled || !d->metaData.hasFlags(permissionFlags))
             QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, permissionFlags);
         return (d->metaData.permissions() & permissions) == permissions;

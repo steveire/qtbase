@@ -202,7 +202,7 @@ QVariantAnimationPrivate::QVariantAnimationPrivate() : duration(250), interpolat
 void QVariantAnimationPrivate::convertValues(int t)
 {
     //this ensures that all the keyValues are of type t
-    for (int i = 0; i < keyValues.count(); ++i) {
+    for (auto i = 0; i < keyValues.count(); ++i) {
         QVariantAnimation::KeyValue &pair = keyValues[i];
         pair.second.convert(t);
     }
@@ -216,7 +216,7 @@ void QVariantAnimationPrivate::convertValues(int t)
 
 void QVariantAnimationPrivate::updateInterpolator()
 {
-    int type = currentInterval.start.second.userType();
+    auto type = currentInterval.start.second.userType();
     if (type == currentInterval.end.second.userType())
         interpolator = getInterpolator(type);
     else
@@ -239,14 +239,14 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
     if ((keyValues.count() + (defaultStartEndValue.isValid() ? 1 : 0)) < 2)
         return;
 
-    const qreal endProgress = (direction == QAbstractAnimation::Forward) ? qreal(1) : qreal(0);
-    const qreal progress = easing.valueForProgress(((duration == 0) ? endProgress : qreal(currentTime) / qreal(duration)));
+    const auto endProgress = (direction == QAbstractAnimation::Forward) ? qreal(1) : qreal(0);
+    const auto progress = easing.valueForProgress(((duration == 0) ? endProgress : qreal(currentTime) / qreal(duration)));
 
     //0 and 1 are still the boundaries
     if (force || (currentInterval.start.first > 0 && progress < currentInterval.start.first)
         || (currentInterval.end.first < 1 && progress > currentInterval.end.first)) {
         //let's update currentInterval
-        QVariantAnimation::KeyValues::const_iterator it = std::lower_bound(keyValues.constBegin(),
+        auto it = std::lower_bound(keyValues.constBegin(),
                                                                            keyValues.constEnd(),
                                                                            qMakePair(progress, QVariant()),
                                                                            animationValueLessThan);
@@ -285,11 +285,11 @@ void QVariantAnimationPrivate::setCurrentValueForProgress(const qreal progress)
 {
     Q_Q(QVariantAnimation);
 
-    const qreal startProgress = currentInterval.start.first;
-    const qreal endProgress = currentInterval.end.first;
-    const qreal localProgress = (progress - startProgress) / (endProgress - startProgress);
+    const auto startProgress = currentInterval.start.first;
+    const auto endProgress = currentInterval.end.first;
+    const auto localProgress = (progress - startProgress) / (endProgress - startProgress);
 
-    QVariant ret = q->interpolated(currentInterval.start.second,
+    auto ret = q->interpolated(currentInterval.start.second,
                                    currentInterval.end.second,
                                    localProgress);
     qSwap(currentValue, ret);
@@ -307,7 +307,7 @@ void QVariantAnimationPrivate::setCurrentValueForProgress(const qreal progress)
 
 QVariant QVariantAnimationPrivate::valueAt(qreal step) const
 {
-    QVariantAnimation::KeyValues::const_iterator result =
+    auto result =
         std::lower_bound(keyValues.constBegin(), keyValues.constEnd(), qMakePair(step, QVariant()), animationValueLessThan);
     if (result != keyValues.constEnd() && !animationValueLessThan(qMakePair(step, QVariant()), *result))
         return result->second;
@@ -324,7 +324,7 @@ void QVariantAnimationPrivate::setValueAt(qreal step, const QVariant &value)
 
     QVariantAnimation::KeyValue pair(step, value);
 
-    QVariantAnimation::KeyValues::iterator result = std::lower_bound(keyValues.begin(), keyValues.end(), pair, animationValueLessThan);
+    auto result = std::lower_bound(keyValues.begin(), keyValues.end(), pair, animationValueLessThan);
     if (result == keyValues.end() || result->first != step) {
         keyValues.insert(result, pair);
     } else {
@@ -435,7 +435,7 @@ static QBasicMutex registeredInterpolatorsMutex;
 void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator func, int interpolationType)
 {
     // will override any existing interpolators
-    QInterpolatorVector *interpolators = registeredInterpolators();
+    auto interpolators = registeredInterpolators();
     // When built on solaris with GCC, the destructors can be called
     // in such an order that we get here with interpolators == NULL,
     // to continue causes the app to crash on exit with a SEGV
@@ -456,7 +456,7 @@ template<typename T> static inline QVariantAnimation::Interpolator castToInterpo
 QVariantAnimation::Interpolator QVariantAnimationPrivate::getInterpolator(int interpolationType)
 {
     {
-        QInterpolatorVector *interpolators = registeredInterpolators();
+        auto interpolators = registeredInterpolators();
         QMutexLocker locker(&registeredInterpolatorsMutex);
         QVariantAnimation::Interpolator ret = 0;
         if (interpolationType < interpolators->count()) {

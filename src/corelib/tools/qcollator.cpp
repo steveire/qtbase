@@ -148,7 +148,7 @@ QCollator &QCollator::operator=(const QCollator &other)
 void QCollator::detach()
 {
     if (d->ref.load() != 1) {
-        QCollatorPrivate *x = new QCollatorPrivate;
+        auto x = new QCollatorPrivate;
         x->ref.store(1);
         x->locale = d->locale;
         x->collator = 0;

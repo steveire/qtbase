@@ -134,9 +134,9 @@ bool qTextCodecNameMatch(const char *n, const char *h)
 
 #if !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE) && !defined(QT_LOCALE_IS_UTF8)
 static QTextCodec *checkForCodec(const QByteArray &name) {
-    QTextCodec *c = QTextCodec::codecForName(name);
+    auto c = QTextCodec::codecForName(name);
     if (!c) {
-        const int index = name.indexOf('@');
+        const auto index = name.indexOf('@');
         if (index != -1) {
             c = QTextCodec::codecForName(name.left(index));
         }
@@ -153,7 +153,7 @@ static void setup();
 // setCodecForLocale(0) is called at the same time.
 static QTextCodec *setupLocaleMapper()
 {
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    auto globalData = QCoreGlobalData::instance();
 
     QTextCodec *locale = 0;
 
@@ -180,7 +180,7 @@ static QTextCodec *setupLocaleMapper()
     // then the using QIconvCodec
 
 #if defined (_XOPEN_UNIX) && !defined(Q_OS_OSF)
-    char *charset = nl_langinfo(CODESET);
+    auto charset = nl_langinfo(CODESET);
     if (charset)
         locale = QTextCodec::codecForName(charset);
 #endif
@@ -208,7 +208,7 @@ static QTextCodec *setupLocaleMapper()
 
         // Get the first nonempty value from $LC_ALL, $LC_CTYPE, and $LANG
         // environment variables.
-        QByteArray lang = qgetenv("LC_ALL");
+        auto lang = qgetenv("LC_ALL");
         if (lang.isEmpty() || lang == "C") {
             lang = qgetenv("LC_CTYPE");
         }
@@ -226,7 +226,7 @@ static QTextCodec *setupLocaleMapper()
         // 7. guess locale from lang
 
         // 1. CODESET from ctype if it contains a .CODESET part (e.g. en_US.ISO8859-15)
-        int indexOfDot = ctype.indexOf('.');
+        auto indexOfDot = ctype.indexOf('.');
         if (indexOfDot != -1)
             locale = checkForCodec( ctype.mid(indexOfDot + 1) );
 
@@ -262,7 +262,7 @@ static QTextCodec *setupLocaleMapper()
 // textCodecsMutex need to be locked to enter this function
 static void setup()
 {
-    static bool initialized = false;
+    static auto initialized = false;
     if (initialized)
         return;
     initialized = true;
@@ -475,7 +475,7 @@ QTextCodec::QTextCodec()
 {
     QMutexLocker locker(textCodecsMutex());
 
-    QCoreGlobalData *globalInstance = QCoreGlobalData::instance();
+    auto globalInstance = QCoreGlobalData::instance();
     if (globalInstance->allCodecs.isEmpty())
         setup();
 
@@ -514,13 +514,13 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 
     QMutexLocker locker(textCodecsMutex());
 
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    auto globalData = QCoreGlobalData::instance();
     if (!globalData)
         return 0;
     setup();
 
 #ifndef QT_USE_ICU
-    QTextCodecCache *cache = &globalData->codecCache;
+    auto cache = &globalData->codecCache;
     QTextCodec *codec;
     if (cache) {
         codec = cache->value(name);
@@ -528,15 +528,15 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
             return codec;
     }
 
-    for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
-        QTextCodec *cursor = *it;
+    for (auto it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
+        auto cursor = *it;
         if (qTextCodecNameMatch(cursor->name(), name)) {
             if (cache)
                 cache->insert(name, cursor);
             return cursor;
         }
-        QList<QByteArray> aliases = cursor->aliases();
-        for (ByteArrayListConstIt ait = aliases.constBegin(), acend = aliases.constEnd(); ait != acend; ++ait) {
+        auto aliases = cursor->aliases();
+        for (auto ait = aliases.constBegin(), acend = aliases.constEnd(); ait != acend; ++ait) {
             if (qTextCodecNameMatch(*ait, name)) {
                 if (cache)
                     cache->insert(name, cursor);
@@ -561,7 +561,7 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 {
     QMutexLocker locker(textCodecsMutex());
 
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    auto globalData = QCoreGlobalData::instance();
     if (!globalData)
         return 0;
     if (globalData->allCodecs.isEmpty())
@@ -569,7 +569,7 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 
     QByteArray key = "MIB: " + QByteArray::number(mib);
 
-    QTextCodecCache *cache = &globalData->codecCache;
+    auto cache = &globalData->codecCache;
     QTextCodec *codec;
     if (cache) {
         codec = cache->value(key);
@@ -577,8 +577,8 @@ QTextCodec* QTextCodec::codecForMib(int mib)
             return codec;
     }
 
-    for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
-        QTextCodec *cursor = *it;
+    for (auto it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
+        auto cursor = *it;
         if (cursor->mibEnum() == mib) {
             if (cache)
                 cache->insert(key, cursor);
@@ -607,13 +607,13 @@ QList<QByteArray> QTextCodec::availableCodecs()
 {
     QMutexLocker locker(textCodecsMutex());
 
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    auto globalData = QCoreGlobalData::instance();
     if (globalData->allCodecs.isEmpty())
         setup();
 
     QList<QByteArray> codecs;
 
-    for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
+    for (auto it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
         codecs += (*it)->name();
         codecs += (*it)->aliases();
     }
@@ -639,13 +639,13 @@ QList<int> QTextCodec::availableMibs()
 #else
     QMutexLocker locker(textCodecsMutex());
 
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    auto globalData = QCoreGlobalData::instance();
     if (globalData->allCodecs.isEmpty())
         setup();
 
     QList<int> codecs;
 
-    for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it)
+    for (auto it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it)
         codecs += (*it)->mibEnum();
 
     return codecs;
@@ -682,11 +682,11 @@ void QTextCodec::setCodecForLocale(QTextCodec *c)
 
 QTextCodec* QTextCodec::codecForLocale()
 {
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    auto globalData = QCoreGlobalData::instance();
     if (!globalData)
         return 0;
 
-    QTextCodec *codec = globalData->codecForLocale.loadAcquire();
+    auto codec = globalData->codecForLocale.loadAcquire();
     if (!codec) {
 #ifdef QT_USE_ICU
         textCodecsMutex()->lock();
@@ -926,7 +926,7 @@ bool QTextEncoder::hasFailure() const
 */
 QByteArray QTextEncoder::fromUnicode(const QString& str)
 {
-    QByteArray result = c->fromUnicode(str.constData(), str.length(), &state);
+    auto result = c->fromUnicode(str.constData(), str.length(), &state);
     return result;
 }
 
@@ -938,7 +938,7 @@ QByteArray QTextEncoder::fromUnicode(const QString& str)
 */
 QByteArray QTextEncoder::fromUnicode(const QChar *uc, int len)
 {
-    QByteArray result = c->fromUnicode(uc, len, &state);
+    auto result = c->fromUnicode(uc, len, &state);
     return result;
 }
 
@@ -1048,22 +1048,22 @@ QString QTextDecoder::toUnicode(const QByteArray &ba)
 QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCodec)
 {
     // determine charset
-    QTextCodec *c = QTextCodec::codecForUtfText(ba, 0);
+    auto c = QTextCodec::codecForUtfText(ba, 0);
     if (!c) {
-        QByteArray header = ba.left(1024).toLower();
-        int pos = header.indexOf("meta ");
+        auto header = ba.left(1024).toLower();
+        auto pos = header.indexOf("meta ");
         if (pos != -1) {
             pos = header.indexOf("charset=", pos);
             if (pos != -1) {
                 pos += qstrlen("charset=");
 
-                int pos2 = pos;
+                auto pos2 = pos;
                 // The attribute can be closed with either """, "'", ">" or "/",
                 // none of which are valid charset characters.
                 while (++pos2 < header.size()) {
-                    char ch = header.at(pos2);
+                    auto ch = header.at(pos2);
                     if (ch == '\"' || ch == '\'' || ch == '>') {
-                        QByteArray name = header.mid(pos, pos2 - pos);
+                        auto name = header.mid(pos, pos2 - pos);
                         if (name == "unicode") // QTBUG-41998, ICU will return UTF-16.
                             name = QByteArrayLiteral("UTF-8");
                         c = QTextCodec::codecForName(name);
@@ -1106,7 +1106,7 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
 */
 QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba, QTextCodec *defaultCodec)
 {
-    const int arraySize = ba.size();
+    const auto arraySize = ba.size();
 
     if (arraySize > 3) {
         if ((uchar)ba[0] == 0x00

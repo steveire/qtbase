@@ -214,7 +214,7 @@ QString QFileSystemEntry::path() const
 QString QFileSystemEntry::baseName() const
 {
     findFileNameSeparators();
-    int length = -1;
+    auto length = -1;
     if (m_firstDotInFileName >= 0) {
         length = m_firstDotInFileName;
         if (m_lastSeparator != -1) // avoid off by one
@@ -230,7 +230,7 @@ QString QFileSystemEntry::baseName() const
 QString QFileSystemEntry::completeBaseName() const
 {
     findFileNameSeparators();
-    int length = -1;
+    auto length = -1;
     if (m_firstDotInFileName >= 0) {
         length = m_firstDotInFileName + m_lastDotInFileName;
         if (m_lastSeparator != -1) // avoid off by one
@@ -342,8 +342,8 @@ void QFileSystemEntry::findFileNameSeparators() const
 {
     if (m_firstDotInFileName == -2) {
         resolveFilePath();
-        int firstDotInFileName = -1;
-        int lastDotInFileName = -1;
+        auto firstDotInFileName = -1;
+        auto lastDotInFileName = -1;
         int lastSeparator = m_lastSeparator;
 
         int stop;
@@ -354,7 +354,7 @@ void QFileSystemEntry::findFileNameSeparators() const
             stop = lastSeparator;
         }
 
-        int i = m_filePath.size() - 1;
+        auto i = m_filePath.size() - 1;
         for (; i >= stop; --i) {
             if (m_filePath.at(i).unicode() == '.') {
                 firstDotInFileName = lastDotInFileName = i;
@@ -389,10 +389,10 @@ void QFileSystemEntry::findFileNameSeparators() const
 bool QFileSystemEntry::isClean() const
 {
     resolveFilePath();
-    int dots = 0;
-    bool dotok = true; // checking for ".." or "." starts to relative paths
-    bool slashok = true;
-    for (QString::const_iterator iter = m_filePath.constBegin(); iter != m_filePath.constEnd(); ++iter) {
+    auto dots = 0;
+    auto dotok = true; // checking for ".." or "." starts to relative paths
+    auto slashok = true;
+    for (auto iter = m_filePath.constBegin(); iter != m_filePath.constEnd(); ++iter) {
         if (*iter == QLatin1Char('/')) {
             if (dots == 1 || dots == 2)
                 return false; // path contains "./" or "../"

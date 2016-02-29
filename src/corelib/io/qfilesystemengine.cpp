@@ -61,8 +61,8 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
 
     QFileInfo fi;
     const QChar slash(QLatin1Char('/'));
-    QString tmpPath = path;
-    int separatorPos = 0;
+    auto tmpPath = path;
+    auto separatorPos = 0;
     QSet<QString> nonSymlinks;
     QSet<QString> known;
 
@@ -81,11 +81,11 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
         if (separatorPos != -1)
 #endif
         separatorPos = tmpPath.indexOf(slash, separatorPos + 1);
-        QString prefix = separatorPos == -1 ? tmpPath : tmpPath.left(separatorPos);
+        auto prefix = separatorPos == -1 ? tmpPath : tmpPath.left(separatorPos);
         if (!nonSymlinks.contains(prefix)) {
             fi.setFile(prefix);
             if (fi.isSymLink()) {
-                QString target = fi.symLinkTarget();
+                auto target = fi.symLinkTarget();
                 if(QFileInfo(target).isRelative())
                     target = fi.absolutePath() + slash + target;
                 if (separatorPos != -1) {
@@ -142,8 +142,8 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
         return _q_checkEntry(engine, resolvingEntry);
 
 #if defined(QT_BUILD_CORE_LIB)
-    for (int prefixSeparator = 0; prefixSeparator < filePath.size(); ++prefixSeparator) {
-        QChar const ch = filePath[prefixSeparator];
+    for (auto prefixSeparator = 0; prefixSeparator < filePath.size(); ++prefixSeparator) {
+        const auto ch = filePath[prefixSeparator];
         if (ch == QLatin1Char('/'))
             break;
 
@@ -157,7 +157,7 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
                 break;
 
             const QStringList &paths = QDir::searchPaths(filePath.left(prefixSeparator));
-            for (int i = 0; i < paths.count(); i++) {
+            for (auto i = 0; i < paths.count(); i++) {
                 entry = QFileSystemEntry(QDir::cleanPath(paths.at(i) % QLatin1Char('/') % filePath.midRef(prefixSeparator + 1)));
                 // Recurse!
                 if (_q_resolveEntryAndCreateLegacyEngine_recursive(entry, data, engine, true))
@@ -192,7 +192,7 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
 */
 QAbstractFileEngine *QFileSystemEngine::resolveEntryAndCreateLegacyEngine(
         QFileSystemEntry &entry, QFileSystemMetaData &data) {
-    QFileSystemEntry copy = entry;
+    auto copy = entry;
     QAbstractFileEngine *engine = 0;
 
     if (_q_resolveEntryAndCreateLegacyEngine_recursive(copy, data, engine))

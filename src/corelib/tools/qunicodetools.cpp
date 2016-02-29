@@ -82,20 +82,20 @@ static const uchar breakTable[QUnicodeTables::GraphemeBreak_LVT + 1][QUnicodeTab
 
 static void getGraphemeBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
 {
-    QUnicodeTables::GraphemeBreakClass lcls = QUnicodeTables::GraphemeBreak_LF; // to meet GB1
+    auto lcls = QUnicodeTables::GraphemeBreak_LF; // to meet GB1
     for (quint32 i = 0; i != len; ++i) {
-        quint32 pos = i;
+        auto pos = i;
         uint ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
+            auto low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {
                 ucs4 = QChar::surrogateToUcs4(ucs4, low);
                 ++i;
             }
         }
 
-        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
-        QUnicodeTables::GraphemeBreakClass cls = (QUnicodeTables::GraphemeBreakClass) prop->graphemeBreakClass;
+        auto prop = QUnicodeTables::properties(ucs4);
+        auto cls = (QUnicodeTables::GraphemeBreakClass) prop->graphemeBreakClass;
 
         if (Q_LIKELY(GB::breakTable[lcls][cls]))
             attributes[pos].graphemeBoundary = true;
@@ -144,20 +144,20 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
         WordTypeNone, WordTypeAlphaNumeric, WordTypeHiraganaKatakana
     } currentWordType = WordTypeNone;
 
-    QUnicodeTables::WordBreakClass cls = QUnicodeTables::WordBreak_LF; // to meet WB1
+    auto cls = QUnicodeTables::WordBreak_LF; // to meet WB1
     for (quint32 i = 0; i != len; ++i) {
-        quint32 pos = i;
+        auto pos = i;
         uint ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
+            auto low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {
                 ucs4 = QChar::surrogateToUcs4(ucs4, low);
                 ++i;
             }
         }
 
-        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
-        QUnicodeTables::WordBreakClass ncls = (QUnicodeTables::WordBreakClass) prop->wordBreakClass;
+        auto prop = QUnicodeTables::properties(ucs4);
+        auto ncls = (QUnicodeTables::WordBreakClass) prop->wordBreakClass;
 #ifdef QT_BUILD_INTERNAL
         if (qt_initcharattributes_default_algorithm_only) {
             // as of Unicode 5.1, some punctuation marks were mapped to MidLetter and MidNumLet
@@ -171,7 +171,7 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
         }
 #endif
 
-        uchar action = WB::breakTable[cls][ncls];
+        auto action = WB::breakTable[cls][ncls];
         switch (action) {
         case WB::Break:
             break;
@@ -183,10 +183,10 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
             break;
         case WB::Lookup:
         case WB::LookupW:
-            for (quint32 lookahead = i + 1; lookahead < len; ++lookahead) {
+            for (auto lookahead = i + 1; lookahead < len; ++lookahead) {
                 ucs4 = string[lookahead];
                 if (QChar::isHighSurrogate(ucs4) && lookahead + 1 != len) {
-                    ushort low = string[lookahead + 1];
+                    auto low = string[lookahead + 1];
                     if (QChar::isLowSurrogate(low)) {
                         ucs4 = QChar::surrogateToUcs4(ucs4, low);
                         ++lookahead;
@@ -194,7 +194,7 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
                 }
 
                 prop = QUnicodeTables::properties(ucs4);
-                QUnicodeTables::WordBreakClass tcls = (QUnicodeTables::WordBreakClass) prop->wordBreakClass;
+                auto tcls = (QUnicodeTables::WordBreakClass) prop->wordBreakClass;
 
                 if (Q_UNLIKELY(tcls == QUnicodeTables::WordBreak_Extend)) {
                     // WB4: X(Extend|Format)* -> X
@@ -289,27 +289,27 @@ static void getSentenceBreaks(const ushort *string, quint32 len, QCharAttributes
 {
     uchar state = SB::BAfter; // to meet SB1
     for (quint32 i = 0; i != len; ++i) {
-        quint32 pos = i;
+        auto pos = i;
         uint ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
+            auto low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {
                 ucs4 = QChar::surrogateToUcs4(ucs4, low);
                 ++i;
             }
         }
 
-        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
-        QUnicodeTables::SentenceBreakClass ncls = (QUnicodeTables::SentenceBreakClass) prop->sentenceBreakClass;
+        auto prop = QUnicodeTables::properties(ucs4);
+        auto ncls = (QUnicodeTables::SentenceBreakClass) prop->sentenceBreakClass;
 
         Q_ASSERT(state <= SB::BAfter);
         state = SB::breakTable[state][ncls];
         if (Q_UNLIKELY(state == SB::Lookup)) { // SB8
             state = SB::Break;
-            for (quint32 lookahead = i + 1; lookahead < len; ++lookahead) {
+            for (auto lookahead = i + 1; lookahead < len; ++lookahead) {
                 ucs4 = string[lookahead];
                 if (QChar::isHighSurrogate(ucs4) && lookahead + 1 != len) {
-                    ushort low = string[lookahead + 1];
+                    auto low = string[lookahead + 1];
                     if (QChar::isLowSurrogate(low)) {
                         ucs4 = QChar::surrogateToUcs4(ucs4, low);
                         ++lookahead;
@@ -317,7 +317,7 @@ static void getSentenceBreaks(const ushort *string, quint32 len, QCharAttributes
                 }
 
                 prop = QUnicodeTables::properties(ucs4);
-                QUnicodeTables::SentenceBreakClass tcls = (QUnicodeTables::SentenceBreakClass) prop->sentenceBreakClass;
+                auto tcls = (QUnicodeTables::SentenceBreakClass) prop->sentenceBreakClass;
                 switch (tcls) {
                 case QUnicodeTables::SentenceBreak_Other:
                 case QUnicodeTables::SentenceBreak_Extend:
@@ -484,27 +484,27 @@ static const uchar breakTable[QUnicodeTables::LineBreak_CB + 1][QUnicodeTables::
 static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
 {
     quint32 nestart = 0;
-    LB::NS::Class nelast = LB::NS::XX;
+    auto nelast = LB::NS::XX;
 
-    QUnicodeTables::LineBreakClass lcls = QUnicodeTables::LineBreak_LF; // to meet LB10
-    QUnicodeTables::LineBreakClass cls = lcls;
+    auto lcls = QUnicodeTables::LineBreak_LF; // to meet LB10
+    auto cls = lcls;
     for (quint32 i = 0; i != len; ++i) {
-        quint32 pos = i;
+        auto pos = i;
         uint ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
+            auto low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {
                 ucs4 = QChar::surrogateToUcs4(ucs4, low);
                 ++i;
             }
         }
 
-        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
-        QUnicodeTables::LineBreakClass ncls = (QUnicodeTables::LineBreakClass) prop->lineBreakClass;
+        auto prop = QUnicodeTables::properties(ucs4);
+        auto ncls = (QUnicodeTables::LineBreakClass) prop->lineBreakClass;
 
         if (Q_UNLIKELY(ncls == QUnicodeTables::LineBreak_SA)) {
             // LB1: resolve SA to AL, except of those that have Category Mn or Mc be resolved to CM
-            static const int test = FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining);
+            static const auto test = FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining);
             if (FLAG(prop->category) & test)
                 ncls = QUnicodeTables::LineBreak_CM;
         }
@@ -516,11 +516,11 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
 
         if (Q_LIKELY(ncls != QUnicodeTables::LineBreak_CM)) {
             // LB25: do not break lines inside numbers
-            LB::NS::Class necur = LB::NS::toClass(ncls, (QChar::Category)prop->category);
+            auto necur = LB::NS::toClass(ncls, (QChar::Category)prop->category);
             switch (LB::NS::actionTable[nelast][necur]) {
             case LB::NS::Break:
                 // do not change breaks before and after the expression
-                for (quint32 j = nestart + 1; j < pos; ++j)
+                for (auto j = nestart + 1; j < pos; ++j)
                     attributes[j].lineBreak = false;
                 // fall through
             case LB::NS::None:
@@ -588,7 +588,7 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
 
     if (Q_UNLIKELY(LB::NS::actionTable[nelast][LB::NS::XX] == LB::NS::Break)) {
         // LB25: do not break lines inside numbers
-        for (quint32 j = nestart + 1; j < len; ++j)
+        for (auto j = nestart + 1; j < len; ++j)
             attributes[j].lineBreak = false;
     }
 
@@ -602,7 +602,7 @@ static void getWhiteSpaces(const ushort *string, quint32 len, QCharAttributes *a
     for (quint32 i = 0; i != len; ++i) {
         uint ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
-            ushort low = string[i + 1];
+            auto low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {
                 ucs4 = QChar::surrogateToUcs4(ucs4, low);
                 ++i;
@@ -642,12 +642,12 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
 
         QVarLengthArray<HB_ScriptItem, 64> scriptItems;
         scriptItems.reserve(numItems);
-        int start = 0;
-        HB_Script startScript = script_to_hbscript(items[start].script);
+        auto start = 0;
+        auto startScript = script_to_hbscript(items[start].script);
         if (Q_UNLIKELY(startScript == HB_Script_Inherited))
             startScript = HB_Script_Common;
-        for (int i = start + 1; i < numItems; ++i) {
-            HB_Script script = script_to_hbscript(items[i].script);
+        for (auto i = start + 1; i < numItems; ++i) {
+            auto script = script_to_hbscript(items[i].script);
             if (Q_LIKELY(script == startScript || script == HB_Script_Inherited))
                 continue;
             Q_ASSERT(items[i].position > items[start].position);
@@ -684,21 +684,21 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
 
 Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
 {
-    int sor = 0;
-    int eor = -1;
+    auto sor = 0;
+    auto eor = -1;
     uchar script = QChar::Script_Common;
-    for (int i = 0; i < length; ++i) {
+    for (auto i = 0; i < length; ++i) {
         eor = i;
         uint ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 < length) {
-            ushort low = string[i + 1];
+            auto low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {
                 ucs4 = QChar::surrogateToUcs4(ucs4, low);
                 ++i;
             }
         }
 
-        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
+        auto prop = QUnicodeTables::properties(ucs4);
 
         if (Q_LIKELY(prop->script == script || prop->script <= QChar::Script_Inherited))
             continue;
@@ -706,7 +706,7 @@ Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
         // Never break between a combining mark (gc= Mc, Mn or Me) and its base character.
         // Thus, a combining mark — whatever its script property value is — should inherit
         // the script property value of its base character.
-        static const int test = (FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining) | FLAG(QChar::Mark_Enclosing));
+        static const auto test = (FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining) | FLAG(QChar::Mark_Enclosing));
         if (Q_UNLIKELY(FLAG(prop->category) & test)) {
             // In cases where the base character itself has the Common script property value,
             // and it is followed by one or more combining marks with a specific script property value,

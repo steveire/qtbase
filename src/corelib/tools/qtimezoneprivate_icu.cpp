@@ -81,9 +81,9 @@ static UCalendarDisplayNameType ucalDisplayNameType(QTimeZone::TimeType timeType
 // Qt wrapper around ucal_getDefaultTimeZone()
 static QByteArray ucalDefaultTimeZoneId()
 {
-    int32_t size = 30;
+    auto size = 30;
     QString result(size, Qt::Uninitialized);
-    UErrorCode status = U_ZERO_ERROR;
+    auto status = U_ZERO_ERROR;
 
     // size = ucal_getDefaultTimeZone(result, resultLength, status)
     size = ucal_getDefaultTimeZone(reinterpret_cast<UChar *>(result.data()), size, &status);
@@ -109,9 +109,9 @@ static QString ucalTimeZoneDisplayName(UCalendar *ucal, QTimeZone::TimeType time
                                        QTimeZone::NameType nameType,
                                        const QString &localeCode)
 {
-    int32_t size = 50;
+    auto size = 50;
     QString result(size, Qt::Uninitialized);
-    UErrorCode status = U_ZERO_ERROR;
+    auto status = U_ZERO_ERROR;
 
     // size = ucal_getTimeZoneDisplayName(cal, type, locale, result, resultLength, status)
     size = ucal_getTimeZoneDisplayName(ucal,
@@ -150,8 +150,8 @@ static bool ucalOffsetsAtTime(UCalendar *m_ucal, qint64 atMSecsSinceEpoch,
     *dstOffset = 0;
 
     // Clone the ucal so we don't change the shared object
-    UErrorCode status = U_ZERO_ERROR;
-    UCalendar *ucal = ucal_clone(m_ucal, &status);
+    auto status = U_ZERO_ERROR;
+    auto ucal = ucal_clone(m_ucal, &status);
     if (!U_SUCCESS(status))
         return false;
 
@@ -159,14 +159,14 @@ static bool ucalOffsetsAtTime(UCalendar *m_ucal, qint64 atMSecsSinceEpoch,
     status = U_ZERO_ERROR;
     ucal_setMillis(ucal, atMSecsSinceEpoch, &status);
 
-    int32_t utc = 0;
+    auto utc = 0;
     if (U_SUCCESS(status)) {
         status = U_ZERO_ERROR;
         // Returns msecs
         utc = ucal_get(ucal, UCAL_ZONE_OFFSET, &status) / 1000;
     }
 
-    int32_t dst = 0;
+    auto dst = 0;
     if (U_SUCCESS(status)) {
         status = U_ZERO_ERROR;
         // Returns msecs
@@ -246,8 +246,8 @@ static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
 static QList<QByteArray> uenumToIdList(UEnumeration *uenum)
 {
     QList<QByteArray> list;
-    int32_t size = 0;
-    UErrorCode status = U_ZERO_ERROR;
+    auto size = 0;
+    auto status = U_ZERO_ERROR;
     // TODO Perhaps use uenum_unext instead?
     QByteArray result = uenum_next(uenum, &size, &status);
     while (U_SUCCESS(status) && !result.isEmpty()) {
@@ -263,8 +263,8 @@ static QList<QByteArray> uenumToIdList(UEnumeration *uenum)
 // Qt wrapper around ucal_getDSTSavings()
 static int ucalDaylightOffset(const QByteArray &id)
 {
-    UErrorCode status = U_ZERO_ERROR;
-    const int32_t dstMSecs = ucal_getDSTSavings(reinterpret_cast<const UChar *>(id.data()), &status);
+    auto status = U_ZERO_ERROR;
+    const auto dstMSecs = ucal_getDSTSavings(reinterpret_cast<const UChar *>(id.data()), &status);
     if (U_SUCCESS(status))
         return (dstMSecs / 1000);
     else
@@ -292,7 +292,7 @@ QIcuTimeZonePrivate::QIcuTimeZonePrivate(const QIcuTimeZonePrivate &other)
     : QTimeZonePrivate(other), m_ucal(0)
 {
     // Clone the ucal so we don't close the shared object
-    UErrorCode status = U_ZERO_ERROR;
+    auto status = U_ZERO_ERROR;
     m_ucal = ucal_clone(other.m_ucal, &status);
     if (!U_SUCCESS(status)) {
         m_id.clear();
@@ -314,8 +314,8 @@ void QIcuTimeZonePrivate::init(const QByteArray &ianaId)
 {
     m_id = ianaId;
 
-    const QString id = QString::fromUtf8(m_id);
-    UErrorCode status = U_ZERO_ERROR;
+    const auto id = QString::fromUtf8(m_id);
+    auto status = U_ZERO_ERROR;
     //TODO Use UCAL_GREGORIAN for now to match QLocale, change to UCAL_DEFAULT once full ICU support
     m_ucal = ucal_open(reinterpret_cast<const UChar *>(id.data()), id.size(),
                        QLocale().name().toUtf8(), UCAL_GREGORIAN, &status);
@@ -332,7 +332,7 @@ QString QIcuTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
 {
     // Return standard offset format name as ICU C api doesn't support it yet
     if (nameType == QTimeZone::OffsetName) {
-        const Data nowData = data(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
+        const auto nowData = data(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
         // We can't use transitions reliably to find out right dst offset
         // Instead use dst offset api to try get it if needed
         if (timeType == QTimeZone::DaylightTime)
@@ -354,24 +354,24 @@ QString QIcuTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
 
 int QIcuTimeZonePrivate::offsetFromUtc(qint64 atMSecsSinceEpoch) const
 {
-    int stdOffset = 0;
-    int dstOffset = 0;
+    auto stdOffset = 0;
+    auto dstOffset = 0;
     ucalOffsetsAtTime(m_ucal, atMSecsSinceEpoch, &stdOffset, & dstOffset);
     return stdOffset + dstOffset;
 }
 
 int QIcuTimeZonePrivate::standardTimeOffset(qint64 atMSecsSinceEpoch) const
 {
-    int stdOffset = 0;
-    int dstOffset = 0;
+    auto stdOffset = 0;
+    auto dstOffset = 0;
     ucalOffsetsAtTime(m_ucal, atMSecsSinceEpoch, &stdOffset, & dstOffset);
     return stdOffset;
 }
 
 int QIcuTimeZonePrivate::daylightTimeOffset(qint64 atMSecsSinceEpoch) const
 {
-    int stdOffset = 0;
-    int dstOffset = 0;
+    auto stdOffset = 0;
+    auto dstOffset = 0;
     ucalOffsetsAtTime(m_ucal, atMSecsSinceEpoch, &stdOffset, & dstOffset);
     return dstOffset;
 }
@@ -385,8 +385,8 @@ bool QIcuTimeZonePrivate::hasDaylightTime() const
 bool QIcuTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 {
     // Clone the ucal so we don't change the shared object
-    UErrorCode status = U_ZERO_ERROR;
-    UCalendar *ucal = ucal_clone(m_ucal, &status);
+    auto status = U_ZERO_ERROR;
+    auto ucal = ucal_clone(m_ucal, &status);
     if (!U_SUCCESS(status))
         return false;
 
@@ -394,7 +394,7 @@ bool QIcuTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
     status = U_ZERO_ERROR;
     ucal_setMillis(ucal, atMSecsSinceEpoch, &status);
 
-    bool result = false;
+    auto result = false;
     if (U_SUCCESS(status)) {
         status = U_ZERO_ERROR;
         result = ucal_inDaylightTime(ucal, &status);
@@ -408,7 +408,7 @@ QTimeZonePrivate::Data QIcuTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
 {
     // Available in ICU C++ api, and draft C api in v50
     // TODO When v51 released see if api is stable
-    QTimeZonePrivate::Data data = invalidData();
+    auto data = invalidData();
 #if U_ICU_VERSION_MAJOR_NUM == 50
     data = ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_PREVIOUS_INCLUSIVE,
                                   forMSecsSinceEpoch);
@@ -466,8 +466,8 @@ QByteArray QIcuTimeZonePrivate::systemTimeZoneId() const
 
 QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds() const
 {
-    UErrorCode status = U_ZERO_ERROR;
-    UEnumeration *uenum = ucal_openTimeZones(&status);
+    auto status = U_ZERO_ERROR;
+    auto uenum = ucal_openTimeZones(&status);
     QList<QByteArray> result;
     if (U_SUCCESS(status))
         result = uenumToIdList(uenum);
@@ -477,9 +477,9 @@ QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds() const
 
 QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
 {
-    QByteArray regionCode = QLocalePrivate::countryToCode(country).toUtf8();
-    UErrorCode status = U_ZERO_ERROR;
-    UEnumeration *uenum = ucal_openCountryTimeZones(regionCode, &status);
+    auto regionCode = QLocalePrivate::countryToCode(country).toUtf8();
+    auto status = U_ZERO_ERROR;
+    auto uenum = ucal_openCountryTimeZones(regionCode, &status);
     QList<QByteArray> result;
     if (U_SUCCESS(status))
         result = uenumToIdList(uenum);
@@ -491,8 +491,8 @@ QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) c
 {
 // TODO Available directly in C++ api but not C api, from 4.8 onwards new filter method works
 #if U_ICU_VERSION_MAJOR_NUM >= 49 || (U_ICU_VERSION_MAJOR_NUM == 4 && U_ICU_VERSION_MINOR_NUM == 8)
-    UErrorCode status = U_ZERO_ERROR;
-    UEnumeration *uenum = ucal_openTimeZoneIDEnumeration(UCAL_ZONE_TYPE_ANY, 0,
+    auto status = U_ZERO_ERROR;
+    auto uenum = ucal_openTimeZoneIDEnumeration(UCAL_ZONE_TYPE_ANY, 0,
                                                          &offsetFromUtc, &status);
     QList<QByteArray> result;
     if (U_SUCCESS(status))

@@ -181,7 +181,7 @@ QVector<int> QVersionNumber::segments() const
 
     QVector<int> result;
     result.resize(segmentCount());
-    for (int i = 0; i < segmentCount(); ++i)
+    for (auto i = 0; i < segmentCount(); ++i)
         result[i] = segmentAt(i);
     return result;
 }
@@ -239,7 +239,7 @@ bool QVersionNumber::isPrefixOf(const QVersionNumber &other) const Q_DECL_NOTHRO
 {
     if (segmentCount() > other.segmentCount())
         return false;
-    for (int i = 0; i < segmentCount(); ++i) {
+    for (auto i = 0; i < segmentCount(); ++i) {
         if (segmentAt(i) != other.segmentAt(i))
             return false;
     }
@@ -265,16 +265,16 @@ int QVersionNumber::compare(const QVersionNumber &v1, const QVersionNumber &v2) 
 
     if (Q_LIKELY(!v1.m_segments.isUsingPointer() && !v2.m_segments.isUsingPointer())) {
         // we can't use memcmp because it interprets the data as unsigned bytes
-        const qint8 *ptr1 = v1.m_segments.inline_segments + InlineSegmentStartIdx;
-        const qint8 *ptr2 = v2.m_segments.inline_segments + InlineSegmentStartIdx;
+        auto ptr1 = v1.m_segments.inline_segments + InlineSegmentStartIdx;
+        auto ptr2 = v2.m_segments.inline_segments + InlineSegmentStartIdx;
         commonlen = qMin(v1.m_segments.size(),
                          v2.m_segments.size());
-        for (int i = 0; i < commonlen; ++i)
-            if (int x = ptr1[i] - ptr2[i])
+        for (auto i = 0; i < commonlen; ++i)
+            if (auto x = ptr1[i] - ptr2[i])
                 return x;
     } else {
         commonlen = qMin(v1.segmentCount(), v2.segmentCount());
-        for (int i = 0; i < commonlen; ++i) {
+        for (auto i = 0; i < commonlen; ++i) {
             if (v1.segmentAt(i) != v2.segmentAt(i))
                 return v1.segmentAt(i) - v2.segmentAt(i);
         }
@@ -311,7 +311,7 @@ int QVersionNumber::compare(const QVersionNumber &v1, const QVersionNumber &v2) 
 QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
                                             const QVersionNumber &v2)
 {
-    int commonlen = qMin(v1.segmentCount(), v2.segmentCount());
+    auto commonlen = qMin(v1.segmentCount(), v2.segmentCount());
     int i;
     for (i = 0; i < commonlen; ++i) {
         if (v1.segmentAt(i) != v2.segmentAt(i))
@@ -396,8 +396,8 @@ QString QVersionNumber::toString() const
 {
     QString version;
     version.reserve(qMax(segmentCount() * 2 - 1, 0));
-    bool first = true;
-    for (int i = 0; i < segmentCount(); ++i) {
+    auto first = true;
+    for (auto i = 0; i < segmentCount(); ++i) {
         if (!first)
             version += QLatin1Char('.');
         version += QString::number(segmentAt(i));
@@ -427,14 +427,14 @@ QVersionNumber QVersionNumber::fromString(const QString &string, int *suffixInde
 
     const QByteArray cString(string.toLatin1());
 
-    const char *start = cString.constData();
-    const char *end = start;
-    const char *lastGoodEnd = start;
-    const char *endOfString = cString.constData() + cString.size();
+    auto start = cString.constData();
+    auto end = start;
+    auto lastGoodEnd = start;
+    auto endOfString = cString.constData() + cString.size();
 
     do {
-        bool ok = false;
-        const qulonglong value = qstrtoull(start, &end, 10, &ok);
+        auto ok = false;
+        const auto value = qstrtoull(start, &end, 10, &ok);
         if (!ok || value > qulonglong(std::numeric_limits<int>::max()))
             break;
         seg.append(int(value));
@@ -514,7 +514,7 @@ QDebug operator<<(QDebug debug, const QVersionNumber &version)
 uint qHash(const QVersionNumber &key, uint seed)
 {
     QtPrivate::QHashCombine hash;
-    for (int i = 0; i < key.segmentCount(); ++i)
+    for (auto i = 0; i < key.segmentCount(); ++i)
         seed = hash(seed, key.segmentAt(i));
     return seed;
 }

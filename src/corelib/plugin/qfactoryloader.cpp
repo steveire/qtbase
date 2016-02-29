@@ -93,8 +93,8 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_factoryloader_mutex, (QMutex::Recursive))
 
 QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
 {
-    for (int i = 0; i < libraryList.count(); ++i) {
-        QLibraryPrivate *library = libraryList.at(i);
+    for (auto i = 0; i < libraryList.count(); ++i) {
+        auto library = libraryList.at(i);
         library->unload();
         library->release();
     }
@@ -104,8 +104,8 @@ void QFactoryLoader::update()
 {
 #ifdef QT_SHARED
     Q_D(QFactoryLoader);
-    QStringList paths = QCoreApplication::libraryPaths();
-    for (int i = 0; i < paths.count(); ++i) {
+    auto paths = QCoreApplication::libraryPaths();
+    for (auto i = 0; i < paths.count(); ++i) {
         const QString &pluginDir = paths.at(i);
         // Already loaded, skip it...
         if (d->loadedPaths.contains(pluginDir))
@@ -120,7 +120,7 @@ void QFactoryLoader::update()
         if (!QDir(path).exists(QLatin1String(".")))
             continue;
 
-        QStringList plugins = QDir(path).entryList(QDir::Files);
+        auto plugins = QDir(path).entryList(QDir::Files);
         QLibraryPrivate *library = 0;
 
 #ifdef Q_OS_MAC
@@ -133,8 +133,8 @@ void QFactoryLoader::update()
         const bool isLoadingDebugAndReleaseCocoa = plugins.contains(QStringLiteral("libqcocoa_debug.dylib"))
                 && plugins.contains(QStringLiteral("libqcocoa.dylib"));
 #endif
-        for (int j = 0; j < plugins.count(); ++j) {
-            QString fileName = QDir::cleanPath(path + QLatin1Char('/') + plugins.at(j));
+        for (auto j = 0; j < plugins.count(); ++j) {
+            auto fileName = QDir::cleanPath(path + QLatin1Char('/') + plugins.at(j));
 
 #ifdef Q_OS_MAC
             if (isLoadingDebugAndReleaseCocoa) {
@@ -161,15 +161,15 @@ void QFactoryLoader::update()
             }
 
             QStringList keys;
-            bool metaDataOk = false;
+            auto metaDataOk = false;
 
-            QString iid = library->metaData.value(iidKeyLiteral()).toString();
+            auto iid = library->metaData.value(iidKeyLiteral()).toString();
             if (iid == QLatin1String(d->iid.constData(), d->iid.size())) {
-                QJsonObject object = library->metaData.value(metaDataKeyLiteral()).toObject();
+                auto object = library->metaData.value(metaDataKeyLiteral()).toObject();
                 metaDataOk = true;
 
-                QJsonArray k = object.value(keysKeyLiteral()).toArray();
-                for (int i = 0; i < k.size(); ++i)
+                auto k = object.value(keysKeyLiteral()).toArray();
+                for (auto i = 0; i < k.size(); ++i)
                     keys += d->cs ? k.at(i).toString() : k.at(i).toString().toLower();
             }
             if (qt_debug_component())
@@ -181,19 +181,19 @@ void QFactoryLoader::update()
                 continue;
             }
 
-            int keyUsageCount = 0;
-            for (int k = 0; k < keys.count(); ++k) {
+            auto keyUsageCount = 0;
+            for (auto k = 0; k < keys.count(); ++k) {
                 // first come first serve, unless the first
                 // library was built with a future Qt version,
                 // whereas the new one has a Qt version that fits
                 // better
                 const QString &key = keys.at(k);
-                QLibraryPrivate *previous = d->keyMap.value(key);
-                int prev_qt_version = 0;
+                auto previous = d->keyMap.value(key);
+                auto prev_qt_version = 0;
                 if (previous) {
                     prev_qt_version = (int)previous->metaData.value(versionKeyLiteral()).toDouble();
                 }
-                int qt_version = (int)library->metaData.value(versionKeyLiteral()).toDouble();
+                auto qt_version = (int)library->metaData.value(versionKeyLiteral()).toDouble();
                 if (!previous || (prev_qt_version > QT_VERSION && qt_version <= QT_VERSION)) {
                     d->keyMap[key] = library;
                     ++keyUsageCount;
@@ -231,8 +231,8 @@ QLibraryPrivate *QFactoryLoader::library(const QString &key) const
 void QFactoryLoader::refreshAll()
 {
     QMutexLocker locker(qt_factoryloader_mutex());
-    QList<QFactoryLoader *> *loaders = qt_factory_loaders();
-    for (QList<QFactoryLoader *>::const_iterator it = loaders->constBegin();
+    auto loaders = qt_factory_loaders();
+    for (auto it = loaders->constBegin();
          it != loaders->constEnd(); ++it) {
         (*it)->update();
     }
@@ -267,13 +267,13 @@ QList<QJsonObject> QFactoryLoader::metaData() const
     QList<QJsonObject> metaData;
 #ifndef QT_NO_LIBRARY
     QMutexLocker locker(&d->mutex);
-    for (int i = 0; i < d->libraryList.size(); ++i)
+    for (auto i = 0; i < d->libraryList.size(); ++i)
         metaData.append(d->libraryList.at(i)->metaData);
 #endif
 
     const auto staticPlugins = QPluginLoader::staticPlugins();
     for (const QStaticPlugin &plugin : staticPlugins) {
-        const QJsonObject object = plugin.metaData();
+        const auto object = plugin.metaData();
         if (object.value(iidKeyLiteral()) != QLatin1String(d->iid.constData(), d->iid.size()))
             continue;
         metaData.append(object);
@@ -289,11 +289,11 @@ QObject *QFactoryLoader::instance(int index) const
 
 #ifndef QT_NO_LIBRARY
     if (index < d->libraryList.size()) {
-        QLibraryPrivate *library = d->libraryList.at(index);
+        auto library = d->libraryList.at(index);
         if (library->instance || library->loadPlugin()) {
             if (!library->inst)
                 library->inst = library->instance();
-            QObject *obj = library->inst.data();
+            auto obj = library->inst.data();
             if (obj) {
                 if (!obj->parent())
                     obj->moveToThread(QCoreApplicationPrivate::mainThread());
@@ -305,9 +305,9 @@ QObject *QFactoryLoader::instance(int index) const
     index -= d->libraryList.size();
 #endif
 
-    QVector<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
-    for (int i = 0; i < staticPlugins.count(); ++i) {
-        const QJsonObject object = staticPlugins.at(i).metaData();
+    auto staticPlugins = QPluginLoader::staticPlugins();
+    for (auto i = 0; i < staticPlugins.count(); ++i) {
+        const auto object = staticPlugins.at(i).metaData();
         if (object.value(iidKeyLiteral()) != QLatin1String(d->iid.constData(), d->iid.size()))
             continue;
 
@@ -322,14 +322,14 @@ QObject *QFactoryLoader::instance(int index) const
 QMultiMap<int, QString> QFactoryLoader::keyMap() const
 {
     QMultiMap<int, QString> result;
-    const QString metaDataKey = metaDataKeyLiteral();
-    const QString keysKey = keysKeyLiteral();
-    const QList<QJsonObject> metaDataList = metaData();
-    for (int i = 0; i < metaDataList.size(); ++i) {
-        const QJsonObject metaData = metaDataList.at(i).value(metaDataKey).toObject();
-        const QJsonArray keys = metaData.value(keysKey).toArray();
-        const int keyCount = keys.size();
-        for (int k = 0; k < keyCount; ++k)
+    const auto metaDataKey = metaDataKeyLiteral();
+    const auto keysKey = keysKeyLiteral();
+    const auto metaDataList = metaData();
+    for (auto i = 0; i < metaDataList.size(); ++i) {
+        const auto metaData = metaDataList.at(i).value(metaDataKey).toObject();
+        const auto keys = metaData.value(keysKey).toArray();
+        const auto keyCount = keys.size();
+        for (auto k = 0; k < keyCount; ++k)
             result.insert(i, keys.at(k).toString());
     }
     return result;
@@ -337,14 +337,14 @@ QMultiMap<int, QString> QFactoryLoader::keyMap() const
 
 int QFactoryLoader::indexOf(const QString &needle) const
 {
-    const QString metaDataKey = metaDataKeyLiteral();
-    const QString keysKey = keysKeyLiteral();
-    const QList<QJsonObject> metaDataList = metaData();
-    for (int i = 0; i < metaDataList.size(); ++i) {
-        const QJsonObject metaData = metaDataList.at(i).value(metaDataKey).toObject();
-        const QJsonArray keys = metaData.value(keysKey).toArray();
-        const int keyCount = keys.size();
-        for (int k = 0; k < keyCount; ++k) {
+    const auto metaDataKey = metaDataKeyLiteral();
+    const auto keysKey = keysKeyLiteral();
+    const auto metaDataList = metaData();
+    for (auto i = 0; i < metaDataList.size(); ++i) {
+        const auto metaData = metaDataList.at(i).value(metaDataKey).toObject();
+        const auto keys = metaData.value(keysKey).toArray();
+        const auto keyCount = keys.size();
+        for (auto k = 0; k < keyCount; ++k) {
             if (!keys.at(k).toString().compare(needle, Qt::CaseInsensitive))
                 return i;
         }

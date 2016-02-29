@@ -111,7 +111,7 @@ key_t QSharedMemoryPrivate::handle()
   */
 int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
 {
-    int fd = qt_safe_open(QFile::encodeName(fileName).constData(),
+    auto fd = qt_safe_open(QFile::encodeName(fileName).constData(),
             O_EXCL | O_CREAT | O_RDWR, 0640);
     if (-1 == fd) {
         if (errno == EEXIST)
@@ -135,8 +135,8 @@ bool QSharedMemoryPrivate::cleanHandle()
 bool QSharedMemoryPrivate::create(int size)
 {
     // build file if needed
-    bool createdFile = false;
-    int built = createUnixKeyFile(nativeKey);
+    auto createdFile = false;
+    auto built = createUnixKeyFile(nativeKey);
     if (built == -1) {
         errorString = QSharedMemory::tr("%1: unable to make key").arg(QLatin1String("QSharedMemory::handle:"));
         error = QSharedMemory::KeyError;
@@ -175,7 +175,7 @@ bool QSharedMemoryPrivate::create(int size)
 bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 {
     // grab the shared memory segment id
-    int id = shmget(unix_key, 0, (mode == QSharedMemory::ReadOnly ? 0400 : 0600));
+    auto id = shmget(unix_key, 0, (mode == QSharedMemory::ReadOnly ? 0400 : 0600));
     if (-1 == id) {
         setErrorString(QLatin1String("QSharedMemory::attach (shmget)"));
         return false;
@@ -220,7 +220,7 @@ bool QSharedMemoryPrivate::detach()
     size = 0;
 
     // Get the number of current attachments
-    int id = shmget(unix_key, 0, 0400);
+    auto id = shmget(unix_key, 0, 0400);
     cleanHandle();
 
     struct shmid_ds shmid_ds;

@@ -244,7 +244,7 @@ const char* QNonContiguousByteDeviceRingBufferImpl::readPointer(qint64 maximumLe
         return 0;
     }
 
-    const char *returnValue = ringBuffer->readPointerAtPosition(currentPosition, len);
+    auto returnValue = ringBuffer->readPointerAtPosition(currentPosition, len);
 
     if (maximumLength != -1)
         len = qMin(len, maximumLength);
@@ -315,7 +315,7 @@ const char* QNonContiguousByteDeviceIoDeviceImpl::readPointer(qint64 maximumLeng
         return currentReadBuffer->data() + currentReadBufferPosition;
     }
 
-    qint64 haveRead = device->read(currentReadBuffer->data(), qMin(maximumLength, currentReadBufferSize));
+    auto haveRead = device->read(currentReadBuffer->data(), qMin(maximumLength, currentReadBufferSize));
 
     if ((haveRead == -1) || (haveRead == 0 && device->atEnd() && !device->isSequential())) {
         eof = true;
@@ -347,7 +347,7 @@ bool QNonContiguousByteDeviceIoDeviceImpl::advanceReadPointer(qint64 amount)
 
     // advancing over that what has actually been read before
     if (currentReadBufferPosition > currentReadBufferAmount) {
-        qint64 i = currentReadBufferPosition - currentReadBufferAmount;
+        auto i = currentReadBufferPosition - currentReadBufferAmount;
         while (i > 0) {
             if (device->getChar(0) == false) {
                 emit readProgress(totalAdvancements - i, size());
@@ -371,7 +371,7 @@ bool QNonContiguousByteDeviceIoDeviceImpl::atEnd() const
 
 bool QNonContiguousByteDeviceIoDeviceImpl::reset()
 {
-    bool reset = (initialPosition == 0) ? device->reset() : device->seek(initialPosition);
+    auto reset = (initialPosition == 0) ? device->reset() : device->seek(initialPosition);
     if (reset) {
         eof = false; // assume eof is false, it will be true after a read has been attempted
         totalAdvancements = 0; //reset the progress counter
@@ -445,7 +445,7 @@ qint64 QByteDeviceWrappingIoDevice::size() const
 qint64 QByteDeviceWrappingIoDevice::readData( char * data, qint64 maxSize)
 {
     qint64 len;
-    const char *readPointer = byteDevice->readPointer(maxSize, len);
+    auto readPointer = byteDevice->readPointer(maxSize, len);
     if (len == -1)
         return -1;
 
@@ -485,7 +485,7 @@ qint64 QByteDeviceWrappingIoDevice::writeData( const char* data, qint64 maxSize)
 QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *device)
 {
     // shortcut if it is a QBuffer
-    if (QBuffer* buffer = qobject_cast<QBuffer*>(device)) {
+    if (auto buffer = qobject_cast<QBuffer*>(device)) {
         return new QNonContiguousByteDeviceBufferImpl(buffer);
     }
 
@@ -505,7 +505,7 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *dev
 QSharedPointer<QNonContiguousByteDevice> QNonContiguousByteDeviceFactory::createShared(QIODevice *device)
 {
     // shortcut if it is a QBuffer
-    if (QBuffer *buffer = qobject_cast<QBuffer*>(device))
+    if (auto buffer = qobject_cast<QBuffer*>(device))
         return QSharedPointer<QNonContiguousByteDeviceBufferImpl>::create(buffer);
 
     // ### FIXME special case if device is a QFile that supports map()

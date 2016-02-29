@@ -211,7 +211,7 @@ bool QStringListModel::insertRows(int row, int count, const QModelIndex &parent)
 
     beginInsertRows(QModelIndex(), row, row + count - 1);
 
-    for (int r = 0; r < count; ++r)
+    for (auto r = 0; r < count; ++r)
         lst.insert(row, QString());
 
     endInsertRows();
@@ -263,9 +263,9 @@ void QStringListModel::sort(int, Qt::SortOrder order)
     emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), VerticalSortHint);
 
     QVector<QPair<QString, int> > list;
-    const int lstCount = lst.count();
+    const auto lstCount = lst.count();
     list.reserve(lstCount);
-    for (int i = 0; i < lstCount; ++i)
+    for (auto i = 0; i < lstCount; ++i)
         list.append(QPair<QString, int>(lst.at(i), i));
 
     if (order == Qt::AscendingOrder)
@@ -275,16 +275,16 @@ void QStringListModel::sort(int, Qt::SortOrder order)
 
     lst.clear();
     QVector<int> forwarding(lstCount);
-    for (int i = 0; i < lstCount; ++i) {
+    for (auto i = 0; i < lstCount; ++i) {
         lst.append(list.at(i).first);
         forwarding[list.at(i).second] = i;
     }
 
-    QModelIndexList oldList = persistentIndexList();
+    auto oldList = persistentIndexList();
     QModelIndexList newList;
-    const int numOldIndexes = oldList.count();
+    const auto numOldIndexes = oldList.count();
     newList.reserve(numOldIndexes);
-    for (int i = 0; i < numOldIndexes; ++i)
+    for (auto i = 0; i < numOldIndexes; ++i)
         newList.append(index(forwarding.at(oldList.at(i).row()), 0));
     changePersistentIndexList(oldList, newList);
 

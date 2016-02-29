@@ -150,7 +150,7 @@ QBitArray::QBitArray(int size, bool value)
     if (size <= 0)
         return;
 
-    uchar* c = reinterpret_cast<uchar*>(d.data());
+    auto c = reinterpret_cast<uchar*>(d.data());
     memset(c + 1, value ? 0xff : 0, d.size() - 1);
     *c = d.size()*8 - size;
     if (value && size && size % 8)
@@ -195,25 +195,25 @@ template <typename T> T qUnalignedLoad(const uchar *ptr)
 */
 int QBitArray::count(bool on) const
 {
-    int numBits = 0;
-    const quint8 *bits = reinterpret_cast<const quint8 *>(d.data()) + 1;
+    auto numBits = 0;
+    auto bits = reinterpret_cast<const quint8 *>(d.data()) + 1;
 
     // the loops below will try to read from *end
     // it's the QByteArray implicit NUL, so it will not change the bit count
-    const quint8 *const end = reinterpret_cast<const quint8 *>(d.end());
+    const auto end = reinterpret_cast<const quint8 *>(d.end());
 
     while (bits + 7 <= end) {
-        quint64 v = qUnalignedLoad<quint64>(bits);
+        auto v = qUnalignedLoad<quint64>(bits);
         bits += 8;
         numBits += int(qPopulationCount(v));
     }
     if (bits + 3 <= end) {
-        quint32 v = qUnalignedLoad<quint32>(bits);
+        auto v = qUnalignedLoad<quint32>(bits);
         bits += 4;
         numBits += int(qPopulationCount(v));
     }
     if (bits + 1 < end) {
-        quint16 v = qUnalignedLoad<quint16>(bits);
+        auto v = qUnalignedLoad<quint16>(bits);
         bits += 2;
         numBits += int(qPopulationCount(v));
     }
@@ -240,9 +240,9 @@ void QBitArray::resize(int size)
     if (!size) {
         d.resize(0);
     } else {
-        int s = d.size();
+        auto s = d.size();
         d.resize(1 + (size+7)/8);
-        uchar* c = reinterpret_cast<uchar*>(d.data());
+        auto c = reinterpret_cast<uchar*>(d.data());
         if (size > (s << 3))
             memset(c + s, 0, d.size() - s);
         else if ( size % 8)
@@ -307,11 +307,11 @@ void QBitArray::fill(bool value, int begin, int end)
 {
     while (begin < end && begin & 0x7)
         setBit(begin++, value);
-    int len = end - begin;
+    auto len = end - begin;
     if (len <= 0)
         return;
-    int s = len & ~0x7;
-    uchar *c = reinterpret_cast<uchar*>(d.data());
+    auto s = len & ~0x7;
+    auto c = reinterpret_cast<uchar*>(d.data());
     memset(c + (begin >> 3) + 1, value ? 0xff : 0, s >> 3);
     begin += s;
     while (begin < end)
@@ -509,10 +509,10 @@ void QBitArray::fill(bool value, int begin, int end)
 QBitArray &QBitArray::operator&=(const QBitArray &other)
 {
     resize(qMax(size(), other.size()));
-    uchar *a1 = reinterpret_cast<uchar*>(d.data()) + 1;
-    const uchar *a2 = reinterpret_cast<const uchar*>(other.d.constData()) + 1;
-    int n = other.d.size() -1 ;
-    int p = d.size() - 1 - n;
+    auto a1 = reinterpret_cast<uchar*>(d.data()) + 1;
+    auto a2 = reinterpret_cast<const uchar*>(other.d.constData()) + 1;
+    auto n = other.d.size() -1 ;
+    auto p = d.size() - 1 - n;
     while (n-- > 0)
         *a1++ &= *a2++;
     while (p-- > 0)
@@ -538,9 +538,9 @@ QBitArray &QBitArray::operator&=(const QBitArray &other)
 QBitArray &QBitArray::operator|=(const QBitArray &other)
 {
     resize(qMax(size(), other.size()));
-    uchar *a1 = reinterpret_cast<uchar*>(d.data()) + 1;
-    const uchar *a2 = reinterpret_cast<const uchar *>(other.d.constData()) + 1;
-    int n = other.d.size() - 1;
+    auto a1 = reinterpret_cast<uchar*>(d.data()) + 1;
+    auto a2 = reinterpret_cast<const uchar *>(other.d.constData()) + 1;
+    auto n = other.d.size() - 1;
     while (n-- > 0)
         *a1++ |= *a2++;
     return *this;
@@ -564,9 +564,9 @@ QBitArray &QBitArray::operator|=(const QBitArray &other)
 QBitArray &QBitArray::operator^=(const QBitArray &other)
 {
     resize(qMax(size(), other.size()));
-    uchar *a1 = reinterpret_cast<uchar*>(d.data()) + 1;
-    const uchar *a2 = reinterpret_cast<const uchar *>(other.d.constData()) + 1;
-    int n = other.d.size() - 1;
+    auto a1 = reinterpret_cast<uchar*>(d.data()) + 1;
+    auto a2 = reinterpret_cast<const uchar *>(other.d.constData()) + 1;
+    auto n = other.d.size() - 1;
     while (n-- > 0)
         *a1++ ^= *a2++;
     return *this;
@@ -584,11 +584,11 @@ QBitArray &QBitArray::operator^=(const QBitArray &other)
 
 QBitArray QBitArray::operator~() const
 {
-    int sz = size();
+    auto sz = size();
     QBitArray a(sz);
-    const uchar *a1 = reinterpret_cast<const uchar *>(d.constData()) + 1;
-    uchar *a2 = reinterpret_cast<uchar*>(a.d.data()) + 1;
-    int n = d.size() - 1;
+    auto a1 = reinterpret_cast<const uchar *>(d.constData()) + 1;
+    auto a2 = reinterpret_cast<uchar*>(a.d.data()) + 1;
+    auto n = d.size() - 1;
 
     while (n-- > 0)
         *a2++ = ~*a1++;
@@ -616,7 +616,7 @@ QBitArray QBitArray::operator~() const
 
 QBitArray operator&(const QBitArray &a1, const QBitArray &a2)
 {
-    QBitArray tmp = a1;
+    auto tmp = a1;
     tmp &= a2;
     return tmp;
 }
@@ -639,7 +639,7 @@ QBitArray operator&(const QBitArray &a1, const QBitArray &a2)
 
 QBitArray operator|(const QBitArray &a1, const QBitArray &a2)
 {
-    QBitArray tmp = a1;
+    auto tmp = a1;
     tmp |= a2;
     return tmp;
 }
@@ -662,7 +662,7 @@ QBitArray operator|(const QBitArray &a1, const QBitArray &a2)
 
 QBitArray operator^(const QBitArray &a1, const QBitArray &a2)
 {
-    QBitArray tmp = a1;
+    auto tmp = a1;
     tmp ^= a2;
     return tmp;
 }
@@ -750,7 +750,7 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
     }
 
     const quint32 Step = 8 * 1024 * 1024;
-    quint32 totalBytes = (len + 7) / 8;
+    auto totalBytes = (len + 7) / 8;
     quint32 allocated = 0;
 
     while (allocated < totalBytes) {
@@ -764,7 +764,7 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
         allocated += blockSize;
     }
 
-    int paddingMask = ~((0x1 << (len & 0x7)) - 1);
+    auto paddingMask = ~((0x1 << (len & 0x7)) - 1);
     if (paddingMask != ~0x0 && (ba.d.constData()[ba.d.size() - 1] & paddingMask)) {
         ba.clear();
         in.setStatus(QDataStream::ReadCorruptData);
@@ -781,7 +781,7 @@ QDebug operator<<(QDebug dbg, const QBitArray &array)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QBitArray(";
-    for (int i = 0; i < array.size();) {
+    for (auto i = 0; i < array.size();) {
         if (array.testBit(i))
             dbg << '1';
         else

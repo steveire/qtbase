@@ -370,8 +370,8 @@ bool QFSFileEnginePrivate::closeFdFh()
         return false;
 
     // Flush the file if it's buffered, and if the last flush didn't fail.
-    bool flushed = !fh || (!lastFlushFailed && q->flush());
-    bool closed = true;
+    auto flushed = !fh || (!lastFlushFailed && q->flush());
+    auto closed = true;
     tried_stat = 0;
 
     // Close the file if we created the handle.
@@ -442,7 +442,7 @@ bool QFSFileEnginePrivate::flushFh()
     if (lastFlushFailed)
         return false;
 
-    int ret = fflush(fh);
+    auto ret = fflush(fh);
 
     lastFlushFailed = (ret != 0);
     lastIOCommand = QFSFileEnginePrivate::IOFlushCommand;
@@ -470,8 +470,8 @@ qint64 QFSFileEngine::size() const
 void QFSFileEnginePrivate::unmapAll()
 {
     if (!maps.isEmpty()) {
-        const QList<uchar*> keys = maps.keys(); // Make a copy since unmap() modifies the map.
-        for (int i = 0; i < keys.count(); ++i)
+        const auto keys = maps.keys(); // Make a copy since unmap() modifies the map.
+        for (auto i = 0; i < keys.count(); ++i)
             unmap(keys.at(i));
     }
 }
@@ -599,13 +599,13 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
     }
 
     qint64 readBytes = 0;
-    bool eof = false;
+    auto eof = false;
 
     if (fh) {
         // Buffered stdlib mode.
 
         size_t result;
-        bool retry = true;
+        auto retry = true;
         do {
             result = fread(data + readBytes, 1, size_t(len - readBytes), fh);
             eof = feof(fh);
@@ -628,7 +628,7 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
             // calculate the chunk size
             // on Windows or 32-bit no-largefile Unix, we'll need to read in chunks
             // we limit to the size of the signed type, otherwise we could get a negative number as a result
-            quint64 wantedBytes = quint64(len) - quint64(readBytes);
+            auto wantedBytes = quint64(len) - quint64(readBytes);
             UnsignedIOType chunkSize = std::numeric_limits<SignedIOType>::max();
             if (chunkSize > wantedBytes)
                 chunkSize = wantedBytes;
@@ -750,7 +750,7 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
                 // calculate the chunk size
                 // on Windows or 32-bit no-largefile Unix, we'll need to read in chunks
                 // we limit to the size of the signed type, otherwise we could get a negative number as a result
-                quint64 wantedBytes = quint64(len) - quint64(writtenBytes);
+                auto wantedBytes = quint64(len) - quint64(writtenBytes);
                 UnsignedIOType chunkSize = std::numeric_limits<SignedIOType>::max();
                 if (chunkSize > wantedBytes)
                     chunkSize = wantedBytes;
@@ -830,13 +830,13 @@ bool QFSFileEngine::extension(Extension extension, const ExtensionOption *option
         return feof(d->fh);
 
     if (extension == MapExtension) {
-        const MapExtensionOption *options = (const MapExtensionOption*)(option);
-        MapExtensionReturn *returnValue = static_cast<MapExtensionReturn*>(output);
+        auto options = (const MapExtensionOption*)(option);
+        auto returnValue = static_cast<MapExtensionReturn*>(output);
         returnValue->address = d->map(options->offset, options->size, options->flags);
         return (returnValue->address != 0);
     }
     if (extension == UnMapExtension) {
-        const UnMapExtensionOption *options = (const UnMapExtensionOption*)option;
+        auto options = (const UnMapExtensionOption*)option;
         return d->unmap(options->address);
     }
 

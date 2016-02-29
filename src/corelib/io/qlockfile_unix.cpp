@@ -97,7 +97,7 @@ static qint64 qt_write_loop(int fd, const char *data, qint64 len)
 {
     qint64 pos = 0;
     while (pos < len) {
-        const qint64 ret = qt_safe_write(fd, data + pos, len - pos);
+        const auto ret = qt_safe_write(fd, data + pos, len - pos);
         if (ret == -1) // e.g. partition full
             return pos;
         pos += ret;
@@ -111,7 +111,7 @@ int QLockFilePrivate::checkFcntlWorksAfterFlock(const QString &fn)
     QTemporaryFile file(fn);
     if (!file.open())
         return 0;
-    const int fd = file.d_func()->engine()->handle();
+    const auto fd = file.d_func()->engine()->handle();
 #if defined(LOCK_EX) && defined(LOCK_NB)
     if (flock(fd, LOCK_EX | LOCK_NB) == -1) // other threads, and other processes on a local fs
         return 0;
@@ -148,7 +148,7 @@ static QBasicMutex fcntlLock;
 static bool fcntlWorksAfterFlock(const QString &fn)
 {
     QMutexLocker lock(&fcntlLock);
-    bool *worksPtr = fcntlOK->object(fn);
+    auto worksPtr = fcntlOK->object(fn);
     if (!worksPtr) {
         worksPtr = new bool(QLockFilePrivate::checkFcntlWorksAfterFlock(fn));
         fcntlOK->insert(fn, worksPtr);
@@ -185,8 +185,8 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
                           % QCoreApplication::applicationName().toUtf8() % '\n'
                           % localHostName() % '\n';
 
-    const QByteArray lockFileName = QFile::encodeName(fileName);
-    const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY | O_CREAT | O_EXCL, 0644);
+    const auto lockFileName = QFile::encodeName(fileName);
+    const auto fd = qt_safe_open(lockFileName.constData(), O_WRONLY | O_CREAT | O_EXCL, 0644);
     if (fd < 0) {
         switch (errno) {
         case EEXIST:
@@ -200,7 +200,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
     }
     // Ensure nobody else can delete the file while we have it
     if (!setNativeLocks(fileName, fd)) {
-        const int errnoSaved = errno;
+        const auto errnoSaved = errno;
         qWarning() << "setNativeLocks failed:" << qt_error_string(errnoSaved);
     }
 
@@ -226,11 +226,11 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
 
 bool QLockFilePrivate::removeStaleLock()
 {
-    const QByteArray lockFileName = QFile::encodeName(fileName);
-    const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY, 0644);
+    const auto lockFileName = QFile::encodeName(fileName);
+    const auto fd = qt_safe_open(lockFileName.constData(), O_WRONLY, 0644);
     if (fd < 0) // gone already?
         return false;
-    bool success = setNativeLocks(fileName, fd) && (::unlink(lockFileName) == 0);
+    auto success = setNativeLocks(fileName, fd) && (::unlink(lockFileName) == 0);
     close(fd);
     return success;
 }
@@ -243,7 +243,7 @@ bool QLockFilePrivate::isApparentlyStale() const
         if (hostname.isEmpty() || hostname == QString::fromLocal8Bit(localHostName())) {
             if (::kill(pid, 0) == -1 && errno == ESRCH)
                 return true; // PID doesn't exist anymore
-            const QString processName = processNameByPid(pid);
+            const auto processName = processNameByPid(pid);
             if (!processName.isEmpty()) {
                 QFileInfo fi(appname);
                 if (fi.isSymLink())
@@ -253,7 +253,7 @@ bool QLockFilePrivate::isApparentlyStale() const
             }
         }
     }
-    const qint64 age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTime());
+    const auto age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTime());
     return staleLockTime > 0 && age > staleLockTime;
 }
 
@@ -269,7 +269,7 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     char exePath[64];
     char buf[PATH_MAX + 1];
     sprintf(exePath, "/proc/%lld/exe", pid);
-    size_t len = (size_t)readlink(exePath, buf, sizeof(buf));
+    auto len = (size_t)readlink(exePath, buf, sizeof(buf));
     if (len >= sizeof(buf)) {
         // The pid is gone. Return some invalid process name to fail the test.
         return QStringLiteral("/ERROR/");

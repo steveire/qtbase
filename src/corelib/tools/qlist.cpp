@@ -81,11 +81,11 @@ static int grow(int size)
  */
 QListData::Data *QListData::detach_grow(int *idx, int num)
 {
-    Data *x = d;
-    int l = x->end - x->begin;
-    int nl = l + num;
-    int alloc = grow(nl);
-    Data* t = static_cast<Data *>(::malloc(DataHeaderSize + alloc * sizeof(void *)));
+    auto x = d;
+    auto l = x->end - x->begin;
+    auto nl = l + num;
+    auto alloc = grow(nl);
+    auto t = static_cast<Data *>(::malloc(DataHeaderSize + alloc * sizeof(void *)));
     Q_CHECK_PTR(t);
 
     t->ref.initializeOwned();
@@ -125,8 +125,8 @@ QListData::Data *QListData::detach_grow(int *idx, int num)
  */
 QListData::Data *QListData::detach(int alloc)
 {
-    Data *x = d;
-    Data* t = static_cast<Data *>(::malloc(DataHeaderSize + alloc * sizeof(void *)));
+    auto x = d;
+    auto t = static_cast<Data *>(::malloc(DataHeaderSize + alloc * sizeof(void *)));
     Q_CHECK_PTR(t);
 
     t->ref.initializeOwned();
@@ -146,7 +146,7 @@ QListData::Data *QListData::detach(int alloc)
 void QListData::realloc(int alloc)
 {
     Q_ASSERT(!d->ref.isShared());
-    Data *x = static_cast<Data *>(::realloc(d, DataHeaderSize + alloc * sizeof(void *)));
+    auto x = static_cast<Data *>(::realloc(d, DataHeaderSize + alloc * sizeof(void *)));
     Q_CHECK_PTR(x);
 
     d = x;
@@ -158,8 +158,8 @@ void QListData::realloc(int alloc)
 void QListData::realloc_grow(int growth)
 {
     Q_ASSERT(!d->ref.isShared());
-    int alloc = grow(d->alloc + growth);
-    Data *x = static_cast<Data *>(::realloc(d, DataHeaderSize + alloc * sizeof(void *)));
+    auto alloc = grow(d->alloc + growth);
+    auto x = static_cast<Data *>(::realloc(d, DataHeaderSize + alloc * sizeof(void *)));
     Q_CHECK_PTR(x);
 
     d = x;
@@ -176,9 +176,9 @@ void QListData::dispose(Data *d)
 void **QListData::append(int n)
 {
     Q_ASSERT(!d->ref.isShared());
-    int e = d->end;
+    auto e = d->end;
     if (e + n > d->alloc) {
-        int b = d->begin;
+        auto b = d->begin;
         if (b - n >= 2 * d->alloc / 3) {
             // we have enough space. Just not at the end -> move it.
             e -= b;
@@ -227,11 +227,11 @@ void **QListData::insert(int i)
     Q_ASSERT(!d->ref.isShared());
     if (i <= 0)
         return prepend();
-    int size = d->end - d->begin;
+    auto size = d->end - d->begin;
     if (i >= size)
         return append();
 
-    bool leftward = false;
+    auto leftward = false;
 
     if (d->begin == 0) {
         if (d->end == d->alloc) {
@@ -266,11 +266,11 @@ void QListData::remove(int i)
     Q_ASSERT(!d->ref.isShared());
     i += d->begin;
     if (i - d->begin < d->end - i) {
-        if (int offset = i - d->begin)
+        if (auto offset = i - d->begin)
             ::memmove(d->array + d->begin + 1, d->array + d->begin, offset * sizeof(void *));
         d->begin++;
     } else {
-        if (int offset = d->end - i - 1)
+        if (auto offset = d->end - i - 1)
             ::memmove(d->array + i, d->array + i + 1, offset * sizeof(void *));
         d->end--;
     }
@@ -280,7 +280,7 @@ void QListData::remove(int i, int n)
 {
     Q_ASSERT(!d->ref.isShared());
     i += d->begin;
-    int middle = i + n/2;
+    auto middle = i + n/2;
     if (middle - d->begin < d->end - middle) {
         ::memmove(d->array + d->begin + n, d->array + d->begin,
                    (i - d->begin) * sizeof(void*));
@@ -300,16 +300,16 @@ void QListData::move(int from, int to)
 
     from += d->begin;
     to += d->begin;
-    void *t = d->array[from];
+    auto t = d->array[from];
 
     if (from < to) {
         if (d->end == d->alloc || 3 * (to - from) < 2 * (d->end - d->begin)) {
             ::memmove(d->array + from, d->array + from + 1, (to - from) * sizeof(void *));
         } else {
             // optimization
-            if (int offset = from - d->begin)
+            if (auto offset = from - d->begin)
                 ::memmove(d->array + d->begin + 1, d->array + d->begin, offset * sizeof(void *));
-            if (int offset = d->end - (to + 1))
+            if (auto offset = d->end - (to + 1))
                 ::memmove(d->array + to + 2, d->array + to + 1, offset * sizeof(void *));
             ++d->begin;
             ++d->end;
@@ -320,9 +320,9 @@ void QListData::move(int from, int to)
             ::memmove(d->array + to + 1, d->array + to, (from - to) * sizeof(void *));
         } else {
             // optimization
-            if (int offset = to - d->begin)
+            if (auto offset = to - d->begin)
                 ::memmove(d->array + d->begin - 1, d->array + d->begin, offset * sizeof(void *));
-            if (int offset = d->end - (from + 1))
+            if (auto offset = d->end - (from + 1))
                 ::memmove(d->array + from, d->array + from + 1, offset * sizeof(void *));
             --d->begin;
             --d->end;

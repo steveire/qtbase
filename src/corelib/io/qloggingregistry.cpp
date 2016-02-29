@@ -94,7 +94,7 @@ int QLoggingRule::pass(const QString &cat, QtMsgType msgType) const
             return 0;
     }
 
-    const int idx = cat.indexOf(category);
+    const auto idx = cat.indexOf(category);
     if (idx >= 0) {
         if (flags == MidFilter) {
             // matches somewhere
@@ -186,7 +186,7 @@ void QLoggingRule::parse(const QStringRef &pattern)
 */
 void QLoggingSettingsParser::setContent(const QString &content)
 {
-    QString content_ = content;
+    auto content_ = content;
     QTextStream stream(&content_, QIODevice::ReadOnly);
     setContent(stream);
 }
@@ -199,7 +199,7 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
 {
     _rules.clear();
     while (!stream.atEnd()) {
-        QString line = stream.readLine();
+        auto line = stream.readLine();
 
         // Remove all whitespace from line
         line = line.simplified();
@@ -216,12 +216,12 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
         }
 
         if (_section.toLower() == QLatin1String("rules")) {
-            int equalPos = line.indexOf(QLatin1Char('='));
+            auto equalPos = line.indexOf(QLatin1Char('='));
             if (equalPos != -1) {
                 if (line.lastIndexOf(QLatin1Char('=')) == equalPos) {
-                    const QStringRef pattern = line.leftRef(equalPos);
-                    const QStringRef valueStr = line.midRef(equalPos + 1);
-                    int value = -1;
+                    const auto pattern = line.leftRef(equalPos);
+                    const auto valueStr = line.midRef(equalPos + 1);
+                    auto value = -1;
                     if (valueStr == QLatin1String("true"))
                         value = 1;
                     else if (valueStr == QLatin1String("false"))
@@ -250,7 +250,7 @@ QLoggingRegistry::QLoggingRegistry()
 
 static bool qtLoggingDebug()
 {
-    static const bool debugEnv = qEnvironmentVariableIsSet("QT_LOGGING_DEBUG");
+    static const auto debugEnv = qEnvironmentVariableIsSet("QT_LOGGING_DEBUG");
     return debugEnv;
 }
 
@@ -277,11 +277,11 @@ static QVector<QLoggingRule> loadRulesFromFile(const QString &filePath)
 void QLoggingRegistry::init()
 {
     // get rules from environment
-    const QByteArray rulesFilePath = qgetenv("QT_LOGGING_CONF");
+    const auto rulesFilePath = qgetenv("QT_LOGGING_CONF");
     if (!rulesFilePath.isEmpty())
         envRules = loadRulesFromFile(QFile::decodeName(rulesFilePath));
 
-    const QByteArray rulesSrc = qgetenv("QT_LOGGING_RULES").replace(';', '\n');
+    const auto rulesSrc = qgetenv("QT_LOGGING_RULES").replace(';', '\n');
     if (!rulesSrc.isEmpty()) {
          QTextStream stream(rulesSrc);
          QLoggingSettingsParser parser;
@@ -290,17 +290,17 @@ void QLoggingRegistry::init()
          envRules += parser.rules();
     }
 
-    const QString configFileName = QStringLiteral("qtlogging.ini");
+    const auto configFileName = QStringLiteral("qtlogging.ini");
 
 #if !defined(QT_BOOTSTRAPPED)
     // get rules from Qt data configuration path
-    const QString qtConfigPath
+    const auto qtConfigPath
             = QDir(QLibraryInfo::location(QLibraryInfo::DataPath)).absoluteFilePath(configFileName);
     qtConfigRules = loadRulesFromFile(qtConfigPath);
 #endif
 
     // get rules from user's/system configuration
-    const QString envPath = QStandardPaths::locate(QStandardPaths::GenericConfigLocation,
+    const auto envPath = QStandardPaths::locate(QStandardPaths::GenericConfigLocation,
                                                    QString::fromLatin1("QtProject/") + configFileName);
     if (!envPath.isEmpty())
         configRules = loadRulesFromFile(envPath);
@@ -406,21 +406,21 @@ QLoggingRegistry *QLoggingRegistry::instance()
 */
 void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
 {
-    const QLoggingRegistry *reg = QLoggingRegistry::instance();
+    auto reg = QLoggingRegistry::instance();
     Q_ASSERT(reg->categories.contains(cat));
-    QtMsgType enableForLevel = reg->categories.value(cat);
+    auto enableForLevel = reg->categories.value(cat);
 
     // NB: note that the numeric values of the Qt*Msg constants are
     //     not in severity order.
-    bool debug = (enableForLevel == QtDebugMsg);
-    bool info = debug || (enableForLevel == QtInfoMsg);
-    bool warning = info || (enableForLevel == QtWarningMsg);
-    bool critical = warning || (enableForLevel == QtCriticalMsg);
+    auto debug = (enableForLevel == QtDebugMsg);
+    auto info = debug || (enableForLevel == QtInfoMsg);
+    auto warning = info || (enableForLevel == QtWarningMsg);
+    auto critical = warning || (enableForLevel == QtCriticalMsg);
 
     // hard-wired implementation of
     //   qt.*.debug=false
     //   qt.debug=false
-    if (const char *categoryName = cat->categoryName()) {
+    if (auto categoryName = cat->categoryName()) {
         // == "qt" or startsWith("qt.")
         if (strcmp(categoryName, "qt") == 0 || strncmp(categoryName, "qt.", 3) == 0)
             debug = false;
@@ -428,7 +428,7 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
 
     QString categoryName = QLatin1String(cat->categoryName());
     for (const QLoggingRule &item : reg->rules) {
-        int filterpass = item.pass(categoryName, QtDebugMsg);
+        auto filterpass = item.pass(categoryName, QtDebugMsg);
         if (filterpass != 0)
             debug = (filterpass > 0);
         filterpass = item.pass(categoryName, QtInfoMsg);

@@ -248,15 +248,15 @@ QString QMimeType::comment() const
     languageList << QLocale::system().name();
     languageList << QLocale::system().uiLanguages();
     for (const QString &language : qAsConst(languageList)) {
-        const QString lang = language == QLatin1String("C") ? QLatin1String("en_US") : language;
-        const QString comm = d->localeComments.value(lang);
+        const auto lang = language == QLatin1String("C") ? QLatin1String("en_US") : language;
+        const auto comm = d->localeComments.value(lang);
         if (!comm.isEmpty())
             return comm;
-        const int pos = lang.indexOf(QLatin1Char('_'));
+        const auto pos = lang.indexOf(QLatin1Char('_'));
         if (pos != -1) {
             // "pt_BR" not found? try just "pt"
-            const QString shortLang = lang.left(pos);
-            const QString commShort = d->localeComments.value(shortLang);
+            const auto shortLang = lang.left(pos);
+            const auto commShort = d->localeComments.value(shortLang);
             if (!commShort.isEmpty())
                 return commShort;
         }
@@ -286,8 +286,8 @@ QString QMimeType::genericIconName() const
         // then the mimetype is used to generate the generic icon by using the top-level
         // media type (e.g.  "video" in "video/ogg") and appending "-x-generic"
         // (i.e. "video-x-generic" in the previous example).
-        QString group = name();
-        const int slashindex = group.indexOf(QLatin1Char('/'));
+        auto group = name();
+        const auto slashindex = group.indexOf(QLatin1Char('/'));
         if (slashindex != -1)
             group = group.left(slashindex);
         return group + QLatin1String("-x-generic");
@@ -307,7 +307,7 @@ QString QMimeType::iconName() const
     if (d->iconName.isEmpty()) {
         // Make default icon name from the mimetype name
         d->iconName = name();
-        const int slashindex = d->iconName.indexOf(QLatin1Char('/'));
+        const auto slashindex = d->iconName.indexOf(QLatin1Char('/'));
         if (slashindex != -1)
             d->iconName[slashindex] = QLatin1Char('-');
     }
@@ -343,7 +343,7 @@ QStringList QMimeType::parentMimeTypes() const
 
 static void collectParentMimeTypes(const QString &mime, QStringList &allParents)
 {
-    const QStringList parents = QMimeDatabasePrivate::instance()->provider()->parents(mime);
+    const auto parents = QMimeDatabasePrivate::instance()->provider()->parents(mime);
     for (const QString &parent : parents) {
         // I would use QSet, but since order matters I better not
         if (!allParents.contains(parent))
@@ -402,7 +402,7 @@ QStringList QMimeType::suffixes() const
         if (pattern.startsWith(QLatin1String("*.")) &&
             pattern.length() > 2 &&
             pattern.indexOf(QLatin1Char('*'), 2) < 0 && pattern.indexOf(QLatin1Char('?'), 2) < 0) {
-            const QString suffix = pattern.mid(2);
+            const auto suffix = pattern.mid(2);
             result.append(suffix);
         }
     }
@@ -417,7 +417,7 @@ QStringList QMimeType::suffixes() const
  */
 QString QMimeType::preferredSuffix() const
 {
-    const QStringList suffixList = suffixes();
+    const auto suffixList = suffixes();
     return suffixList.isEmpty() ? QString() : suffixList.at(0);
 }
 
@@ -432,7 +432,7 @@ QString QMimeType::filterString() const
 
     if (!d->globPatterns.empty()) {
         filter += comment() + QLatin1String(" (");
-        for (int i = 0; i < d->globPatterns.size(); ++i) {
+        for (auto i = 0; i < d->globPatterns.size(); ++i) {
             if (i != 0)
                 filter += QLatin1Char(' ');
             filter += d->globPatterns.at(i);

@@ -2207,7 +2207,7 @@ static QString unquote(const char *begin, const char *end)
 static QByteArray getEtcFileContent(const char *filename)
 {
     // we're avoiding QFile here
-    int fd = qt_safe_open(filename, O_RDONLY);
+    auto fd = qt_safe_open(filename, O_RDONLY);
     if (fd == -1)
         return QByteArray();
 
@@ -2227,12 +2227,12 @@ static bool readEtcFile(QUnixOSVersion &v, const char *filename,
                         const QByteArray &idKey, const QByteArray &versionKey, const QByteArray &prettyNameKey)
 {
 
-    QByteArray buffer = getEtcFileContent(filename);
+    auto buffer = getEtcFileContent(filename);
     if (buffer.isEmpty())
         return false;
 
-    const char *ptr = buffer.constData();
-    const char *end = buffer.constEnd();
+    auto ptr = buffer.constData();
+    auto end = buffer.constEnd();
     const char *eol;
     QByteArray line;
     for ( ; ptr != end; ptr = eol + 1) {
@@ -2272,7 +2272,7 @@ static bool readEtcOsRelease(QUnixOSVersion &v)
 
 static bool readEtcLsbRelease(QUnixOSVersion &v)
 {
-    bool ok = readEtcFile(v, "/etc/lsb-release", QByteArrayLiteral("DISTRIB_ID="),
+    auto ok = readEtcFile(v, "/etc/lsb-release", QByteArrayLiteral("DISTRIB_ID="),
                           QByteArrayLiteral("DISTRIB_RELEASE="), QByteArrayLiteral("DISTRIB_DESCRIPTION="));
     if (ok && (v.prettyName.isEmpty() || v.prettyName == v.productType)) {
         // some distributions have redundant information for the pretty name,
@@ -2280,7 +2280,7 @@ static bool readEtcLsbRelease(QUnixOSVersion &v)
 
         // we're still avoiding QFile here
         QByteArray distrorelease = "/etc/" + v.productType.toLatin1().toLower() + "-release";
-        int fd = qt_safe_open(distrorelease, O_RDONLY);
+        auto fd = qt_safe_open(distrorelease, O_RDONLY);
         if (fd != -1) {
             QT_STATBUF sbuf;
             if (QT_FSTAT(fd, &sbuf) != -1 && sbuf.st_size > v.prettyName.length()) {
@@ -2303,12 +2303,12 @@ static bool readEtcLsbRelease(QUnixOSVersion &v)
 #if defined(Q_OS_LINUX)
 static QByteArray getEtcFileFirstLine(const char *fileName)
 {
-    QByteArray buffer = getEtcFileContent(fileName);
+    auto buffer = getEtcFileContent(fileName);
     if (buffer.isEmpty())
         return QByteArray();
 
-    const char *ptr = buffer.constData();
-    int eol = buffer.indexOf("\n");
+    auto ptr = buffer.constData();
+    auto eol = buffer.indexOf("\n");
     return QByteArray(ptr, eol).trimmed();
 }
 
@@ -2317,16 +2317,16 @@ static bool readEtcRedHatRelease(QUnixOSVersion &v)
     // /etc/redhat-release analysed should be a one line file
     // the format of its content is <Vendor_ID release Version>
     // i.e. "Red Hat Enterprise Linux Workstation release 6.5 (Santiago)"
-    QByteArray line = getEtcFileFirstLine("/etc/redhat-release");
+    auto line = getEtcFileFirstLine("/etc/redhat-release");
     if (line.isEmpty())
         return false;
 
     v.prettyName = QString::fromLatin1(line);
 
     const char keyword[] = "release ";
-    int releaseIndex = line.indexOf(keyword);
+    auto releaseIndex = line.indexOf(keyword);
     v.productType = QString::fromLatin1(line.mid(0, releaseIndex)).remove(QLatin1Char(' '));
-    int spaceIndex = line.indexOf(' ', releaseIndex + strlen(keyword));
+    auto spaceIndex = line.indexOf(' ', releaseIndex + strlen(keyword));
     v.productVersion = QString::fromLatin1(line.mid(releaseIndex + strlen(keyword),
                                                     spaceIndex > -1 ? spaceIndex - releaseIndex - int(strlen(keyword)) : -1));
     return true;
@@ -2337,7 +2337,7 @@ static bool readEtcDebianVersion(QUnixOSVersion &v)
     // /etc/debian_version analysed should be a one line file
     // the format of its content is <Release_ID/sid>
     // i.e. "jessie/sid"
-    QByteArray line = getEtcFileFirstLine("/etc/debian_version");
+    auto line = getEtcFileFirstLine("/etc/debian_version");
     if (line.isEmpty())
         return false;
 
@@ -3079,8 +3079,8 @@ Q_CORE_EXPORT unsigned int qt_int_sqrt(unsigned int n)
 {
     // n must be in the range 0...UINT_MAX/2-1
     if (n >= (UINT_MAX>>2)) {
-        unsigned int r = 2 * qt_int_sqrt(n / 4);
-        unsigned int r2 = r + 1;
+        auto r = 2 * qt_int_sqrt(n / 4);
+        auto r2 = r + 1;
         return (n >= r2 * r2) ? r2 : r;
     }
     uint h, p= 0, q= 1, r= n;
@@ -3257,7 +3257,7 @@ bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
     char buffer = '\0';
     return getenv_s(&dummy, &buffer, 1, varName) != ERANGE;
 #else
-    const char * const value = ::getenv(varName);
+    const auto value = ::getenv(varName);
     return !value || !*value;
 #endif
 }
@@ -3294,15 +3294,15 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
         return 0;
     }
 #else
-    const char * const buffer = ::getenv(varName);
+    const auto buffer = ::getenv(varName);
     if (!buffer || !*buffer) {
         if (ok)
             *ok = false;
         return 0;
     }
 #endif
-    bool ok_ = true;
-    const qlonglong value = qstrtoll(buffer, Q_NULLPTR, 0, &ok_);
+    auto ok_ = true;
+    const auto value = qstrtoll(buffer, Q_NULLPTR, 0, &ok_);
     if (int(value) != value) { // this is the check in QByteArray::toInt(), keep it in sync
         if (ok)
             *ok = false;
@@ -3446,9 +3446,9 @@ Q_GLOBAL_STATIC(AndroidRandomStorage, randomTLS)
 void qsrand(uint seed)
 {
 #if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS - 0 > 0)
-    SeedStorage *seedStorage = randTLS();
+    auto seedStorage = randTLS();
     if (seedStorage) {
-        SeedStorageType *pseed = seedStorage->localData();
+        auto pseed = seedStorage->localData();
         if (!pseed)
             seedStorage->setLocalData(pseed = new SeedStorageType);
         *pseed = seed;
@@ -3500,9 +3500,9 @@ void qsrand(uint seed)
 int qrand()
 {
 #if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS - 0 > 0)
-    SeedStorage *seedStorage = randTLS();
+    auto seedStorage = randTLS();
     if (seedStorage) {
-        SeedStorageType *pseed = seedStorage->localData();
+        auto pseed = seedStorage->localData();
         if (!pseed) {
             seedStorage->setLocalData(pseed = new SeedStorageType);
             *pseed = 1;
@@ -3990,7 +3990,7 @@ Q_GLOBAL_STATIC(QInternal_CallBackTable, global_callback_table)
 bool QInternal::registerCallback(Callback cb, qInternalCallback callback)
 {
     if (cb >= 0 && cb < QInternal::LastCallback) {
-        QInternal_CallBackTable *cbt = global_callback_table();
+        auto cbt = global_callback_table();
         cbt->callbacks.resize(cb + 1);
         cbt->callbacks[cb].append(callback);
         return true;
@@ -4001,7 +4001,7 @@ bool QInternal::registerCallback(Callback cb, qInternalCallback callback)
 bool QInternal::unregisterCallback(Callback cb, qInternalCallback callback)
 {
     if (cb >= 0 && cb < QInternal::LastCallback) {
-        QInternal_CallBackTable *cbt = global_callback_table();
+        auto cbt = global_callback_table();
         return (bool) cbt->callbacks[cb].removeAll(callback);
     }
     return false;
@@ -4011,11 +4011,11 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 {
     Q_ASSERT_X(cb >= 0, "QInternal::activateCallback()", "Callback id must be a valid id");
 
-    QInternal_CallBackTable *cbt = global_callback_table();
+    auto cbt = global_callback_table();
     if (cbt && cb < cbt->callbacks.size()) {
-        QList<qInternalCallback> callbacks = cbt->callbacks[cb];
-        bool ret = false;
-        for (int i=0; i<callbacks.size(); ++i)
+        auto callbacks = cbt->callbacks[cb];
+        auto ret = false;
+        for (auto i=0; i<callbacks.size(); ++i)
             ret |= (callbacks.at(i))(parameters);
         return ret;
     }

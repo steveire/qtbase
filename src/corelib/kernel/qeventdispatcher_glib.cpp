@@ -73,11 +73,11 @@ static gboolean socketNotifierSourcePrepare(GSource *, gint *timeout)
 
 static gboolean socketNotifierSourceCheck(GSource *source)
 {
-    GSocketNotifierSource *src = reinterpret_cast<GSocketNotifierSource *>(source);
+    auto src = reinterpret_cast<GSocketNotifierSource *>(source);
 
-    bool pending = false;
-    for (int i = 0; !pending && i < src->pollfds.count(); ++i) {
-        GPollFDWithQSocketNotifier *p = src->pollfds.at(i);
+    auto pending = false;
+    for (auto i = 0; !pending && i < src->pollfds.count(); ++i) {
+        auto p = src->pollfds.at(i);
 
         if (p->pollfd.revents & G_IO_NVAL) {
             // disable the invalid socket notifier
@@ -98,9 +98,9 @@ static gboolean socketNotifierSourceDispatch(GSource *source, GSourceFunc, gpoin
 {
     QEvent event(QEvent::SockAct);
 
-    GSocketNotifierSource *src = reinterpret_cast<GSocketNotifierSource *>(source);
-    for (int i = 0; i < src->pollfds.count(); ++i) {
-        GPollFDWithQSocketNotifier *p = src->pollfds.at(i);
+    auto src = reinterpret_cast<GSocketNotifierSource *>(source);
+    for (auto i = 0; i < src->pollfds.count(); ++i) {
+        auto p = src->pollfds.at(i);
 
         if ((p->pollfd.revents & p->pollfd.events) != 0)
             QCoreApplication::sendEvent(p->socketNotifier, &event);
@@ -155,7 +155,7 @@ static gboolean timerSourcePrepare(GSource *source, gint *timeout)
     if (!timeout)
         timeout = &dummy;
 
-    GTimerSource *src = reinterpret_cast<GTimerSource *>(source);
+    auto src = reinterpret_cast<GTimerSource *>(source);
     if (src->runWithIdlePriority) {
         if (timeout)
             *timeout = -1;
@@ -167,7 +167,7 @@ static gboolean timerSourcePrepare(GSource *source, gint *timeout)
 
 static gboolean timerSourceCheck(GSource *source)
 {
-    GTimerSource *src = reinterpret_cast<GTimerSource *>(source);
+    auto src = reinterpret_cast<GTimerSource *>(source);
     if (src->runWithIdlePriority)
         return false;
     return timerSourceCheckHelper(src);
@@ -175,7 +175,7 @@ static gboolean timerSourceCheck(GSource *source)
 
 static gboolean timerSourceDispatch(GSource *source, GSourceFunc, gpointer)
 {
-    GTimerSource *timerSource = reinterpret_cast<GTimerSource *>(source);
+    auto timerSource = reinterpret_cast<GTimerSource *>(source);
     if (timerSource->processEventsFlags & QEventLoop::X11ExcludeTimers)
         return true;
     timerSource->runWithIdlePriority = true;
@@ -200,8 +200,8 @@ struct GIdleTimerSource
 
 static gboolean idleTimerSourcePrepare(GSource *source, gint *timeout)
 {
-    GIdleTimerSource *idleTimerSource = reinterpret_cast<GIdleTimerSource *>(source);
-    GTimerSource *timerSource = idleTimerSource->timerSource;
+    auto idleTimerSource = reinterpret_cast<GIdleTimerSource *>(source);
+    auto timerSource = idleTimerSource->timerSource;
     if (!timerSource->runWithIdlePriority) {
         // Yield to the normal priority timer source
         if (timeout)
@@ -214,8 +214,8 @@ static gboolean idleTimerSourcePrepare(GSource *source, gint *timeout)
 
 static gboolean idleTimerSourceCheck(GSource *source)
 {
-    GIdleTimerSource *idleTimerSource = reinterpret_cast<GIdleTimerSource *>(source);
-    GTimerSource *timerSource = idleTimerSource->timerSource;
+    auto idleTimerSource = reinterpret_cast<GIdleTimerSource *>(source);
+    auto timerSource = idleTimerSource->timerSource;
     if (!timerSource->runWithIdlePriority) {
         // Yield to the normal priority timer source
         return false;
@@ -225,7 +225,7 @@ static gboolean idleTimerSourceCheck(GSource *source)
 
 static gboolean idleTimerSourceDispatch(GSource *source, GSourceFunc, gpointer)
 {
-    GTimerSource *timerSource = reinterpret_cast<GIdleTimerSource *>(source)->timerSource;
+    auto timerSource = reinterpret_cast<GIdleTimerSource *>(source)->timerSource;
     (void) timerSourceDispatch(&timerSource->source, 0, 0);
     return true;
 }
@@ -249,17 +249,17 @@ struct GPostEventSource
 
 static gboolean postEventSourcePrepare(GSource *s, gint *timeout)
 {
-    QThreadData *data = QThreadData::current();
+    auto data = QThreadData::current();
     if (!data)
         return false;
 
     gint dummy;
     if (!timeout)
         timeout = &dummy;
-    const bool canWait = data->canWaitLocked();
+    const auto canWait = data->canWaitLocked();
     *timeout = canWait ? -1 : 0;
 
-    GPostEventSource *source = reinterpret_cast<GPostEventSource *>(s);
+    auto source = reinterpret_cast<GPostEventSource *>(s);
     return (!canWait
             || (source->serialNumber.load() != source->lastSerialNumber));
 }
@@ -271,7 +271,7 @@ static gboolean postEventSourceCheck(GSource *source)
 
 static gboolean postEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
 {
-    GPostEventSource *source = reinterpret_cast<GPostEventSource *>(s);
+    auto source = reinterpret_cast<GPostEventSource *>(s);
     source->lastSerialNumber = source->serialNumber.load();
     QCoreApplication::sendPostedEvents();
     source->d->runTimersOnceWithNormalPriority();
@@ -303,7 +303,7 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     if (mainContext) {
         g_main_context_ref(mainContext);
     } else {
-        QCoreApplication *app = QCoreApplication::instance();
+        auto app = QCoreApplication::instance();
         if (app && QThread::currentThread() == app->thread()) {
             mainContext = g_main_context_default();
             g_main_context_ref(mainContext);
@@ -378,8 +378,8 @@ QEventDispatcherGlib::~QEventDispatcherGlib()
     d->idleTimerSource = 0;
 
     // destroy socket notifier source
-    for (int i = 0; i < d->socketNotifierSource->pollfds.count(); ++i) {
-        GPollFDWithQSocketNotifier *p = d->socketNotifierSource->pollfds[i];
+    for (auto i = 0; i < d->socketNotifierSource->pollfds.count(); ++i) {
+        auto p = d->socketNotifierSource->pollfds[i];
         g_source_remove_poll(&d->socketNotifierSource->source, &p->pollfd);
         delete p;
     }
@@ -412,7 +412,7 @@ bool QEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
         emit awake();
 
     // tell postEventSourcePrepare() and timerSource about any new flags
-    QEventLoop::ProcessEventsFlags savedFlags = d->timerSource->processEventsFlags;
+    auto savedFlags = d->timerSource->processEventsFlags;
     d->timerSource->processEventsFlags = flags;
 
     if (!(flags & QEventLoop::EventLoopExec)) {
@@ -457,7 +457,7 @@ void QEventDispatcherGlib::registerSocketNotifier(QSocketNotifier *notifier)
     Q_D(QEventDispatcherGlib);
 
 
-    GPollFDWithQSocketNotifier *p = new GPollFDWithQSocketNotifier;
+    auto p = new GPollFDWithQSocketNotifier;
     p->pollfd.fd = sockfd;
     switch (type) {
     case QSocketNotifier::Read:
@@ -494,8 +494,8 @@ void QEventDispatcherGlib::unregisterSocketNotifier(QSocketNotifier *notifier)
 
     Q_D(QEventDispatcherGlib);
 
-    for (int i = 0; i < d->socketNotifierSource->pollfds.count(); ++i) {
-        GPollFDWithQSocketNotifier *p = d->socketNotifierSource->pollfds.at(i);
+    for (auto i = 0; i < d->socketNotifierSource->pollfds.count(); ++i) {
+        auto p = d->socketNotifierSource->pollfds.at(i);
         if (p->socketNotifier == notifier) {
             // found it
             g_source_remove_poll(&d->socketNotifierSource->source, &p->pollfd);

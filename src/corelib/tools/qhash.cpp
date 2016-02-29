@@ -201,12 +201,12 @@ static uint crc32(...)
 
 static inline uint hash(const uchar *p, int len, uint seed) Q_DECL_NOTHROW
 {
-    uint h = seed;
+    auto h = seed;
 
     if (hasFastCrc32())
         return crc32(p, size_t(len), h);
 
-    for (int i = 0; i < len; ++i)
+    for (auto i = 0; i < len; ++i)
         h = 31 * h + p[i];
 
     return h;
@@ -219,12 +219,12 @@ uint qHashBits(const void *p, size_t len, uint seed) Q_DECL_NOTHROW
 
 static inline uint hash(const QChar *p, int len, uint seed) Q_DECL_NOTHROW
 {
-    uint h = seed;
+    auto h = seed;
 
     if (hasFastCrc32())
         return crc32(p, size_t(len), h);
 
-    for (int i = 0; i < len; ++i)
+    for (auto i = 0; i < len; ++i)
         h = 31 * h + p[i].unicode();
 
     return h;
@@ -247,12 +247,12 @@ uint qHash(const QStringRef &key, uint seed) Q_DECL_NOTHROW
 
 uint qHash(const QBitArray &bitArray, uint seed) Q_DECL_NOTHROW
 {
-    int m = bitArray.d.size() - 1;
-    uint result = hash(reinterpret_cast<const uchar *>(bitArray.d.constData()), qMax(0, m), seed);
+    auto m = bitArray.d.size() - 1;
+    auto result = hash(reinterpret_cast<const uchar *>(bitArray.d.constData()), qMax(0, m), seed);
 
     // deal with the last 0 to 7 bits manually, because we can't trust that
     // the padding is initialized to 0 in bitArray.d
-    int n = bitArray.size();
+    auto n = bitArray.size();
     if (n & 0x7)
         result = ((result << 4) + bitArray.d.at(m)) & ((1 << n) - 1);
     return result;
@@ -279,12 +279,12 @@ static uint qt_create_qhash_seed()
     uint seed = 0;
 
 #ifndef QT_BOOTSTRAPPED
-    QByteArray envSeed = qgetenv("QT_HASH_SEED");
+    auto envSeed = qgetenv("QT_HASH_SEED");
     if (!envSeed.isNull())
         return envSeed.toUInt();
 
 #ifdef Q_OS_UNIX
-    int randomfd = qt_safe_open("/dev/urandom", O_RDONLY);
+    auto randomfd = qt_safe_open("/dev/urandom", O_RDONLY);
     if (randomfd == -1)
         randomfd = qt_safe_open("/dev/random", O_RDONLY | O_NONBLOCK);
     if (randomfd != -1) {
@@ -313,7 +313,7 @@ static uint qt_create_qhash_seed()
     seed ^= pid;
     seed ^= (pid >> 32);
 
-    quintptr seedPtr = reinterpret_cast<quintptr>(&seed);
+    auto seedPtr = reinterpret_cast<quintptr>(&seed);
     seed ^= seedPtr;
     seed ^= (qulonglong(seedPtr) >> 32); // no-op on 32-bit platforms
 #endif // QT_BOOTSTRAPPED
@@ -470,8 +470,8 @@ static inline int primeForNumBits(int numBits)
 */
 static int countBits(int hint)
 {
-    int numBits = 0;
-    int bits = hint;
+    auto numBits = 0;
+    auto bits = hint;
 
     while (bits > 1) {
         bits >>= 1;
@@ -498,7 +498,7 @@ const QHashData QHashData::shared_null = {
 
 void *QHashData::allocateNode(int nodeAlign)
 {
-    void *ptr = strictAlignment ? qMallocAligned(nodeSize, nodeAlign) : malloc(nodeSize);
+    auto ptr = strictAlignment ? qMallocAligned(nodeSize, nodeAlign) : malloc(nodeSize);
     Q_CHECK_PTR(ptr);
     return ptr;
 }
@@ -547,13 +547,13 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
             QT_RETHROW;
         }
 
-        Node *this_e = reinterpret_cast<Node *>(this);
-        for (int i = 0; i < numBuckets; ++i) {
-            Node **nextNode = &d->buckets[i];
-            Node *oldNode = buckets[i];
+        auto this_e = reinterpret_cast<Node *>(this);
+        for (auto i = 0; i < numBuckets; ++i) {
+            auto nextNode = &d->buckets[i];
+            auto oldNode = buckets[i];
             while (oldNode != this_e) {
                 QT_TRY {
-                    Node *dup = static_cast<Node *>(allocateNode(nodeAlign));
+                    auto dup = static_cast<Node *>(allocateNode(nodeAlign));
 
                     QT_TRY {
                         node_duplicate(oldNode, dup);
@@ -583,14 +583,14 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
 void QHashData::free_helper(void (*node_delete)(Node *))
 {
     if (node_delete) {
-        Node *this_e = reinterpret_cast<Node *>(this);
-        Node **bucket = reinterpret_cast<Node **>(this->buckets);
+        auto this_e = reinterpret_cast<Node *>(this);
+        auto bucket = reinterpret_cast<Node **>(this->buckets);
 
-        int n = numBuckets;
+        auto n = numBuckets;
         while (n--) {
-            Node *cur = *bucket++;
+            auto cur = *bucket++;
             while (cur != this_e) {
-                Node *next = cur->next;
+                auto next = cur->next;
                 node_delete(cur);
                 freeNode(cur);
                 cur = next;
@@ -614,8 +614,8 @@ QHashData::Node *QHashData::nextNode(Node *node)
         return next;
 
     int start = (node->h % d->numBuckets) + 1;
-    Node **bucket = d->buckets + start;
-    int n = d->numBuckets - start;
+    auto bucket = d->buckets + start;
+    auto n = d->numBuckets - start;
     while (n--) {
         if (*bucket != e)
             return *bucket;
@@ -641,11 +641,11 @@ QHashData::Node *QHashData::previousNode(Node *node)
     else
         start = node->h % d->numBuckets;
 
-    Node *sentinel = node;
-    Node **bucket = d->buckets + start;
+    auto sentinel = node;
+    auto bucket = d->buckets + start;
     while (start >= 0) {
         if (*bucket != sentinel) {
-            Node *prev = *bucket;
+            auto prev = *bucket;
             while (prev->next != sentinel)
                 prev = prev->next;
             return prev;
@@ -679,27 +679,27 @@ void QHashData::rehash(int hint)
     }
 
     if (numBits != hint) {
-        Node *e = reinterpret_cast<Node *>(this);
-        Node **oldBuckets = buckets;
-        int oldNumBuckets = numBuckets;
+        auto e = reinterpret_cast<Node *>(this);
+        auto oldBuckets = buckets;
+        auto oldNumBuckets = numBuckets;
 
-        int nb = primeForNumBits(hint);
+        auto nb = primeForNumBits(hint);
         buckets = new Node *[nb];
         numBits = hint;
         numBuckets = nb;
-        for (int i = 0; i < numBuckets; ++i)
+        for (auto i = 0; i < numBuckets; ++i)
             buckets[i] = e;
 
-        for (int i = 0; i < oldNumBuckets; ++i) {
-            Node *firstNode = oldBuckets[i];
+        for (auto i = 0; i < oldNumBuckets; ++i) {
+            auto firstNode = oldBuckets[i];
             while (firstNode != e) {
-                uint h = firstNode->h;
-                Node *lastNode = firstNode;
+                auto h = firstNode->h;
+                auto lastNode = firstNode;
                 while (lastNode->next != e && lastNode->next->h == h)
                     lastNode = lastNode->next;
 
-                Node *afterLastNode = lastNode->next;
-                Node **beforeFirstNode = &buckets[h % numBuckets];
+                auto afterLastNode = lastNode->next;
+                auto beforeFirstNode = &buckets[h % numBuckets];
                 while (*beforeFirstNode != e)
                     beforeFirstNode = &(*beforeFirstNode)->next;
                 lastNode->next = *beforeFirstNode;

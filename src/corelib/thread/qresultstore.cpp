@@ -110,7 +110,7 @@ bool ResultStoreBase::filterMode() const
 
 void ResultStoreBase::syncResultCount()
 {
-    ResultIteratorBase it = resultAt(resultCount);
+    auto it = resultAt(resultCount);
     while (it != end()) {
         resultCount += it.batchSize();
         it = resultAt(resultCount);
@@ -144,13 +144,13 @@ int ResultStoreBase::insertResultItem(int index, ResultItem &resultItem)
 void ResultStoreBase::syncPendingResults()
 {
     // check if we can insert any of the pending results:
-    QMap<int, ResultItem>::iterator it = pendingResults.begin();
+    auto it = pendingResults.begin();
     while (it != pendingResults.end()) {
-        int index = it.key();
+        auto index = it.key();
         if (index != resultCount + filteredResults)
             break;
 
-        ResultItem result = it.value();
+        auto result = it.value();
         insertResultItemIfValid(index - filteredResults, result);
         pendingResults.erase(it);
         it = pendingResults.begin();
@@ -197,7 +197,7 @@ ResultIteratorBase ResultStoreBase::resultAt(int index) const
 {
     if (m_results.isEmpty())
         return ResultIteratorBase(m_results.end());
-    QMap<int, ResultItem>::const_iterator it = m_results.lowerBound(index);
+    auto it = m_results.lowerBound(index);
 
     // lowerBound returns either an iterator to the result or an iterator
     // to the nearest greater index. If the latter happens it might be
@@ -215,7 +215,7 @@ ResultIteratorBase ResultStoreBase::resultAt(int index) const
         }
     }
 
-    const int vectorIndex = index - it.key();
+    const auto vectorIndex = index - it.key();
 
     if (vectorIndex >= it.value().count())
         return ResultIteratorBase(m_results.end());

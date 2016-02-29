@@ -1450,7 +1450,7 @@ static void mapToLowerCase(QString *str, int from)
     int N = sizeof(NameprepCaseFolding) / sizeof(NameprepCaseFolding[0]);
 
     ushort *d = 0;
-    for (int i = from; i < str->size(); ++i) {
+    for (auto i = from; i < str->size(); ++i) {
         uint uc = str->at(i).unicode();
         if (uc < 0x80) {
             if (uc <= 'Z' && uc >= 'A') {
@@ -1460,17 +1460,17 @@ static void mapToLowerCase(QString *str, int from)
             }
         } else {
             if (QChar(uc).isHighSurrogate() && i < str->size() - 1) {
-                ushort low = str->at(i + 1).unicode();
+                auto low = str->at(i + 1).unicode();
                 if (QChar(low).isLowSurrogate()) {
                     uc = QChar::surrogateToUcs4(uc, low);
                     ++i;
                 }
             }
-            const NameprepCaseFoldingEntry *entry = std::lower_bound(NameprepCaseFolding,
+            auto entry = std::lower_bound(NameprepCaseFolding,
                                                                      NameprepCaseFolding + N,
                                                                      uc);
             if ((entry != NameprepCaseFolding + N) && !(uc < *entry)) {
-                int l = 1;
+                auto l = 1;
                 while (l < 4 && entry->mapping[l])
                     ++l;
                 if (l > 1 || uc > 0xffff) {
@@ -1509,12 +1509,12 @@ static bool isMappedToNothing(uint uc)
 
 static bool containsProhibitedOuptut(const QString *str, int from)
 {
-    const ushort *in = reinterpret_cast<const ushort *>(str->begin() + from);
-    const ushort *end = (const ushort *)str->data() + str->size();
+    auto in = reinterpret_cast<const ushort *>(str->begin() + from);
+    auto end = (const ushort *)str->data() + str->size();
     for ( ; in < end; ++in) {
         uint uc = *in;
         if (QChar(uc).isHighSurrogate() && in < end - 1) {
-            ushort low = *(in + 1);
+            auto low = *(in + 1);
             if (QChar(low).isLowSurrogate()) {
                 ++in;
                 uc = QChar::surrogateToUcs4(uc, low);
@@ -2028,12 +2028,12 @@ static bool isBidirectionalL(uint uc)
 
 Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
 {
-    QChar *src = source->data(); // causes a detach, so we're sure the only one using it
-    QChar *out = src + from;
-    const QChar *e = src + source->size();
+    auto src = source->data(); // causes a detach, so we're sure the only one using it
+    auto out = src + from;
+    auto e = src + source->size();
 
     for ( ; out < e; ++out) {
-        ushort uc = out->unicode();
+        auto uc = out->unicode();
         if (uc >= 0x80) {
             break;
         } else if (uc >= 'A' && uc <= 'Z') {
@@ -2047,21 +2047,21 @@ Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
     // Characters unassigned in Unicode 3.2 are not allowed in "stored string" scheme
     // but allowed in "query" scheme
     // (Table A.1)
-    const bool isUnassignedAllowed = false; // ###
+    const auto isUnassignedAllowed = false; // ###
     // Characters commonly mapped to nothing are simply removed
     // (Table B.1)
-    const QChar *in = out;
+    auto in = out;
     for ( ; in < e; ++in) {
         uint uc = in->unicode();
         if (QChar(uc).isHighSurrogate() && in < e - 1) {
-            ushort low = in[1].unicode();
+            auto low = in[1].unicode();
             if (QChar(low).isLowSurrogate()) {
                 ++in;
                 uc = QChar::surrogateToUcs4(uc, low);
             }
         }
         if (!isUnassignedAllowed) {
-            QChar::UnicodeVersion version = QChar::unicodeVersion(uc);
+            auto version = QChar::unicodeVersion(uc);
             if (version == QChar::Unicode_Unassigned || version > QChar::Unicode_3_2) {
                 source->resize(from); // not allowed, clear the label
                 return;
@@ -2095,14 +2095,14 @@ Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
     }
 
     // Check for valid bidirectional characters
-    bool containsLCat = false;
-    bool containsRandALCat = false;
+    auto containsLCat = false;
+    auto containsRandALCat = false;
     src = source->data();
     e = src + source->size();
     for (in = src + from; in < e && (!containsLCat || !containsRandALCat); ++in) {
         uint uc = in->unicode();
         if (QChar(uc).isHighSurrogate() && in < e - 1) {
-            ushort low = in[1].unicode();
+            auto low = in[1].unicode();
             if (QChar(low).isLowSurrogate()) {
                 ++in;
                 uc = QChar::surrogateToUcs4(uc, low);
@@ -2125,8 +2125,8 @@ Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len)
     if (len > 63)
         return false;
 
-    for (int i = 0; i < len; ++i) {
-        ushort c = uc[i].unicode();
+    for (auto i = 0; i < len; ++i) {
+        auto c = uc[i].unicode();
         if (c == '-' && (i == 0 || i == len - 1))
             return false;
 
@@ -2189,18 +2189,18 @@ static inline void appendEncode(QString* output, uint& delta, uint& bias, uint& 
 
 Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString *output)
 {
-    uint n = initial_n;
+    auto n = initial_n;
     uint delta = 0;
-    uint bias = initial_bias;
+    auto bias = initial_bias;
 
-    int outLen = output->length();
+    auto outLen = output->length();
     output->resize(outLen + ucLength);
 
-    QChar *d = output->data() + outLen;
-    bool skipped = false;
+    auto d = output->data() + outLen;
+    auto skipped = false;
     // copy all basic code points verbatim to output.
     for (uint j = 0; j < (uint) ucLength; ++j) {
-        ushort js = s[j].unicode();
+        auto js = s[j].unicode();
         if (js < 0x80)
             *d++ = js;
         else
@@ -2213,7 +2213,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString 
         return;
 
     output->truncate(d - output->constData());
-    int copied = output->size() - outLen;
+    auto copied = output->size() - outLen;
 
     // h and b now contain the number of basic code points in input.
     uint b = copied;
@@ -2228,7 +2228,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString 
     while (h < (uint) ucLength) {
         // find the character in the input string with the lowest
         // unicode value.
-        uint m = Q_MAXINT;
+        auto m = Q_MAXINT;
         uint j;
         for (j = 0; j < (uint) ucLength; ++j) {
             if (s[j].unicode() >= n && s[j].unicode() < m)
@@ -2275,19 +2275,19 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString 
 
 Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
 {
-    uint n = initial_n;
+    auto n = initial_n;
     uint i = 0;
-    uint bias = initial_bias;
+    auto bias = initial_bias;
 
     // strip any ACE prefix
-    int start = pc.startsWith(QLatin1String("xn--")) ? 4 : 0;
+    auto start = pc.startsWith(QLatin1String("xn--")) ? 4 : 0;
     if (!start)
         return pc;
 
     // find the last delimiter character '-' in the input array. copy
     // all data before this delimiter directly to the output array.
-    int delimiterPos = pc.lastIndexOf(QChar(0x2d));
-    QString output = delimiterPos < 4 ?
+    auto delimiterPos = pc.lastIndexOf(QChar(0x2d));
+    auto output = delimiterPos < 4 ?
                      QString() : pc.mid(start, delimiterPos - start);
 
     // if a delimiter was found, skip to the position after it;
@@ -2298,11 +2298,11 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
     // loop through the rest of the input string, inserting non-basic
     // characters into output as we go.
     while (cnt < (uint) pc.size()) {
-        uint oldi = i;
+        auto oldi = i;
         uint w = 1;
 
         // find the next index for inserting a non-basic character.
-        for (uint k = base; cnt < (uint) pc.size(); k += base) {
+        for (auto k = base; cnt < (uint) pc.size(); k += base) {
             // grab a character from the punycode input and find its
             // delta digit (each digit code is part of the
             // variable-length integer delta)
@@ -2388,8 +2388,8 @@ static QStringList *user_idn_whitelist = 0;
 
 static bool lessThan(const QChar *a, int l, const char *c)
 {
-    const ushort *uc = (const ushort *)a;
-    const ushort *e = uc + l;
+    auto uc = (const ushort *)a;
+    auto e = uc + l;
 
     if (!c || *c == 0)
         return false;
@@ -2417,22 +2417,22 @@ static bool equal(const QChar *a, int l, const char *b)
 
 static bool qt_is_idn_enabled(const QString &domain)
 {
-    int idx = domain.lastIndexOf(QLatin1Char('.'));
+    auto idx = domain.lastIndexOf(QLatin1Char('.'));
     if (idx == -1)
         return false;
 
-    int len = domain.size() - idx - 1;
+    auto len = domain.size() - idx - 1;
     QString tldString(domain.constData() + idx + 1, len);
     qt_nameprep(&tldString, 0);
 
-    const QChar *tld = tldString.constData();
+    auto tld = tldString.constData();
 
     if (user_idn_whitelist)
         return user_idn_whitelist->contains(tldString);
 
-    int l = 0;
+    auto l = 0;
     int r = idn_whitelist_size - 1;
-    int i = (l + r + 1) / 2;
+    auto i = (l + r + 1) / 2;
 
     while (r != l) {
         if (lessThan(tld, len, idn_whitelist[i]))
@@ -2454,9 +2454,9 @@ static inline bool isDotDelimiter(ushort uc)
 
 static int nextDotDelimiter(const QString &domain, int from = 0)
 {
-    const QChar *b = domain.unicode();
-    const QChar *ch = b + from;
-    const QChar *e = b + domain.length();
+    auto b = domain.unicode();
+    auto ch = b + from;
+    auto e = b + domain.length();
     while (ch < e) {
         if (isDotDelimiter(ch->unicode()))
             break;
@@ -2474,13 +2474,13 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
     QString result;
     result.reserve(domain.length());
 
-    const bool isIdnEnabled = op == NormalizeAce ? qt_is_idn_enabled(domain) : false;
-    int lastIdx = 0;
+    const auto isIdnEnabled = op == NormalizeAce ? qt_is_idn_enabled(domain) : false;
+    auto lastIdx = 0;
     QString aceForm; // this variable is here for caching
 
     while (1) {
-        int idx = nextDotDelimiter(domain, lastIdx);
-        int labelLength = idx - lastIdx;
+        auto idx = nextDotDelimiter(domain, lastIdx);
+        auto labelLength = idx - lastIdx;
         if (labelLength == 0) {
             if (idx == domain.length())
                 break;
@@ -2502,15 +2502,15 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
         //      inclusive.
 
         // copy the label to the destination, which also serves as our scratch area, lowercasing it
-        int prevLen = result.size();
-        bool simple = true;
+        auto prevLen = result.size();
+        auto simple = true;
         result.resize(prevLen + labelLength);
         {
-            QChar *out = result.data() + prevLen;
-            const QChar *in = domain.constData() + lastIdx;
-            const QChar *e = in + labelLength;
+            auto out = result.data() + prevLen;
+            auto in = domain.constData() + lastIdx;
+            auto e = in + labelLength;
             for (; in < e; ++in, ++out) {
-                ushort uc = in->unicode();
+                auto uc = in->unicode();
                 if (uc > 0x7f)
                     simple = false;
                 if (uc >= 'A' && uc <= 'Z')
@@ -2539,7 +2539,7 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
             // That means we need one or two temporaries
             qt_nameprep(&result, prevLen);
             labelLength = result.length() - prevLen;
-            int toReserve = labelLength + 4 + 6; // "xn--" plus some extra bytes
+            auto toReserve = labelLength + 4 + 6; // "xn--" plus some extra bytes
             aceForm.resize(0);
             if (toReserve > aceForm.capacity())
                 aceForm.reserve(toReserve);
@@ -2547,7 +2547,7 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
 
             // We use resize()+memcpy() here because we're overwriting the data we've copied
             if (isIdnEnabled) {
-                QString tmp = qt_punycodeDecoder(aceForm);
+                auto tmp = qt_punycodeDecoder(aceForm);
                 if (tmp.isEmpty())
                     return QString(); // shouldn't happen, since we've just punycode-encoded it
                 result.resize(prevLen + tmp.size());

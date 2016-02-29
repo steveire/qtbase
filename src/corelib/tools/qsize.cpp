@@ -228,7 +228,7 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const Q_DECL_NOTHR
         return s;
     } else {
         bool useHeight;
-        qint64 rw = qint64(s.ht) * qint64(wd) / qint64(ht);
+        auto rw = qint64(s.ht) * qint64(wd) / qint64(ht);
 
         if (mode == Qt::KeepAspectRatio) {
             useHeight = (rw <= s.wd);
@@ -659,7 +659,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const Q_DECL_NO
         return s;
     } else {
         bool useHeight;
-        qreal rw = s.ht * wd / ht;
+        auto rw = s.ht * wd / ht;
 
         if (mode == Qt::KeepAspectRatio) {
             useHeight = (rw <= s.wd);

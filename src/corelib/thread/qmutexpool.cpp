@@ -94,7 +94,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (QMutex::Recursive))
 QMutexPool::QMutexPool(QMutex::RecursionMode recursionMode, int size)
     : mutexes(size), recursionMode(recursionMode)
 {
-    for (int index = 0; index < mutexes.count(); ++index) {
+    for (auto index = 0; index < mutexes.count(); ++index) {
         mutexes[index].store(0);
     }
 }
@@ -105,7 +105,7 @@ QMutexPool::QMutexPool(QMutex::RecursionMode recursionMode, int size)
 */
 QMutexPool::~QMutexPool()
 {
-    for (int index = 0; index < mutexes.count(); ++index)
+    for (auto index = 0; index < mutexes.count(); ++index)
         delete mutexes[index].load();
 }
 
@@ -130,7 +130,7 @@ QMutexPool *QMutexPool::instance()
 QMutex *QMutexPool::createMutex(int index)
 {
     // mutex not created, create one
-    QMutex *newMutex = new QMutex(recursionMode);
+    auto newMutex = new QMutex(recursionMode);
     if (!mutexes[index].testAndSetRelease(0, newMutex))
         delete newMutex;
     return mutexes[index].load();
@@ -141,7 +141,7 @@ QMutex *QMutexPool::createMutex(int index)
 */
 QMutex *QMutexPool::globalInstanceGet(const void *address)
 {
-    QMutexPool * const globalInstance = globalMutexPool();
+    const auto globalInstance = globalMutexPool();
     if (globalInstance == 0)
         return 0;
     return globalInstance->get(address);

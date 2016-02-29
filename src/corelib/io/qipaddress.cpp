@@ -54,12 +54,12 @@ static QString number(quint8 val, int base = 10)
 typedef QVarLengthArray<char, 64> Buffer;
 static const QChar *checkedToAscii(Buffer &buffer, const QChar *begin, const QChar *end)
 {
-    const ushort *const ubegin = reinterpret_cast<const ushort *>(begin);
-    const ushort *const uend = reinterpret_cast<const ushort *>(end);
-    const ushort *src = ubegin;
+    const auto ubegin = reinterpret_cast<const ushort *>(begin);
+    const auto uend = reinterpret_cast<const ushort *>(end);
+    auto src = ubegin;
 
     buffer.resize(uend - ubegin + 1);
-    char *dst = buffer.data();
+    auto dst = buffer.data();
 
     while (src != uend) {
         if (*src >= 0x7f)
@@ -78,14 +78,14 @@ bool parseIp4(IPv4Address &address, const QChar *begin, const QChar *end)
     if (checkedToAscii(buffer, begin, end))
         return false;
 
-    const char *ptr = buffer.data();
+    auto ptr = buffer.data();
     return parseIp4Internal(address, ptr, true);
 }
 
 static bool parseIp4Internal(IPv4Address &address, const char *ptr, bool acceptLeadingZero)
 {
     address = 0;
-    int dotCount = 0;
+    auto dotCount = 0;
     while (dotCount < 4) {
         if (!acceptLeadingZero && *ptr == '0' &&
                 ptr[1] != '.' && ptr[1] != '\0')
@@ -93,7 +93,7 @@ static bool parseIp4Internal(IPv4Address &address, const char *ptr, bool acceptL
 
         const char *endptr;
         bool ok;
-        quint64 ll = qstrtoull(ptr, &endptr, 0, &ok);
+        auto ll = qstrtoull(ptr, &endptr, 0, &ok);
         quint32 x = ll;
         if (!ok || endptr == ptr || ll != x)
             return false;
@@ -150,15 +150,15 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
 {
     Q_ASSERT(begin != end);
     Buffer buffer;
-    const QChar *ret = checkedToAscii(buffer, begin, end);
+    auto ret = checkedToAscii(buffer, begin, end);
     if (ret)
         return ret;
 
-    const char *ptr = static_cast<const char*>(buffer.data());
+    auto ptr = static_cast<const char*>(buffer.data());
 
     // count the colons
-    int colonCount = 0;
-    int dotCount = 0;
+    auto colonCount = 0;
+    auto dotCount = 0;
     while (*ptr) {
         if (*ptr == ':')
             ++colonCount;
@@ -191,7 +191,7 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
     if (dotCount)
         --zeroWordsToFill;
 
-    int pos = 0;
+    auto pos = 0;
     while (pos < 15) {
         if (*ptr == ':') {
             // empty field, we hope it's "::"
@@ -210,7 +210,7 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
 
         const char *endptr;
         bool ok;
-        quint64 ll = qstrtoull(ptr, &endptr, 16, &ok);
+        auto ll = qstrtoull(ptr, &endptr, 16, &ok);
         quint16 x = ll;
 
         if (!ok || ll != x)
@@ -264,7 +264,7 @@ void toString(QString &appendTo, IPv6Address address)
 
     // check for the special cases
     const quint64 zeroes[] = { 0, 0 };
-    bool embeddedIp4 = false;
+    auto embeddedIp4 = false;
 
     // we consider embedded IPv4 for:
     //  ::ffff:x.x.x.x
@@ -287,9 +287,9 @@ void toString(QString &appendTo, IPv6Address address)
                      (embeddedIp4 ? Ip6WithIp4AddressMaxLen : Ip6AddressMaxLen));
 
     // for finding where to place the "::"
-    int zeroRunLength = 0; // in octets
-    int zeroRunOffset = 0; // in octets
-    for (int i = 0; i < 16; i += 2) {
+    auto zeroRunLength = 0; // in octets
+    auto zeroRunOffset = 0; // in octets
+    for (auto i = 0; i < 16; i += 2) {
         if (address[i] == 0 && address[i + 1] == 0) {
             // found a zero, scan forward to see how many more there are
             int j;
@@ -312,7 +312,7 @@ void toString(QString &appendTo, IPv6Address address)
     else if (zeroRunOffset == 0)
         appendTo.append(colon);
 
-    for (int i = 0; i < 16; i += 2) {
+    for (auto i = 0; i < 16; i += 2) {
         if (i == zeroRunOffset) {
             appendTo.append(colon);
             i += zeroRunLength - 2;

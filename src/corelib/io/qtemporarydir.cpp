@@ -163,7 +163,7 @@ QPair<QString, bool> q_mkdtemp(char *templateName)
 
 QPair<QString, bool> q_mkdtemp(char *templateName)
 {
-    bool ok = (mkdtemp(templateName) != 0);
+    auto ok = (mkdtemp(templateName) != 0);
     return qMakePair(ok ? QFile::decodeName(templateName) : qt_error_string(), ok);
 }
 
@@ -171,10 +171,10 @@ QPair<QString, bool> q_mkdtemp(char *templateName)
 
 void QTemporaryDirPrivate::create(const QString &templateName)
 {
-    QByteArray buffer = QFile::encodeName(templateName);
+    auto buffer = QFile::encodeName(templateName);
     if (!buffer.endsWith("XXXXXX"))
         buffer += "XXXXXX";
-    QPair<QString, bool> result = q_mkdtemp(buffer.data()); // modifies buffer
+    auto result = q_mkdtemp(buffer.data()); // modifies buffer
     pathOrError = result.first;
     success = result.second;
 }
@@ -337,7 +337,7 @@ bool QTemporaryDir::remove()
     Q_ASSERT(!path().isEmpty());
     Q_ASSERT(path() != QLatin1String("."));
 
-    const bool result = QDir(path()).removeRecursively();
+    const auto result = QDir(path()).removeRecursively();
     if (!result) {
         qWarning() << "QTemporaryDir: Unable to remove"
                    << QDir::toNativeSeparators(path())

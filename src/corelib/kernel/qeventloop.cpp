@@ -192,7 +192,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
                          "reimplement QApplication::notify() and catch all exceptions there.\n");
             }
             locker.relock();
-            QEventLoop *eventLoop = d->threadData->eventLoops.pop();
+            auto eventLoop = d->threadData->eventLoops.pop();
             Q_ASSERT_X(eventLoop == d->q_func(), "QEventLoop::exec()", "internal error");
             Q_UNUSED(eventLoop); // --release warning
             d->inExec = false;
@@ -202,7 +202,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     LoopReference ref(d, locker);
 
     // remove posted quit events when entering a new event loop
-    QCoreApplication *app = QCoreApplication::instance();
+    auto app = QCoreApplication::instance();
     if (app && app->thread() == thread())
         QCoreApplication::removePostedEvents(app, QEvent::Quit);
 

@@ -86,14 +86,14 @@ void QBufferPrivate::_q_emitSignals()
 
 qint64 QBufferPrivate::peek(char *data, qint64 maxSize)
 {
-    qint64 readBytes = qMin(maxSize, static_cast<qint64>(buf->size()) - pos);
+    auto readBytes = qMin(maxSize, static_cast<qint64>(buf->size()) - pos);
     memcpy(data, buf->constData() + pos, readBytes);
     return readBytes;
 }
 
 QByteArray QBufferPrivate::peek(qint64 maxSize)
 {
-    qint64 readBytes = qMin(maxSize, static_cast<qint64>(buf->size()) - pos);
+    auto readBytes = qMin(maxSize, static_cast<qint64>(buf->size()) - pos);
     if (pos == 0 && maxSize >= buf->size())
         return *buf;
     return QByteArray(buf->constData() + pos, readBytes);
@@ -368,7 +368,7 @@ bool QBuffer::seek(qint64 pos)
     Q_D(QBuffer);
     if (pos > d->buf->size() && isWritable()) {
         if (seek(d->buf->size())) {
-            const qint64 gapSize = pos - d->buf->size();
+            const auto gapSize = pos - d->buf->size();
             if (write(QByteArray(gapSize, 0)) != gapSize) {
                 qWarning("QBuffer::seek: Unable to fill gap");
                 return false;
@@ -423,7 +423,7 @@ qint64 QBuffer::writeData(const char *data, qint64 len)
     Q_D(QBuffer);
     int extraBytes = pos() + len - d->buf->size();
     if (extraBytes > 0) { // overflow
-        int newSize = d->buf->size() + extraBytes;
+        auto newSize = d->buf->size() + extraBytes;
         d->buf->resize(newSize);
         if (d->buf->size() != newSize) { // could not resize
             qWarning("QBuffer::writeData: Memory allocation error");
@@ -450,8 +450,8 @@ qint64 QBuffer::writeData(const char *data, qint64 len)
 */
 void QBuffer::connectNotify(const QMetaMethod &signal)
 {
-    static const QMetaMethod readyReadSignal = QMetaMethod::fromSignal(&QBuffer::readyRead);
-    static const QMetaMethod bytesWrittenSignal = QMetaMethod::fromSignal(&QBuffer::bytesWritten);
+    static const auto readyReadSignal = QMetaMethod::fromSignal(&QBuffer::readyRead);
+    static const auto bytesWrittenSignal = QMetaMethod::fromSignal(&QBuffer::bytesWritten);
     if (signal == readyReadSignal || signal == bytesWrittenSignal)
         d_func()->signalConnectionCount++;
 }
@@ -463,8 +463,8 @@ void QBuffer::connectNotify(const QMetaMethod &signal)
 void QBuffer::disconnectNotify(const QMetaMethod &signal)
 {
     if (signal.isValid()) {
-        static const QMetaMethod readyReadSignal = QMetaMethod::fromSignal(&QBuffer::readyRead);
-        static const QMetaMethod bytesWrittenSignal = QMetaMethod::fromSignal(&QBuffer::bytesWritten);
+        static const auto readyReadSignal = QMetaMethod::fromSignal(&QBuffer::readyRead);
+        static const auto bytesWrittenSignal = QMetaMethod::fromSignal(&QBuffer::bytesWritten);
         if (signal == readyReadSignal || signal == bytesWrittenSignal)
             d_func()->signalConnectionCount--;
     } else {

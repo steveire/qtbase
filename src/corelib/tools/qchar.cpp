@@ -709,7 +709,7 @@ bool QChar::isPrint(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return false;
-    const int test = FLAG(Other_Control) |
+    const auto test = FLAG(Other_Control) |
                      FLAG(Other_Format) |
                      FLAG(Other_Surrogate) |
                      FLAG(Other_PrivateUse) |
@@ -742,7 +742,7 @@ bool QT_FASTCALL QChar::isSpace_helper(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return false;
-    const int test = FLAG(Separator_Space) |
+    const auto test = FLAG(Separator_Space) |
                      FLAG(Separator_Line) |
                      FLAG(Separator_Paragraph);
     return FLAG(qGetProp(ucs4)->category) & test;
@@ -768,7 +768,7 @@ bool QChar::isMark(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return false;
-    const int test = FLAG(Mark_NonSpacing) |
+    const auto test = FLAG(Mark_NonSpacing) |
                      FLAG(Mark_SpacingCombining) |
                      FLAG(Mark_Enclosing);
     return FLAG(qGetProp(ucs4)->category) & test;
@@ -792,7 +792,7 @@ bool QChar::isPunct(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return false;
-    const int test = FLAG(Punctuation_Connector) |
+    const auto test = FLAG(Punctuation_Connector) |
                      FLAG(Punctuation_Dash) |
                      FLAG(Punctuation_Open) |
                      FLAG(Punctuation_Close) |
@@ -820,7 +820,7 @@ bool QChar::isSymbol(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return false;
-    const int test = FLAG(Symbol_Math) |
+    const auto test = FLAG(Symbol_Math) |
                      FLAG(Symbol_Currency) |
                      FLAG(Symbol_Modifier) |
                      FLAG(Symbol_Other);
@@ -850,7 +850,7 @@ bool QT_FASTCALL QChar::isLetter_helper(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return false;
-    const int test = FLAG(Letter_Uppercase) |
+    const auto test = FLAG(Letter_Uppercase) |
                      FLAG(Letter_Lowercase) |
                      FLAG(Letter_Titlecase) |
                      FLAG(Letter_Modifier) |
@@ -885,7 +885,7 @@ bool QT_FASTCALL QChar::isNumber_helper(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return false;
-    const int test = FLAG(Number_DecimalDigit) |
+    const auto test = FLAG(Number_DecimalDigit) |
                      FLAG(Number_Letter) |
                      FLAG(Number_Other);
     return FLAG(qGetProp(ucs4)->category) & test;
@@ -914,7 +914,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return false;
-    const int test = FLAG(Letter_Uppercase) |
+    const auto test = FLAG(Letter_Uppercase) |
                      FLAG(Letter_Lowercase) |
                      FLAG(Letter_Titlecase) |
                      FLAG(Letter_Modifier) |
@@ -1298,7 +1298,7 @@ static const unsigned short * QT_FASTCALL decompositionHelper
 {
     if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount) {
         // compute Hangul syllable decomposition as per UAX #15
-        const uint SIndex = ucs4 - Hangul_SBase;
+        const auto SIndex = ucs4 - Hangul_SBase;
         buffer[0] = Hangul_LBase + SIndex / Hangul_NCount; // L
         buffer[1] = Hangul_VBase + (SIndex % Hangul_NCount) / Hangul_TCount; // V
         buffer[2] = Hangul_TBase + SIndex % Hangul_TCount; // T
@@ -1314,7 +1314,7 @@ static const unsigned short * QT_FASTCALL decompositionHelper
         return 0;
     }
 
-    const unsigned short *decomposition = uc_decomposition_map+index;
+    auto decomposition = uc_decomposition_map+index;
     *tag = (*decomposition) & 0xff;
     *length = (*decomposition) >> 8;
     return decomposition+1;
@@ -1339,7 +1339,7 @@ QString QChar::decomposition(uint ucs4)
     unsigned short buffer[3];
     int length;
     int tag;
-    const unsigned short *d = decompositionHelper(ucs4, &length, &tag, buffer);
+    auto d = decompositionHelper(ucs4, &length, &tag, buffer);
     return QString(reinterpret_cast<const QChar *>(d), length);
 }
 
@@ -1520,7 +1520,7 @@ static inline uint foldCase(const ushort *ch, const ushort *start)
 
 static inline uint foldCase(uint ch, uint &last) Q_DECL_NOTHROW
 {
-    uint ucs4 = ch;
+    auto ucs4 = ch;
     if (QChar::isLowSurrogate(ucs4) && QChar::isHighSurrogate(last))
         ucs4 = QChar::surrogateToUcs4(last, ucs4);
     last = ch;
@@ -1718,12 +1718,12 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
 
     QString &s = *str;
 
-    const unsigned short *utf16 = reinterpret_cast<unsigned short *>(s.data());
-    const unsigned short *uc = utf16 + s.length();
+    auto utf16 = reinterpret_cast<unsigned short *>(s.data());
+    auto uc = utf16 + s.length();
     while (uc != utf16 + from) {
         uint ucs4 = *(--uc);
         if (QChar(ucs4).isLowSurrogate() && uc != utf16) {
-            ushort high = *(uc - 1);
+            auto high = *(uc - 1);
             if (QChar(high).isHighSurrogate()) {
                 --uc;
                 ucs4 = QChar::surrogateToUcs4(high, ucs4);
@@ -1733,7 +1733,7 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
         if (QChar::unicodeVersion(ucs4) > version)
             continue;
 
-        const unsigned short *d = decompositionHelper(ucs4, &length, &tag, buffer);
+        auto d = decompositionHelper(ucs4, &length, &tag, buffer);
         if (!d || (canonical && tag != QChar::Canonical))
             continue;
 
@@ -1775,16 +1775,16 @@ static uint inline ligatureHelper(uint u1, uint u2)
     if (u1 >= Hangul_LBase && u1 <= Hangul_SBase + Hangul_SCount) {
         // compute Hangul syllable composition as per UAX #15
         // hangul L-V pair
-        const uint LIndex = u1 - Hangul_LBase;
+        const auto LIndex = u1 - Hangul_LBase;
         if (LIndex < Hangul_LCount) {
-            const uint VIndex = u2 - Hangul_VBase;
+            const auto VIndex = u2 - Hangul_VBase;
             if (VIndex < Hangul_VCount)
                 return Hangul_SBase + (LIndex * Hangul_VCount + VIndex) * Hangul_TCount;
         }
         // hangul LV-T pair
-        const uint SIndex = u1 - Hangul_SBase;
+        const auto SIndex = u1 - Hangul_SBase;
         if (SIndex < Hangul_SCount && (SIndex % Hangul_TCount) == 0) {
-            const uint TIndex = u2 - Hangul_TBase;
+            const auto TIndex = u2 - Hangul_TBase;
             if (TIndex <= Hangul_TCount)
                 return u1 + TIndex;
         }
@@ -1793,16 +1793,16 @@ static uint inline ligatureHelper(uint u1, uint u2)
     const unsigned short index = GET_LIGATURE_INDEX(u2);
     if (index == 0xffff)
         return 0;
-    const unsigned short *ligatures = uc_ligature_map+index;
-    ushort length = *ligatures++;
+    auto ligatures = uc_ligature_map+index;
+    auto length = *ligatures++;
     if (QChar::requiresSurrogates(u1)) {
-        const UCS2SurrogatePair *data = reinterpret_cast<const UCS2SurrogatePair *>(ligatures);
-        const UCS2SurrogatePair *r = std::lower_bound(data, data + length, u1);
+        auto data = reinterpret_cast<const UCS2SurrogatePair *>(ligatures);
+        auto r = std::lower_bound(data, data + length, u1);
         if (r != data + length && QChar::surrogateToUcs4(r->p1.u1, r->p1.u2) == u1)
             return QChar::surrogateToUcs4(r->p2.u1, r->p2.u2);
     } else {
-        const UCS2Pair *data = reinterpret_cast<const UCS2Pair *>(ligatures);
-        const UCS2Pair *r = std::lower_bound(data, data + length, ushort(u1));
+        auto data = reinterpret_cast<const UCS2Pair *>(ligatures);
+        auto r = std::lower_bound(data, data + length, ushort(u1));
         if (r != data + length && r->u1 == ushort(u1))
             return r->u2;
     }
@@ -1818,23 +1818,23 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
         return;
 
     uint stcode = 0; // starter code point
-    int starter = -1; // starter position
-    int next = -1; // to prevent i == next
-    int lastCombining = 255; // to prevent combining > lastCombining
+    auto starter = -1; // starter position
+    auto next = -1; // to prevent i == next
+    auto lastCombining = 255; // to prevent combining > lastCombining
 
-    int pos = from;
+    auto pos = from;
     while (pos < s.length()) {
-        int i = pos;
+        auto i = pos;
         uint uc = s.at(pos).unicode();
         if (QChar(uc).isHighSurrogate() && pos < s.length()-1) {
-            ushort low = s.at(pos+1).unicode();
+            auto low = s.at(pos+1).unicode();
             if (QChar(low).isLowSurrogate()) {
                 uc = QChar::surrogateToUcs4(uc, low);
                 ++pos;
             }
         }
 
-        const QUnicodeTables::Properties *p = qGetProp(uc);
+        auto p = qGetProp(uc);
         if (p->unicodeVersion > version) {
             starter = -1;
             next = -1; // to prevent i == next
@@ -1846,10 +1846,10 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
         int combining = p->combiningClass;
         if ((i == next || combining > lastCombining) && starter >= from) {
             // allowed to form ligature with S
-            uint ligature = ligatureHelper(stcode, uc);
+            auto ligature = ligatureHelper(stcode, uc);
             if (ligature) {
                 stcode = ligature;
-                QChar *d = s.data();
+                auto d = s.data();
                 // ligatureHelper() never changes planes
                 if (QChar::requiresSurrogates(ligature)) {
                     d[starter] = QChar::highSurrogate(ligature);
@@ -1877,17 +1877,17 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
 static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, int from)
 {
     QString &s = *str;
-    const int l = s.length()-1;
+    const auto l = s.length()-1;
 
     uint u1, u2;
     ushort c1, c2;
 
-    int pos = from;
+    auto pos = from;
     while (pos < l) {
-        int p2 = pos+1;
+        auto p2 = pos+1;
         u1 = s.at(pos).unicode();
         if (QChar(u1).isHighSurrogate()) {
-            ushort low = s.at(p2).unicode();
+            auto low = s.at(p2).unicode();
             if (QChar(low).isLowSurrogate()) {
                 u1 = QChar::surrogateToUcs4(u1, low);
                 if (p2 >= l)
@@ -1900,7 +1900,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
     advance:
         u2 = s.at(p2).unicode();
         if (QChar(u2).isHighSurrogate() && p2 < l) {
-            ushort low = s.at(p2+1).unicode();
+            auto low = s.at(p2+1).unicode();
             if (QChar(low).isLowSurrogate()) {
                 u2 = QChar::surrogateToUcs4(u2, low);
                 ++p2;
@@ -1909,7 +1909,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
 
         c2 = 0;
         {
-            const QUnicodeTables::Properties *p = qGetProp(u2);
+            auto p = qGetProp(u2);
             if (p->unicodeVersion <= version)
                 c2 = p->combiningClass;
         }
@@ -1919,14 +1919,14 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
         }
 
         if (c1 == 0) {
-            const QUnicodeTables::Properties *p = qGetProp(u1);
+            auto p = qGetProp(u1);
             if (p->unicodeVersion <= version)
                 c1 = p->combiningClass;
         }
 
         if (c1 > c2) {
-            QChar *uc = s.data();
-            int p = pos;
+            auto uc = s.data();
+            auto p = pos;
             // exchange characters
             if (!QChar::requiresSurrogates(u2)) {
                 uc[p++] = u2;
@@ -1973,16 +1973,16 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
 
     enum { NFQC_YES = 0, NFQC_NO = 1, NFQC_MAYBE = 3 };
 
-    const ushort *string = reinterpret_cast<const ushort *>(str->constData());
-    int length = str->length();
+    auto string = reinterpret_cast<const ushort *>(str->constData());
+    auto length = str->length();
 
     // this avoids one out of bounds check in the loop
     while (length > from && QChar::isHighSurrogate(string[length - 1]))
         --length;
 
     uchar lastCombining = 0;
-    for (int i = from; i < length; ++i) {
-        int pos = i;
+    for (auto i = from; i < length; ++i) {
+        auto pos = i;
         uint uc = string[i];
         if (uc < 0x80) {
             // ASCII characters are stable code points
@@ -1992,7 +1992,7 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
         }
 
         if (QChar::isHighSurrogate(uc)) {
-            ushort low = string[i + 1];
+            auto low = string[i + 1];
             if (!QChar::isLowSurrogate(low)) {
                 // treat surrogate like stable code point
                 lastCombining = 0;
@@ -2003,7 +2003,7 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
             uc = QChar::surrogateToUcs4(uc, low);
         }
 
-        const QUnicodeTables::Properties *p = qGetProp(uc);
+        auto p = qGetProp(uc);
 
         if (p->combiningClass < lastCombining && p->combiningClass > 0)
             return false;

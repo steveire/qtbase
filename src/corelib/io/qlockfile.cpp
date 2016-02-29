@@ -213,7 +213,7 @@ bool QLockFile::tryLock(int timeout)
     QElapsedTimer timer;
     if (timeout > 0)
         timer.start();
-    int sleepTime = 100;
+    auto sleepTime = 100;
     forever {
         d->lockError = d->tryLock_sys();
         switch (d->lockError) {
@@ -291,16 +291,16 @@ bool QLockFilePrivate::getLockInfo(qint64 *pid, QString *hostname, QString *appn
     if (!reader.open(QIODevice::ReadOnly))
         return false;
 
-    QByteArray pidLine = reader.readLine();
+    auto pidLine = reader.readLine();
     pidLine.chop(1);
-    QByteArray appNameLine = reader.readLine();
+    auto appNameLine = reader.readLine();
     appNameLine.chop(1);
-    QByteArray hostNameLine = reader.readLine();
+    auto hostNameLine = reader.readLine();
     hostNameLine.chop(1);
     if (pidLine.isEmpty())
         return false;
 
-    qint64 thePid = pidLine.toLongLong();
+    auto thePid = pidLine.toLongLong();
     if (pid)
         *pid = thePid;
     if (appname)

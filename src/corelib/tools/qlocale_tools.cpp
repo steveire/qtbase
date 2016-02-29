@@ -155,7 +155,7 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
         sign = false;
     }
 
-    const int formatLength = 7; // '%', '.', 3 digits precision, 'f', '\0'
+    const auto formatLength = 7; // '%', '.', 3 digits precision, 'f', '\0'
     char format[formatLength];
     format[formatLength - 1] = '\0';
     format[0] = '%';
@@ -189,8 +189,8 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
     QVarLengthArray<char> target(precision + extraChars);
 
     length = qDoubleSnprintf(target.data(), target.size(), QT_CLOCALE, format, d);
-    int firstSignificant = 0;
-    int decptInTarget = length;
+    auto firstSignificant = 0;
+    auto decptInTarget = length;
 
     // Find the first significant digit (not 0), and note any '.' we encounter.
     // There is no '-' at the front of target because we made sure d > 0 above.
@@ -207,7 +207,7 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
         decptInTarget = std::find(target.data() + firstSignificant, target.data() + length, '.') -
                 target.data();
 
-    int eSign = length;
+    auto eSign = length;
     if (form != QLocaleData::DFDecimal) {
         // In 'e' or 'g' form, look for the 'e'.
         eSign = std::find(target.data() + firstSignificant, target.data() + length, 'e') -
@@ -241,7 +241,7 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
     // Move the actual digits from the snprintf target to the actual buffer.
     if (decptInTarget > firstSignificant) {
         // First move the digits before the '.', if any
-        int lengthBeforeDecpt = decptInTarget - firstSignificant;
+        auto lengthBeforeDecpt = decptInTarget - firstSignificant;
         memcpy(buf, target.data() + firstSignificant, qMin(lengthBeforeDecpt, bufSize));
         if (eSign > decptInTarget && lengthBeforeDecpt < bufSize) {
             // Then move any remaining digits, until 'e'
@@ -313,7 +313,7 @@ double asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
         return -qt_inf();
     }
 
-    double d = 0.0;
+    auto d = 0.0;
 #if !defined(QT_NO_DOUBLECONVERSION) && !defined(QT_BOOTSTRAPPED)
     int conv_flags = (trailingJunkMode == TrailingJunkAllowed) ?
                 double_conversion::StringToDoubleConverter::ALLOW_TRAILING_JUNK :
@@ -348,8 +348,8 @@ double asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
         // We assume that any infinity symbol has to contain a character that cannot be part of a
         // "normal" number (that is 0-9, ., -, +, e).
         ok = false;
-        for (int i = 0; i < processed; ++i) {
-            char c = num[i];
+        for (auto i = 0; i < processed; ++i) {
+            auto c = num[i];
             if ((c < '0' || c > '9') && c != '.' && c != '-' && c != '+' && c != 'e') {
                 // Garbage found
                 processed = 0;
@@ -365,7 +365,7 @@ double asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
 
     // Check if underflow has occurred.
     if (isZero(d)) {
-        for (int i = 0; i < processed; ++i) {
+        for (auto i = 0; i < processed; ++i) {
             if (num[i] >= '1' && num[i] <= '9') {
                 // if a digit before any 'e' is not 0, then a non-zero number was intended.
                 ok = false;
@@ -384,7 +384,7 @@ qstrtoull(const char * nptr, const char **endptr, int base, bool *ok)
     // strtoull accepts negative numbers. We don't.
     // Use a different variable so we pass the original nptr to strtoul
     // (we need that so endptr may be nptr in case of failure)
-    const char *begin = nptr;
+    auto begin = nptr;
     while (ascii_isspace(*begin))
         ++begin;
     if (*begin == '-') {
@@ -395,7 +395,7 @@ qstrtoull(const char * nptr, const char **endptr, int base, bool *ok)
     *ok = true;
     errno = 0;
     char *endptr2 = 0;
-    unsigned long long result = qt_strtoull(nptr, &endptr2, base);
+    auto result = qt_strtoull(nptr, &endptr2, base);
     if (endptr)
         *endptr = endptr2;
     if ((result == 0 || result == std::numeric_limits<unsigned long long>::max())
@@ -412,7 +412,7 @@ qstrtoll(const char * nptr, const char **endptr, int base, bool *ok)
     *ok = true;
     errno = 0;
     char *endptr2 = 0;
-    long long result = qt_strtoll(nptr, &endptr2, base);
+    auto result = qt_strtoll(nptr, &endptr2, base);
     if (endptr)
         *endptr = endptr2;
     if ((result == 0 || result == std::numeric_limits<long long>::min()
@@ -427,7 +427,7 @@ qstrtoll(const char * nptr, const char **endptr, int base, bool *ok)
 QString qulltoa(qulonglong l, int base, const QChar _zero)
 {
     ushort buff[65]; // length of MAX_ULLONG in base 2
-    ushort *p = buff + 65;
+    auto p = buff + 65;
 
     if (base != 10 || _zero.unicode() == '0') {
         while (l != 0) {
@@ -468,12 +468,12 @@ QString &decimalForm(QChar zero, QChar decimal, QChar group,
                      bool thousands_group)
 {
     if (decpt < 0) {
-        for (int i = 0; i < -decpt; ++i)
+        for (auto i = 0; i < -decpt; ++i)
             digits.prepend(zero);
         decpt = 0;
     }
     else if (decpt > digits.length()) {
-        for (int i = digits.length(); i < decpt; ++i)
+        for (auto i = digits.length(); i < decpt; ++i)
             digits.append(zero);
     }
 
@@ -483,7 +483,7 @@ QString &decimalForm(QChar zero, QChar decimal, QChar group,
             digits.append(zero);
     }
     else if (pm == PMSignificantDigits) {
-        for (int i = digits.length(); i < precision; ++i)
+        for (auto i = digits.length(); i < precision; ++i)
             digits.append(zero);
     }
     else { // pm == PMChopTrailingZeros
@@ -493,7 +493,7 @@ QString &decimalForm(QChar zero, QChar decimal, QChar group,
         digits.insert(decpt, decimal);
 
     if (thousands_group) {
-        for (int i = decpt - 3; i > 0; i -= 3)
+        for (auto i = decpt - 3; i > 0; i -= 3)
             digits.insert(i, group);
     }
 
@@ -510,14 +510,14 @@ QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
                       bool always_show_decpt,
                       bool leading_zero_in_exponent)
 {
-    int exp = decpt - 1;
+    auto exp = decpt - 1;
 
     if (pm == PMDecimalDigits) {
-        for (int i = digits.length(); i < precision + 1; ++i)
+        for (auto i = digits.length(); i < precision + 1; ++i)
             digits.append(zero);
     }
     else if (pm == PMSignificantDigits) {
-        for (int i = digits.length(); i < precision; ++i)
+        for (auto i = digits.length(); i < precision; ++i)
             digits.append(zero);
     }
     else { // pm == PMChopTrailingZeros
@@ -535,7 +535,7 @@ QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
 
 double qstrtod(const char *s00, const char **se, bool *ok)
 {
-    const int len = static_cast<int>(strlen(s00));
+    const auto len = static_cast<int>(strlen(s00));
     Q_ASSERT(len >= 0);
     return qstrntod(s00, len, se, ok);
 }
@@ -547,9 +547,9 @@ double qstrtod(const char *s00, const char **se, bool *ok)
  */
 double qstrntod(const char *s00, int len, const char **se, bool *ok)
 {
-    int processed = 0;
-    bool nonNullOk = false;
-    double d = asciiToDouble(s00, len, nonNullOk, processed, TrailingJunkAllowed);
+    auto processed = 0;
+    auto nonNullOk = false;
+    auto d = asciiToDouble(s00, len, nonNullOk, processed, TrailingJunkAllowed);
     if (se)
         *se = s00 + processed;
     if (ok)
@@ -559,9 +559,9 @@ double qstrntod(const char *s00, int len, const char **se, bool *ok)
 
 QString qdtoa(qreal d, int *decpt, int *sign)
 {
-    bool nonNullSign = false;
-    int nonNullDecpt = 0;
-    int length = 0;
+    auto nonNullSign = false;
+    auto nonNullDecpt = 0;
+    auto length = 0;
 
     // Some versions of libdouble-conversion like an extra digit, probably for '\0'
     char result[QLocaleData::DoubleMaxSignificant + 1];

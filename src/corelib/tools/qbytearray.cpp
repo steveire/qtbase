@@ -134,7 +134,7 @@ int qAllocMore(int alloc, int extra) Q_DECL_NOTHROW
     Q_ASSERT(alloc >= 0 && extra >= 0 && extra <= MaxAllocSize);
     Q_ASSERT_X(alloc <= MaxAllocSize - extra, "qAllocMore", "Requested size is too large!");
 
-    unsigned nalloc = qNextPowerOfTwo(alloc + extra);
+    auto nalloc = qNextPowerOfTwo(alloc + extra);
 
     Q_ASSERT(nalloc > unsigned(alloc + extra));
 
@@ -160,7 +160,7 @@ char *qstrdup(const char *src)
 {
     if (!src)
         return 0;
-    char *dst = new char[strlen(src) + 1];
+    auto dst = new char[strlen(src) + 1];
     return qstrcpy(dst, src);
 }
 
@@ -311,8 +311,8 @@ int qstrcmp(const char *str1, const char *str2)
 
 int qstricmp(const char *str1, const char *str2)
 {
-    const uchar *s1 = reinterpret_cast<const uchar *>(str1);
-    const uchar *s2 = reinterpret_cast<const uchar *>(str2);
+    auto s1 = reinterpret_cast<const uchar *>(str1);
+    auto s2 = reinterpret_cast<const uchar *>(str2);
     int res;
     uchar c;
     if (!s1 || !s2)
@@ -345,8 +345,8 @@ int qstricmp(const char *str1, const char *str2)
 
 int qstrnicmp(const char *str1, const char *str2, uint len)
 {
-    const uchar *s1 = reinterpret_cast<const uchar *>(str1);
-    const uchar *s2 = reinterpret_cast<const uchar *>(str2);
+    auto s1 = reinterpret_cast<const uchar *>(str1);
+    auto s2 = reinterpret_cast<const uchar *>(str2);
     int res;
     uchar c;
     if (!s1 || !s2)
@@ -368,10 +368,10 @@ int qstrcmp(const QByteArray &str1, const char *str2)
     if (!str2)
         return str1.isEmpty() ? 0 : +1;
 
-    const char *str1data = str1.constData();
-    const char *str1end = str1data + str1.length();
+    auto str1data = str1.constData();
+    auto str1end = str1data + str1.length();
     for ( ; str1data < str1end && *str2; ++str1data, ++str2) {
-        int diff = int(uchar(*str1data)) - uchar(*str2);
+        auto diff = int(uchar(*str1data)) - uchar(*str2);
         if (diff)
             // found a difference
             return diff;
@@ -392,9 +392,9 @@ int qstrcmp(const QByteArray &str1, const char *str2)
  */
 int qstrcmp(const QByteArray &str1, const QByteArray &str2)
 {
-    int l1 = str1.length();
-    int l2 = str2.length();
-    int ret = memcmp(str1.constData(), str2.constData(), qMin(l1, l2));
+    auto l1 = str1.length();
+    auto l2 = str2.length();
+    auto ret = memcmp(str1.constData(), str2.constData(), qMin(l1, l2));
     if (ret != 0)
         return ret;
 
@@ -462,7 +462,7 @@ quint16 qChecksum(const char *data, uint len)
 {
     quint16 crc = 0xffff;
     uchar c;
-    const uchar *p = reinterpret_cast<const uchar *>(data);
+    auto p = reinterpret_cast<const uchar *>(data);
     while (len--) {
         c = *p++;
         crc = ((crc >> 4) & 0x0fff) ^ crc_tbl[((crc ^ c) & 15)];
@@ -587,17 +587,17 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     }
     ulong expectedSize = uint((data[0] << 24) | (data[1] << 16) |
                               (data[2] <<  8) | (data[3]      ));
-    ulong len = qMax(expectedSize, 1ul);
+    auto len = qMax(expectedSize, 1ul);
     QScopedPointer<QByteArray::Data, QScopedPointerPodDeleter> d;
 
     forever {
-        ulong alloc = len;
+        auto alloc = len;
         if (len  >= (1u << 31u) - sizeof(QByteArray::Data)) {
             //QByteArray does not support that huge size anyway.
             qWarning("qUncompress: Input data is corrupted");
             return QByteArray();
         }
-        QByteArray::Data *p = static_cast<QByteArray::Data *>(::realloc(d.data(), sizeof(QByteArray::Data) + alloc + 1));
+        auto p = static_cast<QByteArray::Data *>(::realloc(d.data(), sizeof(QByteArray::Data) + alloc + 1));
         if (!p) {
             // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
             qWarning("qUncompress: could not allocate enough memory to uncompress data");
@@ -608,7 +608,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         d->offset = sizeof(QByteArrayData);
         d->size = 0; // Shut up valgrind "uninitialized variable" warning
 
-        int res = ::uncompress((uchar*)d->data(), &len,
+        auto res = ::uncompress((uchar*)d->data(), &len,
                                data+4, nbytes-4);
 
         switch (res) {
@@ -619,7 +619,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
                     qWarning("qUncompress: Input data is corrupted");
                     return QByteArray();
                 }
-                QByteArray::Data *p = static_cast<QByteArray::Data *>(::realloc(d.data(), sizeof(QByteArray::Data) + len + 1));
+                auto p = static_cast<QByteArray::Data *>(::realloc(d.data(), sizeof(QByteArray::Data) + len + 1));
                 if (!p) {
                     // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
                     qWarning("qUncompress: could not allocate enough memory to uncompress data");
@@ -1072,7 +1072,7 @@ QByteArray &QByteArray::operator=(const char *str)
     } else if (!*str) {
         x = Data::allocate(0);
     } else {
-        const int len = int(strlen(str));
+        const auto len = int(strlen(str));
         const uint fullLen = len + 1;
         if (d->ref.isShared() || fullLen > d->alloc
                 || (len < d->size && fullLen < uint(d->alloc >> 1)))
@@ -1557,7 +1557,7 @@ void QByteArray::resize(int size)
     }
 
     if (size == 0 && !d->capacityReserved) {
-        Data *x = Data::allocate(0);
+        auto x = Data::allocate(0);
         if (!d->ref.deref())
             Data::deallocate(d);
         d = x;
@@ -1570,7 +1570,7 @@ void QByteArray::resize(int size)
         // which is used in place of the Qt 3 idiom:
         //    QByteArray a(sz);
         //
-        Data *x = Data::allocate(uint(size) + 1u);
+        auto x = Data::allocate(uint(size) + 1u);
         Q_CHECK_PTR(x);
         x->size = size;
         x->data()[size] = '\0';
@@ -1609,7 +1609,7 @@ QByteArray &QByteArray::fill(char ch, int size)
 void QByteArray::reallocData(uint alloc, Data::AllocationOptions options)
 {
     if (d->ref.isShared() || IS_RAW_DATA(d)) {
-        Data *x = Data::allocate(alloc, options);
+        auto x = Data::allocate(alloc, options);
         Q_CHECK_PTR(x);
         x->size = qMin(int(alloc) - 1, d->size);
         ::memcpy(x->data(), d->data(), x->size);
@@ -1623,7 +1623,7 @@ void QByteArray::reallocData(uint alloc, Data::AllocationOptions options)
                 qBadAlloc();
             alloc = qAllocMore(alloc, sizeof(Data));
         }
-        Data *x = static_cast<Data *>(::realloc(d, sizeof(Data) + alloc));
+        auto x = static_cast<Data *>(::realloc(d, sizeof(Data) + alloc));
         Q_CHECK_PTR(x);
         x->alloc = alloc;
         x->capacityReserved = (options & Data::CapacityReserved) ? 1 : 0;
@@ -1682,7 +1682,7 @@ QByteArray &QByteArray::prepend(const QByteArray &ba)
     if (d->size == 0 && d->ref.isStatic() && !IS_RAW_DATA(ba.d)) {
         *this = ba;
     } else if (ba.d->size != 0) {
-        QByteArray tmp = *this;
+        auto tmp = *this;
         *this = ba;
         append(tmp);
     }
@@ -1805,7 +1805,7 @@ QByteArray &QByteArray::append(const QByteArray &ba)
 QByteArray& QByteArray::append(const char *str)
 {
     if (str) {
-        const int len = int(strlen(str));
+        const auto len = int(strlen(str));
         if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
             reallocData(uint(d->size + len) + 1u, d->detachFlags() | Data::Grow);
         memcpy(d->data() + d->size, str, len + 1); // include null terminator
@@ -1879,9 +1879,9 @@ static inline QByteArray &qbytearray_insert(QByteArray *ba,
     if (pos < 0 || len <= 0 || arr == 0)
         return *ba;
 
-    int oldsize = ba->size();
+    auto oldsize = ba->size();
     ba->resize(qMax(pos, oldsize) + len);
-    char *dst = ba->data();
+    auto dst = ba->data();
     if (pos > oldsize)
         ::memset(dst + oldsize, 0x20, pos - oldsize);
     else
@@ -1983,9 +1983,9 @@ QByteArray &QByteArray::insert(int i, int count, char ch)
     if (i < 0 || count <= 0)
         return *this;
 
-    int oldsize = size();
+    auto oldsize = size();
     resize(qMax(i, oldsize) + count);
-    char *dst = d->data();
+    auto dst = d->data();
     if (i > oldsize)
         ::memset(dst + oldsize, 0x20, i - oldsize);
     else if (i < oldsize)
@@ -2099,7 +2099,7 @@ QByteArray &QByteArray::replace(const QByteArray &before, const QByteArray &afte
     if (isNull() || before.d == after.d)
         return *this;
 
-    QByteArray aft = after;
+    auto aft = after;
     if (after.d == d)
         aft.detach();
 
@@ -2116,7 +2116,7 @@ QByteArray &QByteArray::replace(const QByteArray &before, const QByteArray &afte
 
 QByteArray &QByteArray::replace(const char *c, const QByteArray &after)
 {
-    QByteArray aft = after;
+    auto aft = after;
     if (after.d == d)
         aft.detach();
 
@@ -2138,25 +2138,25 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
         return *this;
 
     // protect against before or after being part of this
-    const char *a = after;
-    const char *b = before;
+    auto a = after;
+    auto b = before;
     if (after >= d->data() && after < d->data() + d->size) {
-        char *copy = (char *)malloc(asize);
+        auto copy = (char *)malloc(asize);
         Q_CHECK_PTR(copy);
         memcpy(copy, after, asize);
         a = copy;
     }
     if (before >= d->data() && before < d->data() + d->size) {
-        char *copy = (char *)malloc(bsize);
+        auto copy = (char *)malloc(bsize);
         Q_CHECK_PTR(copy);
         memcpy(copy, before, bsize);
         b = copy;
     }
 
     QByteArrayMatcher matcher(before, bsize);
-    int index = 0;
-    int len = d->size;
-    char *d = data();
+    auto index = 0;
+    auto len = d->size;
+    auto d = data();
 
     if (bsize == asize) {
         if (bsize) {
@@ -2217,8 +2217,8 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
             // index has to be adjusted in case we get back into the loop above.
             if (index != -1)
                 index += adjust;
-            int newlen = len + adjust;
-            int moveend = len;
+            auto newlen = len + adjust;
+            auto moveend = len;
             if (newlen > len) {
                 resize(newlen);
                 len = newlen;
@@ -2229,7 +2229,7 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
                 pos--;
                 int movestart = indices[pos] + bsize;
                 int insertstart = indices[pos] + pos*(asize-bsize);
-                int moveto = insertstart + asize;
+                auto moveto = insertstart + asize;
                 memmove(d + moveto, d + movestart, (moveend - movestart));
                 if (asize)
                     memcpy(d + insertstart, after, asize);
@@ -2295,7 +2295,7 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
 QByteArray &QByteArray::replace(char before, const QByteArray &after)
 {
     char b[2] = { before, '\0' };
-    QByteArray cb = fromRawData(b, 1);
+    auto cb = fromRawData(b, 1);
     return replace(cb, after);
 }
 
@@ -2331,8 +2331,8 @@ QByteArray &QByteArray::replace(char before, const QByteArray &after)
 QByteArray &QByteArray::replace(char before, char after)
 {
     if (d->size) {
-        char *i = data();
-        char *e = i + d->size;
+        auto i = data();
+        auto e = i + d->size;
         for (; i != e; ++i)
             if (*i == before)
                 * i = after;
@@ -2350,7 +2350,7 @@ QByteArray &QByteArray::replace(char before, char after)
 QList<QByteArray> QByteArray::split(char sep) const
 {
     QList<QByteArray> list;
-    int start = 0;
+    auto start = 0;
     int end;
     while ((end = indexOf(sep, start)) != -1) {
         list.append(mid(start, end - start));
@@ -2385,7 +2385,7 @@ QByteArray QByteArray::repeated(int times) const
         return QByteArray();
     }
 
-    const int resultSize = times * d->size;
+    const auto resultSize = times * d->size;
 
     QByteArray result;
     result.reserve(resultSize);
@@ -2394,10 +2394,10 @@ QByteArray QByteArray::repeated(int times) const
 
     memcpy(result.d->data(), d->data(), d->size);
 
-    int sizeSoFar = d->size;
-    char *end = result.d->data() + sizeSoFar;
+    auto sizeSoFar = d->size;
+    auto end = result.d->data() + sizeSoFar;
 
-    const int halfResultSize = resultSize >> 1;
+    const auto halfResultSize = resultSize >> 1;
     while (sizeSoFar <= halfResultSize) {
         memcpy(end, result.d->data(), sizeSoFar);
         end += sizeSoFar;
@@ -2427,13 +2427,13 @@ QByteArray QByteArray::repeated(int times) const
 
 int QByteArray::indexOf(const QByteArray &ba, int from) const
 {
-    const int ol = ba.d->size;
+    const auto ol = ba.d->size;
     if (ol == 0)
         return from;
     if (ol == 1)
         return indexOf(*ba.d->data(), from);
 
-    const int l = d->size;
+    const auto l = d->size;
     if (from > d->size || ol + from > l)
         return -1;
 
@@ -2471,7 +2471,7 @@ int QByteArray::indexOf(const char *c, int from) const
     if (ol == 1)
         return indexOf(*c, from);
 
-    const int l = d->size;
+    const auto l = d->size;
     if (from > d->size || ol + from > l)
         return -1;
     if (ol == 0)
@@ -2498,8 +2498,8 @@ int QByteArray::indexOf(char ch, int from) const
     if (from < 0)
         from = qMax(from + d->size, 0);
     if (from < d->size) {
-        const char *n = d->data() + from - 1;
-        const char *e = d->data() + d->size;
+        auto n = d->data() + from - 1;
+        auto e = d->data() + d->size;
         while (++n != e)
         if (*n == ch)
             return  n - d->data();
@@ -2510,7 +2510,7 @@ int QByteArray::indexOf(char ch, int from) const
 
 static int lastIndexOfHelper(const char *haystack, int l, const char *needle, int ol, int from)
 {
-    int delta = l - ol;
+    auto delta = l - ol;
     if (from < 0)
         from = delta;
     if (from < 0 || from > l)
@@ -2518,11 +2518,11 @@ static int lastIndexOfHelper(const char *haystack, int l, const char *needle, in
     if (from > delta)
         from = delta;
 
-    const char *end = haystack;
+    auto end = haystack;
     haystack += from;
     const uint ol_minus_1 = ol - 1;
-    const char *n = needle + ol_minus_1;
-    const char *h = haystack + ol_minus_1;
+    auto n = needle + ol_minus_1;
+    auto h = haystack + ol_minus_1;
     uint hashNeedle = 0, hashHaystack = 0;
     int idx;
     for (idx = 0; idx < ol; ++idx) {
@@ -2557,7 +2557,7 @@ static int lastIndexOfHelper(const char *haystack, int l, const char *needle, in
 
 int QByteArray::lastIndexOf(const QByteArray &ba, int from) const
 {
-    const int ol = ba.d->size;
+    const auto ol = ba.d->size;
     if (ol == 1)
         return lastIndexOf(*ba.d->data(), from);
 
@@ -2620,8 +2620,8 @@ int QByteArray::lastIndexOf(char ch, int from) const
     else if (from > d->size)
         from = d->size-1;
     if (from >= 0) {
-        const char *b = d->data();
-        const char *n = d->data() + from + 1;
+        auto b = d->data();
+        auto n = d->data() + from + 1;
         while (n-- != b)
             if (*n == ch)
                 return  n - b;
@@ -2638,8 +2638,8 @@ int QByteArray::lastIndexOf(char ch, int from) const
 
 int QByteArray::count(const QByteArray &ba) const
 {
-    int num = 0;
-    int i = -1;
+    auto num = 0;
+    auto i = -1;
     if (d->size > 500 && ba.d->size > 5) {
         QByteArrayMatcher matcher(ba);
         while ((i = matcher.indexIn(*this, i + 1)) != -1)
@@ -2674,9 +2674,9 @@ int QByteArray::count(const char *str) const
 
 int QByteArray::count(char ch) const
 {
-    int num = 0;
-    const char *i = d->data() + d->size;
-    const char *b = d->data();
+    auto num = 0;
+    auto i = d->data() + d->size;
+    auto b = d->data();
     while (i != b)
         if (*--i == ch)
             ++num;
@@ -2717,7 +2717,7 @@ bool QByteArray::startsWith(const char *str) const
 {
     if (!str || !*str)
         return true;
-    const int len = int(strlen(str));
+    const auto len = int(strlen(str));
     if (d->size < len)
         return false;
     return qstrncmp(d->data(), str, len) == 0;
@@ -2762,7 +2762,7 @@ bool QByteArray::endsWith(const char *str) const
 {
     if (!str || !*str)
         return true;
-    const int len = int(strlen(str));
+    const auto len = int(strlen(str));
     if (d->size < len)
         return false;
     return qstrncmp(d->data() + d->size - len, str, len) == 0;
@@ -2879,11 +2879,11 @@ static QByteArray toCase_template(T &input, const uchar * table)
 {
     // find the first bad character in input
     const char *orig_begin = input.constBegin();
-    const char *firstBad = orig_begin;
+    auto firstBad = orig_begin;
     const char *e = input.constEnd();
     for ( ; firstBad != e ; ++firstBad) {
-        uchar ch = uchar(*firstBad);
-        uchar converted = table[ch];
+        auto ch = uchar(*firstBad);
+        auto converted = table[ch];
         if (ch != converted)
             break;
     }
@@ -2893,8 +2893,8 @@ static QByteArray toCase_template(T &input, const uchar * table)
 
     // transform the rest
     QByteArray s = qMove(input);    // will copy if T is const QByteArray
-    char *b = s.begin();            // will detach if necessary
-    char *p = b + (firstBad - orig_begin);
+    auto b = s.begin();            // will detach if necessary
+    auto p = b + (firstBad - orig_begin);
     e = b + s.size();
     for ( ; p != e; ++p) {
         *p = char(uchar(table[uchar(*p)]));
@@ -3386,8 +3386,8 @@ QByteArray QByteArray::trimmed_helper(QByteArray &a)
 QByteArray QByteArray::leftJustified(int width, char fill, bool truncate) const
 {
     QByteArray result;
-    int len = d->size;
-    int padlen = width - len;
+    auto len = d->size;
+    auto padlen = width - len;
     if (padlen > 0) {
         result.resize(len+padlen);
         if (len)
@@ -3423,8 +3423,8 @@ QByteArray QByteArray::leftJustified(int width, char fill, bool truncate) const
 QByteArray QByteArray::rightJustified(int width, char fill, bool truncate) const
 {
     QByteArray result;
-    int len = d->size;
-    int padlen = width - len;
+    auto len = d->size;
+    auto padlen = width - len;
     if (padlen > 0) {
         result.resize(len+padlen);
         if (len)
@@ -3701,10 +3701,10 @@ ushort QByteArray::toUShort(bool *ok, int base) const
 
 double QByteArray::toDouble(bool *ok) const
 {
-    QByteArray nulled = nulTerminated();
-    bool nonNullOk = false;
-    int processed = 0;
-    double d = asciiToDouble(nulled.constData(), nulled.length(), nonNullOk, processed);
+    auto nulled = nulTerminated();
+    auto nonNullOk = false;
+    auto processed = 0;
+    auto d = asciiToDouble(nulled.constData(), nulled.length(), nonNullOk, processed);
     if (ok)
         *ok = nonNullOk;
     return d;
@@ -3762,16 +3762,16 @@ QByteArray QByteArray::toBase64(Base64Options options) const
     const char alphabet_base64url[] = "ABCDEFGH" "IJKLMNOP" "QRSTUVWX" "YZabcdef"
                                       "ghijklmn" "opqrstuv" "wxyz0123" "456789-_";
     const char *const alphabet = options & Base64UrlEncoding ? alphabet_base64url : alphabet_base64;
-    const char padchar = '=';
-    int padlen = 0;
+    const auto padchar = '=';
+    auto padlen = 0;
 
     QByteArray tmp((d->size + 2) / 3 * 4, Qt::Uninitialized);
 
-    int i = 0;
-    char *out = tmp.data();
+    auto i = 0;
+    auto out = tmp.data();
     while (i < d->size) {
         // encode 3 bytes at a time
-        int chunk = 0;
+        auto chunk = 0;
         chunk |= int(uchar(d->data()[i++])) << 16;
         if (i == d->size) {
             padlen = 2;
@@ -3783,10 +3783,10 @@ QByteArray QByteArray::toBase64(Base64Options options) const
                 chunk |= int(uchar(data()[i++]));
         }
 
-        int j = (chunk & 0x00fc0000) >> 18;
-        int k = (chunk & 0x0003f000) >> 12;
-        int l = (chunk & 0x00000fc0) >> 6;
-        int m = (chunk & 0x0000003f);
+        auto j = (chunk & 0x00fc0000) >> 18;
+        auto k = (chunk & 0x0003f000) >> 12;
+        auto l = (chunk & 0x00000fc0) >> 6;
+        auto m = (chunk & 0x0000003f);
         *out++ = alphabet[j];
         *out++ = alphabet[k];
 
@@ -3872,7 +3872,7 @@ static char *qulltoa2(char *p, qulonglong n, int base)
 */
 QByteArray &QByteArray::setNum(qlonglong n, int base)
 {
-    const int buffsize = 66; // big enough for MAX_ULLONG in base 2
+    const auto buffsize = 66; // big enough for MAX_ULLONG in base 2
     char buff[buffsize];
     char *p;
 
@@ -3896,9 +3896,9 @@ QByteArray &QByteArray::setNum(qlonglong n, int base)
 
 QByteArray &QByteArray::setNum(qulonglong n, int base)
 {
-    const int buffsize = 66; // big enough for MAX_ULLONG in base 2
+    const auto buffsize = 66; // big enough for MAX_ULLONG in base 2
     char buff[buffsize];
-    char *p = qulltoa2(buff + buffsize, n, base);
+    auto p = qulltoa2(buff + buffsize, n, base);
 
     clear();
     append(p, buffsize - (p - buff));
@@ -3935,7 +3935,7 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
 
 QByteArray &QByteArray::setNum(double n, char f, int prec)
 {
-    QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
+    auto form = QLocaleData::DFDecimal;
     uint flags = QLocaleData::ZeroPadExponent;
 
     if (qIsUpper(f))
@@ -4188,11 +4188,11 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64)
 QByteArray QByteArray::fromBase64(const QByteArray &base64, Base64Options options)
 {
     unsigned int buf = 0;
-    int nbits = 0;
+    auto nbits = 0;
     QByteArray tmp((base64.size() * 3) / 4, Qt::Uninitialized);
 
-    int offset = 0;
-    for (int i = 0; i < base64.size(); ++i) {
+    auto offset = 0;
+    for (auto i = 0; i < base64.size(); ++i) {
         int ch = base64.at(i);
         int d;
 
@@ -4242,12 +4242,12 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64, Base64Options option
 QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
 {
     QByteArray res((hexEncoded.size() + 1)/ 2, Qt::Uninitialized);
-    uchar *result = (uchar *)res.data() + res.size();
+    auto result = (uchar *)res.data() + res.size();
 
-    bool odd_digit = true;
-    for (int i = hexEncoded.size() - 1; i >= 0; --i) {
-        uchar ch = uchar(hexEncoded.at(i));
-        int tmp = QtMiscUtils::fromHex(ch);
+    auto odd_digit = true;
+    for (auto i = hexEncoded.size() - 1; i >= 0; --i) {
+        auto ch = uchar(hexEncoded.at(i));
+        auto tmp = QtMiscUtils::fromHex(ch);
         if (tmp == -1)
             continue;
         if (odd_digit) {
@@ -4273,9 +4273,9 @@ QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
 QByteArray QByteArray::toHex() const
 {
     QByteArray hex(d->size * 2, Qt::Uninitialized);
-    char *hexData = hex.data();
-    const uchar *data = (const uchar *)d->data();
-    for (int i = 0; i < d->size; ++i) {
+    auto hexData = hex.data();
+    auto data = (const uchar *)d->data();
+    for (auto i = 0; i < d->size; ++i) {
         hexData[i*2] = QtMiscUtils::toHexLower(data[i] >> 4);
         hexData[i*2+1] = QtMiscUtils::toHexLower(data[i] & 0xf);
     }
@@ -4287,12 +4287,12 @@ static void q_fromPercentEncoding(QByteArray *ba, char percent)
     if (ba->isEmpty())
         return;
 
-    char *data = ba->data();
-    const char *inputPtr = data;
+    auto data = ba->data();
+    auto inputPtr = data;
 
-    int i = 0;
-    int len = ba->count();
-    int outlen = 0;
+    auto i = 0;
+    auto len = ba->count();
+    auto outlen = 0;
     int a, b;
     char c;
     while (i < len) {
@@ -4349,7 +4349,7 @@ QByteArray QByteArray::fromPercentEncoding(const QByteArray &input, char percent
     if (input.isEmpty())
         return QByteArray(input.data(), 0);
 
-    QByteArray tmp = input;
+    auto tmp = input;
     q_fromPercentEncoding(&tmp, percent);
     return tmp;
 }
@@ -4464,7 +4464,7 @@ static inline bool q_strchr(const char str[], char chr)
 {
     if (!str) return false;
 
-    const char *ptr = str;
+    auto ptr = str;
     char c;
     while ((c = *ptr++))
         if (c == chr)
@@ -4477,13 +4477,13 @@ static void q_toPercentEncoding(QByteArray *ba, const char *dontEncode, const ch
     if (ba->isEmpty())
         return;
 
-    QByteArray input = *ba;
-    int len = input.count();
-    const char *inputData = input.constData();
+    auto input = *ba;
+    auto len = input.count();
+    auto inputData = input.constData();
     char *output = 0;
-    int length = 0;
+    auto length = 0;
 
-    for (int i = 0; i < len; ++i) {
+    for (auto i = 0; i < len; ++i) {
         unsigned char c = *inputData++;
         if (((c >= 0x61 && c <= 0x7A) // ALPHA
              || (c >= 0x41 && c <= 0x5A) // ALPHA
@@ -4560,7 +4560,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     if (isEmpty())
         return QByteArray(data(), 0);
 
-    QByteArray include2 = include;
+    auto include2 = include;
     if (percent != '%')                        // the default
         if ((percent >= 0x61 && percent <= 0x7A) // ALPHA
             || (percent >= 0x41 && percent <= 0x5A) // ALPHA
@@ -4571,7 +4571,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
             || percent == 0x7E) // ~
         include2 += percent;
 
-    QByteArray result = *this;
+    auto result = *this;
     q_toPercentEncoding(&result, exclude.nulTerminated().constData(), include2.nulTerminated().constData(), percent);
 
     return result;

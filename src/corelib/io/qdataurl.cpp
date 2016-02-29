@@ -60,10 +60,10 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
     // reality often differs from the specification. People have
     // data: URIs with ? and #
     //QByteArray data = QByteArray::fromPercentEncoding(uri.path(QUrl::FullyEncoded).toLatin1());
-    QByteArray data = QByteArray::fromPercentEncoding(uri.url(QUrl::FullyEncoded | QUrl::RemoveScheme).toLatin1());
+    auto data = QByteArray::fromPercentEncoding(uri.url(QUrl::FullyEncoded | QUrl::RemoveScheme).toLatin1());
 
     // parse it:
-    int pos = data.indexOf(',');
+    auto pos = data.indexOf(',');
     if (pos != -1) {
         payload = data.mid(pos + 1);
         data.truncate(pos);
@@ -76,7 +76,7 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
         }
 
         if (data.toLower().startsWith("charset")) {
-            int i = 7;      // strlen("charset")
+            auto i = 7;      // strlen("charset")
             while (data.at(i) == ' ')
                 ++i;
             if (data.at(i) == '=')

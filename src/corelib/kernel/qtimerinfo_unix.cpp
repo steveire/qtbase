@@ -95,7 +95,7 @@ timespec QTimerInfoList::updateCurrentTime()
 
 timespec qAbsTimespec(const timespec &t)
 {
-    timespec tmp = t;
+    auto tmp = t;
     if (tmp.tv_sec < 0) {
         tmp.tv_sec = -tmp.tv_sec - 1;
         tmp.tv_nsec -= 1000000000;
@@ -120,10 +120,10 @@ bool QTimerInfoList::timeChanged(timespec *delta)
     return false; // Calling "times" crashes.
 #endif
     struct tms unused;
-    clock_t currentTicks = times(&unused);
+    auto currentTicks = times(&unused);
 
-    clock_t elapsedTicks = currentTicks - previousTicks;
-    timespec elapsedTime = currentTime - previousTime;
+    auto elapsedTicks = currentTicks - previousTicks;
+    auto elapsedTime = currentTime - previousTime;
 
     timespec elapsedTimeTicks;
     elapsedTimeTicks.tv_sec = elapsedTicks / ticksPerSecond;
@@ -151,8 +151,8 @@ bool QTimerInfoList::timeChanged(timespec *delta)
 void QTimerInfoList::timerRepair(const timespec &diff)
 {
     // repair all timers
-    for (int i = 0; i < size(); ++i) {
-        QTimerInfo *t = at(i);
+    for (auto i = 0; i < size(); ++i) {
+        auto t = at(i);
         t->timeout = t->timeout + diff;
     }
 }
@@ -179,9 +179,9 @@ void QTimerInfoList::repairTimersIfNeeded()
 */
 void QTimerInfoList::timerInsert(QTimerInfo *ti)
 {
-    int index = size();
+    auto index = size();
     while (index--) {
-        const QTimerInfo * const t = at(index);
+        const auto t = at(index);
         if (!(ti->timeout < t->timeout))
             break;
     }
@@ -197,7 +197,7 @@ inline timespec &operator+=(timespec &t1, int ms)
 
 inline timespec operator+(const timespec &t1, int ms)
 {
-    timespec t2 = t1;
+    auto t2 = t1;
     return t2 += ms;
 }
 
@@ -245,33 +245,33 @@ static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec currentTime)
     //
     // The objective is to make most timers wake up at the same time, thereby reducing CPU wakeups.
 
-    uint interval = uint(t->interval);
-    uint msec = uint(t->timeout.tv_nsec) / 1000 / 1000;
+    auto interval = uint(t->interval);
+    auto msec = uint(t->timeout.tv_nsec) / 1000 / 1000;
     Q_ASSERT(interval >= 20);
 
     // Calculate how much we can round and still keep within 5% error
-    uint absMaxRounding = interval / 20;
+    auto absMaxRounding = interval / 20;
 
     if (interval < 100 && interval != 25 && interval != 50 && interval != 75) {
         // special mode for timers of less than 100 ms
         if (interval < 50) {
             // round to even
             // round towards multiples of 50 ms
-            bool roundUp = (msec % 50) >= 25;
+            auto roundUp = (msec % 50) >= 25;
             msec >>= 1;
             msec |= uint(roundUp);
             msec <<= 1;
         } else {
             // round to multiple of 4
             // round towards multiples of 100 ms
-            bool roundUp = (msec % 100) >= 50;
+            auto roundUp = (msec % 100) >= 50;
             msec >>= 2;
             msec |= uint(roundUp);
             msec <<= 2;
         }
     } else {
         uint min = qMax<int>(0, msec - absMaxRounding);
-        uint max = qMin(1000u, msec + absMaxRounding);
+        auto max = qMin(1000u, msec + absMaxRounding);
 
         // find the boundary that we want, according to the rules above
         // extra rules:
@@ -299,7 +299,7 @@ static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec currentTime)
             }
         } else if ((interval % 50) == 0) {
             // 4) same for multiples of 250, 200, 100, 50
-            uint mult50 = interval / 50;
+            auto mult50 = interval / 50;
             if ((mult50 % 4) == 0) {
                 // multiple of 200
                 wantedBoundaryMultiple = 200;
@@ -317,8 +317,8 @@ static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec currentTime)
             wantedBoundaryMultiple = 25;
         }
 
-        uint base = msec / wantedBoundaryMultiple * wantedBoundaryMultiple;
-        uint middlepoint = base + wantedBoundaryMultiple / 2;
+        auto base = msec / wantedBoundaryMultiple * wantedBoundaryMultiple;
+        auto middlepoint = base + wantedBoundaryMultiple / 2;
         if (msec < middlepoint)
             msec = qMax(base, min);
         else
@@ -385,12 +385,12 @@ static void calculateNextTimeout(QTimerInfo *t, timespec currentTime)
 */
 bool QTimerInfoList::timerWait(timespec &tm)
 {
-    timespec currentTime = updateCurrentTime();
+    auto currentTime = updateCurrentTime();
     repairTimersIfNeeded();
 
     // Find first waiting timer not already active
     QTimerInfo *t = 0;
-    for (QTimerInfoList::const_iterator it = constBegin(); it != constEnd(); ++it) {
+    for (auto it = constBegin(); it != constEnd(); ++it) {
         if (!(*it)->activateRef) {
             t = *it;
             break;
@@ -419,12 +419,12 @@ bool QTimerInfoList::timerWait(timespec &tm)
 */
 int QTimerInfoList::timerRemainingTime(int timerId)
 {
-    timespec currentTime = updateCurrentTime();
+    auto currentTime = updateCurrentTime();
     repairTimersIfNeeded();
     timespec tm = {0, 0};
 
-    for (int i = 0; i < count(); ++i) {
-        QTimerInfo *t = at(i);
+    for (auto i = 0; i < count(); ++i) {
+        auto t = at(i);
         if (t->id == timerId) {
             if (currentTime < t->timeout) {
                 // time to wait
@@ -445,14 +445,14 @@ int QTimerInfoList::timerRemainingTime(int timerId)
 
 void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
 {
-    QTimerInfo *t = new QTimerInfo;
+    auto t = new QTimerInfo;
     t->id = timerId;
     t->interval = interval;
     t->timerType = timerType;
     t->obj = object;
     t->activateRef = 0;
 
-    timespec expected = updateCurrentTime() + interval;
+    auto expected = updateCurrentTime() + interval;
 
     switch (timerType) {
     case Qt::PreciseTimer:
@@ -509,8 +509,8 @@ void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType time
 bool QTimerInfoList::unregisterTimer(int timerId)
 {
     // set timer inactive
-    for (int i = 0; i < count(); ++i) {
-        QTimerInfo *t = at(i);
+    for (auto i = 0; i < count(); ++i) {
+        auto t = at(i);
         if (t->id == timerId) {
             // found it
             removeAt(i);
@@ -530,8 +530,8 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
 {
     if (isEmpty())
         return false;
-    for (int i = 0; i < count(); ++i) {
-        QTimerInfo *t = at(i);
+    for (auto i = 0; i < count(); ++i) {
+        auto t = at(i);
         if (t->obj == object) {
             // object found
             removeAt(i);
@@ -550,8 +550,8 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
 QList<QAbstractEventDispatcher::TimerInfo> QTimerInfoList::registeredTimers(QObject *object) const
 {
     QList<QAbstractEventDispatcher::TimerInfo> list;
-    for (int i = 0; i < count(); ++i) {
-        const QTimerInfo * const t = at(i);
+    for (auto i = 0; i < count(); ++i) {
+        const auto t = at(i);
         if (t->obj == object) {
             list << QAbstractEventDispatcher::TimerInfo(t->id,
                                                         (t->timerType == Qt::VeryCoarseTimer
@@ -571,16 +571,16 @@ int QTimerInfoList::activateTimers()
     if (qt_disable_lowpriority_timers || isEmpty())
         return 0; // nothing to do
 
-    int n_act = 0, maxCount = 0;
+    auto n_act = 0, maxCount = 0;
     firstTimerInfo = 0;
 
-    timespec currentTime = updateCurrentTime();
+    auto currentTime = updateCurrentTime();
     // qDebug() << "Thread" << QThread::currentThreadId() << "woken up at" << currentTime;
     repairTimersIfNeeded();
 
 
     // Find out how many timer have expired
-    for (QTimerInfoList::const_iterator it = constBegin(); it != constEnd(); ++it) {
+    for (auto it = constBegin(); it != constEnd(); ++it) {
         if (currentTime < (*it)->timeout)
             break;
         maxCount++;
@@ -591,7 +591,7 @@ int QTimerInfoList::activateTimers()
         if (isEmpty())
             break;
 
-        QTimerInfo *currentTimerInfo = first();
+        auto currentTimerInfo = first();
         if (currentTime < currentTimerInfo->timeout)
             break; // no timer has expired
 

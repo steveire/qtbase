@@ -93,9 +93,9 @@ QAbstractStatePrivate::QAbstractStatePrivate(StateType type)
 
 QStateMachine *QAbstractStatePrivate::machine() const
 {
-    QObject *par = parent;
+    auto par = parent;
     while (par != 0) {
-        if (QStateMachine *mach = qobject_cast<QStateMachine*>(par))
+        if (auto mach = qobject_cast<QStateMachine*>(par))
             return mach;
         par = par->parent();
     }

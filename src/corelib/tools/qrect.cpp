@@ -892,15 +892,15 @@ bool QRect::contains(const QRect &r, bool proper) const Q_DECL_NOTHROW
     if (isNull() || r.isNull())
         return false;
 
-    int l1 = x1;
-    int r1 = x1;
+    auto l1 = x1;
+    auto r1 = x1;
     if (x2 - x1 + 1 < 0)
         l1 = x2;
     else
         r1 = x2;
 
-    int l2 = r.x1;
-    int r2 = r.x1;
+    auto l2 = r.x1;
+    auto r2 = r.x1;
     if (r.x2 - r.x1 + 1 < 0)
         l2 = r.x2;
     else
@@ -914,15 +914,15 @@ bool QRect::contains(const QRect &r, bool proper) const Q_DECL_NOTHROW
             return false;
     }
 
-    int t1 = y1;
-    int b1 = y1;
+    auto t1 = y1;
+    auto b1 = y1;
     if (y2 - y1 + 1 < 0)
         t1 = y2;
     else
         b1 = y2;
 
-    int t2 = r.y1;
-    int b2 = r.y1;
+    auto t2 = r.y1;
+    auto b2 = r.y1;
     if (r.y2 - r.y1 + 1 < 0)
         t2 = r.y2;
     else
@@ -972,29 +972,29 @@ QRect QRect::operator|(const QRect &r) const Q_DECL_NOTHROW
     if (r.isNull())
         return *this;
 
-    int l1 = x1;
-    int r1 = x1;
+    auto l1 = x1;
+    auto r1 = x1;
     if (x2 - x1 + 1 < 0)
         l1 = x2;
     else
         r1 = x2;
 
-    int l2 = r.x1;
-    int r2 = r.x1;
+    auto l2 = r.x1;
+    auto r2 = r.x1;
     if (r.x2 - r.x1 + 1 < 0)
         l2 = r.x2;
     else
         r2 = r.x2;
 
-    int t1 = y1;
-    int b1 = y1;
+    auto t1 = y1;
+    auto b1 = y1;
     if (y2 - y1 + 1 < 0)
         t1 = y2;
     else
         b1 = y2;
 
-    int t2 = r.y1;
-    int b2 = r.y1;
+    auto t2 = r.y1;
+    auto b2 = r.y1;
     if (r.y2 - r.y1 + 1 < 0)
         t2 = r.y2;
     else
@@ -1041,15 +1041,15 @@ QRect QRect::operator&(const QRect &r) const Q_DECL_NOTHROW
     if (isNull() || r.isNull())
         return QRect();
 
-    int l1 = x1;
-    int r1 = x1;
+    auto l1 = x1;
+    auto r1 = x1;
     if (x2 - x1 + 1 < 0)
         l1 = x2;
     else
         r1 = x2;
 
-    int l2 = r.x1;
-    int r2 = r.x1;
+    auto l2 = r.x1;
+    auto r2 = r.x1;
     if (r.x2 - r.x1 + 1 < 0)
         l2 = r.x2;
     else
@@ -1058,15 +1058,15 @@ QRect QRect::operator&(const QRect &r) const Q_DECL_NOTHROW
     if (l1 > r2 || l2 > r1)
         return QRect();
 
-    int t1 = y1;
-    int b1 = y1;
+    auto t1 = y1;
+    auto b1 = y1;
     if (y2 - y1 + 1 < 0)
         t1 = y2;
     else
         b1 = y2;
 
-    int t2 = r.y1;
-    int b2 = r.y1;
+    auto t2 = r.y1;
+    auto b2 = r.y1;
     if (r.y2 - r.y1 + 1 < 0)
         t2 = r.y2;
     else
@@ -1120,15 +1120,15 @@ bool QRect::intersects(const QRect &r) const Q_DECL_NOTHROW
     if (isNull() || r.isNull())
         return false;
 
-    int l1 = x1;
-    int r1 = x1;
+    auto l1 = x1;
+    auto r1 = x1;
     if (x2 - x1 + 1 < 0)
         l1 = x2;
     else
         r1 = x2;
 
-    int l2 = r.x1;
-    int r2 = r.x1;
+    auto l2 = r.x1;
+    auto r2 = r.x1;
     if (r.x2 - r.x1 + 1 < 0)
         l2 = r.x2;
     else
@@ -1137,15 +1137,15 @@ bool QRect::intersects(const QRect &r) const Q_DECL_NOTHROW
     if (l1 > r2 || l2 > r1)
         return false;
 
-    int t1 = y1;
-    int b1 = y1;
+    auto t1 = y1;
+    auto b1 = y1;
     if (y2 - y1 + 1 < 0)
         t1 = y2;
     else
         b1 = y2;
 
-    int t2 = r.y1;
-    int b2 = r.y1;
+    auto t2 = r.y1;
+    auto b2 = r.y1;
     if (r.y2 - r.y1 + 1 < 0)
         t2 = r.y2;
     else
@@ -1545,7 +1545,7 @@ QDebug operator<<(QDebug dbg, const QRect &r)
 
 QRectF QRectF::normalized() const Q_DECL_NOTHROW
 {
-    QRectF r = *this;
+    auto r = *this;
     if (r.w < 0) {
         r.xp += r.w;
         r.w = -r.w;
@@ -1972,8 +1972,8 @@ QRectF QRectF::normalized() const Q_DECL_NOTHROW
 
 bool QRectF::contains(const QPointF &p) const Q_DECL_NOTHROW
 {
-    qreal l = xp;
-    qreal r = xp;
+    auto l = xp;
+    auto r = xp;
     if (w < 0)
         l += w;
     else
@@ -1984,8 +1984,8 @@ bool QRectF::contains(const QPointF &p) const Q_DECL_NOTHROW
     if (p.x() < l || p.x() > r)
         return false;
 
-    qreal t = yp;
-    qreal b = yp;
+    auto t = yp;
+    auto b = yp;
     if (h < 0)
         t += h;
     else
@@ -2018,8 +2018,8 @@ bool QRectF::contains(const QPointF &p) const Q_DECL_NOTHROW
 
 bool QRectF::contains(const QRectF &r) const Q_DECL_NOTHROW
 {
-    qreal l1 = xp;
-    qreal r1 = xp;
+    auto l1 = xp;
+    auto r1 = xp;
     if (w < 0)
         l1 += w;
     else
@@ -2027,8 +2027,8 @@ bool QRectF::contains(const QRectF &r) const Q_DECL_NOTHROW
     if (l1 == r1) // null rect
         return false;
 
-    qreal l2 = r.xp;
-    qreal r2 = r.xp;
+    auto l2 = r.xp;
+    auto r2 = r.xp;
     if (r.w < 0)
         l2 += r.w;
     else
@@ -2039,8 +2039,8 @@ bool QRectF::contains(const QRectF &r) const Q_DECL_NOTHROW
     if (l2 < l1 || r2 > r1)
         return false;
 
-    qreal t1 = yp;
-    qreal b1 = yp;
+    auto t1 = yp;
+    auto b1 = yp;
     if (h < 0)
         t1 += h;
     else
@@ -2048,8 +2048,8 @@ bool QRectF::contains(const QRectF &r) const Q_DECL_NOTHROW
     if (t1 == b1) // null rect
         return false;
 
-    qreal t2 = r.yp;
-    qreal b2 = r.yp;
+    auto t2 = r.yp;
+    auto b2 = r.yp;
     if (r.h < 0)
         t2 += r.h;
     else
@@ -2161,8 +2161,8 @@ QRectF QRectF::operator|(const QRectF &r) const Q_DECL_NOTHROW
     if (r.isNull())
         return *this;
 
-    qreal left = xp;
-    qreal right = xp;
+    auto left = xp;
+    auto right = xp;
     if (w < 0)
         left += w;
     else
@@ -2176,8 +2176,8 @@ QRectF QRectF::operator|(const QRectF &r) const Q_DECL_NOTHROW
         right = qMax(right, r.xp + r.w);
     }
 
-    qreal top = yp;
-    qreal bottom = yp;
+    auto top = yp;
+    auto bottom = yp;
     if (h < 0)
         top += h;
     else
@@ -2225,8 +2225,8 @@ QRectF QRectF::operator|(const QRectF &r) const Q_DECL_NOTHROW
 
 QRectF QRectF::operator&(const QRectF &r) const Q_DECL_NOTHROW
 {
-    qreal l1 = xp;
-    qreal r1 = xp;
+    auto l1 = xp;
+    auto r1 = xp;
     if (w < 0)
         l1 += w;
     else
@@ -2234,8 +2234,8 @@ QRectF QRectF::operator&(const QRectF &r) const Q_DECL_NOTHROW
     if (l1 == r1) // null rect
         return QRectF();
 
-    qreal l2 = r.xp;
-    qreal r2 = r.xp;
+    auto l2 = r.xp;
+    auto r2 = r.xp;
     if (r.w < 0)
         l2 += r.w;
     else
@@ -2246,8 +2246,8 @@ QRectF QRectF::operator&(const QRectF &r) const Q_DECL_NOTHROW
     if (l1 >= r2 || l2 >= r1)
         return QRectF();
 
-    qreal t1 = yp;
-    qreal b1 = yp;
+    auto t1 = yp;
+    auto b1 = yp;
     if (h < 0)
         t1 += h;
     else
@@ -2255,8 +2255,8 @@ QRectF QRectF::operator&(const QRectF &r) const Q_DECL_NOTHROW
     if (t1 == b1) // null rect
         return QRectF();
 
-    qreal t2 = r.yp;
-    qreal b2 = r.yp;
+    auto t2 = r.yp;
+    auto b2 = r.yp;
     if (r.h < 0)
         t2 += r.h;
     else
@@ -2310,8 +2310,8 @@ QRectF QRectF::operator&(const QRectF &r) const Q_DECL_NOTHROW
 
 bool QRectF::intersects(const QRectF &r) const Q_DECL_NOTHROW
 {
-    qreal l1 = xp;
-    qreal r1 = xp;
+    auto l1 = xp;
+    auto r1 = xp;
     if (w < 0)
         l1 += w;
     else
@@ -2319,8 +2319,8 @@ bool QRectF::intersects(const QRectF &r) const Q_DECL_NOTHROW
     if (l1 == r1) // null rect
         return false;
 
-    qreal l2 = r.xp;
-    qreal r2 = r.xp;
+    auto l2 = r.xp;
+    auto r2 = r.xp;
     if (r.w < 0)
         l2 += r.w;
     else
@@ -2331,8 +2331,8 @@ bool QRectF::intersects(const QRectF &r) const Q_DECL_NOTHROW
     if (l1 >= r2 || l2 >= r1)
         return false;
 
-    qreal t1 = yp;
-    qreal b1 = yp;
+    auto t1 = yp;
+    auto b1 = yp;
     if (h < 0)
         t1 += h;
     else
@@ -2340,8 +2340,8 @@ bool QRectF::intersects(const QRectF &r) const Q_DECL_NOTHROW
     if (t1 == b1) // null rect
         return false;
 
-    qreal t2 = r.yp;
-    qreal b2 = r.yp;
+    auto t2 = r.yp;
+    auto b2 = r.yp;
     if (r.h < 0)
         t2 += r.h;
     else
@@ -2377,10 +2377,10 @@ bool QRectF::intersects(const QRectF &r) const Q_DECL_NOTHROW
 
 QRect QRectF::toAlignedRect() const Q_DECL_NOTHROW
 {
-    int xmin = int(qFloor(xp));
-    int xmax = int(qCeil(xp + w));
-    int ymin = int(qFloor(yp));
-    int ymax = int(qCeil(yp + h));
+    auto xmin = int(qFloor(xp));
+    auto xmax = int(qCeil(xp + w));
+    auto ymin = int(qFloor(yp));
+    auto ymax = int(qCeil(yp + h));
     return QRect(xmin, ymin, xmax - xmin, ymax - ymin);
 }
 

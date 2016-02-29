@@ -65,13 +65,13 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
     if (key.isEmpty())
         return QString();
 
-    QString result = prefix;
+    auto result = prefix;
 
-    QString part1 = key;
+    auto part1 = key;
     part1.replace(QRegExp(QLatin1String("[^A-Za-z]")), QString());
     result.append(part1);
 
-    QByteArray hex = QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex();
+    auto hex = QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex();
     result.append(QLatin1String(hex));
 #ifdef Q_OS_WIN
     return result;

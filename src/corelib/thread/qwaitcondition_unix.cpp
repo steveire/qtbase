@@ -212,7 +212,7 @@ bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
     ++d->waiters;
     mutex->unlock();
 
-    bool returnValue = d->wait(time);
+    auto returnValue = d->wait(time);
 
     mutex->lock();
 
@@ -231,10 +231,10 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
     report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");
     ++d->waiters;
 
-    int previousAccessCount = readWriteLock->d->accessCount;
+    auto previousAccessCount = readWriteLock->d->accessCount;
     readWriteLock->unlock();
 
-    bool returnValue = d->wait(time);
+    auto returnValue = d->wait(time);
 
     if (previousAccessCount < 0)
         readWriteLock->lockForWrite();

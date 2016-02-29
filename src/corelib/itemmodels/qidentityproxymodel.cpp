@@ -158,8 +158,8 @@ QModelIndex QIdentityProxyModel::index(int row, int column, const QModelIndex& p
 {
     Q_ASSERT(parent.isValid() ? parent.model() == this : true);
     Q_D(const QIdentityProxyModel);
-    const QModelIndex sourceParent = mapToSource(parent);
-    const QModelIndex sourceIndex = d->model->index(row, column, sourceParent);
+    const auto sourceParent = mapToSource(parent);
+    const auto sourceIndex = d->model->index(row, column, sourceParent);
     return mapFromSource(sourceIndex);
 }
 
@@ -216,8 +216,8 @@ QItemSelection QIdentityProxyModel::mapSelectionFromSource(const QItemSelection&
     if (!d->model)
         return proxySelection;
 
-    QItemSelection::const_iterator it = selection.constBegin();
-    const QItemSelection::const_iterator end = selection.constEnd();
+    auto it = selection.constBegin();
+    const auto end = selection.constEnd();
     proxySelection.reserve(selection.count());
     for ( ; it != end; ++it) {
         Q_ASSERT(it->model() == d->model);
@@ -239,8 +239,8 @@ QItemSelection QIdentityProxyModel::mapSelectionToSource(const QItemSelection& s
     if (!d->model)
         return sourceSelection;
 
-    QItemSelection::const_iterator it = selection.constBegin();
-    const QItemSelection::const_iterator end = selection.constEnd();
+    auto it = selection.constBegin();
+    const auto end = selection.constEnd();
     sourceSelection.reserve(selection.count());
     for ( ; it != end; ++it) {
         Q_ASSERT(it->model() == this);
@@ -273,9 +273,9 @@ QModelIndexList QIdentityProxyModel::match(const QModelIndex& start, int role, c
     if (!d->model)
         return QModelIndexList();
 
-    const QModelIndexList sourceList = d->model->match(mapToSource(start), role, value, hits, flags);
-    QModelIndexList::const_iterator it = sourceList.constBegin();
-    const QModelIndexList::const_iterator end = sourceList.constEnd();
+    const auto sourceList = d->model->match(mapToSource(start), role, value, hits, flags);
+    auto it = sourceList.constBegin();
+    const auto end = sourceList.constEnd();
     QModelIndexList proxyList;
     proxyList.reserve(sourceList.count());
     for ( ; it != end; ++it)
@@ -289,8 +289,8 @@ QModelIndexList QIdentityProxyModel::match(const QModelIndex& start, int role, c
 QModelIndex QIdentityProxyModel::parent(const QModelIndex& child) const
 {
     Q_ASSERT(child.isValid() ? child.model() == this : true);
-    const QModelIndex sourceIndex = mapToSource(child);
-    const QModelIndex sourceParent = sourceIndex.parent();
+    const auto sourceIndex = mapToSource(child);
+    const auto sourceParent = sourceIndex.parent();
     return mapFromSource(sourceParent);
 }
 
@@ -512,7 +512,7 @@ void QIdentityProxyModelPrivate::_q_sourceLayoutAboutToBeChanged(const QList<QPe
             parents << QPersistentModelIndex();
             continue;
         }
-        const QModelIndex mappedParent = q->mapFromSource(parent);
+        const auto mappedParent = q->mapFromSource(parent);
         Q_ASSERT(mappedParent.isValid());
         parents << mappedParent;
     }
@@ -524,7 +524,7 @@ void QIdentityProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersistentM
 {
     Q_Q(QIdentityProxyModel);
 
-    for (int i = 0; i < proxyIndexes.size(); ++i) {
+    for (auto i = 0; i < proxyIndexes.size(); ++i) {
         q->changePersistentIndex(proxyIndexes.at(i), q->mapFromSource(layoutChangePersistentIndexes.at(i)));
     }
 
@@ -538,7 +538,7 @@ void QIdentityProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersistentM
             parents << QPersistentModelIndex();
             continue;
         }
-        const QModelIndex mappedParent = q->mapFromSource(parent);
+        const auto mappedParent = q->mapFromSource(parent);
         Q_ASSERT(mappedParent.isValid());
         parents << mappedParent;
     }

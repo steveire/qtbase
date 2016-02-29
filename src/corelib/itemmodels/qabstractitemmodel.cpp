@@ -56,9 +56,9 @@ QPersistentModelIndexData *QPersistentModelIndexData::create(const QModelIndex &
 {
     Q_ASSERT(index.isValid()); // we will _never_ insert an invalid index in the list
     QPersistentModelIndexData *d = 0;
-    QAbstractItemModel *model = const_cast<QAbstractItemModel *>(index.model());
+    auto model = const_cast<QAbstractItemModel *>(index.model());
     QHash<QModelIndex, QPersistentModelIndexData *> &indexes = model->d_func()->persistent.indexes;
-    const QHash<QModelIndex, QPersistentModelIndexData *>::iterator it = indexes.find(index);
+    const auto it = indexes.find(index);
     if (it != indexes.end()) {
         d = (*it);
     } else {
@@ -73,10 +73,10 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 {
     Q_ASSERT(data);
     Q_ASSERT(data->ref.load() == 0);
-    QAbstractItemModel *model = const_cast<QAbstractItemModel *>(data->model);
+    auto model = const_cast<QAbstractItemModel *>(data->model);
     // a valid persistent model index with a null model pointer can only happen if the model was destroyed
     if (model) {
-        QAbstractItemModelPrivate *p = model->d_func();
+        auto p = model->d_func();
         Q_ASSERT(p);
         p->removePersistentIndexData(data);
     }
@@ -504,7 +504,7 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
 
 void QAbstractItemModelPrivate::invalidatePersistentIndexes()
 {
-    for (QPersistentModelIndexData *data : qAsConst(persistent.indexes)) {
+    for (auto data : qAsConst(persistent.indexes)) {
         data->index = QModelIndex();
         data->model = 0;
     }
@@ -519,7 +519,7 @@ void QAbstractItemModelPrivate::invalidatePersistentIndexes()
 void QAbstractItemModelPrivate::invalidatePersistentIndex(const QModelIndex &index) {
     const auto it = persistent.indexes.constFind(index);
     if (it != persistent.indexes.cend()) {
-        QPersistentModelIndexData *data = *it;
+        auto data = *it;
         persistent.indexes.erase(it);
         data->index = QModelIndex();
         data->model = 0;
@@ -594,7 +594,7 @@ bool QAbstractItemModelPrivate::variantLessThan(const QVariant &v1, const QVaria
 void QAbstractItemModelPrivate::removePersistentIndexData(QPersistentModelIndexData *data)
 {
     if (data->index.isValid()) {
-        int removed = persistent.indexes.remove(data->index);
+        auto removed = persistent.indexes.remove(data->index);
         Q_ASSERT_X(removed == 1, "QPersistentModelIndex::~QPersistentModelIndex",
                    "persistent model indexes corrupted"); //maybe the index was somewhat invalid?
         // This assert may happen if the model use changePersistentIndex in a way that could result on two
@@ -602,14 +602,14 @@ void QAbstractItemModelPrivate::removePersistentIndexData(QPersistentModelIndexD
         Q_UNUSED(removed);
     }
     // make sure our optimization still works
-    for (int i = persistent.moved.count() - 1; i >= 0; --i) {
-        int idx = persistent.moved[i].indexOf(data);
+    for (auto i = persistent.moved.count() - 1; i >= 0; --i) {
+        auto idx = persistent.moved[i].indexOf(data);
         if (idx >= 0)
             persistent.moved[i].remove(idx);
     }
     // update the references to invalidated persistent indexes
-    for (int i = persistent.invalidated.count() - 1; i >= 0; --i) {
-        int idx = persistent.invalidated[i].indexOf(data);
+    for (auto i = persistent.invalidated.count() - 1; i >= 0; --i) {
+        auto idx = persistent.invalidated[i].indexOf(data);
         if (idx >= 0)
             persistent.invalidated[i].remove(idx);
     }
@@ -623,9 +623,9 @@ void QAbstractItemModelPrivate::rowsAboutToBeInserted(const QModelIndex &parent,
     Q_UNUSED(last);
     QVector<QPersistentModelIndexData *> persistent_moved;
     if (first < q->rowCount(parent)) {
-        for (QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator it = persistent.indexes.constBegin();
+        for (auto it = persistent.indexes.constBegin();
              it != persistent.indexes.constEnd(); ++it) {
-            QPersistentModelIndexData *data = *it;
+            auto data = *it;
             const QModelIndex &index = data->index;
             if (index.row() >= first && index.isValid() && index.parent() == parent) {
                 persistent_moved.append(data);
@@ -638,12 +638,12 @@ void QAbstractItemModelPrivate::rowsAboutToBeInserted(const QModelIndex &parent,
 void QAbstractItemModelPrivate::rowsInserted(const QModelIndex &parent,
                                              int first, int last)
 {
-    QVector<QPersistentModelIndexData *> persistent_moved = persistent.moved.pop();
-    int count = (last - first) + 1; // it is important to only use the delta, because the change could be nested
-    for (QVector<QPersistentModelIndexData *>::const_iterator it = persistent_moved.constBegin();
+    auto persistent_moved = persistent.moved.pop();
+    auto count = (last - first) + 1; // it is important to only use the delta, because the change could be nested
+    for (auto it = persistent_moved.constBegin();
          it != persistent_moved.constEnd(); ++it) {
-        QPersistentModelIndexData *data = *it;
-        QModelIndex old = data->index;
+        auto data = *it;
+        auto old = data->index;
         persistent.indexes.erase(persistent.indexes.constFind(old));
         data->index = q_func()->index(old.row() + count, old.column(), parent);
         if (data->index.isValid()) {
@@ -661,18 +661,18 @@ void QAbstractItemModelPrivate::itemsAboutToBeMoved(const QModelIndex &srcParent
     QVector<QPersistentModelIndexData *> persistent_moved_in_destination;
 
     QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator it;
-    const QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator begin = persistent.indexes.constBegin();
-    const QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator end = persistent.indexes.constEnd();
+    const auto begin = persistent.indexes.constBegin();
+    const auto end = persistent.indexes.constEnd();
 
-    const bool sameParent = (srcParent == destinationParent);
-    const bool movingUp = (srcFirst > destinationChild);
+    const auto sameParent = (srcParent == destinationParent);
+    const auto movingUp = (srcFirst > destinationChild);
 
     for ( it = begin; it != end; ++it) {
-        QPersistentModelIndexData *data = *it;
+        auto data = *it;
         const QModelIndex &index = data->index;
         const QModelIndex &parent = index.parent();
-        const bool isSourceIndex = (parent == srcParent);
-        const bool isDestinationIndex = (parent == destinationParent);
+        const auto isSourceIndex = (parent == srcParent);
+        const auto isDestinationIndex = (parent == destinationParent);
 
         int childPosition;
         if (orientation == Qt::Vertical)
@@ -722,15 +722,15 @@ void QAbstractItemModelPrivate::itemsAboutToBeMoved(const QModelIndex &srcParent
 void QAbstractItemModelPrivate::movePersistentIndexes(const QVector<QPersistentModelIndexData *> &indexes, int change, const QModelIndex &parent, Qt::Orientation orientation)
 {
     QVector<QPersistentModelIndexData *>::const_iterator it;
-    const QVector<QPersistentModelIndexData *>::const_iterator begin = indexes.constBegin();
-    const QVector<QPersistentModelIndexData *>::const_iterator end = indexes.constEnd();
+    const auto begin = indexes.constBegin();
+    const auto end = indexes.constEnd();
 
     for (it = begin; it != end; ++it)
     {
-        QPersistentModelIndexData *data = *it;
+        auto data = *it;
 
-        int row = data->index.row();
-        int column = data->index.column();
+        auto row = data->index.row();
+        auto column = data->index.column();
 
         if (Qt::Vertical == orientation)
             row += change;
@@ -749,16 +749,16 @@ void QAbstractItemModelPrivate::movePersistentIndexes(const QVector<QPersistentM
 
 void QAbstractItemModelPrivate::itemsMoved(const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation)
 {
-    QVector<QPersistentModelIndexData *> moved_in_destination = persistent.moved.pop();
-    QVector<QPersistentModelIndexData *> moved_in_source = persistent.moved.pop();
-    QVector<QPersistentModelIndexData *> moved_explicitly = persistent.moved.pop();
+    auto moved_in_destination = persistent.moved.pop();
+    auto moved_in_source = persistent.moved.pop();
+    auto moved_explicitly = persistent.moved.pop();
 
-    const bool sameParent = (sourceParent == destinationParent);
-    const bool movingUp = (sourceFirst > destinationChild);
+    const auto sameParent = (sourceParent == destinationParent);
+    const auto movingUp = (sourceFirst > destinationChild);
 
-    const int explicit_change = (!sameParent || movingUp) ? destinationChild - sourceFirst : destinationChild - sourceLast - 1 ;
-    const int source_change = (!sameParent || !movingUp) ? -1*(sourceLast - sourceFirst + 1) : sourceLast - sourceFirst + 1 ;
-    const int destination_change = sourceLast - sourceFirst + 1;
+    const auto explicit_change = (!sameParent || movingUp) ? destinationChild - sourceFirst : destinationChild - sourceLast - 1 ;
+    const auto source_change = (!sameParent || !movingUp) ? -1*(sourceLast - sourceFirst + 1) : sourceLast - sourceFirst + 1 ;
+    const auto destination_change = sourceLast - sourceFirst + 1;
 
     movePersistentIndexes(moved_explicitly, explicit_change, destinationParent, orientation);
     movePersistentIndexes(moved_in_source, source_change, sourceParent, orientation);
@@ -772,13 +772,13 @@ void QAbstractItemModelPrivate::rowsAboutToBeRemoved(const QModelIndex &parent,
     QVector<QPersistentModelIndexData *>  persistent_invalidated;
     // find the persistent indexes that are affected by the change, either by being in the removed subtree
     // or by being on the same level and below the removed rows
-    for (QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator it = persistent.indexes.constBegin();
+    for (auto it = persistent.indexes.constBegin();
          it != persistent.indexes.constEnd(); ++it) {
-        QPersistentModelIndexData *data = *it;
-        bool level_changed = false;
-        QModelIndex current = data->index;
+        auto data = *it;
+        auto level_changed = false;
+        auto current = data->index;
         while (current.isValid()) {
-            QModelIndex current_parent = current.parent();
+            auto current_parent = current.parent();
             if (current_parent == parent) { // on the same level as the change
                 if (!level_changed && current.row() > last) // below the removed rows
                     persistent_moved.append(data);
@@ -798,12 +798,12 @@ void QAbstractItemModelPrivate::rowsAboutToBeRemoved(const QModelIndex &parent,
 void QAbstractItemModelPrivate::rowsRemoved(const QModelIndex &parent,
                                             int first, int last)
 {
-    QVector<QPersistentModelIndexData *> persistent_moved = persistent.moved.pop();
-    int count = (last - first) + 1; // it is important to only use the delta, because the change could be nested
-    for (QVector<QPersistentModelIndexData *>::const_iterator it = persistent_moved.constBegin();
+    auto persistent_moved = persistent.moved.pop();
+    auto count = (last - first) + 1; // it is important to only use the delta, because the change could be nested
+    for (auto it = persistent_moved.constBegin();
          it != persistent_moved.constEnd(); ++it) {
-        QPersistentModelIndexData *data = *it;
-        QModelIndex old = data->index;
+        auto data = *it;
+        auto old = data->index;
         persistent.indexes.erase(persistent.indexes.constFind(old));
         data->index = q_func()->index(old.row() - count, old.column(), parent);
         if (data->index.isValid()) {
@@ -812,10 +812,10 @@ void QAbstractItemModelPrivate::rowsRemoved(const QModelIndex &parent,
             qWarning() << "QAbstractItemModel::endRemoveRows:  Invalid index (" << old.row() - count << ',' << old.column() << ") in model" << q_func();
         }
     }
-    QVector<QPersistentModelIndexData *> persistent_invalidated = persistent.invalidated.pop();
-    for (QVector<QPersistentModelIndexData *>::const_iterator it = persistent_invalidated.constBegin();
+    auto persistent_invalidated = persistent.invalidated.pop();
+    for (auto it = persistent_invalidated.constBegin();
          it != persistent_invalidated.constEnd(); ++it) {
-        QPersistentModelIndexData *data = *it;
+        auto data = *it;
         persistent.indexes.erase(persistent.indexes.constFind(data->index));
         data->index = QModelIndex();
         data->model = 0;
@@ -829,9 +829,9 @@ void QAbstractItemModelPrivate::columnsAboutToBeInserted(const QModelIndex &pare
     Q_UNUSED(last);
     QVector<QPersistentModelIndexData *> persistent_moved;
     if (first < q->columnCount(parent)) {
-        for (QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator it = persistent.indexes.constBegin();
+        for (auto it = persistent.indexes.constBegin();
              it != persistent.indexes.constEnd(); ++it) {
-            QPersistentModelIndexData *data = *it;
+            auto data = *it;
             const QModelIndex &index = data->index;
             if (index.column() >= first && index.isValid() && index.parent() == parent)
                 persistent_moved.append(data);
@@ -843,12 +843,12 @@ void QAbstractItemModelPrivate::columnsAboutToBeInserted(const QModelIndex &pare
 void QAbstractItemModelPrivate::columnsInserted(const QModelIndex &parent,
                                                 int first, int last)
 {
-    QVector<QPersistentModelIndexData *> persistent_moved = persistent.moved.pop();
-    int count = (last - first) + 1; // it is important to only use the delta, because the change could be nested
-    for (QVector<QPersistentModelIndexData *>::const_iterator it = persistent_moved.constBegin();
+    auto persistent_moved = persistent.moved.pop();
+    auto count = (last - first) + 1; // it is important to only use the delta, because the change could be nested
+    for (auto it = persistent_moved.constBegin();
          it != persistent_moved.constEnd(); ++it) {
-        QPersistentModelIndexData *data = *it;
-        QModelIndex old = data->index;
+        auto data = *it;
+        auto old = data->index;
         persistent.indexes.erase(persistent.indexes.constFind(old));
         data->index = q_func()->index(old.row(), old.column() + count, parent);
         if (data->index.isValid()) {
@@ -866,13 +866,13 @@ void QAbstractItemModelPrivate::columnsAboutToBeRemoved(const QModelIndex &paren
     QVector<QPersistentModelIndexData *> persistent_invalidated;
     // find the persistent indexes that are affected by the change, either by being in the removed subtree
     // or by being on the same level and to the right of the removed columns
-    for (QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator it = persistent.indexes.constBegin();
+    for (auto it = persistent.indexes.constBegin();
          it != persistent.indexes.constEnd(); ++it) {
-        QPersistentModelIndexData *data = *it;
-        bool level_changed = false;
-        QModelIndex current = data->index;
+        auto data = *it;
+        auto level_changed = false;
+        auto current = data->index;
         while (current.isValid()) {
-            QModelIndex current_parent = current.parent();
+            auto current_parent = current.parent();
             if (current_parent == parent) { // on the same level as the change
                 if (!level_changed && current.column() > last) // right of the removed columns
                     persistent_moved.append(data);
@@ -893,12 +893,12 @@ void QAbstractItemModelPrivate::columnsAboutToBeRemoved(const QModelIndex &paren
 void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
                                                int first, int last)
 {
-    QVector<QPersistentModelIndexData *> persistent_moved = persistent.moved.pop();
-    int count = (last - first) + 1; // it is important to only use the delta, because the change could be nested
-    for (QVector<QPersistentModelIndexData *>::const_iterator it = persistent_moved.constBegin();
+    auto persistent_moved = persistent.moved.pop();
+    auto count = (last - first) + 1; // it is important to only use the delta, because the change could be nested
+    for (auto it = persistent_moved.constBegin();
          it != persistent_moved.constEnd(); ++it) {
-        QPersistentModelIndexData *data = *it;
-        QModelIndex old = data->index;
+        auto data = *it;
+        auto old = data->index;
         persistent.indexes.erase(persistent.indexes.constFind(old));
         data->index = q_func()->index(old.row(), old.column() - count, parent);
         if (data->index.isValid()) {
@@ -907,10 +907,10 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
             qWarning() << "QAbstractItemModel::endRemoveColumns:  Invalid index (" << old.row() << ',' << old.column() - count << ") in model" << q_func();
         }
     }
-    QVector<QPersistentModelIndexData *> persistent_invalidated = persistent.invalidated.pop();
-    for (QVector<QPersistentModelIndexData *>::const_iterator it = persistent_invalidated.constBegin();
+    auto persistent_invalidated = persistent.invalidated.pop();
+    for (auto it = persistent_invalidated.constBegin();
          it != persistent_invalidated.constEnd(); ++it) {
-        QPersistentModelIndexData *data = *it;
+        auto data = *it;
         persistent.indexes.erase(persistent.indexes.constFind(data->index));
         data->index = QModelIndex();
         data->model = 0;
@@ -1768,8 +1768,8 @@ QModelIndex QAbstractItemModel::sibling(int row, int column, const QModelIndex &
 QMap<int, QVariant> QAbstractItemModel::itemData(const QModelIndex &index) const
 {
     QMap<int, QVariant> roles;
-    for (int i = 0; i < Qt::UserRole; ++i) {
-        QVariant variantData = data(index, i);
+    for (auto i = 0; i < Qt::UserRole; ++i) {
+        auto variantData = data(index, i);
         if (variantData.isValid())
             roles.insert(i, variantData);
     }
@@ -1821,8 +1821,8 @@ bool QAbstractItemModel::setData(const QModelIndex &index, const QVariant &value
 */
 bool QAbstractItemModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles)
 {
-    bool b = true;
-    for (QMap<int, QVariant>::ConstIterator it = roles.begin(); it != roles.end(); ++it)
+    auto b = true;
+    for (auto it = roles.begin(); it != roles.end(); ++it)
         b = b && setData(index, it.value(), it.key());
     return b;
 }
@@ -1866,11 +1866,11 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
 {
     if (indexes.count() <= 0)
         return 0;
-    QStringList types = mimeTypes();
+    auto types = mimeTypes();
     if (types.isEmpty())
         return 0;
-    QMimeData *data = new QMimeData();
-    QString format = types.at(0);
+    auto data = new QMimeData();
+    auto format = types.at(0);
     QByteArray encoded;
     QDataStream stream(&encoded, QIODevice::WriteOnly);
     encodeData(indexes, stream);
@@ -1902,8 +1902,8 @@ bool QAbstractItemModel::canDropMimeData(const QMimeData *data, Qt::DropAction a
     if (!(action & supportedDropActions()))
         return false;
 
-    const QStringList modelTypes = mimeTypes();
-    for (int i = 0; i < modelTypes.count(); ++i) {
+    const auto modelTypes = mimeTypes();
+    for (auto i = 0; i < modelTypes.count(); ++i) {
         if (data->hasFormat(modelTypes.at(i)))
             return true;
     }
@@ -1946,10 +1946,10 @@ bool QAbstractItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     if (!data || !(action == Qt::CopyAction || action == Qt::MoveAction))
         return false;
     // check if the format is supported
-    QStringList types = mimeTypes();
+    auto types = mimeTypes();
     if (types.isEmpty())
         return false;
-    QString format = types.at(0);
+    auto format = types.at(0);
     if (!data->hasFormat(format))
         return false;
     if (row > rowCount(parent))
@@ -1959,7 +1959,7 @@ bool QAbstractItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     if (column == -1)
         column = 0;
     // decode and insert
-    QByteArray encoded = data->data(format);
+    auto encoded = data->data(format);
     QDataStream stream(&encoded, QIODevice::ReadOnly);
     return decodeData(row, column, parent, stream);
 }
@@ -2269,22 +2269,22 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
 {
     QModelIndexList result;
     uint matchType = flags & 0x0F;
-    Qt::CaseSensitivity cs = flags & Qt::MatchCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    auto cs = flags & Qt::MatchCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
     bool recurse = flags & Qt::MatchRecursive;
     bool wrap = flags & Qt::MatchWrap;
-    bool allHits = (hits == -1);
+    auto allHits = (hits == -1);
     QString text; // only convert to a string if it is needed
-    QModelIndex p = parent(start);
-    int from = start.row();
-    int to = rowCount(p);
+    auto p = parent(start);
+    auto from = start.row();
+    auto to = rowCount(p);
 
     // iterates twice if wrapping
-    for (int i = 0; (wrap && i < 2) || (!wrap && i < 1); ++i) {
-        for (int r = from; (r < to) && (allHits || result.count() < hits); ++r) {
-            QModelIndex idx = index(r, start.column(), p);
+    for (auto i = 0; (wrap && i < 2) || (!wrap && i < 1); ++i) {
+        for (auto r = from; (r < to) && (allHits || result.count() < hits); ++r) {
+            auto idx = index(r, start.column(), p);
             if (!idx.isValid())
                  continue;
-            QVariant v = data(idx, role);
+            auto v = data(idx, role);
             // QVariant based matching
             if (matchType == Qt::MatchExactly) {
                 if (value == v)
@@ -2292,7 +2292,7 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
             } else { // QString based matching
                 if (text.isEmpty()) // lazy conversion
                     text = value.toString();
-                QString t = v.toString();
+                auto t = v.toString();
                 switch (matchType) {
                 case Qt::MatchRegExp:
                     if (QRegExp(text, cs).exactMatch(t))
@@ -2503,7 +2503,7 @@ bool QAbstractItemModel::setHeaderData(int section, Qt::Orientation orientation,
 */
 void QAbstractItemModel::encodeData(const QModelIndexList &indexes, QDataStream &stream) const
 {
-    QModelIndexList::ConstIterator it = indexes.begin();
+    auto it = indexes.begin();
     for (; it != indexes.end(); ++it)
         stream << (*it).row() << (*it).column() << itemData(*it);
 }
@@ -2514,10 +2514,10 @@ void QAbstractItemModel::encodeData(const QModelIndexList &indexes, QDataStream 
 bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &parent,
                                     QDataStream &stream)
 {
-    int top = INT_MAX;
-    int left = INT_MAX;
-    int bottom = 0;
-    int right = 0;
+    auto top = INT_MAX;
+    auto left = INT_MAX;
+    auto bottom = 0;
+    auto right = 0;
     QVector<int> rows, columns;
     QVector<QMap<int, QVariant> > data;
 
@@ -2536,26 +2536,26 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
 
     // insert the dragged items into the table, use a bit array to avoid overwriting items,
     // since items from different tables can have the same row and column
-    int dragRowCount = 0;
-    int dragColumnCount = right - left + 1;
+    auto dragRowCount = 0;
+    auto dragColumnCount = right - left + 1;
 
     // Compute the number of continuous rows upon insertion and modify the rows to match
     QVector<int> rowsToInsert(bottom + 1);
-    for (int i = 0; i < rows.count(); ++i)
+    for (auto i = 0; i < rows.count(); ++i)
         rowsToInsert[rows.at(i)] = 1;
-    for (int i = 0; i < rowsToInsert.count(); ++i) {
+    for (auto i = 0; i < rowsToInsert.count(); ++i) {
         if (rowsToInsert[i] == 1){
             rowsToInsert[i] = dragRowCount;
             ++dragRowCount;
         }
     }
-    for (int i = 0; i < rows.count(); ++i)
+    for (auto i = 0; i < rows.count(); ++i)
         rows[i] = top + rowsToInsert[rows[i]];
 
     QBitArray isWrittenTo(dragRowCount * dragColumnCount);
 
     // make space in the table for the dropped data
-    int colCount = columnCount(parent);
+    auto colCount = columnCount(parent);
     if (colCount == 0) {
         insertColumns(colCount, dragColumnCount - colCount, parent);
         colCount = columnCount(parent);
@@ -2567,12 +2567,12 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
 
     QVector<QPersistentModelIndex> newIndexes(data.size());
     // set the data in the table
-    for (int j = 0; j < data.size(); ++j) {
-        int relativeRow = rows.at(j) - top;
-        int relativeColumn = columns.at(j) - left;
-        int destinationRow = relativeRow + row;
-        int destinationColumn = relativeColumn + column;
-        int flat = (relativeRow * dragColumnCount) + relativeColumn;
+    for (auto j = 0; j < data.size(); ++j) {
+        auto relativeRow = rows.at(j) - top;
+        auto relativeColumn = columns.at(j) - left;
+        auto destinationRow = relativeRow + row;
+        auto destinationColumn = relativeColumn + column;
+        auto flat = (relativeRow * dragColumnCount) + relativeColumn;
         // if the item was already written to, or we just can't fit it in the table, create a new row
         if (destinationColumn >= colCount || isWrittenTo.testBit(flat)) {
             destinationColumn = qBound(column, destinationColumn, colCount - 1);
@@ -2587,7 +2587,7 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
         }
     }
 
-    for(int k = 0; k < newIndexes.size(); k++) {
+    for(auto k = 0; k < newIndexes.size(); k++) {
         if (newIndexes.at(k).isValid())
             setItemData(newIndexes.at(k), data.at(k));
     }
@@ -2656,7 +2656,7 @@ void QAbstractItemModel::beginInsertRows(const QModelIndex &parent, int first, i
 void QAbstractItemModel::endInsertRows()
 {
     Q_D(QAbstractItemModel);
-    QAbstractItemModelPrivate::Change change = d->changes.pop();
+    auto change = d->changes.pop();
     d->rowsInserted(change.parent, change.first, change.last);
     emit rowsInserted(change.parent, change.first, change.last, QPrivateSignal());
 }
@@ -2710,7 +2710,7 @@ void QAbstractItemModel::beginRemoveRows(const QModelIndex &parent, int first, i
 void QAbstractItemModel::endRemoveRows()
 {
     Q_D(QAbstractItemModel);
-    QAbstractItemModelPrivate::Change change = d->changes.pop();
+    auto change = d->changes.pop();
     d->rowsRemoved(change.parent, change.first, change.last);
     emit rowsRemoved(change.parent, change.first, change.last, QPrivateSignal());
 }
@@ -2729,8 +2729,8 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
     if (destinationParent == srcParent)
         return !(destinationStart >= start && destinationStart <= end + 1);
 
-    QModelIndex destinationAncestor = destinationParent;
-    int pos = (Qt::Vertical == orientation) ? destinationAncestor.row() : destinationAncestor.column();
+    auto destinationAncestor = destinationParent;
+    auto pos = (Qt::Vertical == orientation) ? destinationAncestor.row() : destinationAncestor.column();
     forever {
         if (destinationAncestor == srcParent) {
             if (pos >= start && pos <= end)
@@ -2852,7 +2852,7 @@ bool QAbstractItemModel::beginMoveRows(const QModelIndex &sourceParent, int sour
     QAbstractItemModelPrivate::Change sourceChange(sourceParent, sourceFirst, sourceLast);
     sourceChange.needsAdjust = sourceParent.isValid() && sourceParent.row() >= destinationChild && sourceParent.parent() == destinationParent;
     d->changes.push(sourceChange);
-    int destinationLast = destinationChild + (sourceLast - sourceFirst);
+    auto destinationLast = destinationChild + (sourceLast - sourceFirst);
     QAbstractItemModelPrivate::Change destinationChange(destinationParent, destinationChild, destinationLast);
     destinationChange.needsAdjust = destinationParent.isValid() && destinationParent.row() >= sourceLast && destinationParent.parent() == sourceParent;
     d->changes.push(destinationChange);
@@ -2877,13 +2877,13 @@ void QAbstractItemModel::endMoveRows()
 {
     Q_D(QAbstractItemModel);
 
-    QAbstractItemModelPrivate::Change insertChange = d->changes.pop();
-    QAbstractItemModelPrivate::Change removeChange = d->changes.pop();
+    auto insertChange = d->changes.pop();
+    auto removeChange = d->changes.pop();
 
-    QModelIndex adjustedSource = removeChange.parent;
-    QModelIndex adjustedDestination = insertChange.parent;
+    auto adjustedSource = removeChange.parent;
+    auto adjustedDestination = insertChange.parent;
 
-    const int numMoved = removeChange.last - removeChange.first + 1;
+    const auto numMoved = removeChange.last - removeChange.first + 1;
     if (insertChange.needsAdjust)
       adjustedDestination = createIndex(adjustedDestination.row() - numMoved, adjustedDestination.column(), adjustedDestination.internalPointer());
 
@@ -2958,7 +2958,7 @@ void QAbstractItemModel::beginInsertColumns(const QModelIndex &parent, int first
 void QAbstractItemModel::endInsertColumns()
 {
     Q_D(QAbstractItemModel);
-    QAbstractItemModelPrivate::Change change = d->changes.pop();
+    auto change = d->changes.pop();
     d->columnsInserted(change.parent, change.first, change.last);
     emit columnsInserted(change.parent, change.first, change.last, QPrivateSignal());
 }
@@ -3012,7 +3012,7 @@ void QAbstractItemModel::beginRemoveColumns(const QModelIndex &parent, int first
 void QAbstractItemModel::endRemoveColumns()
 {
     Q_D(QAbstractItemModel);
-    QAbstractItemModelPrivate::Change change = d->changes.pop();
+    auto change = d->changes.pop();
     d->columnsRemoved(change.parent, change.first, change.last);
     emit columnsRemoved(change.parent, change.first, change.last, QPrivateSignal());
 }
@@ -3069,7 +3069,7 @@ bool QAbstractItemModel::beginMoveColumns(const QModelIndex &sourceParent, int s
     QAbstractItemModelPrivate::Change sourceChange(sourceParent, sourceFirst, sourceLast);
     sourceChange.needsAdjust = sourceParent.isValid() && sourceParent.row() >= destinationChild && sourceParent.parent() == destinationParent;
     d->changes.push(sourceChange);
-    int destinationLast = destinationChild + (sourceLast - sourceFirst);
+    auto destinationLast = destinationChild + (sourceLast - sourceFirst);
     QAbstractItemModelPrivate::Change destinationChange(destinationParent, destinationChild, destinationLast);
     destinationChange.needsAdjust = destinationParent.isValid() && destinationParent.row() >= sourceLast && destinationParent.parent() == sourceParent;
     d->changes.push(destinationChange);
@@ -3095,13 +3095,13 @@ void QAbstractItemModel::endMoveColumns()
 {
     Q_D(QAbstractItemModel);
 
-    QAbstractItemModelPrivate::Change insertChange = d->changes.pop();
-    QAbstractItemModelPrivate::Change removeChange = d->changes.pop();
+    auto insertChange = d->changes.pop();
+    auto removeChange = d->changes.pop();
 
-    QModelIndex adjustedSource = removeChange.parent;
-    QModelIndex adjustedDestination = insertChange.parent;
+    auto adjustedSource = removeChange.parent;
+    auto adjustedDestination = insertChange.parent;
 
-    const int numMoved = removeChange.last - removeChange.first + 1;
+    const auto numMoved = removeChange.last - removeChange.first + 1;
     if (insertChange.needsAdjust)
       adjustedDestination = createIndex(adjustedDestination.row(), adjustedDestination.column() - numMoved, adjustedDestination.internalPointer());
 
@@ -3199,7 +3199,7 @@ void QAbstractItemModel::changePersistentIndex(const QModelIndex &from, const QM
     // find the data and reinsert it sorted
     const auto it = d->persistent.indexes.constFind(from);
     if (it != d->persistent.indexes.cend()) {
-        QPersistentModelIndexData *data = *it;
+        auto data = *it;
         d->persistent.indexes.erase(it);
         data->index = to;
         if (to.isValid())
@@ -3228,12 +3228,12 @@ void QAbstractItemModel::changePersistentIndexList(const QModelIndexList &from,
         return;
     QVector<QPersistentModelIndexData *> toBeReinserted;
     toBeReinserted.reserve(to.count());
-    for (int i = 0; i < from.count(); ++i) {
+    for (auto i = 0; i < from.count(); ++i) {
         if (from.at(i) == to.at(i))
             continue;
         const auto it = d->persistent.indexes.constFind(from.at(i));
         if (it != d->persistent.indexes.cend()) {
-            QPersistentModelIndexData *data = *it;
+            auto data = *it;
             d->persistent.indexes.erase(it);
             data->index = to.at(i);
             if (data->index.isValid())
@@ -3243,9 +3243,9 @@ void QAbstractItemModel::changePersistentIndexList(const QModelIndexList &from,
         }
     }
 
-    for (QVector<QPersistentModelIndexData *>::const_iterator it = toBeReinserted.constBegin();
+    for (auto it = toBeReinserted.constBegin();
          it != toBeReinserted.constEnd() ; ++it) {
-        QPersistentModelIndexData *data = *it;
+        auto data = *it;
         d->persistent.insertMultiAtEnd(data->index, data);
     }
 }
@@ -3260,9 +3260,9 @@ QModelIndexList QAbstractItemModel::persistentIndexList() const
     Q_D(const QAbstractItemModel);
     QModelIndexList result;
     result.reserve(d->persistent.indexes.count());
-    for (QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator it = d->persistent.indexes.constBegin();
+    for (auto it = d->persistent.indexes.constBegin();
          it != d->persistent.indexes.constEnd(); ++it) {
-        QPersistentModelIndexData *data = *it;
+        auto data = *it;
         result.append(data->index);
     }
     return result;
@@ -3409,7 +3409,7 @@ bool QAbstractTableModel::hasChildren(const QModelIndex &parent) const
  */
 Qt::ItemFlags QAbstractTableModel::flags(const QModelIndex &index) const
 {
-    Qt::ItemFlags f = QAbstractItemModel::flags(index);
+    auto f = QAbstractItemModel::flags(index);
     if (index.isValid())
         f |= Qt::ItemNeverHasChildren;
     return f;
@@ -3551,7 +3551,7 @@ QModelIndex QAbstractListModel::sibling(int row, int column, const QModelIndex &
  */
 Qt::ItemFlags QAbstractListModel::flags(const QModelIndex &index) const
 {
-    Qt::ItemFlags f = QAbstractItemModel::flags(index);
+    auto f = QAbstractItemModel::flags(index);
     if (index.isValid())
         f |= Qt::ItemNeverHasChildren;
     return f;
@@ -3591,20 +3591,20 @@ bool QAbstractTableModel::dropMimeData(const QMimeData *data, Qt::DropAction act
     if (!data || !(action == Qt::CopyAction || action == Qt::MoveAction))
         return false;
 
-    QStringList types = mimeTypes();
+    auto types = mimeTypes();
     if (types.isEmpty())
         return false;
-    QString format = types.at(0);
+    auto format = types.at(0);
     if (!data->hasFormat(format))
         return false;
 
-    QByteArray encoded = data->data(format);
+    auto encoded = data->data(format);
     QDataStream stream(&encoded, QIODevice::ReadOnly);
 
     // if the drop is on an item, replace the data in the items
     if (parent.isValid() && row == -1 && column == -1) {
-        int top = INT_MAX;
-        int left = INT_MAX;
+        auto top = INT_MAX;
+        auto left = INT_MAX;
         QVector<int> rows, columns;
         QVector<QMap<int, QVariant> > data;
 
@@ -3619,9 +3619,9 @@ bool QAbstractTableModel::dropMimeData(const QMimeData *data, Qt::DropAction act
             left = qMin(c, left);
         }
 
-        for (int i = 0; i < data.size(); ++i) {
-            int r = (rows.at(i) - top) + parent.row();
-            int c = (columns.at(i) - left) + parent.column();
+        for (auto i = 0; i < data.size(); ++i) {
+            auto r = (rows.at(i) - top) + parent.row();
+            auto c = (columns.at(i) - left) + parent.column();
             if (hasIndex(r, c))
                 setItemData(index(r, c), data.at(i));
         }
@@ -3642,20 +3642,20 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     if (!data || !(action == Qt::CopyAction || action == Qt::MoveAction))
         return false;
 
-    QStringList types = mimeTypes();
+    auto types = mimeTypes();
     if (types.isEmpty())
         return false;
-    QString format = types.at(0);
+    auto format = types.at(0);
     if (!data->hasFormat(format))
         return false;
 
-    QByteArray encoded = data->data(format);
+    auto encoded = data->data(format);
     QDataStream stream(&encoded, QIODevice::ReadOnly);
 
     // if the drop is on an item, replace the data in the items
     if (parent.isValid() && row == -1 && column == -1) {
-        int top = INT_MAX;
-        int left = INT_MAX;
+        auto top = INT_MAX;
+        auto left = INT_MAX;
         QVector<int> rows, columns;
         QVector<QMap<int, QVariant> > data;
 
@@ -3670,8 +3670,8 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
             left = qMin(c, left);
         }
 
-        for (int i = 0; i < data.size(); ++i) {
-            int r = (rows.at(i) - top) + parent.row();
+        for (auto i = 0; i < data.size(); ++i) {
+            auto r = (rows.at(i) - top) + parent.row();
             if (columns.at(i) == left && hasIndex(r, 0))
                 setItemData(index(r), data.at(i));
         }
@@ -3745,9 +3745,9 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
  */
 void QAbstractItemModelPrivate::Persistent::insertMultiAtEnd(const QModelIndex& key, QPersistentModelIndexData *data)
 {
-    QHash<QModelIndex,QPersistentModelIndexData *>::iterator newIt =
+    auto newIt =
             indexes.insertMulti(key, data);
-    QHash<QModelIndex,QPersistentModelIndexData *>::iterator it = newIt + 1;
+    auto it = newIt + 1;
     while (it != indexes.end() && it.key() == key) {
         qSwap(*newIt,*it);
         newIt = it;

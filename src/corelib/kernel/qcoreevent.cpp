@@ -410,7 +410,7 @@ struct QBasicAtomicBitField {
     bool allocateSpecific(int which) Q_DECL_NOTHROW
     {
         QBasicAtomicInteger<uint> &entry = data[which / BitsPerInt];
-        const uint old = entry.load();
+        const auto old = entry.load();
         const uint bit = 1U << (which % BitsPerInt);
         return !(old & bit) // wasn't taken
             && entry.testAndSetRelaxed(old, old | bit); // still wasn't taken
@@ -474,7 +474,7 @@ static inline int registerEventTypeZeroBased(int id) Q_DECL_NOTHROW
 */
 int QEvent::registerEventType(int hint) Q_DECL_NOTHROW
 {
-    const int result = registerEventTypeZeroBased(QEvent::MaxUser - hint);
+    const auto result = registerEventTypeZeroBased(QEvent::MaxUser - hint);
     return result < 0 ? -1 : QEvent::MaxUser - result ;
 }
 

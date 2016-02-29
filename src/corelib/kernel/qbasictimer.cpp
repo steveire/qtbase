@@ -115,7 +115,7 @@ QT_BEGIN_NAMESPACE
  */
 void QBasicTimer::start(int msec, QObject *obj)
 {
-    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+    auto eventDispatcher = QAbstractEventDispatcher::instance();
     if (Q_UNLIKELY(!eventDispatcher)) {
         qWarning("QBasicTimer::start: QBasicTimer can only be used with threads started with QThread");
         return;
@@ -148,7 +148,7 @@ void QBasicTimer::start(int msec, QObject *obj)
  */
 void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
 {
-    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+    auto eventDispatcher = QAbstractEventDispatcher::instance();
     if (Q_UNLIKELY(msec < 0)) {
         qWarning("QBasicTimer::start: Timers cannot have negative timeouts");
         return;
@@ -180,7 +180,7 @@ void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
 void QBasicTimer::stop()
 {
     if (id) {
-        QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+        auto eventDispatcher = QAbstractEventDispatcher::instance();
         if (eventDispatcher) {
             if (Q_UNLIKELY(!eventDispatcher->unregisterTimer(id))) {
                 qWarning("QBasicTimer::stop: Failed. Possibly trying to stop from a different thread");

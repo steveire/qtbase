@@ -77,16 +77,16 @@ QT_END_INCLUDE_NAMESPACE
 static void print_backtrace(FILE *outb)
 {
     void *stack[128];
-    int stack_size = backtrace(stack, sizeof(stack) / sizeof(void *));
-    char **stack_symbols = backtrace_symbols(stack, stack_size);
+    auto stack_size = backtrace(stack, sizeof(stack) / sizeof(void *));
+    auto stack_symbols = backtrace_symbols(stack, stack_size);
     fprintf(outb, "Stack [%d]:\n", stack_size);
-    if(FILE *cppfilt = popen("c++filt", "rw")) {
+    if(auto cppfilt = popen("c++filt", "rw")) {
         dup2(fileno(outb), fileno(cppfilt));
-        for(int i = stack_size-1; i>=0; --i)
+        for(auto i = stack_size-1; i>=0; --i)
             fwrite(stack_symbols[i], 1, strlen(stack_symbols[i]), cppfilt);
         pclose(cppfilt);
     } else {
-        for(int i = stack_size-1; i>=0; --i)
+        for(auto i = stack_size-1; i>=0; --i)
             fprintf(outb, "#%d  %p [%s]\n", i, stack[i], stack_symbols[i]);
     }
 }
@@ -387,9 +387,9 @@ void qt_signal_handler(int sig)
         (*QSegfaultHandler::callback)();
         _exit(1);
     }
-    FILE *outb = stderr;
-    if(char *crash_loc = ::getenv("QT_CRASH_OUTPUT")) {
-        if(FILE *new_outb = fopen(crash_loc, "w")) {
+    auto outb = stderr;
+    if(auto crash_loc = ::getenv("QT_CRASH_OUTPUT")) {
+        if(auto new_outb = fopen(crash_loc, "w")) {
             fprintf(stderr, "Crash (backtrace written to %s)!!!\n", crash_loc);
             outb = new_outb;
         }

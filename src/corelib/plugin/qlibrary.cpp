@@ -257,20 +257,20 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     /*
        ELF and Mach-O binaries with GCC have .qplugin sections.
     */
-    bool hasMetaData = false;
+    auto hasMetaData = false;
     long pos = 0;
     char pattern[] = "qTMETADATA  ";
     pattern[0] = 'Q'; // Ensure the pattern "QTMETADATA" is not found in this library should QPluginLoader ever encounter it.
     const ulong plen = qstrlen(pattern);
 #if defined (Q_OF_ELF) && defined(Q_CC_GNU)
-    int r = QElfParser().parse(filedata, fdlen, library, lib, &pos, &fdlen);
+    auto r = QElfParser().parse(filedata, fdlen, library, lib, &pos, &fdlen);
     if (r == QElfParser::Corrupt || r == QElfParser::NotElf) {
             if (lib && qt_debug_component()) {
                 qWarning("QElfParser: %s",qPrintable(lib->errorString));
             }
             return false;
     } else if (r == QElfParser::QtMetaDataSection) {
-        long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
+        auto rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
         if (rel < 0)
             pos = -1;
         else
@@ -303,12 +303,12 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         hasMetaData = true;
 #endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
 
-    bool ret = false;
+    auto ret = false;
 
     if (pos >= 0) {
         if (hasMetaData) {
-            const char *data = filedata + pos;
-            QJsonDocument doc = qJsonFromRawLibraryMetaData(data);
+            auto data = filedata + pos;
+            auto doc = qJsonFromRawLibraryMetaData(data);
             lib->metaData = doc.object();
             if (qt_debug_component())
                 qWarning("Found metadata in lib %s, metadata=\n%s\n",
@@ -384,14 +384,14 @@ QLibraryStore::~QLibraryStore()
 
 inline void QLibraryStore::cleanup()
 {
-    QLibraryStore *data = qt_library_data;
+    auto data = qt_library_data;
     if (!data)
         return;
 
     // find any libraries that are still loaded but have a no one attached to them
-    LibraryMap::Iterator it = data->libraryMap.begin();
+    auto it = data->libraryMap.begin();
     for (; it != data->libraryMap.end(); ++it) {
-        QLibraryPrivate *lib = it.value();
+        auto lib = it.value();
         if (lib->libraryRefCount.load() == 1) {
             if (lib->libraryUnloadCount.load() > 0) {
                 Q_ASSERT(lib->pHnd);
@@ -412,7 +412,7 @@ inline void QLibraryStore::cleanup()
 
     if (qt_debug_component()) {
         // dump all objects that remain
-        for (QLibraryPrivate *lib : qAsConst(data->libraryMap)) {
+        for (auto lib : qAsConst(data->libraryMap)) {
             if (lib)
                 qDebug() << "On QtCore unload," << lib->fileName << "was leaked, with"
                          << lib->libraryRefCount.load() << "users";
@@ -443,7 +443,7 @@ inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, con
                                                     QLibrary::LoadHints loadHints)
 {
     QMutexLocker locker(&qt_library_mutex);
-    QLibraryStore *data = instance();
+    auto data = instance();
 
     // check if this library is already loaded
     QLibraryPrivate *lib = 0;
@@ -466,7 +466,7 @@ inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, con
 inline void QLibraryStore::releaseLibrary(QLibraryPrivate *lib)
 {
     QMutexLocker locker(&qt_library_mutex);
-    QLibraryStore *data = instance();
+    auto data = instance();
 
     if (lib->libraryRefCount.deref()) {
         // still in use
@@ -477,7 +477,7 @@ inline void QLibraryStore::releaseLibrary(QLibraryPrivate *lib)
     Q_ASSERT(lib->libraryUnloadCount.load() == 0);
 
     if (Q_LIKELY(data) && !lib->fileName.isEmpty()) {
-        QLibraryPrivate *that = data->libraryMap.take(lib->fileName);
+        auto that = data->libraryMap.take(lib->fileName);
         Q_ASSERT(lib == that);
         Q_UNUSED(that);
     }
@@ -535,7 +535,7 @@ bool QLibraryPrivate::load()
     if (fileName.isEmpty())
         return false;
 
-    bool ret = load_sys();
+    auto ret = load_sys();
     if (qt_debug_component())
         qDebug() << "loaded library" << fileName;
     if (ret) {
@@ -613,10 +613,10 @@ bool QLibrary::isLibrary(const QString &fileName)
 #if defined(Q_OS_WIN)
     return fileName.endsWith(QLatin1String(".dll"), Qt::CaseInsensitive);
 #else
-    QString completeSuffix = QFileInfo(fileName).completeSuffix();
+    auto completeSuffix = QFileInfo(fileName).completeSuffix();
     if (completeSuffix.isEmpty())
         return false;
-    QStringList suffixes = completeSuffix.split(QLatin1Char('.'));
+    auto suffixes = completeSuffix.split(QLatin1Char('.'));
 # if defined(Q_OS_DARWIN)
 
     // On Mac, libs look like libmylib.1.0.0.dylib
@@ -655,12 +655,12 @@ bool QLibrary::isLibrary(const QString &fileName)
     //  libfoo-0.3.so.0.3.0
 
     int suffix;
-    int suffixPos = -1;
+    auto suffixPos = -1;
     for (suffix = 0; suffix < validSuffixList.count() && suffixPos == -1; ++suffix)
         suffixPos = suffixes.indexOf(validSuffixList.at(suffix));
 
-    bool valid = suffixPos != -1;
-    for (int i = suffixPos + 1; i < suffixes.count() && valid; ++i)
+    auto valid = suffixPos != -1;
+    for (auto i = suffixPos + 1; i < suffixes.count() && valid; ++i)
         if (i != suffixPos)
             suffixes.at(i).toInt(&valid);
     return valid;
@@ -681,7 +681,7 @@ static bool qt_get_metadata(QtPluginQueryVerificationDataFunction pfn, QLibraryP
     if (!szData)
         return false;
 
-    QJsonDocument doc = qJsonFromRawLibraryMetaData(szData);
+    auto doc = qJsonFromRawLibraryMetaData(szData);
     if (doc.isNull())
         return false;
     priv->metaData = doc.object();
@@ -702,7 +702,7 @@ void QLibraryPrivate::updatePluginState()
     if (pluginState != MightBeAPlugin)
         return;
 
-    bool success = false;
+    auto success = false;
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     if (fileName.endsWith(QLatin1String(".debug"))) {
@@ -742,8 +742,8 @@ void QLibraryPrivate::updatePluginState()
 
     pluginState = IsNotAPlugin; // be pessimistic
 
-    uint qt_version = (uint)metaData.value(QLatin1String("version")).toDouble();
-    bool debug = metaData.value(QLatin1String("debug")).toBool();
+    auto qt_version = (uint)metaData.value(QLatin1String("version")).toDouble();
+    auto debug = metaData.value(QLatin1String("debug")).toBool();
     if ((qt_version & 0x00ff00) > (QT_VERSION & 0x00ff00) || (qt_version & 0xff0000) != (QT_VERSION & 0xff0000)) {
         if (qt_debug_component()) {
             qWarning("In %s:\n"
@@ -1130,7 +1130,7 @@ QLibrary::LoadHints QLibrary::loadHints() const
 /* Internal, for debugging */
 bool qt_debug_component()
 {
-    static int debug_env = QT_PREPEND_NAMESPACE(qEnvironmentVariableIntValue)("QT_DEBUG_PLUGINS");
+    static auto debug_env = QT_PREPEND_NAMESPACE(qEnvironmentVariableIntValue)("QT_DEBUG_PLUGINS");
     return debug_env != 0;
 }
 

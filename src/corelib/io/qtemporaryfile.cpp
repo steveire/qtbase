@@ -123,15 +123,15 @@ static bool createFileFromTemplate(NativeFileHandle &file,
     Q_ASSERT(pos < size_t(path.length()));
     Q_ASSERT(length <= size_t(path.length()) - pos);
 
-    Char *const placeholderStart = (Char *)path.data() + pos;
-    Char *const placeholderEnd = placeholderStart + length;
+    const auto placeholderStart = (Char *)path.data() + pos;
+    const auto placeholderEnd = placeholderStart + length;
 
     // Initialize placeholder with random chars + PID.
     {
-        Char *rIter = placeholderEnd;
+        auto rIter = placeholderEnd;
 
 #if defined(QT_BUILD_CORE_LIB)
-        quint64 pid = quint64(QCoreApplication::applicationPid());
+        auto pid = quint64(QCoreApplication::applicationPid());
         do {
             *--rIter = Latin1Char((pid % 10) + '0');
             pid /= 10;
@@ -139,7 +139,7 @@ static bool createFileFromTemplate(NativeFileHandle &file,
 #endif
 
         while (rIter != placeholderStart) {
-            char ch = char((qrand() & 0xffff) % (26 + 26));
+            auto ch = char((qrand() & 0xffff) % (26 + 26));
             if (ch < 26)
                 *--rIter = Latin1Char(ch + 'A');
             else
@@ -189,7 +189,7 @@ static bool createFileFromTemplate(NativeFileHandle &file,
         if (file != -1)
             return true;
 
-        int err = errno;
+        auto err = errno;
         if (err != EEXIST) {
             error = QSystemError(err, QSystemError::NativeError);
             return false;
@@ -197,7 +197,7 @@ static bool createFileFromTemplate(NativeFileHandle &file,
 #endif
 
         /* tricky little algorwwithm for backward compatibility */
-        for (Char *iter = placeholderStart;;) {
+        for (auto iter = placeholderStart;;) {
             // Character progression: [0-9] => 'a' ... 'z' => 'A' .. 'Z'
             // String progression: "ZZaiC" => "aabiC"
             switch (char(*iter)) {
@@ -281,7 +281,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
 
-    QString qfilename = d->fileEntry.filePath();
+    auto qfilename = d->fileEntry.filePath();
 
     // Ensure there is a placeholder mask
     uint phPos = qfilename.length();
@@ -309,7 +309,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         qfilename.append(QLatin1String(".XXXXXX"));
 
     // "Nativify" :-)
-    QFileSystemEntry::NativePath filename = QFileSystemEngine::absoluteName(
+    auto filename = QFileSystemEngine::absoluteName(
             QFileSystemEntry(qfilename, QFileSystemEntry::FromInternalPath()))
         .nativeFilePath();
 
@@ -426,7 +426,7 @@ void QTemporaryFilePrivate::resetFileEngine() const
     if (!fileEngine)
         return;
 
-    QTemporaryFileEngine *tef = static_cast<QTemporaryFileEngine *>(fileEngine);
+    auto tef = static_cast<QTemporaryFileEngine *>(fileEngine);
     if (fileName.isEmpty())
         tef->initialize(templateName, 0600);
     else
@@ -735,23 +735,23 @@ void QTemporaryFile::setFileTemplate(const QString &name)
 
 QTemporaryFile *QTemporaryFile::createNativeFile(QFile &file)
 {
-    if (QAbstractFileEngine *engine = file.d_func()->engine()) {
+    if (auto engine = file.d_func()->engine()) {
         if(engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)
             return 0; //native already
         //cache
-        bool wasOpen = file.isOpen();
+        auto wasOpen = file.isOpen();
         qint64 old_off = 0;
         if(wasOpen)
             old_off = file.pos();
         else
             file.open(QIODevice::ReadOnly);
         //dump data
-        QTemporaryFile *ret = new QTemporaryFile;
+        auto ret = new QTemporaryFile;
         ret->open();
         file.seek(0);
         char buffer[1024];
         while(true) {
-            qint64 len = file.read(buffer, 1024);
+            auto len = file.read(buffer, 1024);
             if(len < 1)
                 break;
             ret->write(buffer, len);

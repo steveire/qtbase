@@ -210,7 +210,7 @@ QList<QAbstractState*> QStatePrivate::childStates() const
         childStatesList.clear();
         QList<QObject*>::const_iterator it;
         for (it = children.constBegin(); it != children.constEnd(); ++it) {
-            QAbstractState *s = qobject_cast<QAbstractState*>(*it);
+            auto s = qobject_cast<QAbstractState*>(*it);
             if (!s || qobject_cast<QHistoryState*>(s))
                 continue;
             childStatesList.append(s);
@@ -225,7 +225,7 @@ QList<QHistoryState*> QStatePrivate::historyStates() const
     QList<QHistoryState*> result;
     QList<QObject*>::const_iterator it;
     for (it = children.constBegin(); it != children.constEnd(); ++it) {
-        QHistoryState *h = qobject_cast<QHistoryState*>(*it);
+        auto h = qobject_cast<QHistoryState*>(*it);
         if (h)
             result.append(h);
     }
@@ -238,7 +238,7 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
         transitionsList.clear();
         QList<QObject*>::const_iterator it;
         for (it = children.constBegin(); it != children.constEnd(); ++it) {
-            QAbstractTransition *t = qobject_cast<QAbstractTransition*>(*it);
+            auto t = qobject_cast<QAbstractTransition*>(*it);
             if (t)
                 transitionsList.append(t);
         }
@@ -263,7 +263,7 @@ void QState::assignProperty(QObject *object, const char *name,
         qWarning("QState::assignProperty: cannot assign property '%s' of null object", name);
         return;
     }
-    for (int i = 0; i < d->propertyAssignments.size(); ++i) {
+    for (auto i = 0; i < d->propertyAssignments.size(); ++i) {
         QPropertyAssignment &assn = d->propertyAssignments[i];
         if (assn.hasTarget(object, name)) {
             assn.value = value;
@@ -326,8 +326,8 @@ void QState::addTransition(QAbstractTransition *transition)
 
     transition->setParent(this);
     const QVector<QPointer<QAbstractState> > &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
-    for (int i = 0; i < targets.size(); ++i) {
-        QAbstractState *t = targets.at(i).data();
+    for (auto i = 0; i < targets.size(); ++i) {
+        auto t = targets.at(i).data();
         if (!t) {
             qWarning("QState::addTransition: cannot add transition to null state");
             return ;
@@ -339,7 +339,7 @@ void QState::addTransition(QAbstractTransition *transition)
             return ;
         }
     }
-    if (QStateMachine *mach = machine())
+    if (auto mach = machine())
         QStateMachinePrivate::get(mach)->maybeRegisterTransition(transition);
 }
 
@@ -374,8 +374,8 @@ QSignalTransition *QState::addTransition(const QObject *sender, const char *sign
         qWarning("QState::addTransition: cannot add transition to null state");
         return 0;
     }
-    int offset = (*signal == '0'+QSIGNAL_CODE) ? 1 : 0;
-    const QMetaObject *meta = sender->metaObject();
+    auto offset = (*signal == '0'+QSIGNAL_CODE) ? 1 : 0;
+    auto meta = sender->metaObject();
     if (meta->indexOfSignal(signal+offset) == -1) {
         if (meta->indexOfSignal(QMetaObject::normalizedSignature(signal+offset)) == -1) {
             qWarning("QState::addTransition: no such signal %s::%s",
@@ -383,7 +383,7 @@ QSignalTransition *QState::addTransition(const QObject *sender, const char *sign
             return 0;
         }
     }
-    QSignalTransition *trans = new QSignalTransition(sender, signal);
+    auto trans = new QSignalTransition(sender, signal);
     trans->setTargetState(target);
     addTransition(trans);
     return trans;
@@ -415,7 +415,7 @@ QAbstractTransition *QState::addTransition(QAbstractState *target)
         qWarning("QState::addTransition: cannot add transition to null state");
         return 0;
     }
-    UnconditionalTransition *trans = new UnconditionalTransition(target);
+    auto trans = new UnconditionalTransition(target);
     addTransition(trans);
     return trans;
 }
@@ -439,7 +439,7 @@ void QState::removeTransition(QAbstractTransition *transition)
                  transition, transition->sourceState(), this);
         return;
     }
-    QStateMachinePrivate *mach = QStateMachinePrivate::get(d->machine());
+    auto mach = QStateMachinePrivate::get(d->machine());
     if (mach)
         mach->unregisterTransition(transition);
     transition->setParent(0);

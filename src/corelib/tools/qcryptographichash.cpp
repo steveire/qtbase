@@ -357,7 +357,7 @@ QByteArray QCryptographicHash::result() const
 
     switch (d->method) {
     case Sha1: {
-        Sha1State copy = d->sha1Context;
+        auto copy = d->sha1Context;
         d->result.resize(20);
         sha1FinalizeState(&copy);
         sha1ToHash(&copy, (unsigned char *)d->result.data());
@@ -370,61 +370,61 @@ QByteArray QCryptographicHash::result() const
         break;
 #else
     case Md4: {
-        md4_context copy = d->md4Context;
+        auto copy = d->md4Context;
         d->result.resize(MD4_RESULTLEN);
         md4_final(&copy, (unsigned char *)d->result.data());
         break;
     }
     case Md5: {
-        MD5Context copy = d->md5Context;
+        auto copy = d->md5Context;
         d->result.resize(16);
         MD5Final(&copy, (unsigned char *)d->result.data());
         break;
     }
     case Sha224: {
-        SHA224Context copy = d->sha224Context;
+        auto copy = d->sha224Context;
         d->result.resize(SHA224HashSize);
         SHA224Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
     case Sha256:{
-        SHA256Context copy = d->sha256Context;
+        auto copy = d->sha256Context;
         d->result.resize(SHA256HashSize);
         SHA256Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
     case Sha384:{
-        SHA384Context copy = d->sha384Context;
+        auto copy = d->sha384Context;
         d->result.resize(SHA384HashSize);
         SHA384Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
     case Sha512:{
-        SHA512Context copy = d->sha512Context;
+        auto copy = d->sha512Context;
         d->result.resize(SHA512HashSize);
         SHA512Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
     case Sha3_224: {
-        SHA3Context copy = d->sha3Context;
+        auto copy = d->sha3Context;
         d->result.resize(224/8);
         sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
         break;
     }
     case Sha3_256: {
-        SHA3Context copy = d->sha3Context;
+        auto copy = d->sha3Context;
         d->result.resize(256/8);
         sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
         break;
     }
     case Sha3_384: {
-        SHA3Context copy = d->sha3Context;
+        auto copy = d->sha3Context;
         d->result.resize(384/8);
         sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
         break;
     }
     case Sha3_512: {
-        SHA3Context copy = d->sha3Context;
+        auto copy = d->sha3Context;
         d->result.resize(512/8);
         sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
         break;

@@ -82,7 +82,7 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
         return unix_key;
 
     // Create the file needed for ftok
-    int built = QSharedMemoryPrivate::createUnixKeyFile(fileName);
+    auto built = QSharedMemoryPrivate::createUnixKeyFile(fileName);
     if (-1 == built) {
         errorString = QCoreApplication::tr("%1: unable to make key", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle:"));
         error = QSystemSemaphore::KeyError;
