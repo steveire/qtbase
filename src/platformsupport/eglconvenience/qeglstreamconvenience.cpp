@@ -54,7 +54,7 @@ QEGLStreamConvenience::QEGLStreamConvenience()
       has_egl_stream_cross_process_fd(false),
       has_egl_stream_consumer_gltexture(false)
 {
-    const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+    auto extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
     if (!extensions) {
         qWarning("Failed to query EGL extensions");
         return;
@@ -78,7 +78,7 @@ void QEGLStreamConvenience::initialize(EGLDisplay dpy)
         return;
     }
 
-    const char *extensions = eglQueryString(dpy, EGL_EXTENSIONS);
+    auto extensions = eglQueryString(dpy, EGL_EXTENSIONS);
     if (!extensions) {
         qWarning("Failed to query EGL extensions");
         return;

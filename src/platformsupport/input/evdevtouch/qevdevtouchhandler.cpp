@@ -160,15 +160,15 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
 {
     setObjectName(QLatin1String("Evdev Touch Handler"));
 
-    const QStringList args = spec.split(QLatin1Char(':'));
-    int rotationAngle = 0;
-    bool invertx = false;
-    bool inverty = false;
-    for (int i = 0; i < args.count(); ++i) {
+    const auto args = spec.split(QLatin1Char(':'));
+    auto rotationAngle = 0;
+    auto invertx = false;
+    auto inverty = false;
+    for (auto i = 0; i < args.count(); ++i) {
         if (args.at(i).startsWith(QLatin1String("rotate"))) {
-            QString rotateArg = args.at(i).section(QLatin1Char('='), 1, 1);
+            auto rotateArg = args.at(i).section(QLatin1Char('='), 1, 1);
             bool ok;
-            uint argValue = rotateArg.toUInt(&ok);
+            auto argValue = rotateArg.toUInt(&ok);
             if (ok) {
                 switch (argValue) {
                 case 90:
@@ -200,7 +200,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
 
 #if !defined(QT_NO_MTDEV)
     m_mtdev = static_cast<mtdev *>(calloc(1, sizeof(mtdev)));
-    int mtdeverr = mtdev_open(m_mtdev, m_fd);
+    auto mtdeverr = mtdev_open(m_mtdev, m_fd);
     if (mtdeverr) {
         qWarning("evdevtouch: mtdev_open failed: %d", mtdeverr);
         QT_CLOSE(m_fd);
@@ -227,7 +227,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
 
     input_absinfo absInfo;
     memset(&absInfo, 0, sizeof(input_absinfo));
-    bool has_x_range = false, has_y_range = false;
+    auto has_x_range = false, has_y_range = false;
 
     if (ioctl(m_fd, EVIOCGABS((d->m_singleTouch ? ABS_X : ABS_MT_POSITION_X)), &absInfo) >= 0) {
         qCDebug(qLcEvdevTouch, "evdevtouch: %s: min X: %d max X: %d", qPrintable(device),
@@ -277,7 +277,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
                 d->hw_range_x_min, d->hw_range_x_max, d->hw_range_y_min, d->hw_range_y_max);
     }
 
-    bool grabSuccess = !ioctl(m_fd, EVIOCGRAB, (void *) 1);
+    auto grabSuccess = !ioctl(m_fd, EVIOCGRAB, (void *) 1);
     if (grabSuccess)
         ioctl(m_fd, EVIOCGRAB, (void *) 0);
     else
@@ -320,7 +320,7 @@ QTouchDevice *QEvdevTouchScreenHandler::touchDevice() const
 void QEvdevTouchScreenHandler::readData()
 {
     ::input_event buffer[32];
-    int events = 0;
+    auto events = 0;
 
 #if !defined(QT_NO_MTDEV)
     forever {
@@ -336,7 +336,7 @@ void QEvdevTouchScreenHandler::readData()
             goto err;
 
         // process our shiny new events
-        for (int i = 0; i < events; ++i)
+        for (auto i = 0; i < events; ++i)
             d->processInputEvent(&buffer[i]);
 
         // and try to get more
@@ -484,7 +484,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 
         // If there is no tracking id, one will be generated later.
         // Until that use a temporary key.
-        int key = m_currentData.trackingId;
+        auto key = m_currentData.trackingId;
         if (key == -1)
             key = m_contacts.count();
 
@@ -508,7 +508,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             if (!contact.state)
                 continue;
 
-            int key = m_typeB ? it.key() : contact.trackingId;
+            auto key = m_typeB ? it.key() : contact.trackingId;
             if (!m_typeB && m_lastContacts.contains(key)) {
                 const Contact &prev(m_lastContacts.value(key));
                 if (contact.state == Qt::TouchPointReleased) {
@@ -537,7 +537,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         while (it.hasNext()) {
             it.next();
             Contact &contact(it.value());
-            int key = m_typeB ? it.key() : contact.trackingId;
+            auto key = m_typeB ? it.key() : contact.trackingId;
             if (!m_contacts.contains(key)) {
                 contact.state = Qt::TouchPointReleased;
                 addTouchPoint(contact, &combinedStates);
@@ -576,13 +576,13 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 
 int QEvdevTouchScreenData::findClosestContact(const QHash<int, Contact> &contacts, int x, int y, int *dist)
 {
-    int minDist = -1, id = -1;
-    for (QHash<int, Contact>::const_iterator it = contacts.constBegin(), ite = contacts.constEnd();
+    auto minDist = -1, id = -1;
+    for (auto it = contacts.constBegin(), ite = contacts.constEnd();
          it != ite; ++it) {
         const Contact &contact(it.value());
-        int dx = x - contact.x;
-        int dy = y - contact.y;
-        int dist = dx * dx + dy * dy;
+        auto dx = x - contact.x;
+        auto dy = y - contact.y;
+        auto dist = dx * dx + dy * dy;
         if (minDist == -1 || dist < minDist) {
             minDist = dist;
             id = contact.trackingId;
@@ -596,13 +596,13 @@ int QEvdevTouchScreenData::findClosestContact(const QHash<int, Contact> &contact
 void QEvdevTouchScreenData::assignIds()
 {
     QHash<int, Contact> candidates = m_lastContacts, pending = m_contacts, newContacts;
-    int maxId = -1;
+    auto maxId = -1;
     QHash<int, Contact>::iterator it, ite, bestMatch;
     while (!pending.isEmpty() && !candidates.isEmpty()) {
-        int bestDist = -1, bestId = 0;
+        auto bestDist = -1, bestId = 0;
         for (it = pending.begin(), ite = pending.end(); it != ite; ++it) {
             int dist;
-            int id = findClosestContact(candidates, it->x, it->y, &dist);
+            auto id = findClosestContact(candidates, it->x, it->y, &dist);
             if (id >= 0 && (bestDist == -1 || dist < bestDist)) {
                 bestDist = dist;
                 bestId = id;
@@ -631,30 +631,30 @@ void QEvdevTouchScreenData::reportPoints()
 {
     QRect winRect;
     if (m_forceToActiveWindow) {
-        QWindow *win = QGuiApplication::focusWindow();
+        auto win = QGuiApplication::focusWindow();
         if (!win)
             return;
         winRect = QHighDpi::toNativePixels(win->geometry(), win);
     } else {
-        QScreen *primary = QGuiApplication::primaryScreen();
+        auto primary = QGuiApplication::primaryScreen();
         winRect = QHighDpi::toNativePixels(primary->geometry(), primary);
     }
 
-    const int hw_w = hw_range_x_max - hw_range_x_min;
-    const int hw_h = hw_range_y_max - hw_range_y_min;
+    const auto hw_w = hw_range_x_max - hw_range_x_min;
+    const auto hw_h = hw_range_y_max - hw_range_y_min;
 
     // Map the coordinates based on the normalized position. QPA expects 'area'
     // to be in screen coordinates.
-    const int pointCount = m_touchPoints.count();
-    for (int i = 0; i < pointCount; ++i) {
+    const auto pointCount = m_touchPoints.count();
+    for (auto i = 0; i < pointCount; ++i) {
         QWindowSystemInterface::TouchPoint &tp(m_touchPoints[i]);
 
         // Generate a screen position that is always inside the active window
         // or the primary screen.  Even though we report this as a QRectF, internally
         // Qt uses QRect/QPoint so we need to bound the size to winRect.size() - QSize(1, 1)
-        const qreal wx = winRect.left() + tp.normalPosition.x() * (winRect.width() - 1);
-        const qreal wy = winRect.top() + tp.normalPosition.y() * (winRect.height() - 1);
-        const qreal sizeRatio = (winRect.width() + winRect.height()) / qreal(hw_w + hw_h);
+        const auto wx = winRect.left() + tp.normalPosition.x() * (winRect.width() - 1);
+        const auto wy = winRect.top() + tp.normalPosition.y() * (winRect.height() - 1);
+        const auto sizeRatio = (winRect.width() + winRect.height()) / qreal(hw_w + hw_h);
         if (tp.area.width() == -1) // touch major was not provided
             tp.area = QRectF(0, 0, 8, 8);
         else

@@ -59,12 +59,12 @@ QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specif
     if (qEnvironmentVariableIsSet("QT_QPA_EVDEV_DEBUG"))
         const_cast<QLoggingCategory &>(qLcEvdevTouch()).setEnabled(QtDebugMsg, true);
 
-    QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS"));
+    auto spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS"));
 
     if (spec.isEmpty())
         spec = specification;
 
-    QStringList args = spec.split(QLatin1Char(':'));
+    auto args = spec.split(QLatin1Char(':'));
     QStringList devices;
 
     foreach (const QString &arg, args) {
@@ -85,7 +85,7 @@ QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specif
         qCDebug(qLcEvdevTouch) << "evdevtouch: Using device discovery";
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Touchpad | QDeviceDiscovery::Device_Touchscreen, this);
         if (m_deviceDiscovery) {
-            QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+            auto devices = m_deviceDiscovery->scanConnectedDevices();
             foreach (const QString &device, devices)
                 addDevice(device);
             connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addDevice(QString)));
@@ -116,7 +116,7 @@ void QEvdevTouchManager::removeDevice(const QString &deviceNode)
 {
     if (m_activeDevices.contains(deviceNode)) {
         qCDebug(qLcEvdevTouch) << "evdevtouch: Removing device at" << deviceNode;
-        QEvdevTouchScreenHandlerThread *handler = m_activeDevices.value(deviceNode);
+        auto handler = m_activeDevices.value(deviceNode);
         m_activeDevices.remove(deviceNode);
         delete handler;
 
@@ -126,7 +126,7 @@ void QEvdevTouchManager::removeDevice(const QString &deviceNode)
 
 void QEvdevTouchManager::updateInputDeviceCount()
 {
-    int registeredTouchDevices = 0;
+    auto registeredTouchDevices = 0;
     Q_FOREACH (QEvdevTouchScreenHandlerThread *handler, m_activeDevices) {
         if (handler->isTouchDeviceRegistered())
             ++registeredTouchDevices;

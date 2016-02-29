@@ -71,12 +71,12 @@ QT_BEGIN_NAMESPACE
 static void setTTYCursor(bool enable)
 {
     const char * const devs[] = { "/dev/tty0", "/dev/tty", "/dev/console", 0 };
-    int fd = -1;
+    auto fd = -1;
     for (const char * const *dev = devs; *dev; ++dev) {
         fd = QT_OPEN(*dev, O_RDWR);
         if (fd != -1) {
             // Enable/disable screen blanking and the blinking cursor.
-            const char *termctl = enable ? "\033[9;15]\033[?33h\033[?25h\033[?0c" : "\033[9;0]\033[?33l\033[?25l\033[?1c";
+            auto termctl = enable ? "\033[9;15]\033[?33h\033[?25h\033[?0c" : "\033[9;0]\033[?33l\033[?25l\033[?1c";
             QT_WRITE(fd, termctl, strlen(termctl) + 1);
             QT_CLOSE(fd);
             return;

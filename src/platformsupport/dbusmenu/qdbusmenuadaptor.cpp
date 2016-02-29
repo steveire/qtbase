@@ -90,9 +90,9 @@ bool QDBusMenuAdaptor::AboutToShow(int id)
     if (id == 0) {
         emit m_topLevelMenu->aboutToShow();
     } else {
-        QDBusPlatformMenuItem *item = QDBusPlatformMenuItem::byId(id);
+        auto item = QDBusPlatformMenuItem::byId(id);
         if (item) {
-            const QDBusPlatformMenu *menu = static_cast<const QDBusPlatformMenu *>(item->menu());
+            auto menu = static_cast<const QDBusPlatformMenu *>(item->menu());
             if (menu)
                 emit const_cast<QDBusPlatformMenu *>(menu)->aboutToShow();
         }
@@ -114,7 +114,7 @@ void QDBusMenuAdaptor::Event(int id, const QString &eventId, const QDBusVariant 
 {
     Q_UNUSED(data)
     Q_UNUSED(timestamp)
-    QDBusPlatformMenuItem *item = QDBusPlatformMenuItem::byId(id);
+    auto item = QDBusPlatformMenuItem::byId(id);
     qCDebug(qLcMenu) << id << (item ? item->text() : QLatin1String("")) << eventId;
     if (item && eventId == QLatin1String("clicked"))
         item->trigger();
@@ -147,7 +147,7 @@ QDBusMenuItemList QDBusMenuAdaptor::GetGroupProperties(const QList<int> &ids, co
 
 uint QDBusMenuAdaptor::GetLayout(int parentId, int recursionDepth, const QStringList &propertyNames, QDBusMenuLayoutItem &layout)
 {
-    uint ret = layout.populate(parentId, recursionDepth, propertyNames, m_topLevelMenu);
+    auto ret = layout.populate(parentId, recursionDepth, propertyNames, m_topLevelMenu);
     qCDebug(qLcMenu) << parentId << "depth" << recursionDepth << propertyNames << layout.m_id << layout.m_properties << "revision" << ret << layout;
     return ret;
 }

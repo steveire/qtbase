@@ -64,17 +64,17 @@ static const int IconNormalMediumSize = 64;
 QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
 {
     QXdgDBusImageVector ret;
-    QList<QSize> sizes = icon.availableSizes();
+    auto sizes = icon.availableSizes();
 
     // Omit any size larger than 64 px, to save D-Bus bandwidth;
     // ensure that 22px or smaller exists, because it's a common size;
     // and ensure that something between 22px and 64px exists, for better scaling to other sizes.
-    bool hasSmallIcon = false;
-    bool hasMediumIcon = false;
-    qreal dpr = qGuiApp->devicePixelRatio();
+    auto hasSmallIcon = false;
+    auto hasMediumIcon = false;
+    auto dpr = qGuiApp->devicePixelRatio();
     QList<QSize> toRemove;
     Q_FOREACH (const QSize &size, sizes) {
-        int maxSize = qMax(size.width(), size.height());
+        auto maxSize = qMax(size.width(), size.height());
         if (maxSize <= IconNormalSmallSize * dpr)
             hasSmallIcon = true;
         else if (maxSize <= IconNormalMediumSize * dpr)
@@ -92,10 +92,10 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
     ret.reserve(sizes.size());
     foreach (QSize size, sizes) {
         // Protocol specifies ARGB32 format in network byte order
-        QImage im = icon.pixmap(size).toImage().convertToFormat(QImage::Format_ARGB32);
+        auto im = icon.pixmap(size).toImage().convertToFormat(QImage::Format_ARGB32);
         // letterbox if necessary to make it square
         if (im.height() != im.width()) {
-            int maxSize = qMax(im.width(), im.height());
+            auto maxSize = qMax(im.width(), im.height());
             QImage padded(maxSize, maxSize, QImage::Format_ARGB32);
             padded.fill(Qt::transparent);
             QPainter painter(&padded);
@@ -104,9 +104,9 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
         }
         // copy and endian-convert
         QXdgDBusImageStruct kim(im.width(), im.height());
-        const uchar *end = im.constBits() + im.byteCount();
-        uchar *dest = reinterpret_cast<uchar *>(kim.data.data());
-        for (const uchar *src = im.constBits(); src < end; src += 4, dest += 4)
+        auto end = im.constBits() + im.byteCount();
+        auto dest = reinterpret_cast<uchar *>(kim.data.data());
+        for (auto src = im.constBits(); src < end; src += 4, dest += 4)
             qToUnaligned(qToBigEndian<quint32>(qFromUnaligned<quint32>(src)), dest);
 
         ret << kim;
@@ -149,7 +149,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, QXdgDBusImageStru
 const QDBusArgument &operator<<(QDBusArgument &argument, const QXdgDBusImageVector &iconVector)
 {
     argument.beginArray(qMetaTypeId<QXdgDBusImageStruct>());
-    for (int i = 0; i < iconVector.size(); ++i) {
+    for (auto i = 0; i < iconVector.size(); ++i) {
         argument << iconVector[i];
     }
     argument.endArray();

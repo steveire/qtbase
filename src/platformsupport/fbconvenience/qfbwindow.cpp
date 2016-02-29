@@ -120,14 +120,14 @@ void QFbWindow::lower()
 
 void QFbWindow::repaint(const QRegion &region)
 {
-    QRect currentGeometry = geometry();
+    auto currentGeometry = geometry();
 
-    QRect dirtyClient = region.boundingRect();
+    auto dirtyClient = region.boundingRect();
     QRect dirtyRegion(currentGeometry.left() + dirtyClient.left(),
                       currentGeometry.top() + dirtyClient.top(),
                       dirtyClient.width(),
                       dirtyClient.height());
-    QRect mOldGeometryLocal = mOldGeometry;
+    auto mOldGeometryLocal = mOldGeometry;
     mOldGeometry = currentGeometry;
     // If this is a move, redraw the previous location
     if (mOldGeometryLocal != currentGeometry)

@@ -73,12 +73,12 @@ QDBusPlatformMenuItem *QDBusMenuBar::menuItemForMenu(QPlatformMenu *menu)
 {
     if (!menu)
         return nullptr;
-    quintptr tag = menu->tag();
+    auto tag = menu->tag();
     const auto it = m_menuItems.constFind(tag);
     if (it != m_menuItems.cend()) {
         return *it;
     } else {
-        QDBusPlatformMenuItem *item = new QDBusPlatformMenuItem;
+        auto item = new QDBusPlatformMenuItem;
         updateMenuItem(item, menu);
         m_menuItems.insert(tag, item);
         return item;
@@ -87,7 +87,7 @@ QDBusPlatformMenuItem *QDBusMenuBar::menuItemForMenu(QPlatformMenu *menu)
 
 void QDBusMenuBar::updateMenuItem(QDBusPlatformMenuItem *item, QPlatformMenu *menu)
 {
-    const QDBusPlatformMenu *ourMenu = qobject_cast<const QDBusPlatformMenu *>(menu);
+    auto ourMenu = qobject_cast<const QDBusPlatformMenu *>(menu);
     item->setText(ourMenu->text());
     item->setIcon(ourMenu->icon());
     item->setEnabled(ourMenu->isEnabled());
@@ -97,22 +97,22 @@ void QDBusMenuBar::updateMenuItem(QDBusPlatformMenuItem *item, QPlatformMenu *me
 
 void QDBusMenuBar::insertMenu(QPlatformMenu *menu, QPlatformMenu *before)
 {
-    QDBusPlatformMenuItem *menuItem = menuItemForMenu(menu);
-    QDBusPlatformMenuItem *beforeItem = menuItemForMenu(before);
+    auto menuItem = menuItemForMenu(menu);
+    auto beforeItem = menuItemForMenu(before);
     m_menu->insertMenuItem(menuItem, beforeItem);
     m_menu->emitUpdated();
 }
 
 void QDBusMenuBar::removeMenu(QPlatformMenu *menu)
 {
-    QDBusPlatformMenuItem *menuItem = menuItemForMenu(menu);
+    auto menuItem = menuItemForMenu(menu);
     m_menu->removeMenuItem(menuItem);
     m_menu->emitUpdated();
 }
 
 void QDBusMenuBar::syncMenu(QPlatformMenu *menu)
 {
-    QDBusPlatformMenuItem *menuItem = menuItemForMenu(menu);
+    auto menuItem = menuItemForMenu(menu);
     updateMenuItem(menuItem, menu);
 }
 
@@ -127,7 +127,7 @@ void QDBusMenuBar::handleReparent(QWindow *newParentWindow)
 
 QPlatformMenu *QDBusMenuBar::menuForTag(quintptr tag) const
 {
-    QDBusPlatformMenuItem *menuItem = m_menuItems.value(tag);
+    auto menuItem = m_menuItems.value(tag);
     if (menuItem)
         return const_cast<QPlatformMenu *>(menuItem->menu());
     return nullptr;
@@ -137,13 +137,13 @@ void QDBusMenuBar::registerMenuBar()
 {
     static uint menuBarId = 0;
 
-    QDBusConnection connection = QDBusConnection::sessionBus();
+    auto connection = QDBusConnection::sessionBus();
     m_objectPath = QStringLiteral("/MenuBar/%1").arg(++menuBarId);
     if (!connection.registerObject(m_objectPath, m_menu))
         return;
 
     QDBusMenuRegistrarInterface registrar(REGISTRAR_SERVICE, REGISTRAR_PATH, connection, this);
-    QDBusPendingReply<> r = registrar.RegisterWindow(m_windowId, QDBusObjectPath(m_objectPath));
+    auto r = registrar.RegisterWindow(m_windowId, QDBusObjectPath(m_objectPath));
     r.waitForFinished();
     if (r.isError()) {
         qWarning("Failed to register window menu, reason: %s (\"%s\")",
@@ -154,11 +154,11 @@ void QDBusMenuBar::registerMenuBar()
 
 void QDBusMenuBar::unregisterMenuBar()
 {
-    QDBusConnection connection = QDBusConnection::sessionBus();
+    auto connection = QDBusConnection::sessionBus();
 
     if (m_windowId) {
         QDBusMenuRegistrarInterface registrar(REGISTRAR_SERVICE, REGISTRAR_PATH, connection, this);
-        QDBusPendingReply<> r = registrar.UnregisterWindow(m_windowId);
+        auto r = registrar.UnregisterWindow(m_windowId);
         r.waitForFinished();
         if (r.isError())
             qWarning("Failed to unregister window menu, reason: %s (\"%s\")",

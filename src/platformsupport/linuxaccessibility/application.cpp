@@ -96,7 +96,7 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
         break;
     case QEvent::KeyPress:
     case QEvent::KeyRelease: {
-        QKeyEvent *keyEvent = static_cast <QKeyEvent *>(event);
+        auto keyEvent = static_cast <QKeyEvent *>(event);
         QSpiDeviceEvent de;
 
         if (event->type() == QEvent::KeyPress)
@@ -180,14 +180,14 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
                  << "text:" << de.text;
 #endif
 
-        QDBusMessage m = QDBusMessage::createMethodCall(QStringLiteral("org.a11y.atspi.Registry"),
+        auto m = QDBusMessage::createMethodCall(QStringLiteral("org.a11y.atspi.Registry"),
                                                         QStringLiteral("/org/a11y/atspi/registry/deviceeventcontroller"),
                                                         QStringLiteral("org.a11y.atspi.DeviceEventController"), QStringLiteral("NotifyListenersSync"));
         m.setArguments(QVariantList() << QVariant::fromValue(de));
 
         // FIXME: this is critical, the timeout should probably be pretty low to allow normal processing
-        int timeout = 100;
-        bool sent = dbusConnection.callWithCallback(m, this, SLOT(notifyKeyboardListenerCallback(QDBusMessage)),
+        auto timeout = 100;
+        auto sent = dbusConnection.callWithCallback(m, this, SLOT(notifyKeyboardListenerCallback(QDBusMessage)),
                         SLOT(notifyKeyboardListenerError(QDBusError,QDBusMessage)), timeout);
         if (sent) {
             //queue the event and send it after callback
@@ -216,10 +216,10 @@ void QSpiApplicationAdaptor::notifyKeyboardListenerCallback(const QDBusMessage& 
     }
     Q_ASSERT(message.arguments().length() == 1);
     if (message.arguments().at(0).toBool() == true) {
-        QPair<QPointer<QObject>, QKeyEvent*> event = keyEvents.dequeue();
+        auto event = keyEvents.dequeue();
         delete event.second;
     } else {
-        QPair<QPointer<QObject>, QKeyEvent*> event = keyEvents.dequeue();
+        auto event = keyEvents.dequeue();
         if (event.first)
             QCoreApplication::postEvent(event.first.data(), event.second);
     }
@@ -229,7 +229,7 @@ void QSpiApplicationAdaptor::notifyKeyboardListenerError(const QDBusError& error
 {
     qWarning() << "QSpiApplication::keyEventError " << error.name() << error.message();
     while (!keyEvents.isEmpty()) {
-        QPair<QPointer<QObject>, QKeyEvent*> event = keyEvents.dequeue();
+        auto event = keyEvents.dequeue();
         if (event.first)
             QCoreApplication::postEvent(event.first.data(), event.second);
     }

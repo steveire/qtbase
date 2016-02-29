@@ -56,13 +56,13 @@ QT_BEGIN_NAMESPACE
 
 QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
 {
-    int redSize     = format.redBufferSize();
-    int greenSize   = format.greenBufferSize();
-    int blueSize    = format.blueBufferSize();
-    int alphaSize   = format.alphaBufferSize();
-    int depthSize   = format.depthBufferSize();
-    int stencilSize = format.stencilBufferSize();
-    int sampleCount = format.samples();
+    auto redSize     = format.redBufferSize();
+    auto greenSize   = format.greenBufferSize();
+    auto blueSize    = format.blueBufferSize();
+    auto alphaSize   = format.alphaBufferSize();
+    auto depthSize   = format.depthBufferSize();
+    auto stencilSize = format.stencilBufferSize();
+    auto sampleCount = format.samples();
 
     QVector<EGLint> configAttributes;
 
@@ -117,7 +117,7 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
 
 bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
 {
-    int i = -1;
+    auto i = -1;
     // Reduce the complexity of a configuration request to ask for less
     // because the previous request did not result in success.  Returns
     // true if the complexity was reduced, or false if no further
@@ -134,7 +134,7 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
 
     i = configAttributes->indexOf(EGL_SURFACE_TYPE);
     if (i >= 0) {
-        EGLint surfaceType = configAttributes->at(i +1);
+        auto surfaceType = configAttributes->at(i +1);
         if (surfaceType & EGL_VG_ALPHA_FORMAT_PRE_BIT) {
             surfaceType ^= EGL_VG_ALPHA_FORMAT_PRE_BIT;
             configAttributes->replace(i+1,surfaceType);
@@ -158,7 +158,7 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
 
     i = configAttributes->indexOf(EGL_SAMPLES);
     if (i >= 0) {
-        EGLint value = configAttributes->value(i+1, 0);
+        auto value = configAttributes->value(i+1, 0);
         if (value > 1)
             configAttributes->replace(i+1, qMin(EGLint(16), value / 2));
         else
@@ -231,12 +231,12 @@ QEglConfigChooser::~QEglConfigChooser()
 
 EGLConfig QEglConfigChooser::chooseConfig()
 {
-    QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(m_format);
+    auto configureAttributes = q_createConfigAttributesFromFormat(m_format);
     configureAttributes.append(EGL_SURFACE_TYPE);
     configureAttributes.append(surfaceType());
 
     configureAttributes.append(EGL_RENDERABLE_TYPE);
-    bool needsES2Plus = false;
+    auto needsES2Plus = false;
     switch (m_format.renderableType()) {
     case QSurfaceFormat::OpenVG:
         configureAttributes.append(EGL_OPENVG_BIT);
@@ -275,13 +275,13 @@ EGLConfig QEglConfigChooser::chooseConfig()
     EGLConfig cfg = 0;
     do {
         // Get the number of matching configurations for this set of properties.
-        EGLint matching = 0;
+        auto matching = 0;
         if (!eglChooseConfig(display(), configureAttributes.constData(), 0, 0, &matching) || !matching)
             continue;
 
         // Fetch all of the matching configurations and find the
         // first that matches the pixel format we wanted.
-        int i = configureAttributes.indexOf(EGL_RED_SIZE);
+        auto i = configureAttributes.indexOf(EGL_RED_SIZE);
         m_confAttrRed = configureAttributes.at(i+1);
         i = configureAttributes.indexOf(EGL_GREEN_SIZE);
         m_confAttrGreen = configureAttributes.at(i+1);
@@ -302,7 +302,7 @@ EGLConfig QEglConfigChooser::chooseConfig()
         // configs and look for one that exactly matches the requested sizes. When no
         // sizes have been given, take the first, which will be a config with the smaller
         // (e.g. 16-bit) depth.
-        for (int i = 0; i < configs.size(); ++i) {
+        for (auto i = 0; i < configs.size(); ++i) {
             if (filterConfig(configs[i]))
                 return configs.at(i);
         }
@@ -320,10 +320,10 @@ bool QEglConfigChooser::filterConfig(EGLConfig config) const
     if (m_ignore)
         return true;
 
-    EGLint red = 0;
-    EGLint green = 0;
-    EGLint blue = 0;
-    EGLint alpha = 0;
+    auto red = 0;
+    auto green = 0;
+    auto blue = 0;
+    auto alpha = 0;
 
     // Compare only if a size was given. Otherwise just accept.
     if (m_confAttrRed)
@@ -352,14 +352,14 @@ EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format,
 QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, const QSurfaceFormat &referenceFormat)
 {
     QSurfaceFormat format;
-    EGLint redSize     = 0;
-    EGLint greenSize   = 0;
-    EGLint blueSize    = 0;
-    EGLint alphaSize   = 0;
-    EGLint depthSize   = 0;
-    EGLint stencilSize = 0;
-    EGLint sampleCount = 0;
-    EGLint renderableType = 0;
+    auto redSize     = 0;
+    auto greenSize   = 0;
+    auto blueSize    = 0;
+    auto alphaSize   = 0;
+    auto depthSize   = 0;
+    auto stencilSize = 0;
+    auto sampleCount = 0;
+    auto renderableType = 0;
 
     eglGetConfigAttrib(display, config, EGL_RED_SIZE,     &redSize);
     eglGetConfigAttrib(display, config, EGL_GREEN_SIZE,   &greenSize);
@@ -406,7 +406,7 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, 
 
 bool q_hasEglExtension(EGLDisplay display, const char* extensionName)
 {
-    QList<QByteArray> extensions =
+    auto extensions =
         QByteArray(reinterpret_cast<const char *>
             (eglQueryString(display, EGL_EXTENSIONS))).split(' ');
     return extensions.contains(extensionName);
@@ -461,13 +461,13 @@ QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize
 #ifndef Q_OS_LINUX
     Q_UNUSED(framebufferDevice)
 #endif
-    const int defaultPhysicalDpi = 100;
+    const auto defaultPhysicalDpi = 100;
     static QSizeF size;
 
     if (size.isEmpty()) {
         // Note: in millimeters
-        int width = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_WIDTH");
-        int height = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_HEIGHT");
+        auto width = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_WIDTH");
+        auto height = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_HEIGHT");
 
         if (width && height) {
             size.setWidth(width);
@@ -475,8 +475,8 @@ QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize
             return size;
         }
 
-        int w = -1;
-        int h = -1;
+        auto w = -1;
+        auto h = -1;
         QSize screenResolution;
 #ifdef Q_OS_LINUX
         struct fb_var_screeninfo vinfo;
@@ -514,13 +514,13 @@ QSize q_screenSizeFromFb(int framebufferDevice)
 #ifndef Q_OS_LINUX
     Q_UNUSED(framebufferDevice)
 #endif
-    const int defaultWidth = 800;
-    const int defaultHeight = 600;
+    const auto defaultWidth = 800;
+    const auto defaultHeight = 600;
     static QSize size;
 
     if (size.isEmpty()) {
-        int width = qEnvironmentVariableIntValue("QT_QPA_EGLFS_WIDTH");
-        int height = qEnvironmentVariableIntValue("QT_QPA_EGLFS_HEIGHT");
+        auto width = qEnvironmentVariableIntValue("QT_QPA_EGLFS_WIDTH");
+        auto height = qEnvironmentVariableIntValue("QT_QPA_EGLFS_HEIGHT");
 
         if (width && height) {
             size.setWidth(width);
@@ -530,8 +530,8 @@ QSize q_screenSizeFromFb(int framebufferDevice)
 
 #ifdef Q_OS_LINUX
         struct fb_var_screeninfo vinfo;
-        int xres = -1;
-        int yres = -1;
+        auto xres = -1;
+        auto yres = -1;
 
         if (framebufferDevice != -1) {
             if (ioctl(framebufferDevice, FBIOGET_VSCREENINFO, &vinfo) == -1) {
@@ -558,8 +558,8 @@ int q_screenDepthFromFb(int framebufferDevice)
 #ifndef Q_OS_LINUX
     Q_UNUSED(framebufferDevice)
 #endif
-    const int defaultDepth = 32;
-    static int depth = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DEPTH");
+    const auto defaultDepth = 32;
+    static auto depth = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DEPTH");
 
     if (depth == 0) {
 #ifdef Q_OS_LINUX
@@ -591,7 +591,7 @@ qreal q_refreshRateFromFb(int framebufferDevice)
         if (framebufferDevice != -1) {
             struct fb_var_screeninfo vinfo;
             if (ioctl(framebufferDevice, FBIOGET_VSCREENINFO, &vinfo) != -1) {
-                const quint64 quot = quint64(vinfo.left_margin + vinfo.right_margin + vinfo.xres + vinfo.hsync_len)
+                const auto quot = quint64(vinfo.left_margin + vinfo.right_margin + vinfo.xres + vinfo.hsync_len)
                     * quint64(vinfo.upper_margin + vinfo.lower_margin + vinfo.yres + vinfo.vsync_len)
                     * vinfo.pixclock;
                 if (quot)

@@ -70,7 +70,7 @@ DBusConnection::DBusConnection(QObject *parent)
     : QObject(parent), m_a11yConnection(QString()), m_enabled(false)
 {
     // Start monitoring if "org.a11y.Bus" is registered as DBus service.
-    QDBusConnection c = QDBusConnection::sessionBus();
+    auto c = QDBusConnection::sessionBus();
     dbusWatcher = new QDBusServiceWatcher(A11Y_SERVICE, c, QDBusServiceWatcher::WatchForRegistration, this);
     connect(dbusWatcher, SIGNAL(serviceRegistered(QString)), this, SLOT(serviceRegistered()));
 
@@ -79,7 +79,7 @@ DBusConnection::DBusConnection(QObject *parent)
         serviceRegistered();
 
     // In addition try if there is an xatom exposing the bus address, this allows applications run as root to work
-    QString address = getAddressFromXCB();
+    auto address = getAddressFromXCB();
     if (!address.isEmpty()) {
         m_enabled = true;
         connectA11yBus(address);
@@ -88,14 +88,14 @@ DBusConnection::DBusConnection(QObject *parent)
 
 QString DBusConnection::getAddressFromXCB()
 {
-    QGuiApplication *app = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
+    auto app = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
     if (!app)
         return QString();
-    QPlatformNativeInterface *platformNativeInterface = app->platformNativeInterface();
-    QByteArray *addressByteArray = reinterpret_cast<QByteArray*>(
+    auto platformNativeInterface = app->platformNativeInterface();
+    auto addressByteArray = reinterpret_cast<QByteArray*>(
                 platformNativeInterface->nativeResourceForIntegration(QByteArrayLiteral("AtspiBus")));
     if (addressByteArray) {
-        QString address = QString::fromLatin1(*addressByteArray);
+        auto address = QString::fromLatin1(*addressByteArray);
         delete addressByteArray;
         return address;
     }
@@ -108,24 +108,24 @@ QString DBusConnection::getAddressFromXCB()
 void DBusConnection::serviceRegistered()
 {
     // listen to enabled changes
-    QDBusConnection c = QDBusConnection::sessionBus();
-    OrgA11yStatusInterface *a11yStatus = new OrgA11yStatusInterface(A11Y_SERVICE, A11Y_PATH, c, this);
+    auto c = QDBusConnection::sessionBus();
+    auto a11yStatus = new OrgA11yStatusInterface(A11Y_SERVICE, A11Y_PATH, c, this);
 
     //The variable was introduced because on some embedded platforms there are custom accessibility
     //clients which don't set Status.ScreenReaderEnabled to true. The variable is also useful for
     //debugging.
-    static const bool a11yAlwaysOn = qEnvironmentVariableIsSet("QT_LINUX_ACCESSIBILITY_ALWAYS_ON");
+    static const auto a11yAlwaysOn = qEnvironmentVariableIsSet("QT_LINUX_ACCESSIBILITY_ALWAYS_ON");
 
     // a11yStatus->isEnabled() returns always true (since Gnome 3.6)
-    bool enabled = a11yAlwaysOn || a11yStatus->screenReaderEnabled();
+    auto enabled = a11yAlwaysOn || a11yStatus->screenReaderEnabled();
 
     if (enabled != m_enabled) {
         m_enabled = enabled;
         if (m_a11yConnection.isConnected()) {
             emit enabledChanged(m_enabled);
         } else {
-            QDBusConnection c = QDBusConnection::sessionBus();
-            QDBusMessage m = QDBusMessage::createMethodCall(QLatin1String("org.a11y.Bus"),
+            auto c = QDBusConnection::sessionBus();
+            auto m = QDBusMessage::createMethodCall(QLatin1String("org.a11y.Bus"),
                                                             QLatin1String("/org/a11y/bus"),
                                                             QLatin1String("org.a11y.Bus"), QLatin1String("GetAddress"));
             c.callWithCallback(m, this, SLOT(connectA11yBus(QString)), SLOT(dbusError(QDBusError)));

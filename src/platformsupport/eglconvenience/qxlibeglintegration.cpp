@@ -45,22 +45,22 @@ Q_LOGGING_CATEGORY(lcXlibEglDebug, "qt.egl.xlib.debug")
 VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay eglDisplay, EGLConfig config)
 {
     VisualID    visualId = 0;
-    EGLint      eglValue = 0;
+    auto eglValue = 0;
 
-    EGLint configRedSize = 0;
+    auto configRedSize = 0;
     eglGetConfigAttrib(eglDisplay, config, EGL_RED_SIZE, &configRedSize);
 
-    EGLint configGreenSize = 0;
+    auto configGreenSize = 0;
     eglGetConfigAttrib(eglDisplay, config, EGL_GREEN_SIZE, &configGreenSize);
 
-    EGLint configBlueSize = 0;
+    auto configBlueSize = 0;
     eglGetConfigAttrib(eglDisplay, config, EGL_BLUE_SIZE, &configBlueSize);
 
-    EGLint configAlphaSize = 0;
+    auto configAlphaSize = 0;
     eglGetConfigAttrib(eglDisplay, config, EGL_ALPHA_SIZE, &configAlphaSize);
 
     eglGetConfigAttrib(eglDisplay, config, EGL_CONFIG_ID, &eglValue);
-    int configId = eglValue;
+    auto configId = eglValue;
 
     // See if EGL provided a valid VisualID:
     eglGetConfigAttrib(eglDisplay, config, EGL_NATIVE_VISUAL_ID, &eglValue);
@@ -72,7 +72,7 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
         visualInfoTemplate.visualid = visualId;
 
         XVisualInfo *chosenVisualInfo;
-        int matchingCount = 0;
+        auto matchingCount = 0;
         chosenVisualInfo = XGetVisualInfo(display, VisualIDMask, &visualInfoTemplate, &matchingCount);
         if (chosenVisualInfo) {
             // Skip size checks if implementation supports non-matching visual
@@ -82,7 +82,7 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
                 return visualId;
             }
             // Skip also for i.MX6 where 565 visuals are suggested for the default 444 configs and it works just fine.
-            const char *vendor = eglQueryString(eglDisplay, EGL_VENDOR);
+            auto vendor = eglQueryString(eglDisplay, EGL_VENDOR);
             if (vendor && strstr(vendor, "Vivante")) {
                 XFree(chosenVisualInfo);
                 return visualId;
@@ -91,9 +91,9 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
             int visualRedSize = qPopulationCount(chosenVisualInfo->red_mask);
             int visualGreenSize = qPopulationCount(chosenVisualInfo->green_mask);
             int visualBlueSize = qPopulationCount(chosenVisualInfo->blue_mask);
-            int visualAlphaSize = chosenVisualInfo->depth == 32 ? 8 : 0;
+            auto visualAlphaSize = chosenVisualInfo->depth == 32 ? 8 : 0;
 
-            const bool visualMatchesConfig = visualRedSize == configRedSize
+            const auto visualMatchesConfig = visualRedSize == configRedSize
                 && visualGreenSize == configGreenSize
                 && visualBlueSize == configBlueSize
                 && visualAlphaSize == configAlphaSize;
@@ -130,7 +130,7 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
         XVisualInfo visualInfoTemplate;
         memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
         XVisualInfo *matchingVisuals;
-        int matchingCount = 0;
+        auto matchingCount = 0;
 
         visualInfoTemplate.depth = configRedSize + configGreenSize + configBlueSize + configAlphaSize;
         matchingVisuals = XGetVisualInfo(display,

@@ -178,9 +178,9 @@ QDBusPlatformMenu::~QDBusPlatformMenu()
 
 void QDBusPlatformMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before)
 {
-    QDBusPlatformMenuItem *item = static_cast<QDBusPlatformMenuItem *>(menuItem);
-    QDBusPlatformMenuItem *beforeItem = static_cast<QDBusPlatformMenuItem *>(before);
-    int idx = m_items.indexOf(beforeItem);
+    auto item = static_cast<QDBusPlatformMenuItem *>(menuItem);
+    auto beforeItem = static_cast<QDBusPlatformMenuItem *>(before);
+    auto idx = m_items.indexOf(beforeItem);
     qCDebug(qLcMenu) << item->dbusID() << item->text();
     if (idx < 0)
         m_items.append(item);
@@ -194,12 +194,12 @@ void QDBusPlatformMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMen
 
 void QDBusPlatformMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 {
-    QDBusPlatformMenuItem *item = static_cast<QDBusPlatformMenuItem *>(menuItem);
+    auto item = static_cast<QDBusPlatformMenuItem *>(menuItem);
     m_items.removeAll(item);
     m_itemsByTag.remove(menuItem->tag());
     if (item->menu()) {
         // disconnect from the signals we connected to in syncSubMenu()
-        const QDBusPlatformMenu *menu = static_cast<const QDBusPlatformMenu *>(item->menu());
+        auto menu = static_cast<const QDBusPlatformMenu *>(item->menu());
         disconnect(menu, &QDBusPlatformMenu::propertiesUpdated,
                    this, &QDBusPlatformMenu::propertiesUpdated);
         disconnect(menu, &QDBusPlatformMenu::updated,
@@ -220,7 +220,7 @@ void QDBusPlatformMenu::syncSubMenu(const QDBusPlatformMenu *menu)
 
 void QDBusPlatformMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 {
-    QDBusPlatformMenuItem *item = static_cast<QDBusPlatformMenuItem *>(menuItem);
+    auto item = static_cast<QDBusPlatformMenuItem *>(menuItem);
     // if a submenu was added to this item, we need to connect to its signals
     if (item->menu())
         syncSubMenu(static_cast<const QDBusPlatformMenu *>(item->menu()));
@@ -289,7 +289,7 @@ const QList<QDBusPlatformMenuItem *> QDBusPlatformMenu::items() const
 
 QPlatformMenuItem *QDBusPlatformMenu::createMenuItem() const
 {
-    QDBusPlatformMenuItem *ret = new QDBusPlatformMenuItem();
+    auto ret = new QDBusPlatformMenuItem();
     return ret;
 }
 

@@ -59,12 +59,12 @@ QEvdevTabletManager::QEvdevTabletManager(const QString &key, const QString &spec
     if (qEnvironmentVariableIsSet("QT_QPA_EVDEV_DEBUG"))
         const_cast<QLoggingCategory &>(qLcEvdevTablet()).setEnabled(QtDebugMsg, true);
 
-    QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_TABLET_PARAMETERS"));
+    auto spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_TABLET_PARAMETERS"));
 
     if (spec.isEmpty())
         spec = specification;
 
-    QStringList args = spec.split(QLatin1Char(':'));
+    auto args = spec.split(QLatin1Char(':'));
     QStringList devices;
 
     foreach (const QString &arg, args) {
@@ -85,7 +85,7 @@ QEvdevTabletManager::QEvdevTabletManager(const QString &key, const QString &spec
         qCDebug(qLcEvdevTablet) << "evdevtablet: Using device discovery";
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Tablet, this);
         if (m_deviceDiscovery) {
-            QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+            auto devices = m_deviceDiscovery->scanConnectedDevices();
             foreach (const QString &device, devices)
                 addDevice(device);
             connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addDevice(QString)));
@@ -117,7 +117,7 @@ void QEvdevTabletManager::removeDevice(const QString &deviceNode)
 {
     if (m_activeDevices.contains(deviceNode)) {
         qCDebug(qLcEvdevTablet) << "Removing device at" << deviceNode;
-        QEvdevTabletHandlerThread *handler = m_activeDevices.value(deviceNode);
+        auto handler = m_activeDevices.value(deviceNode);
         m_activeDevices.remove(deviceNode);
         QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
             QInputDeviceManager::DeviceTypeTablet, m_activeDevices.count());

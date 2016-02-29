@@ -94,14 +94,14 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
 {
     qCDebug(qLcEvdevKey) << "Try to create keyboard handler for" << device << specification;
 
-    QString keymapFile = defaultKeymapFile;
-    int repeatDelay = 400;
-    int repeatRate = 80;
-    bool disableZap = false;
-    bool enableCompose = false;
-    int grab = 0;
+    auto keymapFile = defaultKeymapFile;
+    auto repeatDelay = 400;
+    auto repeatRate = 80;
+    auto disableZap = false;
+    auto enableCompose = false;
+    auto grab = 0;
 
-    QStringList args = specification.split(QLatin1Char(':'));
+    auto args = specification.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
         if (arg.startsWith(QLatin1String("keymap=")))
             keymapFile = arg.mid(7);
@@ -151,7 +151,7 @@ void QEvdevKeyboardHandler::switchLed(int led, bool state)
 void QEvdevKeyboardHandler::readKeycode()
 {
     struct ::input_event buffer[32];
-    int n = 0;
+    auto n = 0;
 
     forever {
         int result = qt_safe_read(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
@@ -173,12 +173,12 @@ void QEvdevKeyboardHandler::readKeycode()
 
     n /= sizeof(buffer[0]);
 
-    for (int i = 0; i < n; ++i) {
+    for (auto i = 0; i < n; ++i) {
         if (buffer[i].type != EV_KEY)
             continue;
 
-        quint16 code = buffer[i].code;
-        qint32 value = buffer[i].value;
+        auto code = buffer[i].code;
+        auto value = buffer[i].value;
 
         QEvdevKeyboardHandler::KeycodeAction ka;
         ka = processKeycode(code, value != 0, value == 2);
@@ -216,22 +216,22 @@ void QEvdevKeyboardHandler::processKeyEvent(int nativecode, int unicode, int qtc
 
 QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint16 keycode, bool pressed, bool autorepeat)
 {
-    KeycodeAction result = None;
-    bool first_press = pressed && !autorepeat;
+    auto result = None;
+    auto first_press = pressed && !autorepeat;
 
     const QEvdevKeyboardMap::Mapping *map_plain = 0;
     const QEvdevKeyboardMap::Mapping *map_withmod = 0;
 
-    quint8 modifiers = m_modifiers;
+    auto modifiers = m_modifiers;
 
     // get a specific and plain mapping for the keycode and the current modifiers
-    for (int i = 0; i < m_keymap_size && !(map_plain && map_withmod); ++i) {
-        const QEvdevKeyboardMap::Mapping *m = m_keymap + i;
+    for (auto i = 0; i < m_keymap_size && !(map_plain && map_withmod); ++i) {
+        auto m = m_keymap + i;
         if (m->keycode == keycode) {
             if (m->modifiers == 0)
                 map_plain = m;
 
-            quint8 testmods = m_modifiers;
+            auto testmods = m_modifiers;
             if (m_locks[0] /*CapsLock*/ && (m->flags & QEvdevKeyboardMap::IsLetter))
                 testmods ^= QEvdevKeyboardMap::ModShift;
             if (m->modifiers == testmods)
@@ -248,7 +248,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
             int(map_withmod ? map_withmod - m_keymap : -1),
             m_keymap_size);
 
-    const QEvdevKeyboardMap::Mapping *it = map_withmod ? map_withmod : map_plain;
+    auto it = map_withmod ? map_withmod : map_plain;
 
     if (!it) {
         // we couldn't even find a plain mapping
@@ -256,9 +256,9 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
         return result;
     }
 
-    bool skip = false;
-    quint16 unicode = it->unicode;
-    quint32 qtcode = it->qtcode;
+    auto skip = false;
+    auto unicode = it->unicode;
+    auto qtcode = it->qtcode;
 
     if ((it->flags & QEvdevKeyboardMap::IsModifier) && it->special) {
         // this is a modifier, i.e. Shift, Alt, ...
@@ -341,7 +341,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
         if (m_composing == 2 && first_press && !(it->flags & QEvdevKeyboardMap::IsModifier)) {
             // the last key press was the Compose key
             if (unicode != 0xffff) {
-                int idx = 0;
+                auto idx = 0;
                 // check if this code is in the compose table at all
                 for ( ; idx < m_keycompose_size; ++idx) {
                     if (m_keycompose[idx].first == unicode)
@@ -361,16 +361,16 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
             }
         } else if (m_composing == 1 && first_press && !(it->flags & QEvdevKeyboardMap::IsModifier)) {
             // the last key press was a Dead key
-            bool valid = false;
+            auto valid = false;
             if (unicode != 0xffff) {
-                int idx = 0;
+                auto idx = 0;
                 // check if this code is in the compose table at all
                 for ( ; idx < m_keycompose_size; ++idx) {
                     if (m_keycompose[idx].first == m_dead_unicode && m_keycompose[idx].second == unicode)
                         break;
                 }
                 if (idx < m_keycompose_size) {
-                    quint16 composed = m_keycompose[idx].result;
+                    auto composed = m_keycompose[idx].result;
                     if (composed != 0xffff) {
                         unicode = composed;
                         qtcode = Qt::Key_unknown;
@@ -387,7 +387,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
 
         if (!skip) {
             // Up until now qtcode contained both the key and modifiers. Split it.
-            Qt::KeyboardModifiers qtmods = Qt::KeyboardModifiers(qtcode & modmask);
+            auto qtmods = Qt::KeyboardModifiers(qtcode & modmask);
             qtcode &= ~modmask;
 
             qCDebug(qLcEvdevKeyMap, "Processing: uni=%04x, qt=%08x, qtmod=%08x", unicode, qtcode, int(qtmods));
@@ -520,8 +520,8 @@ bool QEvdevKeyboardHandler::loadKeymap(const QString &file)
         return false;
     }
 
-    QEvdevKeyboardMap::Mapping *qmap_keymap = new QEvdevKeyboardMap::Mapping[qmap_keymap_size];
-    QEvdevKeyboardMap::Composing *qmap_keycompose = qmap_keycompose_size ? new QEvdevKeyboardMap::Composing[qmap_keycompose_size] : 0;
+    auto qmap_keymap = new QEvdevKeyboardMap::Mapping[qmap_keymap_size];
+    auto qmap_keycompose = qmap_keycompose_size ? new QEvdevKeyboardMap::Composing[qmap_keycompose_size] : 0;
 
     for (quint32 i = 0; i < qmap_keymap_size; ++i)
         ds >> qmap_keymap[i];

@@ -65,7 +65,7 @@ QUnixEventDispatcherQPA::~QUnixEventDispatcherQPA()
 
 bool QUnixEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    const bool didSendEvents = QEventDispatcherUNIX::processEvents(flags);
+    const auto didSendEvents = QEventDispatcherUNIX::processEvents(flags);
     return QWindowSystemInterface::sendWindowSystemEvents(flags) || didSendEvents;
 }
 

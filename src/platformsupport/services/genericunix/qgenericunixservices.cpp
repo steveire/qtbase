@@ -54,7 +54,7 @@ enum { debug = 0 };
 
 static inline QByteArray detectDesktopEnvironment()
 {
-    const QByteArray xdgCurrentDesktop = qgetenv("XDG_CURRENT_DESKTOP");
+    const auto xdgCurrentDesktop = qgetenv("XDG_CURRENT_DESKTOP");
     if (!xdgCurrentDesktop.isEmpty())
         return xdgCurrentDesktop.toUpper(); // KDE, GNOME, UNITY, LXDE, MATE, XFCE...
 
@@ -65,7 +65,7 @@ static inline QByteArray detectDesktopEnvironment()
         return QByteArrayLiteral("GNOME");
 
     // Fallback to checking $DESKTOP_SESSION (unreliable)
-    const QByteArray desktopSession = qgetenv("DESKTOP_SESSION");
+    const auto desktopSession = qgetenv("DESKTOP_SESSION");
     if (desktopSession == "gnome")
         return QByteArrayLiteral("GNOME");
     if (desktopSession == "xfce")
@@ -91,7 +91,7 @@ static inline bool detectWebBrowser(const QByteArray &desktop,
         return true;
 
     if (checkBrowserVariable) {
-        QByteArray browserVariable = qgetenv("DEFAULT_BROWSER");
+        auto browserVariable = qgetenv("DEFAULT_BROWSER");
         if (browserVariable.isEmpty())
             browserVariable = qgetenv("BROWSER");
         if (!browserVariable.isEmpty() && checkExecutable(QString::fromLocal8Bit(browserVariable), browser))
@@ -123,7 +123,7 @@ static inline bool launch(const QString &launcher, const QUrl &url)
 #if defined(QT_NO_PROCESS)
     const bool ok = ::system(qPrintable(command + QStringLiteral(" &")));
 #else
-    const bool ok = QProcess::startDetached(command);
+    const auto ok = QProcess::startDetached(command);
 #endif
     if (!ok)
         qWarning("Launch failed (%s)", qPrintable(command));
@@ -132,7 +132,7 @@ static inline bool launch(const QString &launcher, const QUrl &url)
 
 QByteArray QGenericUnixServices::desktopEnvironment() const
 {
-    static const QByteArray result = detectDesktopEnvironment();
+    static const auto result = detectDesktopEnvironment();
     return result;
 }
 

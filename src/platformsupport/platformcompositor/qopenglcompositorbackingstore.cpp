@@ -88,7 +88,7 @@ QOpenGLCompositorBackingStore::QOpenGLCompositorBackingStore(QWindow *window)
 QOpenGLCompositorBackingStore::~QOpenGLCompositorBackingStore()
 {
     if (m_bsTexture) {
-        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        auto ctx = QOpenGLContext::currentContext();
         // With render-to-texture-widgets QWidget makes sure the TLW's shareContext() is
         // made current before destroying backingstores. That is however not the case for
         // windows with regular widgets only.
@@ -136,12 +136,12 @@ void QOpenGLCompositorBackingStore::updateTexture()
 
     if (!m_dirty.isNull()) {
         QRegion fixed;
-        QRect imageRect = m_image.rect();
+        auto imageRect = m_image.rect();
 
-        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        auto ctx = QOpenGLContext::currentContext();
         if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
             foreach (const QRect &rect, m_dirty.rects()) {
-                QRect r = imageRect & rect;
+                auto r = imageRect & rect;
                 glPixelStorei(GL_UNPACK_ROW_LENGTH, m_image.width());
                 glTexSubImage2D(GL_TEXTURE_2D, 0, r.x(), r.y(), r.width(), r.height(), GL_RGBA, GL_UNSIGNED_BYTE,
                                 m_image.constScanLine(r.y()) + r.x() * 4);
@@ -150,7 +150,7 @@ void QOpenGLCompositorBackingStore::updateTexture()
         } else {
             foreach (const QRect &rect, m_dirty.rects()) {
                 // intersect with image rect to be sure
-                QRect r = imageRect & rect;
+                auto r = imageRect & rect;
 
                 // if the rect is wide enough it's cheaper to just
                 // extend it instead of doing an image copy
@@ -185,11 +185,11 @@ void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
-    QOpenGLContext *dstCtx = compositor->context();
+    auto compositor = QOpenGLCompositor::instance();
+    auto dstCtx = compositor->context();
     Q_ASSERT(dstCtx);
 
-    QWindow *dstWin = compositor->targetWindow();
+    auto dstWin = compositor->targetWindow();
     if (!dstWin)
         return;
 
@@ -212,15 +212,15 @@ void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegi
     Q_UNUSED(context);
     Q_UNUSED(translucentBackground);
 
-    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
-    QOpenGLContext *dstCtx = compositor->context();
+    auto compositor = QOpenGLCompositor::instance();
+    auto dstCtx = compositor->context();
     Q_ASSERT(dstCtx); // setTarget() must have been called before, e.g. from QEGLFSWindow
 
     // The compositor's context and the context to which QOpenGLWidget/QQuickWidget
     // textures belong are not the same. They share resources, though.
     Q_ASSERT(context->shareGroup() == dstCtx->shareGroup());
 
-    QWindow *dstWin = compositor->targetWindow();
+    auto dstWin = compositor->targetWindow();
     if (!dstWin)
         return;
 
@@ -229,7 +229,7 @@ void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegi
     QWindowPrivate::get(window)->lastComposeTime.start();
 
     m_textures->clear();
-    for (int i = 0; i < textures->count(); ++i)
+    for (auto i = 0; i < textures->count(); ++i)
         m_textures->appendTexture(textures->source(i), textures->textureId(i), textures->geometry(i),
                                   textures->clipRect(i), textures->flags(i));
 
@@ -245,7 +245,7 @@ void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegi
 void QOpenGLCompositorBackingStore::notifyComposited()
 {
     if (m_lockedWidgetTextures) {
-        QPlatformTextureList *textureList = m_lockedWidgetTextures;
+        auto textureList = m_lockedWidgetTextures;
         m_lockedWidgetTextures = 0; // may reenter so null before unlocking
         textureList->lock(false);
     }
@@ -267,9 +267,9 @@ void QOpenGLCompositorBackingStore::resize(const QSize &size, const QRegion &sta
 {
     Q_UNUSED(staticContents);
 
-    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
-    QOpenGLContext *dstCtx = compositor->context();
-    QWindow *dstWin = compositor->targetWindow();
+    auto compositor = QOpenGLCompositor::instance();
+    auto dstCtx = compositor->context();
+    auto dstWin = compositor->targetWindow();
     if (!dstWin)
         return;
 

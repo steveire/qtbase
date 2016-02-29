@@ -63,7 +63,7 @@ QFbCursor::QFbCursor(QFbScreen *screen)
       mGraphic(0),
       mDeviceListener(0)
 {
-    QByteArray hideCursorVal = qgetenv("QT_QPA_FB_HIDECURSOR");
+    auto hideCursorVal = qgetenv("QT_QPA_FB_HIDECURSOR");
     if (!hideCursorVal.isEmpty())
         mVisible = hideCursorVal.toInt() == 0;
     if (!mVisible)
@@ -85,10 +85,10 @@ QFbCursor::~QFbCursor()
 
 QRect QFbCursor::getCurrentRect()
 {
-    QRect rect = mGraphic->image()->rect().translated(-mGraphic->hotspot().x(),
+    auto rect = mGraphic->image()->rect().translated(-mGraphic->hotspot().x(),
                                                      -mGraphic->hotspot().y());
     rect.translate(m_pos);
-    QPoint mScreenOffset = mScreen->geometry().topLeft();
+    auto mScreenOffset = mScreen->geometry().topLeft();
     rect.translate(-mScreenOffset);  // global to local translation
     return rect;
 }
@@ -127,7 +127,7 @@ QRect QFbCursor::drawCursor(QPainter & painter)
         return QRect();
 
     // We need this because the cursor might be mDirty due to moving off mScreen
-    QPoint mScreenOffset = mScreen->geometry().topLeft();
+    auto mScreenOffset = mScreen->geometry().topLeft();
     // global to local translation
     if (!mCurrentRect.translated(mScreenOffset).intersects(mScreen->geometry()))
         return QRect();
@@ -166,18 +166,18 @@ void QFbCursor::setCursor(const uchar *data, const uchar *mask, int width, int h
 void QFbCursor::changeCursor(QCursor * widgetCursor, QWindow *window)
 {
     Q_UNUSED(window);
-    const Qt::CursorShape shape = widgetCursor ? widgetCursor->shape() : Qt::ArrowCursor;
+    const auto shape = widgetCursor ? widgetCursor->shape() : Qt::ArrowCursor;
 
     if (shape == Qt::BitmapCursor) {
         // application supplied cursor
-        QPoint spot = widgetCursor->hotSpot();
+        auto spot = widgetCursor->hotSpot();
         setCursor(widgetCursor->pixmap().toImage(), spot.x(), spot.y());
     } else {
         // system cursor
         setCursor(shape);
     }
     mCurrentRect = getCurrentRect();
-    QPoint mScreenOffset = mScreen->geometry().topLeft(); // global to local translation
+    auto mScreenOffset = mScreen->geometry().topLeft(); // global to local translation
     if (mOnScreen || mScreen->geometry().intersects(mCurrentRect.translated(mScreenOffset)))
         setDirty();
 }

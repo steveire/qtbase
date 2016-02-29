@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 void QBasicFontDatabase::populateFontDatabase()
 {
-    QString fontpath = fontDir();
+    auto fontpath = fontDir();
     QDir dir(fontpath);
 
     if (!dir.exists()) {
@@ -78,23 +78,23 @@ void QBasicFontDatabase::populateFontDatabase()
                 << QLatin1String("*.otf");
 
     foreach (const QFileInfo &fi, dir.entryInfoList(nameFilters, QDir::Files)) {
-        const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
+        const auto file = QFile::encodeName(fi.absoluteFilePath());
         QBasicFontDatabase::addTTFile(QByteArray(), file);
     }
 }
 
 QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, void *usrPtr)
 {
-    FontFile *fontfile = static_cast<FontFile *> (usrPtr);
+    auto fontfile = static_cast<FontFile *> (usrPtr);
     QFontEngine::FaceId fid;
     fid.filename = QFile::encodeName(fontfile->fileName);
     fid.index = fontfile->indexValue;
 
-    bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-    QFontEngineFT *engine = new QFontEngineFT(fontDef);
-    QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_Mono;
+    auto antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
+    auto engine = new QFontEngineFT(fontDef);
+    auto format = QFontEngineFT::Format_Mono;
     if (antialias) {
-        QFontEngine::SubpixelAntialiasingType subpixelType = subpixelAntialiasingTypeHint();
+        auto subpixelType = subpixelAntialiasingTypeHint();
         if (subpixelType == QFontEngine::Subpixel_None || (fontDef.styleStrategy & QFont::NoSubpixelAntialias)) {
             format = QFontEngineFT::Format_A8;
             engine->subpixelType = QFontEngine::Subpixel_None;
@@ -154,7 +154,7 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QByteArray &fontData, qreal pi
     fontDef.pixelSize = pixelSize;
     fontDef.hintingPreference = hintingPreference;
 
-    QFontEngineFTRawData *fe = new QFontEngineFTRawData(fontDef);
+    auto fe = new QFontEngineFTRawData(fontDef);
     if (!fe->initFromData(fontData)) {
         delete fe;
         return 0;
@@ -173,7 +173,7 @@ QStringList QBasicFontDatabase::addApplicationFont(const QByteArray &fontData, c
 
 void QBasicFontDatabase::releaseHandle(void *handle)
 {
-    FontFile *file = static_cast<FontFile *>(handle);
+    auto file = static_cast<FontFile *>(handle);
     delete file;
 }
 
@@ -181,10 +181,10 @@ extern FT_Library qt_getFreetype();
 
 QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
 {
-    FT_Library library = qt_getFreetype();
+    auto library = qt_getFreetype();
 
-    int index = 0;
-    int numFaces = 0;
+    auto index = 0;
+    auto numFaces = 0;
     QStringList families;
     do {
         FT_Face face;
@@ -200,9 +200,9 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
         }
         numFaces = face->num_faces;
 
-        QFont::Weight weight = QFont::Normal;
+        auto weight = QFont::Normal;
 
-        QFont::Style style = QFont::StyleNormal;
+        auto style = QFont::StyleNormal;
         if (face->style_flags & FT_STYLE_FLAG_ITALIC)
             style = QFont::StyleItalic;
 
@@ -213,8 +213,8 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
 
         QSupportedWritingSystems writingSystems;
         // detect symbol fonts
-        for (int i = 0; i < face->num_charmaps; ++i) {
-            FT_CharMap cm = face->charmaps[i];
+        for (auto i = 0; i < face->num_charmaps; ++i) {
+            auto cm = face->charmaps[i];
             if (cm->encoding == FT_ENCODING_ADOBE_CUSTOM
                     || cm->encoding == FT_ENCODING_MS_SYMBOL) {
                 writingSystems.setSupported(QFontDatabase::Symbol);
@@ -222,7 +222,7 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
             }
         }
 
-        TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(face, ft_sfnt_os2);
+        auto os2 = (TT_OS2 *)FT_Get_Sfnt_Table(face, ft_sfnt_os2);
         if (os2) {
             quint32 unicodeRange[4] = {
                 quint32(os2->ulUnicodeRange1),
@@ -262,12 +262,12 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
             }
         }
 
-        QString family = QString::fromLatin1(face->family_name);
-        FontFile *fontFile = new FontFile;
+        auto family = QString::fromLatin1(face->family_name);
+        auto fontFile = new FontFile;
         fontFile->fileName = QFile::decodeName(file);
         fontFile->indexValue = index;
 
-        QFont::Stretch stretch = QFont::Unstretched;
+        auto stretch = QFont::Unstretched;
 
         registerFont(family,QString::fromLatin1(face->style_name),QString(),weight,style,stretch,true,true,0,fixedPitch,writingSystems,fontFile);
 

@@ -136,10 +136,10 @@ void QOpenGLCompositor::renderAll(QOpenGLFramebufferObject *fbo)
 
     m_blitter.bind();
 
-    for (int i = 0; i < m_windows.size(); ++i)
+    for (auto i = 0; i < m_windows.size(); ++i)
         m_windows.at(i)->beginCompositing();
 
-    for (int i = 0; i < m_windows.size(); ++i)
+    for (auto i = 0; i < m_windows.size(); ++i)
         render(m_windows.at(i));
 
     m_blitter.release();
@@ -148,7 +148,7 @@ void QOpenGLCompositor::renderAll(QOpenGLFramebufferObject *fbo)
     else
         fbo->release();
 
-    for (int i = 0; i < m_windows.size(); ++i)
+    for (auto i = 0; i < m_windows.size(); ++i)
         m_windows.at(i)->endCompositing();
 }
 
@@ -183,16 +183,16 @@ static inline QRect toBottomLeftRect(const QRect &topLeftRect, int windowHeight)
 
 static void clippedBlit(const QPlatformTextureList *textures, int idx, const QRect &targetWindowRect, QOpenGLTextureBlitter *blitter)
 {
-    const QRect clipRect = textures->clipRect(idx);
+    const auto clipRect = textures->clipRect(idx);
     if (clipRect.isEmpty())
         return;
 
-    const QRect rectInWindow = textures->geometry(idx);
-    const QRect clippedRectInWindow = rectInWindow & clipRect.translated(rectInWindow.topLeft());
-    const QRect srcRect = toBottomLeftRect(clipRect, rectInWindow.height());
+    const auto rectInWindow = textures->geometry(idx);
+    const auto clippedRectInWindow = rectInWindow & clipRect.translated(rectInWindow.topLeft());
+    const auto srcRect = toBottomLeftRect(clipRect, rectInWindow.height());
 
-    const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(clippedRectInWindow, targetWindowRect);
-    const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(srcRect, rectInWindow.size(),
+    const auto target = QOpenGLTextureBlitter::targetTransform(clippedRectInWindow, targetWindowRect);
+    const auto source = QOpenGLTextureBlitter::sourceTransform(srcRect, rectInWindow.size(),
                                                                      QOpenGLTextureBlitter::OriginBottomLeft);
 
     blitter->blit(textures->textureId(idx), target, source);
@@ -200,16 +200,16 @@ static void clippedBlit(const QPlatformTextureList *textures, int idx, const QRe
 
 void QOpenGLCompositor::render(QOpenGLCompositorWindow *window)
 {
-    const QPlatformTextureList *textures = window->textures();
+    auto textures = window->textures();
     if (!textures)
         return;
 
     const QRect targetWindowRect(QPoint(0, 0), m_targetWindow->geometry().size());
-    float currentOpacity = 1.0f;
+    auto currentOpacity = 1.0f;
     BlendStateBinder blend;
 
-    for (int i = 0; i < textures->count(); ++i) {
-        uint textureId = textures->textureId(i);
+    for (auto i = 0; i < textures->count(); ++i) {
+        auto textureId = textures->textureId(i);
         const float opacity = window->sourceWindow()->opacity();
         if (opacity != currentOpacity) {
             currentOpacity = opacity;
@@ -219,13 +219,13 @@ void QOpenGLCompositor::render(QOpenGLCompositorWindow *window)
         if (textures->count() > 1 && i == textures->count() - 1) {
             // Backingstore for a widget with QOpenGLWidget subwidgets
             blend.set(true);
-            const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i), targetWindowRect);
+            const auto target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i), targetWindowRect);
             m_blitter.blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
         } else if (textures->count() == 1) {
             // A regular QWidget window
-            const bool translucent = window->sourceWindow()->requestedFormat().alphaBufferSize() > 0;
+            const auto translucent = window->sourceWindow()->requestedFormat().alphaBufferSize() > 0;
             blend.set(translucent);
-            const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i), targetWindowRect);
+            const auto target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i), targetWindowRect);
             m_blitter.blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
         } else if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
             // Texture from an FBO belonging to a QOpenGLWidget
@@ -234,7 +234,7 @@ void QOpenGLCompositor::render(QOpenGLCompositorWindow *window)
         }
     }
 
-    for (int i = 0; i < textures->count(); ++i) {
+    for (auto i = 0; i < textures->count(); ++i) {
         if (textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
             blend.set(true);
             clippedBlit(textures, i, targetWindowRect, &m_blitter);
@@ -281,7 +281,7 @@ void QOpenGLCompositor::moveToTop(QOpenGLCompositorWindow *window)
 
 void QOpenGLCompositor::changeWindowIndex(QOpenGLCompositorWindow *window, int newIdx)
 {
-    int idx = m_windows.indexOf(window);
+    auto idx = m_windows.indexOf(window);
     if (idx != -1 && idx != newIdx) {
         m_windows.move(idx, newIdx);
         if (newIdx == m_windows.size() - 1)

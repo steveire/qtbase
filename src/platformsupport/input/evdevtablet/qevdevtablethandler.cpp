@@ -129,20 +129,20 @@ void QEvdevTabletData::report()
     if (!state.lastReportTool && state.tool)
         QWindowSystemInterface::handleTabletEnterProximityEvent(QTabletEvent::Stylus, state.tool, q->deviceId());
 
-    qreal nx = (state.x - minValues.x) / qreal(maxValues.x - minValues.x);
-    qreal ny = (state.y - minValues.y) / qreal(maxValues.y - minValues.y);
+    auto nx = (state.x - minValues.x) / qreal(maxValues.x - minValues.x);
+    auto ny = (state.y - minValues.y) / qreal(maxValues.y - minValues.y);
 
-    QRect winRect = QGuiApplication::primaryScreen()->geometry();
+    auto winRect = QGuiApplication::primaryScreen()->geometry();
     QPointF globalPos(nx * winRect.width(), ny * winRect.height());
-    int pointer = state.tool;
+    auto pointer = state.tool;
     // Prevent sending confusing values of 0 when moving the pen outside the active area.
     if (!state.down && state.lastReportDown) {
         globalPos = state.lastReportPos;
         pointer = state.lastReportTool;
     }
 
-    int pressureRange = maxValues.p - minValues.p;
-    qreal pressure = pressureRange ? (state.p - minValues.p) / qreal(pressureRange) : qreal(1);
+    auto pressureRange = maxValues.p - minValues.p;
+    auto pressure = pressureRange ? (state.p - minValues.p) / qreal(pressureRange) : qreal(1);
 
     if (state.down || state.lastReportDown) {
         QWindowSystemInterface::handleTabletEvent(0, state.down, QPointF(), globalPos,
@@ -174,7 +174,7 @@ QEvdevTabletHandler::QEvdevTabletHandler(const QString &device, const QString &s
         return;
     }
 
-    bool grabSuccess = !ioctl(m_fd, EVIOCGRAB, (void *) 1);
+    auto grabSuccess = !ioctl(m_fd, EVIOCGRAB, (void *) 1);
     if (grabSuccess)
         ioctl(m_fd, EVIOCGRAB, (void *) 0);
     else
@@ -203,7 +203,7 @@ qint64 QEvdevTabletHandler::deviceId() const
 
 bool QEvdevTabletHandler::queryLimits()
 {
-    bool ok = true;
+    auto ok = true;
     input_absinfo absInfo;
     memset(&absInfo, 0, sizeof(input_absinfo));
     ok &= ioctl(m_fd, EVIOCGABS(ABS_X), &absInfo) >= 0;
@@ -243,7 +243,7 @@ bool QEvdevTabletHandler::queryLimits()
 void QEvdevTabletHandler::readData()
 {
     static input_event buffer[32];
-    int n = 0;
+    auto n = 0;
     for (; ;) {
         int result = QT_READ(m_fd, reinterpret_cast<char*>(buffer) + n, sizeof(buffer) - n);
         if (!result) {
@@ -269,7 +269,7 @@ void QEvdevTabletHandler::readData()
 
     n /= sizeof(input_event);
 
-    for (int i = 0; i < n; ++i)
+    for (auto i = 0; i < n; ++i)
         d->processInputEvent(&buffer[i]);
 }
 

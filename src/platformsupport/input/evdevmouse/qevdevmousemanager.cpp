@@ -58,12 +58,12 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
 {
     Q_UNUSED(key);
 
-    QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_MOUSE_PARAMETERS"));
+    auto spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_MOUSE_PARAMETERS"));
 
     if (spec.isEmpty())
         spec = specification;
 
-    QStringList args = spec.split(QLatin1Char(':'));
+    auto args = spec.split(QLatin1Char(':'));
     QStringList devices;
 
     foreach (const QString &arg, args) {
@@ -90,7 +90,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse | QDeviceDiscovery::Device_Touchpad, this);
         if (m_deviceDiscovery) {
             // scan and add already connected keyboards
-            QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+            auto devices = m_deviceDiscovery->scanConnectedDevices();
             foreach (const QString &device, devices) {
                 addMouse(device);
             }
@@ -113,8 +113,8 @@ QEvdevMouseManager::~QEvdevMouseManager()
 void QEvdevMouseManager::clampPosition()
 {
     // clamp to screen geometry
-    QScreen *primaryScreen = QGuiApplication::primaryScreen();
-    QRect g = QHighDpi::toNativePixels(primaryScreen->virtualGeometry(), primaryScreen);
+    auto primaryScreen = QGuiApplication::primaryScreen();
+    auto g = QHighDpi::toNativePixels(primaryScreen->virtualGeometry(), primaryScreen);
     if (m_x + m_xoffset < g.left())
         m_x = g.left() - m_xoffset;
     else if (m_x + m_xoffset > g.right())
@@ -171,7 +171,7 @@ void QEvdevMouseManager::removeMouse(const QString &deviceNode)
 {
     if (m_mice.contains(deviceNode)) {
         qCDebug(qLcEvdevMouse) << "Removing mouse at" << deviceNode;
-        QEvdevMouseHandler *handler = m_mice.value(deviceNode);
+        auto handler = m_mice.value(deviceNode);
         m_mice.remove(deviceNode);
         QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
             QInputDeviceManager::DeviceTypePointer, m_mice.count());

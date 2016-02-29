@@ -66,12 +66,12 @@ QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QStr
 {
     qCDebug(qLcEvdevMouse) << "create mouse handler for" << device << specification;
 
-    bool compression = true;
-    int jitterLimit = 0;
-    int grab = 0;
-    bool abs = false;
+    auto compression = true;
+    auto jitterLimit = 0;
+    auto grab = 0;
+    auto abs = false;
 
-    QStringList args = specification.split(QLatin1Char(':'));
+    auto args = specification.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
         if (arg == QLatin1String("nocompress"))
             compression = false;
@@ -148,8 +148,8 @@ bool QEvdevMouseHandler::getHardwareMaximum()
 
     m_hardwareHeight = absInfo.maximum - absInfo.minimum;
 
-    QScreen *primaryScreen = QGuiApplication::primaryScreen();
-    QRect g = QHighDpi::toNativePixels(primaryScreen->virtualGeometry(), primaryScreen);
+    auto primaryScreen = QGuiApplication::primaryScreen();
+    auto g = QHighDpi::toNativePixels(primaryScreen->virtualGeometry(), primaryScreen);
     m_hardwareScalerX = static_cast<qreal>(m_hardwareWidth) / (g.right() - g.left());
     m_hardwareScalerY = static_cast<qreal>(m_hardwareHeight) / (g.bottom() - g.top());
 
@@ -189,10 +189,10 @@ void QEvdevMouseHandler::sendMouseEvent()
 void QEvdevMouseHandler::readMouseData()
 {
     struct ::input_event buffer[32];
-    int n = 0;
-    bool posChanged = false, btnChanged = false;
-    bool pendingMouseEvent = false;
-    int eventCompressCount = 0;
+    auto n = 0;
+    auto posChanged = false, btnChanged = false;
+    auto pendingMouseEvent = false;
+    auto eventCompressCount = 0;
     forever {
         int result = QT_READ(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
 
@@ -213,8 +213,8 @@ void QEvdevMouseHandler::readMouseData()
 
     n /= sizeof(buffer[0]);
 
-    for (int i = 0; i < n; ++i) {
-        struct ::input_event *data = &buffer[i];
+    for (auto i = 0; i < n; ++i) {
+        auto data = &buffer[i];
         if (data->type == EV_ABS) {
             // Touchpads: store the absolute position for now, will calculate a relative one later.
             if (data->code == ABS_X && m_x != data->value) {
@@ -233,11 +233,11 @@ void QEvdevMouseHandler::readMouseData()
                 posChanged = true;
             } else if (data->code == ABS_WHEEL) { // vertical scroll
                 // data->value: 1 == up, -1 == down
-                const int delta = 120 * data->value;
+                const auto delta = 120 * data->value;
                 emit handleWheelEvent(delta, Qt::Vertical);
             } else if (data->code == ABS_THROTTLE) { // horizontal scroll
                 // data->value: 1 == right, -1 == left
-                const int delta = 120 * -data->value;
+                const auto delta = 120 * -data->value;
                 emit handleWheelEvent(delta, Qt::Horizontal);
             }
         } else if (data->type == EV_KEY && data->code == BTN_TOUCH) {
@@ -245,7 +245,7 @@ void QEvdevMouseHandler::readMouseData()
             // Need to invalidate prevx/y however to get proper relative pos.
             m_prevInvalid = true;
         } else if (data->type == EV_KEY && data->code >= BTN_LEFT && data->code <= BTN_JOYSTICK) {
-            Qt::MouseButton button = Qt::NoButton;
+            auto button = Qt::NoButton;
             // BTN_LEFT == 0x110 in kernel's input.h
             // The range of possible mouse buttons ends just before BTN_JOYSTICK, value 0x120.
             switch (data->code) {
@@ -288,7 +288,7 @@ void QEvdevMouseHandler::readMouseData()
         }
     }
     if (m_compression && pendingMouseEvent) {
-        int distanceSquared = (m_x - m_prevx)*(m_x - m_prevx) + (m_y - m_prevy)*(m_y - m_prevy);
+        auto distanceSquared = (m_x - m_prevx)*(m_x - m_prevx) + (m_y - m_prevy)*(m_y - m_prevy);
         if (distanceSquared > m_jitterLimitSquared)
             sendMouseEvent();
     }

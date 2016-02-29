@@ -139,11 +139,11 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
     QVector<EGLint> contextAttrs;
     contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
     contextAttrs.append(format.majorVersion());
-    const bool hasKHRCreateContext = q_hasEglExtension(m_eglDisplay, "EGL_KHR_create_context");
+    const auto hasKHRCreateContext = q_hasEglExtension(m_eglDisplay, "EGL_KHR_create_context");
     if (hasKHRCreateContext) {
         contextAttrs.append(EGL_CONTEXT_MINOR_VERSION_KHR);
         contextAttrs.append(format.minorVersion());
-        int flags = 0;
+        auto flags = 0;
         // The debug bit is supported both for OpenGL and OpenGL ES.
         if (format.testOption(QSurfaceFormat::DebugContext))
             flags |= EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR;
@@ -208,8 +208,8 @@ void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLCon
         qWarning("QEGLPlatformContext: Requires a QEGLNativeContext");
         return;
     }
-    QEGLNativeContext handle = nativeHandle.value<QEGLNativeContext>();
-    EGLContext context = handle.context();
+    auto handle = nativeHandle.value<QEGLNativeContext>();
+    auto context = handle.context();
     if (!context) {
         qWarning("QEGLPlatformContext: No EGLContext given");
         return;
@@ -222,9 +222,9 @@ void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLCon
     }
 
     // Figure out the EGLConfig.
-    EGLint value = 0;
+    auto value = 0;
     eglQueryContext(m_eglDisplay, context, EGL_CONFIG_ID, &value);
-    EGLint n = 0;
+    auto n = 0;
     EGLConfig cfg;
     const EGLint attribs[] = { EGL_CONFIG_ID, value, EGL_NONE };
     if (eglChooseConfig(m_eglDisplay, attribs, &cfg, 1, &n) && n == 1) {
@@ -271,7 +271,7 @@ EGLSurface QEGLPlatformContext::createTemporaryOffscreenSurface()
     // Cannot just pass m_eglConfig because it may not be suitable for pbuffers. Instead,
     // do what QEGLPbuffer would do: request a config with the same attributes but with
     // PBUFFER_BIT set.
-    EGLConfig config = q_configFromGLFormat(m_eglDisplay, m_format, false, EGL_PBUFFER_BIT);
+    auto config = q_configFromGLFormat(m_eglDisplay, m_format, false, EGL_PBUFFER_BIT);
 
     return eglCreatePbufferSurface(m_eglDisplay, config, pbufferAttributes);
 }
@@ -292,24 +292,24 @@ void QEGLPlatformContext::updateFormatFromGL()
 #ifndef QT_NO_OPENGL
     // Have to save & restore to prevent QOpenGLContext::currentContext() from becoming
     // inconsistent after QOpenGLContext::create().
-    EGLDisplay prevDisplay = eglGetCurrentDisplay();
+    auto prevDisplay = eglGetCurrentDisplay();
     if (prevDisplay == EGL_NO_DISPLAY) // when no context is current
         prevDisplay = m_eglDisplay;
-    EGLContext prevContext = eglGetCurrentContext();
-    EGLSurface prevSurfaceDraw = eglGetCurrentSurface(EGL_DRAW);
-    EGLSurface prevSurfaceRead = eglGetCurrentSurface(EGL_READ);
+    auto prevContext = eglGetCurrentContext();
+    auto prevSurfaceDraw = eglGetCurrentSurface(EGL_DRAW);
+    auto prevSurfaceRead = eglGetCurrentSurface(EGL_READ);
 
     // Rely on the surfaceless extension, if available. This is beneficial since we can
     // avoid creating an extra pbuffer surface which is apparently troublesome with some
     // drivers (Mesa) when certain attributes are present (multisampling).
-    EGLSurface tempSurface = EGL_NO_SURFACE;
-    EGLContext tempContext = EGL_NO_CONTEXT;
+    auto tempSurface = EGL_NO_SURFACE;
+    auto tempContext = EGL_NO_CONTEXT;
     if (m_flags.testFlag(NoSurfaceless) || !q_hasEglExtension(m_eglDisplay, "EGL_KHR_surfaceless_context"))
         tempSurface = createTemporaryOffscreenSurface();
 
-    EGLBoolean ok = eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, m_eglContext);
+    auto ok = eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, m_eglContext);
     if (!ok) {
-        EGLConfig config = q_configFromGLFormat(m_eglDisplay, m_format, false, EGL_PBUFFER_BIT);
+        auto config = q_configFromGLFormat(m_eglDisplay, m_format, false, EGL_PBUFFER_BIT);
         tempContext = eglCreateContext(m_eglDisplay, config, 0, m_contextAttrs.constData());
         if (tempContext != EGL_NO_CONTEXT)
             ok = eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, tempContext);
@@ -317,9 +317,9 @@ void QEGLPlatformContext::updateFormatFromGL()
     if (ok) {
         if (m_format.renderableType() == QSurfaceFormat::OpenGL
             || m_format.renderableType() == QSurfaceFormat::OpenGLES) {
-            const GLubyte *s = glGetString(GL_VERSION);
+            auto s = glGetString(GL_VERSION);
             if (s) {
-                QByteArray version = QByteArray(reinterpret_cast<const char *>(s));
+                auto version = QByteArray(reinterpret_cast<const char *>(s));
                 int major, minor;
                 if (QPlatformOpenGLContext::parseOpenGLVersion(version, major, minor)) {
 #ifdef Q_OS_ANDROID
@@ -341,7 +341,7 @@ void QEGLPlatformContext::updateFormatFromGL()
                 if (m_format.majorVersion() < 3) {
                     m_format.setOption(QSurfaceFormat::DeprecatedFunctions);
                 } else {
-                    GLint value = 0;
+                    auto value = 0;
                     glGetIntegerv(GL_CONTEXT_FLAGS, &value);
                     if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
                         m_format.setOption(QSurfaceFormat::DeprecatedFunctions);
@@ -376,7 +376,7 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 
     eglBindAPI(m_api);
 
-    EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
+    auto eglSurface = eglSurfaceForPlatformSurface(surface);
 
     // shortcut: on some GPUs, eglMakeCurrent is not a cheap operation
     if (eglGetCurrentContext() == m_eglContext &&
@@ -391,14 +391,14 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
         if (!m_swapIntervalEnvChecked) {
             m_swapIntervalEnvChecked = true;
             if (qEnvironmentVariableIsSet("QT_QPA_EGLFS_SWAPINTERVAL")) {
-                QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
+                auto swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
                 bool intervalOk;
-                const int swapInterval = swapIntervalString.toInt(&intervalOk);
+                const auto swapInterval = swapIntervalString.toInt(&intervalOk);
                 if (intervalOk)
                     m_swapIntervalFromEnv = swapInterval;
             }
         }
-        const int requestedSwapInterval = m_swapIntervalFromEnv >= 0
+        const auto requestedSwapInterval = m_swapIntervalFromEnv >= 0
             ? m_swapIntervalFromEnv
             : surface->format().swapInterval();
         if (requestedSwapInterval >= 0 && m_swapInterval != requestedSwapInterval) {
@@ -432,7 +432,7 @@ void QEGLPlatformContext::doneCurrent()
 void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 {
     eglBindAPI(m_api);
-    EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
+    auto eglSurface = eglSurfaceForPlatformSurface(surface);
     if (eglSurface != EGL_NO_SURFACE) { // skip if using surfaceless context
         bool ok = eglSwapBuffers(m_eglDisplay, eglSurface);
         if (!ok)

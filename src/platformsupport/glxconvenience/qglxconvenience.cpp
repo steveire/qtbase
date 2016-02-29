@@ -78,7 +78,7 @@ enum {
 QVector<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit)
 {
     QVector<int> spec(48);
-    int i = 0;
+    auto i = 0;
 
     spec[i++] = GLX_LEVEL;
     spec[i++] = 0;
@@ -122,8 +122,8 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QSurfaceFormat 
     // This is most useful with drivers that only support OpenGL 1.
     // We need OpenGL 2, but the user probably doesn't want
     // LIBGL_ALWAYS_SOFTWARE in OpenGL 1 apps.
-    static bool checkedForceSoftwareOpenGL = false;
-    static bool forceSoftwareOpenGL = false;
+    static auto checkedForceSoftwareOpenGL = false;
+    static auto forceSoftwareOpenGL = false;
     if (!checkedForceSoftwareOpenGL) {
         // If LIBGL_ALWAYS_SOFTWARE is already set, don't mess with it.
         // We want to unset LIBGL_ALWAYS_SOFTWARE at the end so it does not
@@ -139,28 +139,28 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QSurfaceFormat 
     if (forceSoftwareOpenGL)
         qputenv("LIBGL_ALWAYS_SOFTWARE", QByteArrayLiteral("1"));
 
-    bool reduced = true;
+    auto reduced = true;
     GLXFBConfig chosenConfig = 0;
-    QSurfaceFormat reducedFormat = format;
+    auto reducedFormat = format;
     while (!chosenConfig && reduced) {
-        QVector<int> spec = qglx_buildSpec(reducedFormat, drawableBit);
-        int confcount = 0;
+        auto spec = qglx_buildSpec(reducedFormat, drawableBit);
+        auto confcount = 0;
         GLXFBConfig *configs;
         configs = glXChooseFBConfig(display, screen,spec.constData(),&confcount);
         if (confcount)
         {
-            for (int i = 0; i < confcount; i++) {
+            for (auto i = 0; i < confcount; i++) {
                 chosenConfig = configs[i];
                 // Make sure we try to get an ARGB visual if the format asked for an alpha:
                 if (reducedFormat.hasAlpha()) {
                     int alphaSize;
                     glXGetFBConfigAttrib(display,configs[i],GLX_ALPHA_SIZE,&alphaSize);
                     if (alphaSize > 0) {
-                        XVisualInfo *visual = glXGetVisualFromFBConfig(display, chosenConfig);
-                        bool hasAlpha = false;
+                        auto visual = glXGetVisualFromFBConfig(display, chosenConfig);
+                        auto hasAlpha = false;
 
 #if !defined(QT_NO_XRENDER)
-                        XRenderPictFormat *pictFormat = XRenderFindVisualFormat(display, visual->visual);
+                        auto pictFormat = XRenderFindVisualFormat(display, visual->visual);
                         hasAlpha = pictFormat->direct.alphaMask > 0;
 #else
                         hasAlpha = visual->depth == 32;
@@ -195,15 +195,15 @@ XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *f
 
     XVisualInfo *visualInfo = 0;
 
-    GLXFBConfig config = qglx_findConfig(display,screen,*format);
+    auto config = qglx_findConfig(display,screen,*format);
     if (config) {
         visualInfo = glXGetVisualFromFBConfig(display, config);
         qglx_surfaceFormatFromGLXFBConfig(format, display, config);
     }
 
     // attempt to fall back to glXChooseVisual
-    bool reduced = true;
-    QSurfaceFormat reducedFormat = *format;
+    auto reduced = true;
+    auto reducedFormat = *format;
     while (!visualInfo && reduced) {
         QVarLengthArray<int, 13> attribs;
         attribs.append(GLX_RGBA);
@@ -250,15 +250,15 @@ XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *f
 
 void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display, GLXFBConfig config)
 {
-    int redSize     = 0;
-    int greenSize   = 0;
-    int blueSize    = 0;
-    int alphaSize   = 0;
-    int depthSize   = 0;
-    int stencilSize = 0;
-    int sampleBuffers = 0;
-    int sampleCount = 0;
-    int stereo      = 0;
+    auto redSize     = 0;
+    auto greenSize   = 0;
+    auto blueSize    = 0;
+    auto alphaSize   = 0;
+    auto depthSize   = 0;
+    auto stencilSize = 0;
+    auto sampleBuffers = 0;
+    auto sampleCount = 0;
+    auto stereo      = 0;
 
     glXGetFBConfigAttrib(display, config, GLX_RED_SIZE,     &redSize);
     glXGetFBConfigAttrib(display, config, GLX_GREEN_SIZE,   &greenSize);
@@ -285,15 +285,15 @@ void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display,
 
 void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display, XVisualInfo *visualInfo)
 {
-    int redSize     = 0;
-    int greenSize   = 0;
-    int blueSize    = 0;
-    int alphaSize   = 0;
-    int depthSize   = 0;
-    int stencilSize = 0;
-    int sampleBuffers = 0;
-    int sampleCount = 0;
-    int stereo      = 0;
+    auto redSize     = 0;
+    auto greenSize   = 0;
+    auto blueSize    = 0;
+    auto alphaSize   = 0;
+    auto depthSize   = 0;
+    auto stencilSize = 0;
+    auto sampleBuffers = 0;
+    auto sampleCount = 0;
+    auto stereo      = 0;
 
     glXGetConfig(display, visualInfo, GLX_RED_SIZE,     &redSize);
     glXGetConfig(display, visualInfo, GLX_GREEN_SIZE,   &greenSize);
@@ -320,7 +320,7 @@ void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display, 
 
 QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *reduced)
 {
-    QSurfaceFormat retFormat = format;
+    auto retFormat = format;
     *reduced = true;
 
     if (retFormat.redBufferSize() > 1) {

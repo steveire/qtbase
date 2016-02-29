@@ -47,7 +47,7 @@ namespace QAccessibleBridgeUtils {
 
 static bool performAction(QAccessibleInterface *iface, const QString &actionName)
 {
-    if (QAccessibleActionInterface *actionIface = iface->actionInterface()) {
+    if (auto actionIface = iface->actionInterface()) {
         if (actionIface->actionNames().contains(actionName)) {
             actionIface->doAction(actionName);
             return true;
@@ -59,7 +59,7 @@ static bool performAction(QAccessibleInterface *iface, const QString &actionName
 QStringList effectiveActionNames(QAccessibleInterface *iface)
 {
     QStringList actions;
-    if (QAccessibleActionInterface *actionIface = iface->actionInterface())
+    if (auto actionIface = iface->actionInterface())
         actions = actionIface->actionNames();
 
     if (iface->valueInterface()) {
@@ -81,17 +81,17 @@ bool performEffectiveAction(QAccessibleInterface *iface, const QString &actionNa
         && actionName != QAccessibleActionInterface::decreaseAction())
         return false;
 
-    QAccessibleValueInterface *valueIface = iface->valueInterface();
+    auto valueIface = iface->valueInterface();
     if (!valueIface)
         return false;
     bool success;
-    const QVariant currentVariant = valueIface->currentValue();
-    double stepSize = valueIface->minimumStepSize().toDouble(&success);
+    const auto currentVariant = valueIface->currentValue();
+    auto stepSize = valueIface->minimumStepSize().toDouble(&success);
     if (!success || qFuzzyIsNull(stepSize)) {
-        const double min = valueIface->minimumValue().toDouble(&success);
+        const auto min = valueIface->minimumValue().toDouble(&success);
         if (!success)
             return false;
-        const double max = valueIface->maximumValue().toDouble(&success);
+        const auto max = valueIface->maximumValue().toDouble(&success);
         if (!success)
             return false;
         stepSize = (max - min) / 10;  // this is pretty arbitrary, we just need to provide something
@@ -101,7 +101,7 @@ bool performEffectiveAction(QAccessibleInterface *iface, const QString &actionNa
             stepSize = qCeil(stepSize);
         }
     }
-    const double current = currentVariant.toDouble(&success);
+    const auto current = currentVariant.toDouble(&success);
     if (!success)
         return false;
     if (actionName == QAccessibleActionInterface::decreaseAction())

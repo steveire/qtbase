@@ -97,9 +97,9 @@ uint QDBusMenuLayoutItem::populate(int id, int depth, const QStringList &propert
         return 1; // revision
     }
 
-    QDBusPlatformMenuItem *item = QDBusPlatformMenuItem::byId(id);
+    auto item = QDBusPlatformMenuItem::byId(id);
     if (item) {
-        const QDBusPlatformMenu *menu = static_cast<const QDBusPlatformMenu *>(item->menu());
+        auto menu = static_cast<const QDBusPlatformMenu *>(item->menu());
 
         if (menu) {
             if (depth != 0)
@@ -126,7 +126,7 @@ void QDBusMenuLayoutItem::populate(const QDBusPlatformMenuItem *item, int depth,
     QDBusMenuItem proxy(item);
     m_properties = proxy.m_properties;
 
-    const QDBusPlatformMenu *menu = static_cast<const QDBusPlatformMenu *>(item->menu());
+    auto menu = static_cast<const QDBusPlatformMenu *>(item->menu());
     if (depth != 0 && menu)
         populate(menu, depth, propertyNames);
 }
@@ -151,7 +151,7 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, QDBusMenuLayoutItem &i
     while (!arg.atEnd()) {
         QDBusVariant dbusVariant;
         arg >> dbusVariant;
-        QDBusArgument childArgument = dbusVariant.variant().value<QDBusArgument>();
+        auto childArgument = dbusVariant.variant().value<QDBusArgument>();
 
         QDBusMenuLayoutItem child;
         childArgument >> child;
@@ -192,7 +192,7 @@ QDBusMenuItem::QDBusMenuItem(const QDBusPlatformMenuItem *item)
         }
         const QKeySequence &scut = item->shortcut();
         if (!scut.isEmpty()) {
-            QDBusMenuShortcut shortcut = convertKeySequence(scut);
+            auto shortcut = convertKeySequence(scut);
             m_properties.insert(QLatin1String("shortcut"), QVariant::fromValue(shortcut));
         }
         const QIcon &icon = item->icon();
@@ -211,7 +211,7 @@ QDBusMenuItemList QDBusMenuItem::items(const QList<int> &ids, const QStringList 
 {
     Q_UNUSED(propertyNames)
     QDBusMenuItemList ret;
-    QList<const QDBusPlatformMenuItem *> items = QDBusPlatformMenuItem::byIds(ids);
+    auto items = QDBusPlatformMenuItem::byIds(ids);
     ret.reserve(items.size());
     Q_FOREACH (const QDBusPlatformMenuItem *item, items)
         ret << QDBusMenuItem(item);
@@ -222,7 +222,7 @@ QString QDBusMenuItem::convertMnemonic(const QString &label)
 {
     // convert only the first occurrence of ampersand which is not at the end
     // dbusmenu uses underscore instead of ampersand
-    int idx = label.indexOf(QLatin1Char('&'));
+    auto idx = label.indexOf(QLatin1Char('&'));
     if (idx < 0 || idx == label.length() - 1)
         return label;
     QString ret(label);
@@ -233,9 +233,9 @@ QString QDBusMenuItem::convertMnemonic(const QString &label)
 QDBusMenuShortcut QDBusMenuItem::convertKeySequence(const QKeySequence &sequence)
 {
     QDBusMenuShortcut shortcut;
-    for (int i = 0; i < sequence.count(); ++i) {
+    for (auto i = 0; i < sequence.count(); ++i) {
         QStringList tokens;
-        int key = sequence[i];
+        auto key = sequence[i];
         if (key & Qt::MetaModifier)
             tokens << QStringLiteral("Super");
         if (key & Qt::ControlModifier)
@@ -247,7 +247,7 @@ QDBusMenuShortcut QDBusMenuItem::convertKeySequence(const QKeySequence &sequence
         if (key & Qt::KeypadModifier)
             tokens << QStringLiteral("Num");
 
-        QString keyName = QKeySequencePrivate::keyName(key, QKeySequence::PortableText);
+        auto keyName = QKeySequencePrivate::keyName(key, QKeySequence::PortableText);
         if (keyName == QLatin1String("+"))
             tokens << QStringLiteral("plus");
         else if (keyName == QLatin1String("-"))

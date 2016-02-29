@@ -56,12 +56,12 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
     Q_UNUSED(key);
 
 
-    QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_KEYBOARD_PARAMETERS"));
+    auto spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_KEYBOARD_PARAMETERS"));
 
     if (spec.isEmpty())
         spec = specification;
 
-    QStringList args = spec.split(QLatin1Char(':'));
+    auto args = spec.split(QLatin1Char(':'));
     QStringList devices;
 
     foreach (const QString &arg, args) {
@@ -84,7 +84,7 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Keyboard, this);
         if (m_deviceDiscovery) {
             // scan and add already connected keyboards
-            QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+            auto devices = m_deviceDiscovery->scanConnectedDevices();
             foreach (const QString &device, devices) {
                 addKeyboard(device);
             }
@@ -119,7 +119,7 @@ void QEvdevKeyboardManager::removeKeyboard(const QString &deviceNode)
 {
     if (m_keyboards.contains(deviceNode)) {
         qCDebug(qLcEvdevKey) << "Removing keyboard at" << deviceNode;
-        QEvdevKeyboardHandler *keyboard = m_keyboards.value(deviceNode);
+        auto keyboard = m_keyboards.value(deviceNode);
         m_keyboards.remove(deviceNode);
         QInputDeviceManagerPrivate::get(QGuiApplicationPrivate::inputDeviceManager())->setDeviceCount(
             QInputDeviceManager::DeviceTypeKeyboard, m_keyboards.count());

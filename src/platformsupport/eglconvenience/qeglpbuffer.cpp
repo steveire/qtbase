@@ -62,7 +62,7 @@ QEGLPbuffer::QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffs
     , m_display(display)
     , m_pbuffer(EGL_NO_SURFACE)
 {
-    bool hasSurfaceless = !flags.testFlag(QEGLPlatformContext::NoSurfaceless)
+    auto hasSurfaceless = !flags.testFlag(QEGLPlatformContext::NoSurfaceless)
         && q_hasEglExtension(display, "EGL_KHR_surfaceless_context");
 
     // Disable surfaceless contexts on Mesa for now. As of 10.6.0 and Intel at least, some
@@ -70,14 +70,14 @@ QEGLPbuffer::QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffs
     // point temporarily unbind the current FBO and then later blow up in some seemingly
     // safe operations, like setting the viewport, that apparently need access to the
     // read/draw surface in the Intel backend.
-    const char *vendor = eglQueryString(display, EGL_VENDOR); // hard to check for GL_ strings here, so blacklist all Mesa
+    auto vendor = eglQueryString(display, EGL_VENDOR); // hard to check for GL_ strings here, so blacklist all Mesa
     if (vendor && strstr(vendor, "Mesa"))
         hasSurfaceless = false;
 
     if (hasSurfaceless)
         return;
 
-    EGLConfig config = q_configFromGLFormat(m_display, m_format, false, EGL_PBUFFER_BIT);
+    auto config = q_configFromGLFormat(m_display, m_format, false, EGL_PBUFFER_BIT);
 
     if (config) {
         const EGLint attributes[] = {

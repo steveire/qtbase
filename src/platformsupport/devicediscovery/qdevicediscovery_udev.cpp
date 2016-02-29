@@ -107,7 +107,7 @@ QStringList QDeviceDiscoveryUDev::scanConnectedDevices()
     if (!m_udev)
         return devices;
 
-    udev_enumerate *ue = udev_enumerate_new(m_udev);
+    auto ue = udev_enumerate_new(m_udev);
     udev_enumerate_add_match_subsystem(ue, "input");
     udev_enumerate_add_match_subsystem(ue, "drm");
 
@@ -133,14 +133,14 @@ QStringList QDeviceDiscoveryUDev::scanConnectedDevices()
 
     udev_list_entry *entry;
     udev_list_entry_foreach (entry, udev_enumerate_get_list_entry(ue)) {
-        const char *syspath = udev_list_entry_get_name(entry);
-        udev_device *udevice = udev_device_new_from_syspath(m_udev, syspath);
-        QString candidate = QString::fromUtf8(udev_device_get_devnode(udevice));
+        auto syspath = udev_list_entry_get_name(entry);
+        auto udevice = udev_device_new_from_syspath(m_udev, syspath);
+        auto candidate = QString::fromUtf8(udev_device_get_devnode(udevice));
         if ((m_types & Device_InputMask) && candidate.startsWith(QLatin1String(QT_EVDEV_DEVICE)))
             devices << candidate;
         if ((m_types & Device_VideoMask) && candidate.startsWith(QLatin1String(QT_DRM_DEVICE))) {
             if (m_types & Device_DRM_PrimaryGPU) {
-                udev_device *pci = udev_device_get_parent_with_subsystem_devtype(udevice, "pci", 0);
+                auto pci = udev_device_get_parent_with_subsystem_devtype(udevice, "pci", 0);
                 if (pci) {
                     if (qstrcmp(udev_device_get_sysattr_value(pci, "boot_vga"), "1") == 0)
                         devices << candidate;
@@ -191,7 +191,7 @@ void QDeviceDiscoveryUDev::handleUDevNotification()
     // if we cannot determine a type, walk up the device tree
     if (!checkDeviceType(dev)) {
         // does not increase the refcount
-        struct udev_device *parent_dev = udev_device_get_parent_with_subsystem_devtype(dev, subsystem, 0);
+        auto parent_dev = udev_device_get_parent_with_subsystem_devtype(dev, subsystem, 0);
         if (!parent_dev)
             goto cleanup;
 
@@ -215,11 +215,11 @@ bool QDeviceDiscoveryUDev::checkDeviceType(udev_device *dev)
         return false;
 
     if ((m_types & Device_Keyboard) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_KEYBOARD"), "1") == 0 )) {
-        const char *capabilities_key = udev_device_get_sysattr_value(dev, "capabilities/key");
-        QStringList val = QString::fromUtf8(capabilities_key).split(QLatin1Char(' '), QString::SkipEmptyParts);
+        auto capabilities_key = udev_device_get_sysattr_value(dev, "capabilities/key");
+        auto val = QString::fromUtf8(capabilities_key).split(QLatin1Char(' '), QString::SkipEmptyParts);
         if (!val.isEmpty()) {
             bool ok;
-            unsigned long long keys = val.last().toULongLong(&ok, 16);
+            auto keys = val.last().toULongLong(&ok, 16);
             if (ok) {
                 // Tests if the letter Q is valid for the device.  We may want to alter this test, but it seems mostly reliable.
                 bool test = (keys >> KEY_Q) & 1;

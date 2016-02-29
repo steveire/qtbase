@@ -144,10 +144,10 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
 {
     // Hack for Unity, which doesn't handle icons sent across D-Bus:
     // save the icon to a temp file and set the icon name to that filename.
-    static bool necessary = (QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment().split(':').contains("UNITY"));
+    static auto necessary = (QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment().split(':').contains("UNITY"));
     if (!necessary)
         return Q_NULLPTR;
-    QTemporaryFile *ret = new QTemporaryFile(TempFileTemplate, this);
+    auto ret = new QTemporaryFile(TempFileTemplate, this);
     ret->open();
     icon.pixmap(QSize(22, 22)).save(ret);
     ret->close();
@@ -196,7 +196,7 @@ QPlatformMenu *QDBusTrayIcon::createMenu() const
 void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
 {
     qCDebug(qLcTray) << menu;
-    bool needsRegistering = !m_menu;
+    auto needsRegistering = !m_menu;
     if (!m_menu)
         m_menu = qobject_cast<QDBusPlatformMenu *>(menu);
     if (!m_menuAdaptor) {
@@ -257,7 +257,7 @@ void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const 
     QVariantMap hints;
     // urgency levels according to https://developer.gnome.org/notification-spec/#urgency-levels
     // 0 low, 1 normal, 2 critical
-    int urgency = static_cast<int>(iconType) - 1;
+    auto urgency = static_cast<int>(iconType) - 1;
     if (urgency < 0) // no icon
         urgency = 0;
     hints.insert(QLatin1String("urgency"), QVariant(urgency));
@@ -278,7 +278,7 @@ void QDBusTrayIcon::notificationClosed(uint id, uint reason)
 
 bool QDBusTrayIcon::isSystemTrayAvailable() const
 {
-    QDBusMenuConnection * conn = const_cast<QDBusTrayIcon *>(this)->dBusConnection();
+    auto conn = const_cast<QDBusTrayIcon *>(this)->dBusConnection();
     qCDebug(qLcTray) << conn->isStatusNotifierHostRegistered();
     return conn->isStatusNotifierHostRegistered();
 }
