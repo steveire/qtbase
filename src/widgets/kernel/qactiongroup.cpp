@@ -68,7 +68,7 @@ private:
 void QActionGroupPrivate::_q_actionChanged()
 {
     Q_Q(QActionGroup);
-    QAction *action = qobject_cast<QAction*>(q->sender());
+    auto action = qobject_cast<QAction*>(q->sender());
     Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionChanged", "internal error");
     if(exclusive) {
         if (action->isChecked()) {
@@ -86,7 +86,7 @@ void QActionGroupPrivate::_q_actionChanged()
 void QActionGroupPrivate::_q_actionTriggered()
 {
     Q_Q(QActionGroup);
-    QAction *action = qobject_cast<QAction*>(q->sender());
+    auto action = qobject_cast<QAction*>(q->sender());
     Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionTriggered", "internal error");
     emit q->triggered(action);
 }
@@ -94,7 +94,7 @@ void QActionGroupPrivate::_q_actionTriggered()
 void QActionGroupPrivate::_q_actionHovered()
 {
     Q_Q(QActionGroup);
-    QAction *action = qobject_cast<QAction*>(q->sender());
+    auto action = qobject_cast<QAction*>(q->sender());
     Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionHovered", "internal error");
     emit q->hovered(action);
 }
@@ -301,7 +301,7 @@ void QActionGroup::setEnabled(bool b)
 {
     Q_D(QActionGroup);
     d->enabled = b;
-    for(QList<QAction*>::const_iterator it = d->actions.constBegin(); it != d->actions.constEnd(); ++it) {
+    for(auto it = d->actions.constBegin(); it != d->actions.constEnd(); ++it) {
         if(!(*it)->d_func()->forceDisabled) {
             (*it)->setEnabled(b);
             (*it)->d_func()->forceDisabled = false;
@@ -338,7 +338,7 @@ void QActionGroup::setVisible(bool b)
 {
     Q_D(QActionGroup);
     d->visible = b;
-    for(QList<QAction*>::Iterator it = d->actions.begin(); it != d->actions.end(); ++it) {
+    for(auto it = d->actions.begin(); it != d->actions.end(); ++it) {
         if(!(*it)->d_func()->forceInvisible) {
             (*it)->setVisible(b);
             (*it)->d_func()->forceInvisible = false;

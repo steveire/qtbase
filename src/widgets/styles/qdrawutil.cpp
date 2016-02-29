@@ -97,8 +97,8 @@ void qDrawShadeLine(QPainter *p, int x1, int y1, int x2, int y2,
         qWarning("qDrawShadeLine: Invalid parameters");
         return;
     }
-    int tlw = lineWidth*2 + midLineWidth;        // total line width
-    QPen oldPen = p->pen();                        // save pen
+    auto tlw = lineWidth*2 + midLineWidth;        // total line width
+    auto oldPen = p->pen();                        // save pen
     if (sunken)
         p->setPen(pal.color(QPalette::Dark));
     else
@@ -106,9 +106,9 @@ void qDrawShadeLine(QPainter *p, int x1, int y1, int x2, int y2,
     QPolygon a;
     int i;
     if (y1 == y2) {                                // horizontal line
-        int y = y1 - tlw/2;
+        auto y = y1 - tlw/2;
         if (x1 > x2) {                        // swap x1 and x2
-            int t = x1;
+            auto t = x1;
             x1 = x2;
             x2 = t;
         }
@@ -137,9 +137,9 @@ void qDrawShadeLine(QPainter *p, int x1, int y1, int x2, int y2,
         }
     }
     else if (x1 == x2) {                        // vertical line
-        int x = x1 - tlw/2;
+        auto x = x1 - tlw/2;
         if (y1 > y2) {                        // swap y1 and y2
-            int t = y1;
+            auto t = y1;
             y1 = y2;
             y2 = t;
         }
@@ -213,12 +213,12 @@ void qDrawShadeRect(QPainter *p, int x, int y, int w, int h,
         qWarning("qDrawShadeRect: Invalid parameters");
         return;
     }
-    QPen oldPen = p->pen();
+    auto oldPen = p->pen();
     if (sunken)
         p->setPen(pal.dark().color());
     else
         p->setPen(pal.light().color());
-    int x1=x, y1=y, x2=x+w-1, y2=y+h-1;
+    auto x1=x, y1=y, x2=x+w-1, y2=y+h-1;
 
     if (lineWidth == 1 && midLineWidth == 0) {// standard shade rectangle
         p->drawRect(x1, y1, w-2, h-2);
@@ -232,7 +232,7 @@ void qDrawShadeRect(QPainter *p, int x, int y, int w, int h,
                             QLineF(x2,y1, x2,y2-1) };
         p->drawLines(lines, 4);              // draw bottom/right lines
     } else {                                        // more complicated
-        int m = lineWidth+midLineWidth;
+        auto m = lineWidth+midLineWidth;
         int i, j=0, k=m;
         for (i=0; i<lineWidth; i++) {                // draw top shadow
             QLineF lines[4] = { QLineF(x1+i, y2-i, x1+i, y1+i),
@@ -263,8 +263,8 @@ void qDrawShadeRect(QPainter *p, int x, int y, int w, int h,
         }
     }
     if (fill) {
-        QBrush oldBrush = p->brush();
-        int tlw = lineWidth + midLineWidth;
+        auto oldBrush = p->brush();
+        auto tlw = lineWidth + midLineWidth;
         p->setPen(Qt::NoPen);
         p->setBrush(*fill);
         p->drawRect(x+tlw, y+tlw, w-2*tlw, h-2*tlw);
@@ -312,15 +312,15 @@ void qDrawShadePanel(QPainter *p, int x, int y, int w, int h,
     if (Q_UNLIKELY(w < 0 || h < 0 || lineWidth < 0)) {
         qWarning("qDrawShadePanel: Invalid parameters");
     }
-    QColor shade = pal.dark().color();
-    QColor light = pal.light().color();
+    auto shade = pal.dark().color();
+    auto light = pal.light().color();
     if (fill) {
         if (fill->color() == shade)
             shade = pal.shadow().color();
         if (fill->color() == light)
             light = pal.midlight().color();
     }
-    QPen oldPen = p->pen();                        // save pen
+    auto oldPen = p->pen();                        // save pen
     QVector<QLineF> lines;
     lines.reserve(2*lineWidth);
 
@@ -389,7 +389,7 @@ static void qDrawWinShades(QPainter *p,
 {
     if (w < 2 || h < 2)                        // can't do anything with that
         return;
-    QPen oldPen = p->pen();
+    auto oldPen = p->pen();
     QPoint a[3] = { QPoint(x, y+h-2), QPoint(x, y), QPoint(x+w-2, y) };
     p->setPen(c1);
     p->drawPolyline(a, 3);
@@ -518,11 +518,11 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
     if (Q_UNLIKELY(w < 0 || h < 0 || lineWidth < 0)) {
         qWarning("qDrawPlainRect: Invalid parameters");
     }
-    QPen   oldPen   = p->pen();
-    QBrush oldBrush = p->brush();
+    auto oldPen   = p->pen();
+    auto oldBrush = p->brush();
     p->setPen(c);
     p->setBrush(Qt::NoBrush);
-    for (int i=0; i<lineWidth; i++)
+    for (auto i=0; i<lineWidth; i++)
         p->drawRect(x+i, y+i, w-i*2 - 1, h-i*2 - 1);
     if (fill) {                                // fill with fill color
         p->setPen(Qt::NoPen);
@@ -808,25 +808,25 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
     QPixmapFragmentsArray translucentData;
 
     // source center
-    const int sourceCenterTop = sourceRect.top() + sourceMargins.top();
-    const int sourceCenterLeft = sourceRect.left() + sourceMargins.left();
-    const int sourceCenterBottom = sourceRect.bottom() - sourceMargins.bottom() + 1;
-    const int sourceCenterRight = sourceRect.right() - sourceMargins.right() + 1;
-    const int sourceCenterWidth = sourceCenterRight - sourceCenterLeft;
-    const int sourceCenterHeight = sourceCenterBottom - sourceCenterTop;
+    const auto sourceCenterTop = sourceRect.top() + sourceMargins.top();
+    const auto sourceCenterLeft = sourceRect.left() + sourceMargins.left();
+    const auto sourceCenterBottom = sourceRect.bottom() - sourceMargins.bottom() + 1;
+    const auto sourceCenterRight = sourceRect.right() - sourceMargins.right() + 1;
+    const auto sourceCenterWidth = sourceCenterRight - sourceCenterLeft;
+    const auto sourceCenterHeight = sourceCenterBottom - sourceCenterTop;
     // target center
-    const int targetCenterTop = targetRect.top() + targetMargins.top();
-    const int targetCenterLeft = targetRect.left() + targetMargins.left();
-    const int targetCenterBottom = targetRect.bottom() - targetMargins.bottom() + 1;
-    const int targetCenterRight = targetRect.right() - targetMargins.right() + 1;
-    const int targetCenterWidth = targetCenterRight - targetCenterLeft;
-    const int targetCenterHeight = targetCenterBottom - targetCenterTop;
+    const auto targetCenterTop = targetRect.top() + targetMargins.top();
+    const auto targetCenterLeft = targetRect.left() + targetMargins.left();
+    const auto targetCenterBottom = targetRect.bottom() - targetMargins.bottom() + 1;
+    const auto targetCenterRight = targetRect.right() - targetMargins.right() + 1;
+    const auto targetCenterWidth = targetCenterRight - targetCenterLeft;
+    const auto targetCenterHeight = targetCenterBottom - targetCenterTop;
 
     QVarLengthArray<qreal, 16> xTarget; // x-coordinates of target rectangles
     QVarLengthArray<qreal, 16> yTarget; // y-coordinates of target rectangles
 
-    int columns = 3;
-    int rows = 3;
+    auto columns = 3;
+    auto rows = 3;
     if (rules.horizontal != Qt::StretchTile && sourceCenterWidth != 0)
         columns = qMax(3, 2 + qCeil(targetCenterWidth / qreal(sourceCenterWidth)));
     if (rules.vertical != Qt::StretchTile && sourceCenterHeight != 0)
@@ -835,7 +835,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
     xTarget.resize(columns + 1);
     yTarget.resize(rows + 1);
 
-    bool oldAA = painter->testRenderHint(QPainter::Antialiasing);
+    auto oldAA = painter->testRenderHint(QPainter::Antialiasing);
     if (painter->paintEngine()->type() != QPaintEngine::OpenGL
         && painter->paintEngine()->type() != QPaintEngine::OpenGL2
         && oldAA && painter->combinedTransform().type() != QTransform::TxNone) {
@@ -867,7 +867,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
         break;
     }
 
-    for (int i = 2; i < columns - 1; ++i)
+    for (auto i = 2; i < columns - 1; ++i)
         xTarget[i] = xTarget[i - 1] + dx;
 
     switch (rules.vertical) {
@@ -882,7 +882,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
         break;
     }
 
-    for (int i = 2; i < rows - 1; ++i)
+    for (auto i = 2; i < rows - 1; ++i)
         yTarget[i] = yTarget[i - 1] + dy;
 
     // corners
@@ -954,7 +954,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
             d.y = (0.5 * (yTarget[1] + yTarget[0]));
             d.scaleX = dx / d.width;
             d.scaleY = qreal(yTarget[1] - yTarget[0]) / d.height;
-            for (int i = 1; i < columns - 1; ++i) {
+            for (auto i = 1; i < columns - 1; ++i) {
                 d.x = (0.5 * (xTarget[i + 1] + xTarget[i]));
                 data.append(d);
             }
@@ -970,7 +970,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
             d.y = (0.5 * (yTarget[rows] + yTarget[rows - 1]));
             d.scaleX = dx / d.width;
             d.scaleY = qreal(yTarget[rows] - yTarget[rows - 1]) / d.height;
-            for (int i = 1; i < columns - 1; ++i) {
+            for (auto i = 1; i < columns - 1; ++i) {
                 d.x = (0.5 * (xTarget[i + 1] + xTarget[i]));
                 data.append(d);
             }
@@ -990,7 +990,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
             d.x = (0.5 * (xTarget[1] + xTarget[0]));
             d.scaleX = qreal(xTarget[1] - xTarget[0]) / d.width;
             d.scaleY = dy / d.height;
-            for (int i = 1; i < rows - 1; ++i) {
+            for (auto i = 1; i < rows - 1; ++i) {
                 d.y = (0.5 * (yTarget[i + 1] + yTarget[i]));
                 data.append(d);
             }
@@ -1006,7 +1006,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
             d.x = (0.5 * (xTarget[columns] + xTarget[columns - 1]));
             d.scaleX = qreal(xTarget[columns] - xTarget[columns - 1]) / d.width;
             d.scaleY = dy / d.height;
-            for (int i = 1; i < rows - 1; ++i) {
+            for (auto i = 1; i < rows - 1; ++i) {
                 d.y = (0.5 * (yTarget[i + 1] + yTarget[i]));
                 data.append(d);
             }
@@ -1025,12 +1025,12 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
         d.scaleX = dx / d.width;
         d.scaleY = dy / d.height;
 
-        qreal repeatWidth = (xTarget[columns - 1] - xTarget[columns - 2]) / d.scaleX;
-        qreal repeatHeight = (yTarget[rows - 1] - yTarget[rows - 2]) / d.scaleY;
+        auto repeatWidth = (xTarget[columns - 1] - xTarget[columns - 2]) / d.scaleX;
+        auto repeatHeight = (yTarget[rows - 1] - yTarget[rows - 2]) / d.scaleY;
 
-        for (int j = 1; j < rows - 1; ++j) {
+        for (auto j = 1; j < rows - 1; ++j) {
             d.y = (0.5 * (yTarget[j + 1] + yTarget[j]));
-            for (int i = 1; i < columns - 1; ++i) {
+            for (auto i = 1; i < columns - 1; ++i) {
                 d.x = (0.5 * (xTarget[i + 1] + xTarget[i]));
                 data.append(d);
             }
@@ -1038,7 +1038,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
                 data[data.size() - 1].width = repeatWidth;
         }
         if (rules.vertical == Qt::RepeatTile) {
-            for (int i = 1; i < columns - 1; ++i)
+            for (auto i = 1; i < columns - 1; ++i)
                 data[data.size() - i].height = repeatHeight;
         }
     }

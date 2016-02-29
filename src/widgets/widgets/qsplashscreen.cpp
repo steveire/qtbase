@@ -244,7 +244,7 @@ inline static bool waitForWindowExposed(QWindow *window, int timeout = 1000)
     QElapsedTimer timer;
     timer.start();
     while (!window->isExposed()) {
-        const int remaining = timeout - int(timer.elapsed());
+        const auto remaining = timeout - int(timer.elapsed());
         if (remaining <= 0)
             break;
         QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
@@ -320,7 +320,7 @@ void QSplashScreen::drawContents(QPainter *painter)
 {
     Q_D(QSplashScreen);
     painter->setPen(d->currColor);
-    QRect r = rect().adjusted(5, 5, -5, -5);
+    auto r = rect().adjusted(5, 5, -5, -5);
     if (Qt::mightBeRichText(d->currStatus)) {
         QTextDocument doc;
 #ifdef QT_NO_TEXTHTMLPARSER

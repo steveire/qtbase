@@ -187,7 +187,7 @@ bool QBasicKeyEventTransition::eventTest(QEvent *event)
 {
     Q_D(const QBasicKeyEventTransition);
     if (event->type() == d->eventType) {
-        QKeyEvent *ke = static_cast<QKeyEvent*>(event);
+        auto ke = static_cast<QKeyEvent*>(event);
         return (ke->key() == d->key)
             && ((ke->modifiers() & d->modifierMask) == d->modifierMask);
     }

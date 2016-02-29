@@ -64,7 +64,7 @@ public:
     ~QWindowContainerPrivate() { }
 
     static QWindowContainerPrivate *get(QWidget *w) {
-        QWindowContainer *wc = qobject_cast<QWindowContainer *>(w);
+        auto wc = qobject_cast<QWindowContainer *>(w);
         if (wc)
             return wc->d_func();
         return 0;
@@ -95,7 +95,7 @@ public:
             usesNativeWidgets = true;
             return;
         }
-        QWidget *p = q->parentWidget();
+        auto p = q->parentWidget();
         while (p) {
             if (
 #ifndef QT_NO_MDIAREA
@@ -114,7 +114,7 @@ public:
         Q_Q(QWindowContainer);
         auto p = static_cast<QWidget*>(q);
         while (p) {
-            QWidgetPrivate *d = static_cast<QWidgetPrivate *>(QWidgetPrivate::get(p));
+            auto d = static_cast<QWidgetPrivate *>(QWidgetPrivate::get(p));
             d->createExtra();
             d->extra->hasWindowContainer = true;
             p = p->parentWidget();
@@ -252,7 +252,7 @@ void QWindowContainer::focusWindowChanged(QWindow *focusWindow)
     Q_D(QWindowContainer);
     d->oldFocusWindow = focusWindow;
     if (focusWindow == d->window) {
-        QWidget *widget = QApplication::focusWidget();
+        auto widget = QApplication::focusWidget();
         if (widget)
             widget->clearFocus();
     }
@@ -268,10 +268,10 @@ bool QWindowContainer::event(QEvent *e)
     if (!d->window)
         return QWidget::event(e);
 
-    QEvent::Type type = e->type();
+    auto type = e->type();
     switch (type) {
     case QEvent::ChildRemoved: {
-        QChildEvent *ce = static_cast<QChildEvent *>(e);
+        auto ce = static_cast<QChildEvent *>(e);
         if (ce->child() == d->window)
             d->window = 0;
         break;
@@ -308,7 +308,7 @@ bool QWindowContainer::event(QEvent *e)
             if (d->oldFocusWindow != d->window) {
                 d->window->requestActivate();
             } else {
-                QWidget *next = nextInFocusChain();
+                auto next = nextInFocusChain();
                 next->setFocus();
             }
         }
@@ -337,10 +337,10 @@ typedef void (*qwindowcontainer_traverse_callback)(QWidget *parent);
 static void qwindowcontainer_traverse(QWidget *parent, qwindowcontainer_traverse_callback callback)
 {
     const QObjectList &children = parent->children();
-    for (int i=0; i<children.size(); ++i) {
-        QWidget *w = qobject_cast<QWidget *>(children.at(i));
+    for (auto i=0; i<children.size(); ++i) {
+        auto w = qobject_cast<QWidget *>(children.at(i));
         if (w) {
-            QWidgetPrivate *wd = static_cast<QWidgetPrivate *>(QWidgetPrivate::get(w));
+            auto wd = static_cast<QWidgetPrivate *>(QWidgetPrivate::get(w));
             if (wd->extra && wd->extra->hasWindowContainer)
                 callback(w);
         }
@@ -349,7 +349,7 @@ static void qwindowcontainer_traverse(QWidget *parent, qwindowcontainer_traverse
 
 void QWindowContainer::toplevelAboutToBeDestroyed(QWidget *parent)
 {
-    if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+    if (auto d = QWindowContainerPrivate::get(parent)) {
         d->window->setParent(&d->fakeParent);
     }
     qwindowcontainer_traverse(parent, toplevelAboutToBeDestroyed);
@@ -357,13 +357,13 @@ void QWindowContainer::toplevelAboutToBeDestroyed(QWidget *parent)
 
 void QWindowContainer::parentWasChanged(QWidget *parent)
 {
-    if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+    if (auto d = QWindowContainerPrivate::get(parent)) {
         if (d->window->parent()) {
             d->updateUsesNativeWidgets();
             d->markParentChain();
-            QWidget *toplevel = d->usesNativeWidgets ? parent : parent->window();
+            auto toplevel = d->usesNativeWidgets ? parent : parent->window();
             if (!toplevel->windowHandle()) {
-                QWidgetPrivate *tld = static_cast<QWidgetPrivate *>(QWidgetPrivate::get(toplevel));
+                auto tld = static_cast<QWidgetPrivate *>(QWidgetPrivate::get(toplevel));
                 tld->createTLExtra();
                 tld->createTLSysExtra();
                 Q_ASSERT(toplevel->windowHandle());
@@ -377,7 +377,7 @@ void QWindowContainer::parentWasChanged(QWidget *parent)
 
 void QWindowContainer::parentWasMoved(QWidget *parent)
 {
-    if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+    if (auto d = QWindowContainerPrivate::get(parent)) {
         if (d->window->parent())
             d->updateGeometry();
     }
@@ -386,7 +386,7 @@ void QWindowContainer::parentWasMoved(QWidget *parent)
 
 void QWindowContainer::parentWasRaised(QWidget *parent)
 {
-    if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+    if (auto d = QWindowContainerPrivate::get(parent)) {
         if (d->window->parent())
             d->window->raise();
     }
@@ -395,7 +395,7 @@ void QWindowContainer::parentWasRaised(QWidget *parent)
 
 void QWindowContainer::parentWasLowered(QWidget *parent)
 {
-    if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+    if (auto d = QWindowContainerPrivate::get(parent)) {
         if (d->window->parent())
             d->window->lower();
     }

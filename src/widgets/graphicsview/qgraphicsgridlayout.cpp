@@ -131,8 +131,8 @@ QGraphicsGridLayout::QGraphicsGridLayout(QGraphicsLayoutItem *parent)
 */
 QGraphicsGridLayout::~QGraphicsGridLayout()
 {
-    for (int i = count() - 1; i >= 0; --i) {
-        QGraphicsLayoutItem *item = itemAt(i);
+    for (auto i = count() - 1; i >= 0; --i) {
+        auto item = itemAt(i);
         // The following lines can be removed, but this removes the item
         // from the layout more efficiently than the implementation of
         // ~QGraphicsLayoutItem.
@@ -174,7 +174,7 @@ void QGraphicsGridLayout::addItem(QGraphicsLayoutItem *item, int row, int column
 
     d->addChildLayoutItem(item);
 
-    QGraphicsGridLayoutEngineItem *gridEngineItem = new QGraphicsGridLayoutEngineItem(item, row, column, rowSpan, columnSpan, alignment);
+    auto gridEngineItem = new QGraphicsGridLayoutEngineItem(item, row, column, rowSpan, columnSpan, alignment);
     d->engine.insertItem(gridEngineItem, -1);
     invalidate();
 }
@@ -538,7 +538,7 @@ QGraphicsLayoutItem *QGraphicsGridLayout::itemAt(int row, int column) const
         qWarning("QGraphicsGridLayout::itemAt: invalid row, column %d, %d", row, column);
         return 0;
     }
-    if (QGraphicsGridLayoutEngineItem *engineItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(row, column)))
+    if (auto engineItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(row, column)))
         return engineItem->layoutItem();
     return 0;
 }
@@ -564,7 +564,7 @@ QGraphicsLayoutItem *QGraphicsGridLayout::itemAt(int index) const
         return 0;
     }
     QGraphicsLayoutItem *item = 0;
-    if (QGraphicsGridLayoutEngineItem *engineItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(index)))
+    if (auto engineItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(index)))
         item = engineItem->layoutItem();
     return item;
 }
@@ -583,18 +583,18 @@ void QGraphicsGridLayout::removeAt(int index)
         return;
     }
 
-    if (QGraphicsGridLayoutEngineItem *gridItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(index))) {
-        if (QGraphicsLayoutItem *layoutItem = gridItem->layoutItem())
+    if (auto gridItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(index))) {
+        if (auto layoutItem = gridItem->layoutItem())
             layoutItem->setParentLayoutItem(0);
         d->engine.removeItem(gridItem);
 
         // recalculate rowInfo.count if we remove an item that is on the right/bottommost row
-        for (int j = 0; j < NOrientations; ++j) {
+        for (auto j = 0; j < NOrientations; ++j) {
             // 0: Hor, 1: Ver
-            const Qt::Orientation orient = (j == 0 ? Qt::Horizontal : Qt::Vertical);
-            const int oldCount = d->engine.rowCount(orient);
+            const auto orient = (j == 0 ? Qt::Horizontal : Qt::Vertical);
+            const auto oldCount = d->engine.rowCount(orient);
             if (gridItem->lastRow(orient) == oldCount - 1) {
-                const int newCount = d->engine.effectiveLastRow(orient) + 1;
+                const auto newCount = d->engine.effectiveLastRow(orient) + 1;
                 d->engine.removeRows(newCount, oldCount - newCount, orient);
             }
         }
@@ -613,7 +613,7 @@ void QGraphicsGridLayout::removeAt(int index)
 void QGraphicsGridLayout::removeItem(QGraphicsLayoutItem *item)
 {
     Q_D(QGraphicsGridLayout);
-    int index = d->engine.indexOf(item);
+    auto index = d->engine.indexOf(item);
     removeAt(index);
 }
 /*!
@@ -644,10 +644,10 @@ void QGraphicsGridLayout::setGeometry(const QRectF &rect)
 {
     Q_D(QGraphicsGridLayout);
     QGraphicsLayout::setGeometry(rect);
-    QRectF effectiveRect = geometry();
+    auto effectiveRect = geometry();
     qreal left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
-    Qt::LayoutDirection visualDir = d->visualDirection();
+    auto visualDir = d->visualDirection();
     d->engine.setVisualDirection(visualDir);
     if (visualDir == Qt::RightToLeft)
         qSwap(left, right);

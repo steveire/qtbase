@@ -176,9 +176,9 @@ QScrollArea::~QScrollArea()
 void QScrollAreaPrivate::updateWidgetPosition()
 {
     Q_Q(QScrollArea);
-    Qt::LayoutDirection dir = q->layoutDirection();
-    QRect scrolled = QStyle::visualRect(dir, viewport->rect(), QRect(QPoint(-hbar->value(), -vbar->value()), widget->size()));
-    QRect aligned = QStyle::alignedRect(dir, alignment, widget->size(), viewport->rect());
+    auto dir = q->layoutDirection();
+    auto scrolled = QStyle::visualRect(dir, viewport->rect(), QRect(QPoint(-hbar->value(), -vbar->value()), widget->size()));
+    auto aligned = QStyle::alignedRect(dir, alignment, widget->size(), viewport->rect());
     widget->move(widget->width() < viewport->width() ? aligned.x() : scrolled.x(),
                  widget->height() < viewport->height() ? aligned.y() : scrolled.y());
 }
@@ -188,16 +188,16 @@ void QScrollAreaPrivate::updateScrollBars()
     Q_Q(QScrollArea);
     if (!widget)
         return;
-    QSize p = viewport->size();
-    QSize m = q->maximumViewportSize();
+    auto p = viewport->size();
+    auto m = q->maximumViewportSize();
 
-    QSize min = qSmartMinSize(widget);
-    QSize max = qSmartMaxSize(widget);
+    auto min = qSmartMinSize(widget);
+    auto max = qSmartMaxSize(widget);
 
     if (resizable) {
         if ((widget->layout() ? widget->layout()->hasHeightForWidth() : widget->sizePolicy().hasHeightForWidth())) {
-            QSize p_hfw = p.expandedTo(min).boundedTo(max);
-            int h = widget->heightForWidth( p_hfw.width() );
+            auto p_hfw = p.expandedTo(min).boundedTo(max);
+            auto h = widget->heightForWidth( p_hfw.width() );
             min = QSize(p_hfw.width(), qMax(p_hfw.height(), h));
         }
     }
@@ -208,7 +208,7 @@ void QScrollAreaPrivate::updateScrollBars()
 
     if (resizable)
         widget->resize(p.expandedTo(min).boundedTo(max));
-    QSize v = widget->size();
+    auto v = widget->size();
 
     hbar->setRange(0, v.width() - p.width());
     hbar->setPageStep(p.width());
@@ -388,9 +388,9 @@ void QScrollArea::setWidgetResizable(bool resizable)
 QSize QScrollArea::sizeHint() const
 {
     Q_D(const QScrollArea);
-    int f = 2 * d->frameWidth;
+    auto f = 2 * d->frameWidth;
     QSize sz(f, f);
-    int h = fontMetrics().height();
+    auto h = fontMetrics().height();
     if (d->widget) {
         if (!d->widgetSize.isValid())
             d->widgetSize = d->resizable ? d->widget->sizeHint() : d->widget->size();
@@ -414,7 +414,7 @@ QSize QScrollArea::viewportSizeHint() const
     if (d->widget) {
         return d->resizable ? d->widget->sizeHint() : d->widget->size();
     }
-    const int h = fontMetrics().height();
+    const auto h = fontMetrics().height();
     return QSize(6 * h, 4 * h);
 }
 
@@ -425,7 +425,7 @@ QSize QScrollArea::viewportSizeHint() const
 bool QScrollArea::focusNextPrevChild(bool next)
 {
     if (QWidget::focusNextPrevChild(next)) {
-        if (QWidget *fw = focusWidget())
+        if (auto fw = focusWidget())
             ensureWidgetVisible(fw);
         return true;
     }
@@ -442,7 +442,7 @@ void QScrollArea::ensureVisible(int x, int y, int xmargin, int ymargin)
 {
     Q_D(QScrollArea);
 
-    int logicalX = QStyle::visualPos(layoutDirection(), d->viewport->rect(), QPoint(x, y)).x();
+    auto logicalX = QStyle::visualPos(layoutDirection(), d->viewport->rect(), QPoint(x, y)).x();
 
     if (logicalX - xmargin < d->hbar->value()) {
         d->hbar->setValue(qMax(0, logicalX - xmargin));
@@ -475,10 +475,10 @@ void QScrollArea::ensureWidgetVisible(QWidget *childWidget, int xmargin, int yma
     if (!d->widget->isAncestorOf(childWidget))
         return;
 
-    const QRect microFocus = childWidget->inputMethodQuery(Qt::ImCursorRectangle).toRect();
-    const QRect defaultMicroFocus =
+    const auto microFocus = childWidget->inputMethodQuery(Qt::ImCursorRectangle).toRect();
+    const auto defaultMicroFocus =
         childWidget->QWidget::inputMethodQuery(Qt::ImCursorRectangle).toRect();
-    QRect focusRect = (microFocus != defaultMicroFocus)
+    auto focusRect = (microFocus != defaultMicroFocus)
         ? QRect(childWidget->mapTo(d->widget, microFocus.topLeft()), microFocus.size())
         : QRect(childWidget->mapTo(d->widget, QPoint(0,0)), childWidget->size());
     const QRect visibleRect(-d->widget->pos(), d->viewport->size());

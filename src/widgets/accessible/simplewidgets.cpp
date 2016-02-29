@@ -110,7 +110,7 @@ QString QAccessibleButton::text(QAccessible::Text t) const
     case QAccessible::Accelerator:
     {
 #ifndef QT_NO_SHORTCUT
-        QPushButton *pb = qobject_cast<QPushButton*>(object());
+        auto pb = qobject_cast<QPushButton*>(object());
         if (pb && pb->isDefault())
             str = QKeySequence(Qt::Key_Enter).toString(QKeySequence::NativeText);
 #endif
@@ -133,10 +133,10 @@ QString QAccessibleButton::text(QAccessible::Text t) const
 
 QAccessible::State QAccessibleButton::state() const
 {
-    QAccessible::State state = QAccessibleWidget::state();
+    auto state = QAccessibleWidget::state();
 
-    QAbstractButton *b = button();
-    QCheckBox *cb = qobject_cast<QCheckBox *>(b);
+    auto b = button();
+    auto cb = qobject_cast<QCheckBox *>(b);
     if (b->isCheckable())
         state.checkable = true;
     if (b->isChecked())
@@ -145,7 +145,7 @@ QAccessible::State QAccessibleButton::state() const
         state.checkStateMixed = true;
     if (b->isDown())
         state.pressed = true;
-    QPushButton *pb = qobject_cast<QPushButton*>(b);
+    auto pb = qobject_cast<QPushButton*>(b);
     if (pb) {
         if (pb->isDefault())
             state.defaultButton = true;
@@ -160,17 +160,17 @@ QAccessible::State QAccessibleButton::state() const
 
 QRect QAccessibleButton::rect() const
 {
-    QAbstractButton *ab = button();
+    auto ab = button();
     if (!ab->isVisible())
         return QRect();
 
-    if (QCheckBox *cb = qobject_cast<QCheckBox *>(ab)) {
-        QPoint wpos = cb->mapToGlobal(QPoint(0, 0));
+    if (auto cb = qobject_cast<QCheckBox *>(ab)) {
+        auto wpos = cb->mapToGlobal(QPoint(0, 0));
         QStyleOptionButton opt;
         cb->initStyleOption(&opt);
         return cb->style()->subElementRect(QStyle::SE_CheckBoxClickRect, &opt, cb).translated(wpos);
-    } else if (QRadioButton *rb = qobject_cast<QRadioButton *>(ab)) {
-        QPoint wpos = rb->mapToGlobal(QPoint(0, 0));
+    } else if (auto rb = qobject_cast<QRadioButton *>(ab)) {
+        auto wpos = rb->mapToGlobal(QPoint(0, 0));
         QStyleOptionButton opt;
         rb->initStyleOption(&opt);
         return rb->style()->subElementRect(QStyle::SE_RadioButtonClickRect, &opt, rb).translated(wpos);
@@ -180,10 +180,10 @@ QRect QAccessibleButton::rect() const
 
 QAccessible::Role QAccessibleButton::role() const
 {
-    QAbstractButton *ab = button();
+    auto ab = button();
 
 #ifndef QT_NO_MENU
-    if (QPushButton *pb = qobject_cast<QPushButton*>(ab)) {
+    if (auto pb = qobject_cast<QPushButton*>(ab)) {
         if (pb->menu())
             return QAccessible::ButtonMenu;
     }
@@ -226,7 +226,7 @@ void QAccessibleButton::doAction(const QString &actionName)
     if (actionName == pressAction() ||
         actionName == showMenuAction()) {
 #ifndef QT_NO_MENU
-        QPushButton *pb = qobject_cast<QPushButton*>(object());
+        auto pb = qobject_cast<QPushButton*>(object());
         if (pb && pb->menu())
             pb->showMenu();
         else
@@ -288,7 +288,7 @@ bool QAccessibleToolButton::isSplitButton() const
 
 QAccessible::State QAccessibleToolButton::state() const
 {
-    QAccessible::State st = QAccessibleButton::state();
+    auto st = QAccessibleButton::state();
     if (toolButton()->autoRaise())
         st.hotTracked = true;
 #ifndef QT_NO_MENU
@@ -305,10 +305,10 @@ int QAccessibleToolButton::childCount() const
 
 QAccessible::Role QAccessibleToolButton::role() const
 {
-    QAbstractButton *ab = button();
+    auto ab = button();
 
 #ifndef QT_NO_MENU
-    QToolButton *tb = qobject_cast<QToolButton*>(ab);
+    auto tb = qobject_cast<QToolButton*>(ab);
     if (!tb->menu())
         return tb->isCheckable() ? QAccessible::CheckBox : QAccessible::PushButton;
     else if (tb->popupMode() == QToolButton::DelayedPopup)
@@ -388,7 +388,7 @@ QAccessibleDisplay::QAccessibleDisplay(QWidget *w, QAccessible::Role role)
 
 QAccessible::Role QAccessibleDisplay::role() const
 {
-    QLabel *l = qobject_cast<QLabel*>(object());
+    auto l = qobject_cast<QLabel*>(object());
     if (l) {
         if (l->pixmap())
             return QAccessible::Graphic;
@@ -418,7 +418,7 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
         str = widget()->accessibleName();
         if (str.isEmpty()) {
             if (qobject_cast<QLabel*>(object())) {
-                QLabel *label = qobject_cast<QLabel*>(object());
+                auto label = qobject_cast<QLabel*>(object());
                 str = label->text();
 #ifndef QT_NO_TEXTHTMLPARSER
                 if (label->textFormat() == Qt::RichText
@@ -432,7 +432,7 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
                     str = qt_accStripAmp(str);
 #ifndef QT_NO_LCDNUMBER
             } else if (qobject_cast<QLCDNumber*>(object())) {
-                QLCDNumber *l = qobject_cast<QLCDNumber*>(object());
+                auto l = qobject_cast<QLCDNumber*>(object());
                 if (l->digitCount())
                     str = QString::number(l->value());
                 else
@@ -461,18 +461,18 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
 QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
 QAccessibleDisplay::relations(QAccessible::Relation match /* = QAccessible::AllRelations */) const
 {
-    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels = QAccessibleWidget::relations(match);
+    auto rels = QAccessibleWidget::relations(match);
     if (match & QAccessible::Labelled) {
         QVarLengthArray<QObject *, 4> relatedObjects;
 
 #ifndef QT_NO_SHORTCUT
-        if (QLabel *label = qobject_cast<QLabel*>(object())) {
+        if (auto label = qobject_cast<QLabel*>(object())) {
             relatedObjects.append(label->buddy());
         }
 #endif
-        for (int i = 0; i < relatedObjects.count(); ++i) {
+        for (auto i = 0; i < relatedObjects.count(); ++i) {
             const QAccessible::Relation rel = QAccessible::Labelled;
-            QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(relatedObjects.at(i));
+            auto iface = QAccessible::queryAccessibleInterface(relatedObjects.at(i));
             if (iface)
                 rels.append(qMakePair(iface, rel));
         }
@@ -500,10 +500,10 @@ QString QAccessibleDisplay::imageDescription() const
 /*! \internal */
 QSize QAccessibleDisplay::imageSize() const
 {
-    QLabel *label = qobject_cast<QLabel *>(widget());
+    auto label = qobject_cast<QLabel *>(widget());
     if (!label)
         return QSize();
-    const QPixmap *pixmap = label->pixmap();
+    auto pixmap = label->pixmap();
     if (!pixmap)
         return QSize();
     return pixmap->size();
@@ -512,10 +512,10 @@ QSize QAccessibleDisplay::imageSize() const
 /*! \internal */
 QPoint QAccessibleDisplay::imagePosition() const
 {
-    QLabel *label = qobject_cast<QLabel *>(widget());
+    auto label = qobject_cast<QLabel *>(widget());
     if (!label)
         return QPoint();
-    const QPixmap *pixmap = label->pixmap();
+    auto pixmap = label->pixmap();
     if (!pixmap)
         return QPoint();
 
@@ -535,7 +535,7 @@ QGroupBox* QAccessibleGroupBox::groupBox() const
 
 QString QAccessibleGroupBox::text(QAccessible::Text t) const
 {
-    QString txt = QAccessibleWidget::text(t);
+    auto txt = QAccessibleWidget::text(t);
 
     if (txt.isEmpty()) {
         switch (t) {
@@ -558,7 +558,7 @@ QString QAccessibleGroupBox::text(QAccessible::Text t) const
 
 QAccessible::State QAccessibleGroupBox::state() const
 {
-    QAccessible::State st = QAccessibleWidget::state();
+    auto st = QAccessibleWidget::state();
     st.checkable = groupBox()->isCheckable();
     st.checked = groupBox()->isChecked();
     return st;
@@ -572,12 +572,12 @@ QAccessible::Role QAccessibleGroupBox::role() const
 QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
 QAccessibleGroupBox::relations(QAccessible::Relation match /* = QAccessible::AllRelations */) const
 {
-    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels = QAccessibleWidget::relations(match);
+    auto rels = QAccessibleWidget::relations(match);
 
     if ((match & QAccessible::Labelled) && (!groupBox()->title().isEmpty())) {
-        const QList<QWidget*> kids = childWidgets(widget());
-        for (QWidget *kid : kids) {
-            QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(kid);
+        const auto kids = childWidgets(widget());
+        for (auto kid : kids) {
+            auto iface = QAccessible::queryAccessibleInterface(kid);
             if (iface)
                 rels.append(qMakePair(iface, QAccessible::Relation(QAccessible::Labelled)));
         }
@@ -587,7 +587,7 @@ QAccessibleGroupBox::relations(QAccessible::Relation match /* = QAccessible::All
 
 QStringList QAccessibleGroupBox::actionNames() const
 {
-    QStringList actions = QAccessibleWidget::actionNames();
+    auto actions = QAccessibleWidget::actionNames();
 
     if (groupBox()->isCheckable()) {
         actions.prepend(QAccessibleActionInterface::toggleAction());
@@ -659,9 +659,9 @@ void QAccessibleLineEdit::setText(QAccessible::Text t, const QString &text)
         return;
     }
 
-    QString newText = text;
+    auto newText = text;
     if (lineEdit()->validator()) {
-        int pos = 0;
+        auto pos = 0;
         if (lineEdit()->validator()->validate(newText, pos) != QValidator::Acceptable)
             return;
     }
@@ -670,9 +670,9 @@ void QAccessibleLineEdit::setText(QAccessible::Text t, const QString &text)
 
 QAccessible::State QAccessibleLineEdit::state() const
 {
-    QAccessible::State state = QAccessibleWidget::state();
+    auto state = QAccessibleWidget::state();
 
-    QLineEdit *l = lineEdit();
+    auto l = lineEdit();
     if (l->isReadOnly())
         state.readOnly = true;
     else
@@ -717,11 +717,11 @@ QRect QAccessibleLineEdit::characterRect(int offset) const
     int y;
     lineEdit()->getTextMargins(0, &y, 0, 0);
     QFontMetrics fm(lineEdit()->font());
-    const QString ch = text(offset, offset + 1);
+    const auto ch = text(offset, offset + 1);
     if (ch.isEmpty())
         return QRect();
-    int w = fm.width(ch);
-    int h = fm.height();
+    auto w = fm.width(ch);
+    auto h = fm.height();
     QRect r(x, y, w, h);
     r.moveTo(lineEdit()->mapToGlobal(r.topLeft()));
     return r;
@@ -734,7 +734,7 @@ int QAccessibleLineEdit::selectionCount() const
 
 int QAccessibleLineEdit::offsetAtPoint(const QPoint &point) const
 {
-    QPoint p = lineEdit()->mapFromGlobal(point);
+    auto p = lineEdit()->mapFromGlobal(point);
 
     return lineEdit()->cursorPositionAt(p);
 }

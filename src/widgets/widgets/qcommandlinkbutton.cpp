@@ -127,7 +127,7 @@ QColor QCommandLinkButtonPrivate::mergedColors(const QColor &a, const QColor &b,
 {
     Q_ASSERT(value >= 0);
     Q_ASSERT(value <= 255);
-    QColor tmp = a;
+    auto tmp = a;
     tmp.setRed((tmp.red() * value) / 255 + (b.red() * (255 - value)) / 255);
     tmp.setGreen((tmp.green() * value) / 255 + (b.green() * (255 - value)) / 255);
     tmp.setBlue((tmp.blue() * value) / 255 + (b.blue() * (255 - value)) / 255);
@@ -137,7 +137,7 @@ QColor QCommandLinkButtonPrivate::mergedColors(const QColor &a, const QColor &b,
 QFont QCommandLinkButtonPrivate::titleFont() const
 {
     Q_Q(const QCommandLinkButton);
-    QFont font = q->font();
+    auto font = q->font();
     if (usingVistaStyle()) {
         font.setPointSizeF(12.0);
     } else {
@@ -148,7 +148,7 @@ QFont QCommandLinkButtonPrivate::titleFont() const
     // Note the font will be resolved against
     // QPainters font, so we need to restore the mask
     int resolve_mask = font.resolve_mask;
-    QFont modifiedFont = q->font().resolve(font);
+    auto modifiedFont = q->font().resolve(font);
     modifiedFont.detach();
     modifiedFont.resolve_mask = resolve_mask;
     return modifiedFont;
@@ -157,13 +157,13 @@ QFont QCommandLinkButtonPrivate::titleFont() const
 QFont QCommandLinkButtonPrivate::descriptionFont() const
 {
     Q_Q(const QCommandLinkButton);
-    QFont font = q->font();
+    auto font = q->font();
     font.setPointSizeF(9.0);
 
     // Note the font will be resolved against
     // QPainters font, so we need to restore the mask
     int resolve_mask = font.resolve_mask;
-    QFont modifiedFont = q->font().resolve(font);
+    auto modifiedFont = q->font().resolve(font);
     modifiedFont.detach();
     modifiedFont.resolve_mask = resolve_mask;
     return modifiedFont;
@@ -172,7 +172,7 @@ QFont QCommandLinkButtonPrivate::descriptionFont() const
 QRect QCommandLinkButtonPrivate::titleRect() const
 {
     Q_Q(const QCommandLinkButton);
-    QRect r = q->rect().adjusted(textOffset(), topMargin(), -rightMargin(), 0);
+    auto r = q->rect().adjusted(textOffset(), topMargin(), -rightMargin(), 0);
     if (description.isEmpty())
     {
         QFontMetrics fm(titleFont());
@@ -231,7 +231,7 @@ void QCommandLinkButtonPrivate::init()
 int QCommandLinkButtonPrivate::descriptionHeight(int widgetWidth) const
 {
     // Calc width of actual paragraph
-    int lineWidth = widgetWidth - textOffset() - rightMargin();
+    auto lineWidth = widgetWidth - textOffset() - rightMargin();
 
     qreal descriptionheight = 0;
     if (!description.isEmpty()) {
@@ -239,7 +239,7 @@ int QCommandLinkButtonPrivate::descriptionHeight(int widgetWidth) const
         layout.setFont(descriptionFont());
         layout.beginLayout();
         while (true) {
-            QTextLine line = layout.createLine();
+            auto line = layout.createLine();
             if (!line.isValid())
                 break;
             line.setLineWidth(lineWidth);
@@ -257,8 +257,8 @@ int QCommandLinkButtonPrivate::descriptionHeight(int widgetWidth) const
 QSize QCommandLinkButton::minimumSizeHint() const
 {
     Q_D(const QCommandLinkButton);
-    QSize size = sizeHint();
-    int minimumHeight = qMax(d->descriptionOffset() + d->bottomMargin(),
+    auto size = sizeHint();
+    auto minimumHeight = qMax(d->descriptionOffset() + d->bottomMargin(),
                              icon().actualSize(iconSize()).height() + d->topMargin());
     size.setHeight(minimumHeight);
     return size;
@@ -321,11 +321,11 @@ QSize QCommandLinkButton::sizeHint() const
 //  With note: 135, 60
     Q_D(const QCommandLinkButton);
 
-    QSize size = QPushButton::sizeHint();
+    auto size = QPushButton::sizeHint();
     QFontMetrics fm(d->titleFont());
-    int textWidth = qMax(fm.width(text()), 135);
-    int buttonWidth = textWidth + d->textOffset() + d->rightMargin();
-    int heightWithoutDescription = d->descriptionOffset() + d->bottomMargin();
+    auto textWidth = qMax(fm.width(text()), 135);
+    auto buttonWidth = textWidth + d->textOffset() + d->rightMargin();
+    auto heightWithoutDescription = d->descriptionOffset() + d->bottomMargin();
 
     size.setWidth(qMax(size.width(), buttonWidth));
     size.setHeight(qMax(d->description.isEmpty() ? 41 : 60,
@@ -337,7 +337,7 @@ QSize QCommandLinkButton::sizeHint() const
 int QCommandLinkButton::heightForWidth(int width) const
 {
     Q_D(const QCommandLinkButton);
-    int heightWithoutDescription = d->descriptionOffset() + d->bottomMargin();
+    auto heightWithoutDescription = d->descriptionOffset() + d->bottomMargin();
     // find the width available for the description area
     return qMax(heightWithoutDescription + d->descriptionHeight(width),
                 icon().actualSize(iconSize()).height() + d->topMargin() +
@@ -358,10 +358,10 @@ void QCommandLinkButton::paintEvent(QPaintEvent *)
     option.features |= QStyleOptionButton::CommandLinkButton;
     option.text = QString();
     option.icon = QIcon(); //we draw this ourselves
-    QSize pixmapSize = icon().actualSize(iconSize());
+    auto pixmapSize = icon().actualSize(iconSize());
 
-    int vOffset = isDown() ? style()->pixelMetric(QStyle::PM_ButtonShiftVertical) : 0;
-    int hOffset = isDown() ? style()->pixelMetric(QStyle::PM_ButtonShiftHorizontal) : 0;
+    auto vOffset = isDown() ? style()->pixelMetric(QStyle::PM_ButtonShiftVertical) : 0;
+    auto hOffset = isDown() ? style()->pixelMetric(QStyle::PM_ButtonShiftHorizontal) : 0;
 
     //Draw icon
     p.drawControl(QStyle::CE_PushButton, option);
@@ -371,7 +371,7 @@ void QCommandLinkButton::paintEvent(QPaintEvent *)
                                   isChecked() ? QIcon::On : QIcon::Off));
 
     //Draw title
-    QColor textColor = palette().buttonText().color();
+    auto textColor = palette().buttonText().color();
     if (isEnabled() && d->usingVistaStyle()) {
         textColor = QColor(21, 28, 85);
         if (underMouse() && !isDown())

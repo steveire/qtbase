@@ -186,7 +186,7 @@ void QDialogButtonBoxPrivate::initLayout()
 {
     Q_Q(QDialogButtonBox);
     layoutPolicy = QDialogButtonBox::ButtonLayout(q->style()->styleHint(QStyle::SH_DialogButtonLayout, 0, q));
-    bool createNewLayout = buttonLayout == 0
+    auto createNewLayout = buttonLayout == 0
         || (orientation == Qt::Horizontal && qobject_cast<QVBoxLayout *>(buttonLayout) != 0)
         || (orientation == Qt::Vertical && qobject_cast<QHBoxLayout *>(buttonLayout) != 0);
     if (createNewLayout) {
@@ -221,12 +221,12 @@ void QDialogButtonBoxPrivate::resetLayout()
 void QDialogButtonBoxPrivate::addButtonsToLayout(const QList<QAbstractButton *> &buttonList,
                                                  bool reverse)
 {
-    int start = reverse ? buttonList.count() - 1 : 0;
-    int end = reverse ? -1 : buttonList.count();
-    int step = reverse ? -1 : 1;
+    auto start = reverse ? buttonList.count() - 1 : 0;
+    auto end = reverse ? -1 : buttonList.count();
+    auto step = reverse ? -1 : 1;
 
-    for (int i = start; i != end; i += step) {
-        QAbstractButton *button = buttonList.at(i);
+    for (auto i = start; i != end; i += step) {
+        auto button = buttonList.at(i);
         buttonLayout->addWidget(button);
         button->show();
     }
@@ -235,23 +235,23 @@ void QDialogButtonBoxPrivate::addButtonsToLayout(const QList<QAbstractButton *> 
 void QDialogButtonBoxPrivate::layoutButtons()
 {
     Q_Q(QDialogButtonBox);
-    const int MacGap = 36 - 8;    // 8 is the default gap between a widget and a spacer item
+    const auto MacGap = 36 - 8;    // 8 is the default gap between a widget and a spacer item
 
-    for (int i = buttonLayout->count() - 1; i >= 0; --i) {
-        QLayoutItem *item = buttonLayout->takeAt(i);
-        if (QWidget *widget = item->widget())
+    for (auto i = buttonLayout->count() - 1; i >= 0; --i) {
+        auto item = buttonLayout->takeAt(i);
+        if (auto widget = item->widget())
             widget->hide();
         delete item;
     }
 
     int tmpPolicy = layoutPolicy;
 
-    static const int M = 5;
+    static const auto M = 5;
     static const int ModalRoles[M] = { QPlatformDialogHelper::AcceptRole, QPlatformDialogHelper::RejectRole,
         QPlatformDialogHelper::DestructiveRole, QPlatformDialogHelper::YesRole, QPlatformDialogHelper::NoRole };
     if (tmpPolicy == QDialogButtonBox::MacLayout) {
-        bool hasModalButton = false;
-        for (int i = 0; i < M; ++i) {
+        auto hasModalButton = false;
+        for (auto i = 0; i < M; ++i) {
             if (!buttonLists[ModalRoles[i]].isEmpty()) {
                 hasModalButton = true;
                 break;
@@ -261,7 +261,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
             tmpPolicy = 4;  // Mac modeless
     }
 
-    const int *currentLayout = QPlatformDialogHelper::buttonLayout(
+    auto currentLayout = QPlatformDialogHelper::buttonLayout(
         orientation, static_cast<QPlatformDialogHelper::ButtonLayout>(tmpPolicy));
 
     if (center)
@@ -270,7 +270,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
     const QList<QAbstractButton *> &acceptRoleList = buttonLists[QPlatformDialogHelper::AcceptRole];
 
     while (*currentLayout != QPlatformDialogHelper::EOL) {
-        int role = (*currentLayout & ~QPlatformDialogHelper::Reverse);
+        auto role = (*currentLayout & ~QPlatformDialogHelper::Reverse);
         bool reverse = (*currentLayout & QPlatformDialogHelper::Reverse);
 
         switch (role) {
@@ -282,7 +282,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
             if (acceptRoleList.isEmpty())
                 break;
             // Only the first one
-            QAbstractButton *button = acceptRoleList.first();
+            auto button = acceptRoleList.first();
             buttonLayout->addWidget(button);
             button->show();
         }
@@ -331,9 +331,9 @@ void QDialogButtonBoxPrivate::layoutButtons()
 
     QWidget *lastWidget = 0;
     q->setFocusProxy(0);
-    for (int i = 0; i < buttonLayout->count(); ++i) {
-        QLayoutItem *item = buttonLayout->itemAt(i);
-        if (QWidget *widget = item->widget()) {
+    for (auto i = 0; i < buttonLayout->count(); ++i) {
+        auto item = buttonLayout->itemAt(i);
+        if (auto widget = item->widget()) {
             if (lastWidget)
                 QWidget::setTabOrder(lastWidget, widget);
             else
@@ -350,7 +350,7 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
                                                    bool doLayout)
 {
     Q_Q(QDialogButtonBox);
-    int icon = 0;
+    auto icon = 0;
 
     switch (sbutton) {
     case QDialogButtonBox::Ok:
@@ -398,14 +398,14 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
         return 0;
         ;
     }
-    QPushButton *button = new QPushButton(QGuiApplicationPrivate::platformTheme()->standardButtonText(sbutton), q);
-    QStyle *style = q->style();
+    auto button = new QPushButton(QGuiApplicationPrivate::platformTheme()->standardButtonText(sbutton), q);
+    auto style = q->style();
     if (style->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons, 0, q) && icon != 0)
         button->setIcon(style->standardIcon(QStyle::StandardPixmap(icon), 0, q));
     if (style != QApplication::style()) // Propagate style
         button->setStyle(style);
     standardButtonHash.insert(button, sbutton);
-    QPlatformDialogHelper::ButtonRole role = QPlatformDialogHelper::buttonRole(static_cast<QPlatformDialogHelper::StandardButton>(sbutton));
+    auto role = QPlatformDialogHelper::buttonRole(static_cast<QPlatformDialogHelper::StandardButton>(sbutton));
     if (Q_UNLIKELY(role == QPlatformDialogHelper::InvalidRole))
         qWarning("QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
     else
@@ -448,9 +448,9 @@ void QDialogButtonBoxPrivate::retranslateStrings()
 {
     typedef QHash<QPushButton *, QDialogButtonBox::StandardButton>::iterator Iterator;
 
-    const Iterator end = standardButtonHash.end();
-    for (Iterator it = standardButtonHash.begin(); it != end; ++it) {
-        const QString text = QGuiApplicationPrivate::platformTheme()->standardButtonText(it.value());
+    const auto end = standardButtonHash.end();
+    for (auto it = standardButtonHash.begin(); it != end; ++it) {
+        const auto text = QGuiApplicationPrivate::platformTheme()->standardButtonText(it.value());
         if (!text.isEmpty())
             it.key()->setText(text);
     }
@@ -661,10 +661,10 @@ void QDialogButtonBox::clear()
     // Remove the created standard buttons, they should be in the other lists, which will
     // do the deletion
     d->standardButtonHash.clear();
-    for (int i = 0; i < NRoles; ++i) {
+    for (auto i = 0; i < NRoles; ++i) {
         QList<QAbstractButton *> &list = d->buttonLists[i];
         while (list.count()) {
-            QAbstractButton *button = list.takeAt(0);
+            auto button = list.takeAt(0);
             QObject::disconnect(button, SIGNAL(destroyed()), this, SLOT(_q_handleButtonDestroyed()));
             delete button;
         }
@@ -680,9 +680,9 @@ QList<QAbstractButton *> QDialogButtonBox::buttons() const
 {
     Q_D(const QDialogButtonBox);
     QList<QAbstractButton *> finalList;
-    for (int i = 0; i < NRoles; ++i) {
+    for (auto i = 0; i < NRoles; ++i) {
         const QList<QAbstractButton *> &list = d->buttonLists[i];
-        for (int j = 0; j < list.count(); ++j)
+        for (auto j = 0; j < list.count(); ++j)
             finalList.append(list.at(j));
     }
     return finalList;
@@ -697,9 +697,9 @@ QList<QAbstractButton *> QDialogButtonBox::buttons() const
 QDialogButtonBox::ButtonRole QDialogButtonBox::buttonRole(QAbstractButton *button) const
 {
     Q_D(const QDialogButtonBox);
-    for (int i = 0; i < NRoles; ++i) {
+    for (auto i = 0; i < NRoles; ++i) {
         const QList<QAbstractButton *> &list = d->buttonLists[i];
-        for (int j = 0; j < list.count(); ++j) {
+        for (auto j = 0; j < list.count(); ++j) {
             if (list.at(j) == button)
                 return ButtonRole(i);
         }
@@ -720,11 +720,11 @@ void QDialogButtonBox::removeButton(QAbstractButton *button)
         return;
 
     // Remove it from the standard button hash first and then from the roles
-    if (QPushButton *pushButton = qobject_cast<QPushButton *>(button))
+    if (auto pushButton = qobject_cast<QPushButton *>(button))
         d->standardButtonHash.remove(pushButton);
-    for (int i = 0; i < NRoles; ++i) {
+    for (auto i = 0; i < NRoles; ++i) {
         QList<QAbstractButton *> &list = d->buttonLists[i];
-        for (int j = 0; j < list.count(); ++j) {
+        for (auto j = 0; j < list.count(); ++j) {
             if (list.at(j) == button) {
                 list.takeAt(j);
                 if (!d->internalRemove) {
@@ -776,7 +776,7 @@ QPushButton *QDialogButtonBox::addButton(const QString &text, ButtonRole role)
         qWarning("QDialogButtonBox::addButton: Invalid ButtonRole, button not added");
         return 0;
     }
-    QPushButton *button = new QPushButton(text, this);
+    auto button = new QPushButton(text, this);
     d->addButton(button, role);
     return button;
 }
@@ -816,7 +816,7 @@ QDialogButtonBox::StandardButtons QDialogButtonBox::standardButtons() const
 {
     Q_D(const QDialogButtonBox);
     StandardButtons standardButtons = NoButton;
-    QHash<QPushButton *, StandardButton>::const_iterator it = d->standardButtonHash.constBegin();
+    auto it = d->standardButtonHash.constBegin();
     while (it != d->standardButtonHash.constEnd()) {
         standardButtons |= it.value();
         ++it;
@@ -851,12 +851,12 @@ QDialogButtonBox::StandardButton QDialogButtonBox::standardButton(QAbstractButto
 void QDialogButtonBoxPrivate::_q_handleButtonClicked()
 {
     Q_Q(QDialogButtonBox);
-    if (QAbstractButton *button = qobject_cast<QAbstractButton *>(q->sender())) {
+    if (auto button = qobject_cast<QAbstractButton *>(q->sender())) {
         // Can't fetch this *after* emitting clicked, as clicked may destroy the button
         // or change its role. Now changing the role is not possible yet, but arguably
         // both clicked and accepted/rejected/etc. should be emitted "atomically"
         // depending on whatever role the button had at the time of the click.
-        const QDialogButtonBox::ButtonRole buttonRole = q->buttonRole(button);
+        const auto buttonRole = q->buttonRole(button);
         QPointer<QDialogButtonBox> guard(q);
 
         emit q->clicked(button);
@@ -885,7 +885,7 @@ void QDialogButtonBoxPrivate::_q_handleButtonClicked()
 void QDialogButtonBoxPrivate::_q_handleButtonDestroyed()
 {
     Q_Q(QDialogButtonBox);
-    if (QObject *object = q->sender()) {
+    if (auto object = q->sender()) {
         QBoolBlocker skippy(internalRemove);
         q->removeButton(static_cast<QAbstractButton *>(object));
     }
@@ -928,9 +928,9 @@ void QDialogButtonBox::changeEvent(QEvent *event)
     switch (event->type()) {
     case QEvent::StyleChange:  // Propagate style
         if (!d->standardButtonHash.empty()) {
-            QStyle *newStyle = style();
-            const StandardButtonHash::iterator end = d->standardButtonHash.end();
-            for (StandardButtonHash::iterator it = d->standardButtonHash.begin(); it != end; ++it)
+            auto newStyle = style();
+            const auto end = d->standardButtonHash.end();
+            for (auto it = d->standardButtonHash.begin(); it != end; ++it)
                 it.key()->setStyle(newStyle);
         }
         // fallthrough intended
@@ -953,9 +953,9 @@ bool QDialogButtonBox::event(QEvent *event)
 {
     Q_D(QDialogButtonBox);
     if (event->type() == QEvent::Show) {
-        QList<QAbstractButton *> acceptRoleList = d->buttonLists[AcceptRole];
-        QPushButton *firstAcceptButton = acceptRoleList.isEmpty() ? 0 : qobject_cast<QPushButton *>(acceptRoleList.at(0));
-        bool hasDefault = false;
+        auto acceptRoleList = d->buttonLists[AcceptRole];
+        auto firstAcceptButton = acceptRoleList.isEmpty() ? 0 : qobject_cast<QPushButton *>(acceptRoleList.at(0));
+        auto hasDefault = false;
         QWidget *dialog = 0;
         auto p = static_cast<QWidget*>(this);
         while (p && !p->isWindow()) {

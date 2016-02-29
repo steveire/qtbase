@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 static QString qt_strippedText(QString s)
 {
     s.remove( QString::fromLatin1("...") );
-    for (int i = 0; i < s.size(); ++i) {
+    for (auto i = 0; i < s.size(); ++i) {
         if (s.at(i) == QLatin1Char('&'))
             s.remove(i, 1);
     }
@@ -95,7 +95,7 @@ bool QActionPrivate::showStatusText(QWidget *widget, const QString &str)
     Q_UNUSED(widget);
     Q_UNUSED(str);
 #else
-    if(QObject *object = widget ? widget : parent) {
+    if(auto object = widget ? widget : parent) {
         QStatusTipEvent tip(str);
         QApplication::sendEvent(object, &tip);
         return true;
@@ -108,13 +108,13 @@ void QActionPrivate::sendDataChanged()
 {
     Q_Q(QAction);
     QActionEvent e(QEvent::ActionChanged, q);
-    for (int i = 0; i < widgets.size(); ++i) {
-        QWidget *w = widgets.at(i);
+    for (auto i = 0; i < widgets.size(); ++i) {
+        auto w = widgets.at(i);
         QApplication::sendEvent(w, &e);
     }
 #ifndef QT_NO_GRAPHICSVIEW
-    for (int i = 0; i < graphicsWidgets.size(); ++i) {
-        QGraphicsWidget *w = graphicsWidgets.at(i);
+    for (auto i = 0; i < graphicsWidgets.size(); ++i) {
+        auto w = graphicsWidgets.at(i);
         QApplication::sendEvent(w, &e);
     }
 #endif
@@ -141,14 +141,14 @@ void QActionPrivate::redoGrab(QShortcutMap &map)
 void QActionPrivate::redoGrabAlternate(QShortcutMap &map)
 {
     Q_Q(QAction);
-    for(int i = 0; i < alternateShortcutIds.count(); ++i) {
-        if (const int id = alternateShortcutIds.at(i))
+    for(auto i = 0; i < alternateShortcutIds.count(); ++i) {
+        if (const auto id = alternateShortcutIds.at(i))
             map.removeShortcut(id, q);
     }
     alternateShortcutIds.clear();
     if (alternateShortcuts.isEmpty())
         return;
-    for(int i = 0; i < alternateShortcuts.count(); ++i) {
+    for(auto i = 0; i < alternateShortcuts.count(); ++i) {
         const QKeySequence& alternate = alternateShortcuts.at(i);
         if (!alternate.isEmpty())
             alternateShortcutIds.append(map.addShortcut(q, alternate, shortcutContext, qWidgetShortcutContextMatcher));
@@ -156,14 +156,14 @@ void QActionPrivate::redoGrabAlternate(QShortcutMap &map)
             alternateShortcutIds.append(0);
     }
     if (!enabled) {
-        for(int i = 0; i < alternateShortcutIds.count(); ++i) {
-            const int id = alternateShortcutIds.at(i);
+        for(auto i = 0; i < alternateShortcutIds.count(); ++i) {
+            const auto id = alternateShortcutIds.at(i);
             map.setShortcutEnabled(false, id, q);
         }
     }
     if (!autorepeat) {
-        for(int i = 0; i < alternateShortcutIds.count(); ++i) {
-            const int id = alternateShortcutIds.at(i);
+        for(auto i = 0; i < alternateShortcutIds.count(); ++i) {
+            const auto id = alternateShortcutIds.at(i);
             map.setShortcutAutoRepeat(false, id, q);
         }
     }
@@ -174,8 +174,8 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     Q_Q(QAction);
     if (shortcutId)
         map.setShortcutEnabled(enable, shortcutId, q);
-    for(int i = 0; i < alternateShortcutIds.count(); ++i) {
-        if (const int id = alternateShortcutIds.at(i))
+    for(auto i = 0; i < alternateShortcutIds.count(); ++i) {
+        if (const auto id = alternateShortcutIds.at(i))
             map.setShortcutEnabled(enable, id, q);
     }
 }
@@ -351,7 +351,7 @@ QAction::QAction(QActionPrivate &dd, QObject *parent)
 */
 QWidget *QAction::parentWidget() const
 {
-    QObject *ret = parent();
+    auto ret = parent();
     while (ret && !ret->isWidgetType())
         ret = ret->parent();
     return (QWidget*)ret;
@@ -416,7 +416,7 @@ void QAction::setShortcuts(const QList<QKeySequence> &shortcuts)
 {
     Q_D(QAction);
 
-    QList <QKeySequence> listCopy = shortcuts;
+    auto listCopy = shortcuts;
 
     QKeySequence primary;
     if (!listCopy.isEmpty())
@@ -446,7 +446,7 @@ void QAction::setShortcuts(const QList<QKeySequence> &shortcuts)
 */
 void QAction::setShortcuts(QKeySequence::StandardKey key)
 {
-    QList <QKeySequence> list = QKeySequence::keyBindings(key);
+    auto list = QKeySequence::keyBindings(key);
     setShortcuts(list);
 }
 
@@ -570,13 +570,13 @@ QFont QAction::font() const
 QAction::~QAction()
 {
     Q_D(QAction);
-    for (int i = d->widgets.size()-1; i >= 0; --i) {
-        QWidget *w = d->widgets.at(i);
+    for (auto i = d->widgets.size()-1; i >= 0; --i) {
+        auto w = d->widgets.at(i);
         w->removeAction(this);
     }
 #ifndef QT_NO_GRAPHICSVIEW
-    for (int i = d->graphicsWidgets.size()-1; i >= 0; --i) {
-        QGraphicsWidget *w = d->graphicsWidgets.at(i);
+    for (auto i = d->graphicsWidgets.size()-1; i >= 0; --i) {
+        auto w = d->graphicsWidgets.at(i);
         w->removeAction(this);
     }
 #endif
@@ -585,8 +585,8 @@ QAction::~QAction()
 #ifndef QT_NO_SHORTCUT
     if (d->shortcutId && qApp) {
         qApp->d_func()->shortcutMap.removeShortcut(d->shortcutId, this);
-        for(int i = 0; i < d->alternateShortcutIds.count(); ++i) {
-            const int id = d->alternateShortcutIds.at(i);
+        for(auto i = 0; i < d->alternateShortcutIds.count(); ++i) {
+            const auto id = d->alternateShortcutIds.at(i);
             qApp->d_func()->shortcutMap.removeShortcut(id, this);
         }
     }
@@ -737,7 +737,7 @@ void QAction::setText(const QString &text)
 QString QAction::text() const
 {
     Q_D(const QAction);
-    QString s = d->text;
+    auto s = d->text;
     if(s.isEmpty()) {
         s = d->iconText;
         s.replace(QLatin1Char('&'), QLatin1String("&&"));
@@ -1088,7 +1088,7 @@ QAction::event(QEvent *e)
 {
 #ifndef QT_NO_SHORTCUT
     if (e->type() == QEvent::Shortcut) {
-        QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
+        auto se = static_cast<QShortcutEvent *>(e);
         Q_ASSERT_X(se->key() == d_func()->shortcut || d_func()->alternateShortcuts.contains(se->key()),
                    "QAction::event",
                    "Received shortcut event from incorrect shortcut");
@@ -1283,7 +1283,7 @@ void QAction::setIconVisibleInMenu(bool visible)
 {
     Q_D(QAction);
     if (d->iconVisibleInMenu == -1 || visible != bool(d->iconVisibleInMenu)) {
-        int oldValue = d->iconVisibleInMenu;
+        auto oldValue = d->iconVisibleInMenu;
         d->iconVisibleInMenu = visible;
         // Only send data changed if we really need to.
         if (oldValue != -1

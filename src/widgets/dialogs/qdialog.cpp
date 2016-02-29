@@ -97,9 +97,9 @@ QPlatformDialogHelper *QDialogPrivate::platformHelper() const
     // that qobject_cast<> on the dialog works in the plugin.
     if (!m_platformHelperCreated) {
         m_platformHelperCreated = true;
-        QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
-        QDialog *dialog = ncThis->q_func();
-        const int type = themeDialogType(dialog);
+        auto ncThis = const_cast<QDialogPrivate *>(this);
+        auto dialog = ncThis->q_func();
+        const auto type = themeDialogType(dialog);
         if (type >= 0) {
             m_platformHelper = QGuiApplicationPrivate::platformTheme()
                     ->createPlatformDialogHelper(static_cast<QPlatformTheme::DialogType>(type));
@@ -115,9 +115,9 @@ QPlatformDialogHelper *QDialogPrivate::platformHelper() const
 
 bool QDialogPrivate::canBeNativeDialog() const
 {
-    QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
-    QDialog *dialog = ncThis->q_func();
-    const int type = themeDialogType(dialog);
+    auto ncThis = const_cast<QDialogPrivate *>(this);
+    auto dialog = ncThis->q_func();
+    const auto type = themeDialogType(dialog);
     if (type >= 0)
         return QGuiApplicationPrivate::platformTheme()
                 ->usePlatformNativeDialog(static_cast<QPlatformTheme::DialogType>(type));
@@ -126,14 +126,14 @@ bool QDialogPrivate::canBeNativeDialog() const
 
 QWindow *QDialogPrivate::parentWindow() const
 {
-    if (const QWidget *parent = q_func()->nativeParentWidget())
+    if (auto parent = q_func()->nativeParentWidget())
         return parent->windowHandle();
     return 0;
 }
 
 bool QDialogPrivate::setNativeDialogVisible(bool visible)
 {
-    if (QPlatformDialogHelper *helper = platformHelper()) {
+    if (auto helper = platformHelper()) {
         if (visible) {
             Q_Q(QDialog);
             helperPrepareShow(helper);
@@ -147,7 +147,7 @@ bool QDialogPrivate::setNativeDialogVisible(bool visible)
 
 QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
 {
-    if (const QPlatformDialogHelper *helper = platformHelper())
+    if (auto helper = platformHelper())
         return helper->styleHint(hint);
     return QPlatformDialogHelper::defaultStyleHint(hint);
 }
@@ -370,10 +370,10 @@ QDialog::~QDialog()
 void QDialogPrivate::setDefault(QPushButton *pushButton)
 {
     Q_Q(QDialog);
-    bool hasMain = false;
-    QList<QPushButton*> list = q->findChildren<QPushButton*>();
-    for (int i=0; i<list.size(); ++i) {
-        QPushButton *pb = list.at(i);
+    auto hasMain = false;
+    auto list = q->findChildren<QPushButton*>();
+    for (auto i=0; i<list.size(); ++i) {
+        auto pb = list.at(i);
         if (pb->window() == q) {
             if (pb == mainDef)
                 hasMain = true;
@@ -406,8 +406,8 @@ void QDialogPrivate::setMainDefault(QPushButton *pushButton)
 void QDialogPrivate::hideDefault()
 {
     Q_Q(QDialog);
-    QList<QPushButton*> list = q->findChildren<QPushButton*>();
-    for (int i=0; i<list.size(); ++i) {
+    auto list = q->findChildren<QPushButton*>();
+    for (auto i=0; i<list.size(); ++i) {
         list.at(i)->setDefault(false);
     }
 }
@@ -494,7 +494,7 @@ void QDialog::open()
 {
     Q_D(QDialog);
 
-    Qt::WindowModality modality = windowModality();
+    auto modality = windowModality();
     if (modality != Qt::WindowModal) {
         d->resetModalityTo = modality;
         d->wasModalitySet = testAttribute(Qt::WA_SetWindowModality);
@@ -532,12 +532,12 @@ int QDialog::exec()
         return -1;
     }
 
-    bool deleteOnClose = testAttribute(Qt::WA_DeleteOnClose);
+    auto deleteOnClose = testAttribute(Qt::WA_DeleteOnClose);
     setAttribute(Qt::WA_DeleteOnClose, false);
 
     d->resetModalitySetByOpen();
 
-    bool wasShowModal = testAttribute(Qt::WA_ShowModal);
+    auto wasShowModal = testAttribute(Qt::WA_ShowModal);
     setAttribute(Qt::WA_ShowModal, true);
     setResult(0);
 
@@ -557,7 +557,7 @@ int QDialog::exec()
 
     setAttribute(Qt::WA_ShowModal, wasShowModal);
 
-    int res = result();
+    auto res = result();
     if (d->nativeDialogInUse)
         d->helperDone(static_cast<QDialog::DialogCode>(res), d->platformHelper());
     if (deleteOnClose)
@@ -634,7 +634,7 @@ void QDialog::contextMenuEvent(QContextMenuEvent *e)
 #if defined(QT_NO_WHATSTHIS) || defined(QT_NO_MENU)
     Q_UNUSED(e);
 #else
-    QWidget *w = childAt(e->pos());
+    auto w = childAt(e->pos());
     if (!w) {
         w = rect().contains(e->pos()) ? this : 0;
         if (!w)
@@ -644,7 +644,7 @@ void QDialog::contextMenuEvent(QContextMenuEvent *e)
         w = w->isWindow() ? 0 : w->parentWidget();
     if (w) {
         QPointer<QMenu> p = new QMenu(this);
-        QAction *wt = p.data()->addAction(tr("What's This?"));
+        auto wt = p.data()->addAction(tr("What's This?"));
         if (p.data()->exec(e->globalPos()) == wt) {
             QHelpEvent e(QEvent::WhatsThis, w->rect().center(),
                          w->mapToGlobal(w->rect().center()));
@@ -669,9 +669,9 @@ void QDialog::keyPressEvent(QKeyEvent *e)
         switch (e->key()) {
         case Qt::Key_Enter:
         case Qt::Key_Return: {
-            QList<QPushButton*> list = findChildren<QPushButton*>();
-            for (int i=0; i<list.size(); ++i) {
-                QPushButton *pb = list.at(i);
+            auto list = findChildren<QPushButton*>();
+            for (auto i=0; i<list.size(); ++i) {
+                auto pb = list.at(i);
                 if (pb->isDefault() && pb->isVisible()) {
                     if (pb->isEnabled())
                         pb->click();
@@ -725,7 +725,7 @@ void QDialog::setVisible(bool visible)
 
         QWidget::setVisible(visible);
         showExtension(d->doShowExtension);
-        QWidget *fw = window()->focusWidget();
+        auto fw = window()->focusWidget();
         if (!fw)
             fw = this;
 
@@ -740,16 +740,16 @@ void QDialog::setVisible(bool visible)
           have to use [widget*]->setFocus() themselves...
         */
         if (d->mainDef && fw->focusPolicy() == Qt::NoFocus) {
-            QWidget *first = fw;
+            auto first = fw;
             while ((first = first->nextInFocusChain()) != fw && first->focusPolicy() == Qt::NoFocus)
                 ;
             if (first != d->mainDef && qobject_cast<QPushButton*>(first))
                 d->mainDef->setFocus();
         }
         if (!d->mainDef && isWindow()) {
-            QWidget *w = fw;
+            auto w = fw;
             while ((w = w->nextInFocusChain()) != fw) {
-                QPushButton *pb = qobject_cast<QPushButton *>(w);
+                auto pb = qobject_cast<QPushButton *>(w);
                 if (pb && pb->autoDefault() && pb->focusPolicy() != Qt::NoFocus) {
                     pb->setDefault(true);
                     break;
@@ -783,7 +783,7 @@ void QDialog::setVisible(bool visible)
             d->eventLoop->exit();
     }
 
-    const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
+    auto theme = QGuiApplicationPrivate::platformTheme();
     if (d->mainDef && isActiveWindow()
         && theme->themeHint(QPlatformTheme::DialogSnapToDefaultButton).toBool())
         QCursor::setPos(d->mainDef->mapToGlobal(d->mainDef->rect().center()));
@@ -793,7 +793,7 @@ void QDialog::setVisible(bool visible)
 void QDialog::showEvent(QShowEvent *event)
 {
     if (!event->spontaneous() && !testAttribute(Qt::WA_Moved)) {
-        Qt::WindowStates  state = windowState();
+        auto state = windowState();
         adjustPosition(parentWidget());
         setAttribute(Qt::WA_Moved, false); // not really an explicit position
         if (state != windowState())
@@ -805,11 +805,11 @@ void QDialog::showEvent(QShowEvent *event)
 void QDialog::adjustPosition(QWidget* w)
 {
 
-    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+    if (auto theme = QGuiApplicationPrivate::platformTheme())
         if (theme->themeHint(QPlatformTheme::WindowAutoPlacement).toBool())
             return;
     QPoint p(0, 0);
-    int extraw = 0, extrah = 0, scrn = 0;
+    auto extraw = 0, extrah = 0, scrn = 0;
     if (w)
         w = w->window();
     QRect desk;
@@ -822,12 +822,12 @@ void QDialog::adjustPosition(QWidget* w)
     }
     desk = QApplication::desktop()->availableGeometry(scrn);
 
-    QWidgetList list = QApplication::topLevelWidgets();
-    for (int i = 0; (extraw == 0 || extrah == 0) && i < list.size(); ++i) {
-        QWidget * current = list.at(i);
+    auto list = QApplication::topLevelWidgets();
+    for (auto i = 0; (extraw == 0 || extrah == 0) && i < list.size(); ++i) {
+        auto current = list.at(i);
         if (current->isVisible()) {
-            int framew = current->geometry().x() - current->x();
-            int frameh = current->geometry().y() - current->y();
+            auto framew = current->geometry().x() - current->x();
+            auto frameh = current->geometry().y() - current->y();
 
             extraw = qMax(extraw, framew);
             extrah = qMax(extrah, frameh);
@@ -991,17 +991,17 @@ void QDialog::showExtension(bool showIt)
                  .expandedTo(d->extension->minimumSize())
                  .boundedTo(d->extension->maximumSize()));
         if (d->orientation == Qt::Horizontal) {
-            int h = qMax(height(), s.height());
+            auto h = qMax(height(), s.height());
             d->extension->setGeometry(width(), 0, s.width(), h);
             setFixedSize(width() + s.width(), h);
         } else {
-            int w = qMax(width(), s.width());
+            auto w = qMax(width(), s.width());
             d->extension->setGeometry(0, height(), w, s.height());
             setFixedSize(w, height() + s.height());
         }
         d->extension->show();
 #ifndef QT_NO_SIZEGRIP
-        const bool sizeGripEnabled = isSizeGripEnabled();
+        const auto sizeGripEnabled = isSizeGripEnabled();
         setSizeGripEnabled(false);
         d->sizeGripEnabled = sizeGripEnabled;
 #endif

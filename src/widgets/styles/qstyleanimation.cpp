@@ -145,8 +145,8 @@ int QProgressStyleAnimation::animationStep() const
 
 int QProgressStyleAnimation::progressStep(int width) const
 {
-    int step = animationStep();
-    int progress = (step * width / _speed) % width;
+    auto step = animationStep();
+    auto progress = (step * width / _speed) % width;
     if (((step * width / _speed) % (2 * width)) >= width)
         progress = width - progress;
     return progress;
@@ -165,7 +165,7 @@ void QProgressStyleAnimation::setSpeed(int speed)
 bool QProgressStyleAnimation::isUpdateNeeded() const
 {
     if (QStyleAnimation::isUpdateNeeded()) {
-        int current = animationStep();
+        auto current = animationStep();
         if (_step == -1 || _step != current)
         {
             _step = current;
@@ -203,14 +203,14 @@ void QNumberStyleAnimation::setEndValue(qreal value)
 
 qreal QNumberStyleAnimation::currentValue() const
 {
-    qreal step = qreal(currentTime() - delay()) / (duration() - delay());
+    auto step = qreal(currentTime() - delay()) / (duration() - delay());
     return _start + qMax(qreal(0), step) * (_end - _start);
 }
 
 bool QNumberStyleAnimation::isUpdateNeeded() const
 {
     if (QStyleAnimation::isUpdateNeeded()) {
-        qreal current = currentValue();
+        auto current = currentValue();
         if (!qFuzzyCompare(_prev, current))
         {
             _prev = current;
@@ -264,25 +264,25 @@ static QImage blendedImage(const QImage &start, const QImage &end, float alpha)
         return QImage();
 
     QImage blended;
-    const int a = qRound(alpha*256);
-    const int ia = 256 - a;
-    const int sw = start.width();
-    const int sh = start.height();
-    const int bpl = start.bytesPerLine();
+    const auto a = qRound(alpha*256);
+    const auto ia = 256 - a;
+    const auto sw = start.width();
+    const auto sh = start.height();
+    const auto bpl = start.bytesPerLine();
     switch (start.depth()) {
     case 32:
         {
             blended = QImage(sw, sh, start.format());
-            uchar *mixed_data = blended.bits();
-            const uchar *back_data = start.bits();
-            const uchar *front_data = end.bits();
-            for (int sy = 0; sy < sh; sy++) {
-                quint32* mixed = (quint32*)mixed_data;
-                const quint32* back = (const quint32*)back_data;
-                const quint32* front = (const quint32*)front_data;
-                for (int sx = 0; sx < sw; sx++) {
-                    quint32 bp = back[sx];
-                    quint32 fp = front[sx];
+            auto mixed_data = blended.bits();
+            auto back_data = start.bits();
+            auto front_data = end.bits();
+            for (auto sy = 0; sy < sh; sy++) {
+                auto mixed = (quint32*)mixed_data;
+                auto back = (const quint32*)back_data;
+                auto front = (const quint32*)front_data;
+                for (auto sx = 0; sx < sw; sx++) {
+                    auto bp = back[sx];
+                    auto fp = front[sx];
                     mixed[sx] =  qRgba ((qRed(bp)*ia + qRed(fp)*a)>>8,
                                         (qGreen(bp)*ia + qGreen(fp)*a)>>8,
                                         (qBlue(bp)*ia + qBlue(fp)*a)>>8,

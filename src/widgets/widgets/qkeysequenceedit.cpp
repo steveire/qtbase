@@ -60,7 +60,7 @@ void QKeySequenceEditPrivate::init()
     prevKey = -1;
     releaseTimer = 0;
 
-    QVBoxLayout *layout = new QVBoxLayout(q);
+    auto layout = new QVBoxLayout(q);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(lineEdit);
 
@@ -80,7 +80,7 @@ void QKeySequenceEditPrivate::init()
 
 int QKeySequenceEditPrivate::translateModifiers(Qt::KeyboardModifiers state, const QString &text)
 {
-    int result = 0;
+    auto result = 0;
     // The shift modifier only counts when it is not used to type a symbol
     // that is only reachable using the shift key anyway
     if ((state & Qt::ShiftModifier) && (text.isEmpty() ||
@@ -200,7 +200,7 @@ void QKeySequenceEdit::setKeySequence(const QKeySequence &keySequence)
 
     d->key[0] = d->key[1] = d->key[2] = d->key[3] = 0;
     d->keyNum = keySequence.count();
-    for (int i = 0; i < d->keyNum; ++i)
+    for (auto i = 0; i < d->keyNum; ++i)
         d->key[i] = keySequence[i];
 
     d->lineEdit->setText(keySequence.toString(QKeySequence::NativeText));
@@ -250,7 +250,7 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QKeySequenceEdit);
 
-    int nextKey = e->key();
+    auto nextKey = e->key();
 
     if (d->prevKey == -1) {
         clear();
@@ -265,7 +265,7 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
         return;
     }
 
-    QString selectedText = d->lineEdit->selectedText();
+    auto selectedText = d->lineEdit->selectedText();
     if (!selectedText.isEmpty() && selectedText == d->lineEdit->text()) {
         clear();
         if (nextKey == Qt::Key_Backspace)
@@ -282,7 +282,7 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
 
     QKeySequence key(d->key[0], d->key[1], d->key[2], d->key[3]);
     d->keySequence = key;
-    QString text = key.toString(QKeySequence::NativeText);
+    auto text = key.toString(QKeySequence::NativeText);
     if (d->keyNum < QKeySequencePrivate::MaxKeyCount) {
         //: This text is an "unfinished" shortcut, expands like "Ctrl+A, ..."
         text = tr("%1, ...").arg(text);

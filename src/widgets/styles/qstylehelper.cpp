@@ -58,7 +58,7 @@ namespace QStyleHelper {
 
 QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
 {
-    const QStyleOptionComplex *complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
+    auto complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
     QString tmp = key % HexString<uint>(option->state)
                       % HexString<uint>(option->direction)
                       % HexString<uint>(complexOption ? uint(complexOption->activeSubControls) : 0u)
@@ -67,7 +67,7 @@ QString uniqueName(const QString &key, const QStyleOption *option, const QSize &
                       % HexString<uint>(size.height());
 
 #ifndef QT_NO_SPINBOX
-    if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
+    if (auto spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
         tmp = tmp % HexString<uint>(spinBox->buttonSymbols)
                   % HexString<uint>(spinBox->stepEnabled)
                   % QLatin1Char(spinBox->frame ? '1' : '0'); ;
@@ -82,7 +82,7 @@ qreal dpiScaled(qreal value)
     // On mac the DPI is always 72 so we should not scale it
     return value;
 #else
-    static const qreal scale = qreal(qt_defaultDpiX()) / 96.0;
+    static const auto scale = qreal(qt_defaultDpiX()) / 96.0;
     return value * scale;
 #endif
 }
@@ -90,8 +90,8 @@ qreal dpiScaled(qreal value)
 #ifndef QT_NO_ACCESSIBILITY
 bool isInstanceOf(QObject *obj, QAccessible::Role role)
 {
-    bool match = false;
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(obj);
+    auto match = false;
+    auto iface = QAccessible::queryAccessibleInterface(obj);
     match = iface && iface->role() == role;
     return match;
 }
@@ -99,8 +99,8 @@ bool isInstanceOf(QObject *obj, QAccessible::Role role)
 // Searches for an ancestor of a particular accessible role
 bool hasAncestor(QObject *obj, QAccessible::Role role)
 {
-    bool found = false;
-    QObject *parent = obj ? obj->parent() : 0;
+    auto found = false;
+    auto parent = obj ? obj->parent() : 0;
     while (parent && !found) {
         if (isInstanceOf(parent, role))
             found = true;
@@ -115,7 +115,7 @@ bool hasAncestor(QObject *obj, QAccessible::Role role)
 
 int calcBigLineSize(int radius)
 {
-    int bigLineSize = radius / 6;
+    auto bigLineSize = radius / 6;
     if (bigLineSize < 4)
         bigLineSize = 4;
     if (bigLineSize > radius / 2)
@@ -125,10 +125,10 @@ int calcBigLineSize(int radius)
 
 static QPointF calcRadialPos(const QStyleOptionSlider *dial, qreal offset)
 {
-    const int width = dial->rect.width();
-    const int height = dial->rect.height();
-    const int r = qMin(width, height) / 2;
-    const int currentSliderPosition = dial->upsideDown ? dial->sliderPosition : (dial->maximum - dial->sliderPosition);
+    const auto width = dial->rect.width();
+    const auto height = dial->rect.height();
+    const auto r = qMin(width, height) / 2;
+    const auto currentSliderPosition = dial->upsideDown ? dial->sliderPosition : (dial->maximum - dial->sliderPosition);
     qreal a = 0;
     if (dial->maximum == dial->minimum)
         a = Q_PI / 2;
@@ -138,17 +138,17 @@ static QPointF calcRadialPos(const QStyleOptionSlider *dial, qreal offset)
     else
         a = (Q_PI * 8 - (currentSliderPosition - dial->minimum) * 10 * Q_PI
             / (dial->maximum - dial->minimum)) / 6;
-    qreal xc = width / 2.0;
-    qreal yc = height / 2.0;
+    auto xc = width / 2.0;
+    auto yc = height / 2.0;
     qreal len = r - QStyleHelper::calcBigLineSize(r) - 3;
-    qreal back = offset * len;
+    auto back = offset * len;
     QPointF pos(QPointF(xc + back * qCos(a), yc - back * qSin(a)));
     return pos;
 }
 
 qreal angle(const QPointF &p1, const QPointF &p2)
 {
-    static const qreal rad_factor = 180 / Q_PI;
+    static const auto rad_factor = 180 / Q_PI;
     qreal _angle = 0;
 
     if (p1.x() == p2.x()) {
@@ -167,7 +167,7 @@ qreal angle(const QPointF &p1, const QPointF &p2)
             x1 = p2.x(); y1 = p2.y();
         }
 
-        qreal m = -(y2 - y1) / (x2 - x1);
+        auto m = -(y2 - y1) / (x2 - x1);
         _angle = qAtan(m) *  rad_factor;
 
         if (p1.x() < p2.x())
@@ -181,31 +181,31 @@ qreal angle(const QPointF &p1, const QPointF &p2)
 QPolygonF calcLines(const QStyleOptionSlider *dial)
 {
     QPolygonF poly;
-    int width = dial->rect.width();
-    int height = dial->rect.height();
+    auto width = dial->rect.width();
+    auto height = dial->rect.height();
     qreal r = qMin(width, height) / 2;
-    int bigLineSize = calcBigLineSize(int(r));
+    auto bigLineSize = calcBigLineSize(int(r));
 
-    qreal xc = width / 2 + 0.5;
-    qreal yc = height / 2 + 0.5;
-    const int ns = dial->tickInterval;
+    auto xc = width / 2 + 0.5;
+    auto yc = height / 2 + 0.5;
+    const auto ns = dial->tickInterval;
     if (!ns) // Invalid values may be set by Qt Designer.
         return poly;
-    int notches = (dial->maximum + ns - 1 - dial->minimum) / ns;
+    auto notches = (dial->maximum + ns - 1 - dial->minimum) / ns;
     if (notches <= 0)
         return poly;
     if (dial->maximum < dial->minimum || dial->maximum - dial->minimum > 1000) {
-        int maximum = dial->minimum + 1000;
+        auto maximum = dial->minimum + 1000;
         notches = (maximum + ns - 1 - dial->minimum) / ns;
     }
 
     poly.resize(2 + 2 * notches);
-    int smallLineSize = bigLineSize / 2;
-    for (int i = 0; i <= notches; ++i) {
-        qreal angle = dial->dialWrapping ? Q_PI * 3 / 2 - i * 2 * Q_PI / notches
+    auto smallLineSize = bigLineSize / 2;
+    for (auto i = 0; i <= notches; ++i) {
+        auto angle = dial->dialWrapping ? Q_PI * 3 / 2 - i * 2 * Q_PI / notches
                   : (Q_PI * 8 - i * 10 * Q_PI / notches) / 6;
-        qreal s = qSin(angle);
-        qreal c = qCos(angle);
+        auto s = qSin(angle);
+        auto c = qCos(angle);
         if (i == 0 || (((ns * i) % (dial->pageStep ? dial->pageStep : 1)) == 0)) {
             poly[2 * i] = QPointF(xc + (r - bigLineSize) * c,
                                   yc - (r - bigLineSize) * s);
@@ -224,14 +224,14 @@ QPolygonF calcLines(const QStyleOptionSlider *dial)
 
 void drawDial(const QStyleOptionSlider *option, QPainter *painter)
 {
-    QPalette pal = option->palette;
-    QColor buttonColor = pal.button().color();
-    const int width = option->rect.width();
-    const int height = option->rect.height();
+    auto pal = option->palette;
+    auto buttonColor = pal.button().color();
+    const auto width = option->rect.width();
+    const auto height = option->rect.height();
     const bool enabled = option->state & QStyle::State_Enabled;
     qreal r = qMin(width, height) / 2;
     r -= r/50;
-    const qreal penSize = r/20.0;
+    const auto penSize = r/20.0;
 
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
@@ -246,11 +246,11 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
     BEGIN_STYLE_PIXMAPCACHE(QString::fromLatin1("qdial"));
     p->setRenderHint(QPainter::Antialiasing);
 
-    const qreal d_ = r / 6;
-    const qreal dx = option->rect.x() + d_ + (width - 2 * r) / 2 + 1;
-    const qreal dy = option->rect.y() + d_ + (height - 2 * r) / 2 + 1;
+    const auto d_ = r / 6;
+    const auto dx = option->rect.x() + d_ + (width - 2 * r) / 2 + 1;
+    const auto dy = option->rect.y() + d_ + (height - 2 * r) / 2 + 1;
 
-    QRectF br = QRectF(dx + 0.5, dy + 0.5,
+    auto br = QRectF(dx + 0.5, dy + 0.5,
                        int(r * 2 - 2 * d_ - 2),
                        int(r * 2 - 2 * d_ - 2));
     buttonColor.setHsv(buttonColor .hue(),
@@ -260,8 +260,8 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
 
     if (enabled) {
         // Drop shadow
-        qreal shadowSize = qMax(1.0, penSize/2.0);
-        QRectF shadowRect= br.adjusted(-2*shadowSize, -2*shadowSize,
+        auto shadowSize = qMax(1.0, penSize/2.0);
+        auto shadowRect= br.adjusted(-2*shadowSize, -2*shadowSize,
                                        2*shadowSize, 2*shadowSize);
         QRadialGradient shadowGradient(shadowRect.center().x(),
                                        shadowRect.center().y(), shadowRect.width()/2.0,
@@ -294,7 +294,7 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
     p->drawEllipse(br.adjusted(1, 1, -1, -1));
 
     if (option->state & QStyle::State_HasFocus) {
-        QColor highlight = pal.highlight().color();
+        auto highlight = pal.highlight().color();
         highlight.setHsv(highlight.hue(),
                          qMin(160, highlight.saturation()),
                          qMax(230, highlight.value()));
@@ -306,10 +306,10 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
 
     END_STYLE_PIXMAPCACHE
 
-    QPointF dp = calcRadialPos(option, qreal(0.70));
+    auto dp = calcRadialPos(option, qreal(0.70));
     buttonColor = buttonColor.lighter(104);
     buttonColor.setAlphaF(qreal(0.8));
-    const qreal ds = r/qreal(7.0);
+    const auto ds = r/qreal(7.0);
     QRectF dialRect(dp.x() - ds, dp.y() - ds, 2*ds, 2*ds);
     QRadialGradient dialGradient(dialRect.center().x() + dialRect.width()/2,
                                  dialRect.center().y() + dialRect.width(),
@@ -336,7 +336,7 @@ void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rec
                      int left, int top, int right,
                      int bottom)
 {
-    QSize size = pixmap.size();
+    auto size = pixmap.size();
     //painter->setRenderHint(QPainter::SmoothPixmapTransform);
 
     //top

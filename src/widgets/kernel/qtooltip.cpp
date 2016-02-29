@@ -189,7 +189,7 @@ QTipLabel::QTipLabel(const QString &text, QWidget *w, int msecDisplayTime)
 
 void QTipLabel::restartExpireTimer(int msecDisplayTime)
 {
-    int time = 10000 + 40 * qMax(0, text().length()-100);
+    auto time = 10000 + 40 * qMax(0, text().length()-100);
     if (msecDisplayTime > 0)
         time = msecDisplayTime;
     expireTimer.start(time, this);
@@ -243,7 +243,7 @@ void QTipLabel::mouseMoveEvent(QMouseEvent *e)
 {
     if (rect.isNull())
         return;
-    QPoint pos = e->globalPos();
+    auto pos = e->globalPos();
     if (widget)
         pos = widget->mapFromGlobal(pos);
     if (!rect.contains(pos))
@@ -397,10 +397,10 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
     else
         screen = QApplication::desktop()->availableGeometry(getTipScreen(pos, w));
 #else
-    QRect screen = QApplication::desktop()->screenGeometry(getTipScreen(pos, w));
+    auto screen = QApplication::desktop()->screenGeometry(getTipScreen(pos, w));
 #endif
 
-    QPoint p = pos;
+    auto p = pos;
     p += QPoint(2,
 #ifdef Q_DEAD_CODE_FROM_QT4_WIN
                 21
@@ -478,7 +478,7 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
         else if (!QTipLabel::instance->fadingOut){
             // If the tip has changed, reuse the one
             // that is showing (removes flickering)
-            QPoint localPos = pos;
+            auto localPos = pos;
             if (w)
                 localPos = w->mapFromGlobal(pos);
             if (QTipLabel::instance->tipChanged(localPos, text, w)){

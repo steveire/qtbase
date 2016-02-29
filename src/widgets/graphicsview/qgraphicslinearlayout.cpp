@@ -149,14 +149,14 @@ public:
 
 void QGraphicsLinearLayoutPrivate::removeGridItem(QGridLayoutItem *gridItem)
 {
-    int index = gridItem->firstRow(orientation);
+    auto index = gridItem->firstRow(orientation);
     engine.removeItem(gridItem);
     engine.removeRows(index, 1, orientation);
 }
 
 void QGraphicsLinearLayoutPrivate::fixIndex(int *index) const
 {
-    int count = engine.rowCount(orientation);
+    auto count = engine.rowCount(orientation);
     if (uint(*index) > uint(count))
         *index = count;
 }
@@ -206,8 +206,8 @@ QGraphicsLinearLayout::QGraphicsLinearLayout(QGraphicsLayoutItem *parent)
 */
 QGraphicsLinearLayout::~QGraphicsLinearLayout()
 {
-    for (int i = count() - 1; i >= 0; --i) {
-        QGraphicsLayoutItem *item = itemAt(i);
+    for (auto i = count() - 1; i >= 0; --i) {
+        auto item = itemAt(i);
         // The following lines can be removed, but this removes the item
         // from the layout more efficiently than the implementation of
         // ~QGraphicsLayoutItem.
@@ -282,7 +282,7 @@ void QGraphicsLinearLayout::insertItem(int index, QGraphicsLayoutItem *item)
     Q_ASSERT(item);
     d->fixIndex(&index);
     d->engine.insertRow(index, d->orientation);
-    QGraphicsGridLayoutEngineItem *gridEngineItem = new QGraphicsGridLayoutEngineItem(item, d->gridRow(index), d->gridColumn(index), 1, 1, 0);
+    auto gridEngineItem = new QGraphicsGridLayoutEngineItem(item, d->gridRow(index), d->gridColumn(index), 1, 1, 0);
     d->engine.insertItem(gridEngineItem, index);
     invalidate();
 }
@@ -311,7 +311,7 @@ void QGraphicsLinearLayout::insertStretch(int index, int stretch)
 void QGraphicsLinearLayout::removeItem(QGraphicsLayoutItem *item)
 {
     Q_D(QGraphicsLinearLayout);
-    if (QGraphicsGridLayoutEngineItem *gridItem = d->engine.findLayoutItem(item)) {
+    if (auto gridItem = d->engine.findLayoutItem(item)) {
         item->setParentLayoutItem(0);
         d->removeGridItem(gridItem);
         delete gridItem;
@@ -333,8 +333,8 @@ void QGraphicsLinearLayout::removeAt(int index)
         return;
     }
 
-    if (QGraphicsGridLayoutEngineItem *gridItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(index))) {
-        if (QGraphicsLayoutItem *layoutItem = gridItem->layoutItem())
+    if (auto gridItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(index))) {
+        if (auto layoutItem = gridItem->layoutItem())
             layoutItem->setParentLayoutItem(0);
         d->removeGridItem(gridItem);
         delete gridItem;
@@ -488,7 +488,7 @@ QGraphicsLayoutItem *QGraphicsLinearLayout::itemAt(int index) const
         return 0;
     }
     QGraphicsLayoutItem *item = 0;
-    if (QGraphicsGridLayoutEngineItem *gridItem = static_cast<QGraphicsGridLayoutEngineItem *>(d->engine.itemAt(index)))
+    if (auto gridItem = static_cast<QGraphicsGridLayoutEngineItem *>(d->engine.itemAt(index)))
         item = gridItem->layoutItem();
     return item;
 }
@@ -500,10 +500,10 @@ void QGraphicsLinearLayout::setGeometry(const QRectF &rect)
 {
     Q_D(QGraphicsLinearLayout);
     QGraphicsLayout::setGeometry(rect);
-    QRectF effectiveRect = geometry();
+    auto effectiveRect = geometry();
     qreal left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
-    Qt::LayoutDirection visualDir = d->visualDirection();
+    auto visualDir = d->visualDirection();
     d->engine.setVisualDirection(visualDir);
     if (visualDir == Qt::RightToLeft)
         qSwap(left, right);

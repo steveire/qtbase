@@ -234,7 +234,7 @@ void QTabWidgetPrivate::init()
     stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred, QSizePolicy::TabWidget));
 
     QObject::connect(stack, SIGNAL(widgetRemoved(int)), q, SLOT(_q_removeTab(int)));
-    QTabBar *tabBar = new QTabBar(q);
+    auto tabBar = new QTabBar(q);
     tabBar->setObjectName(QLatin1String("qt_tabwidget_tabbar"));
     tabBar->setDrawBase(false);
     q->setTabBar(tabBar);
@@ -260,7 +260,7 @@ void QTabWidgetPrivate::init()
 bool QTabWidget::hasHeightForWidth() const
 {
     Q_D(const QTabWidget);
-    bool has = d->size_policy.hasHeightForWidth();
+    auto has = d->size_policy.hasHeightForWidth();
     if (!has && d->stack)
         has = d->stack->hasHeightForWidth();
     return has;
@@ -287,7 +287,7 @@ void QTabWidget::initStyleOption(QStyleOptionTabWidgetFrame *option) const
     else
         option->lineWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this);
 
-    int exth = style()->pixelMetric(QStyle::PM_TabBarBaseHeight, 0, this);
+    auto exth = style()->pixelMetric(QStyle::PM_TabBarBaseHeight, 0, this);
     QSize t(0, d->stack->frameWidth());
     if (d->tabs->isVisibleTo(const_cast<QTabWidget *>(this))) {
         t = d->tabs->sizeHint();
@@ -301,7 +301,7 @@ void QTabWidget::initStyleOption(QStyleOptionTabWidgetFrame *option) const
     }
 
     if (d->rightCornerWidget) {
-        const QSize rightCornerSizeHint = d->rightCornerWidget->sizeHint();
+        const auto rightCornerSizeHint = d->rightCornerWidget->sizeHint();
         const QSize bounds(rightCornerSizeHint.width(), t.height() - exth);
         option->rightCornerWidgetSize = rightCornerSizeHint.boundedTo(bounds);
     } else {
@@ -309,7 +309,7 @@ void QTabWidget::initStyleOption(QStyleOptionTabWidgetFrame *option) const
     }
 
     if (d->leftCornerWidget) {
-        const QSize leftCornerSizeHint = d->leftCornerWidget->sizeHint();
+        const auto leftCornerSizeHint = d->leftCornerWidget->sizeHint();
         const QSize bounds(leftCornerSizeHint.width(), t.height() - exth);
         option->leftCornerWidgetSize = leftCornerSizeHint.boundedTo(bounds);
     } else {
@@ -337,8 +337,8 @@ void QTabWidget::initStyleOption(QStyleOptionTabWidgetFrame *option) const
 
     option->tabBarSize = t;
 
-    QRect tbRect = tabBar()->geometry();
-    QRect selectedTabRect = tabBar()->tabRect(tabBar()->currentIndex());
+    auto tbRect = tabBar()->geometry();
+    auto selectedTabRect = tabBar()->tabRect(tabBar()->currentIndex());
     option->tabBarRect = tbRect;
     selectedTabRect.moveTopLeft(selectedTabRect.topLeft() + tbRect.topLeft());
     option->selectedTabRect = selectedTabRect;
@@ -548,7 +548,7 @@ void QTabWidget::setTabEnabled(int index, bool enable)
 {
     Q_D(QTabWidget);
     d->tabs->setTabEnabled(index, enable);
-    if (QWidget *widget = d->stack->widget(index))
+    if (auto widget = d->stack->widget(index))
         widget->setEnabled(enable);
 }
 
@@ -612,7 +612,7 @@ QWidget * QTabWidget::cornerWidget(Qt::Corner corner) const
 void QTabWidget::removeTab(int index)
 {
     Q_D(QTabWidget);
-    if (QWidget *w = d->stack->widget(index))
+    if (auto w = d->stack->widget(index))
         d->stack->removeWidget(w);
 }
 
@@ -756,7 +756,7 @@ void QTabWidgetPrivate::_q_removeTab(int index)
 void QTabWidgetPrivate::_q_tabMoved(int from, int to)
 {
     const QSignalBlocker blocker(stack);
-    QWidget *w = stack->widget(from);
+    auto w = stack->widget(from);
     stack->removeWidget(w);
     stack->insertWidget(to, w);
 }
@@ -783,11 +783,11 @@ void QTabWidget::setUpLayout(bool onlyCheck)
         return; // we'll do it later
     }
 
-    QRect tabRect = style()->subElementRect(QStyle::SE_TabWidgetTabBar, &option, this);
+    auto tabRect = style()->subElementRect(QStyle::SE_TabWidgetTabBar, &option, this);
     d->panelRect = style()->subElementRect(QStyle::SE_TabWidgetTabPane, &option, this);
-    QRect contentsRect = style()->subElementRect(QStyle::SE_TabWidgetTabContents, &option, this);
-    QRect leftCornerRect = style()->subElementRect(QStyle::SE_TabWidgetLeftCorner, &option, this);
-    QRect rightCornerRect = style()->subElementRect(QStyle::SE_TabWidgetRightCorner, &option, this);
+    auto contentsRect = style()->subElementRect(QStyle::SE_TabWidgetTabContents, &option, this);
+    auto leftCornerRect = style()->subElementRect(QStyle::SE_TabWidgetLeftCorner, &option, this);
+    auto rightCornerRect = style()->subElementRect(QStyle::SE_TabWidgetRightCorner, &option, this);
 
     d->tabs->setGeometry(tabRect);
     d->stack->setGeometry(contentsRect);
@@ -830,7 +830,7 @@ QSize QTabWidget::sizeHint() const
     if(d->rightCornerWidget)
         rc = d->rightCornerWidget->sizeHint();
     if (!d->dirty) {
-        QTabWidget *that = const_cast<QTabWidget*>(this);
+        auto that = const_cast<QTabWidget*>(this);
         that->setUpLayout(true);
     }
     QSize s(d->stack->sizeHint());
@@ -840,7 +840,7 @@ QSize QTabWidget::sizeHint() const
     else
         t = t.boundedTo(QApplication::desktop()->size());
 
-    QSize sz = basicSize(d->pos == North || d->pos == South, lc, rc, s, t);
+    auto sz = basicSize(d->pos == North || d->pos == South, lc, rc, s, t);
 
     return style()->sizeFromContents(QStyle::CT_TabWidget, &opt, sz, this)
                     .expandedTo(QApplication::globalStrut());
@@ -862,13 +862,13 @@ QSize QTabWidget::minimumSizeHint() const
     if(d->rightCornerWidget)
         rc = d->rightCornerWidget->minimumSizeHint();
     if (!d->dirty) {
-        QTabWidget *that = const_cast<QTabWidget*>(this);
+        auto that = const_cast<QTabWidget*>(this);
         that->setUpLayout(true);
     }
     QSize s(d->stack->minimumSizeHint());
     QSize t(d->tabs->minimumSizeHint());
 
-    QSize sz = basicSize(d->pos == North || d->pos == South, lc, rc, s, t);
+    auto sz = basicSize(d->pos == North || d->pos == South, lc, rc, s, t);
 
     QStyleOptionTabWidgetFrame opt;
     initStyleOption(&opt);
@@ -889,7 +889,7 @@ int QTabWidget::heightForWidth(int width) const
     opt.state = QStyle::State_None;
 
     QSize zero(0,0);
-    const QSize padding = style()->sizeFromContents(QStyle::CT_TabWidget, &opt, zero, this)
+    const auto padding = style()->sizeFromContents(QStyle::CT_TabWidget, &opt, zero, this)
                                   .expandedTo(QApplication::globalStrut());
 
     QSize lc(0, 0), rc(0, 0);
@@ -898,7 +898,7 @@ int QTabWidget::heightForWidth(int width) const
     if(d->rightCornerWidget)
         rc = d->rightCornerWidget->sizeHint();
     if (!d->dirty) {
-        QTabWidget *that = const_cast<QTabWidget*>(this);
+        auto that = const_cast<QTabWidget*>(this);
         that->setUpLayout(true);
     }
     QSize t(d->tabs->sizeHint());
@@ -908,16 +908,16 @@ int QTabWidget::heightForWidth(int width) const
     else
         t = t.boundedTo(QApplication::desktop()->size());
 
-    const bool tabIsHorizontal = (d->pos == North || d->pos == South);
-    const int contentsWidth = width - padding.width();
-    int stackWidth = contentsWidth;
+    const auto tabIsHorizontal = (d->pos == North || d->pos == South);
+    const auto contentsWidth = width - padding.width();
+    auto stackWidth = contentsWidth;
     if (!tabIsHorizontal)
         stackWidth -= qMax(t.width(), qMax(lc.width(), rc.width()));
 
-    int stackHeight = d->stack->heightForWidth(stackWidth);
+    auto stackHeight = d->stack->heightForWidth(stackWidth);
     QSize s(stackWidth, stackHeight);
 
-    QSize contentSize = basicSize(tabIsHorizontal, lc, rc, s, t);
+    auto contentSize = basicSize(tabIsHorizontal, lc, rc, s, t);
     return (contentSize + padding).expandedTo(QApplication::globalStrut()).height();
 }
 
@@ -1090,14 +1090,14 @@ void QTabWidget::keyPressEvent(QKeyEvent *e)
           || QApplication::keypadNavigationEnabled() && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right) && count() > 1
 #endif
        ) {
-        int pageCount = d->tabs->count();
-        int page = currentIndex();
-        int dx = (e->key() == Qt::Key_Backtab || e->modifiers() & Qt::ShiftModifier) ? -1 : 1;
+        auto pageCount = d->tabs->count();
+        auto page = currentIndex();
+        auto dx = (e->key() == Qt::Key_Backtab || e->modifiers() & Qt::ShiftModifier) ? -1 : 1;
 #ifdef QT_KEYPAD_NAVIGATION
         if (QApplication::keypadNavigationEnabled() && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right))
             dx = e->key() == (isRightToLeft() ? Qt::Key_Right : Qt::Key_Left) ? -1 : 1;
 #endif
-        for (int pass = 0; pass < pageCount; ++pass) {
+        for (auto pass = 0; pass < pageCount; ++pass) {
             page+=dx;
             if (page < 0
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1229,14 +1229,14 @@ void QTabWidget::paintEvent(QPaintEvent *)
     Q_D(QTabWidget);
     if (documentMode()) {
         QStylePainter p(this, tabBar());
-        if (QWidget *w = cornerWidget(Qt::TopLeftCorner)) {
+        if (auto w = cornerWidget(Qt::TopLeftCorner)) {
             QStyleOptionTabBarBase opt;
             QTabBarPrivate::initStyleBaseOption(&opt, tabBar(), w->size());
             opt.rect.moveLeft(w->x() + opt.rect.x());
             opt.rect.moveTop(w->y() + opt.rect.y());
             p.drawPrimitive(QStyle::PE_FrameTabBarBase, opt);
         }
-        if (QWidget *w = cornerWidget(Qt::TopRightCorner)) {
+        if (auto w = cornerWidget(Qt::TopRightCorner)) {
             QStyleOptionTabBarBase opt;
             QTabBarPrivate::initStyleBaseOption(&opt, tabBar(), w->size());
             opt.rect.moveLeft(w->x() + opt.rect.x());

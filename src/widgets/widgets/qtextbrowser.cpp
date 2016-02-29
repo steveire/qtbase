@@ -212,7 +212,7 @@ void QTextBrowserPrivate::_q_activateAnchor(const QString &href)
     viewport->setCursor(oldCursor);
 #endif
 
-    const QUrl url = resolveUrl(href);
+    const auto url = resolveUrl(href);
 
     if (!openLinks) {
         emit q->anchorClicked(url);
@@ -222,7 +222,7 @@ void QTextBrowserPrivate::_q_activateAnchor(const QString &href)
     textOrSourceChanged = false;
 
 #ifndef QT_NO_DESKTOPSERVICES
-    bool isFileScheme =
+    auto isFileScheme =
             url.scheme() == QLatin1String("file")
 #if defined(Q_OS_ANDROID)
             || url.scheme() == QLatin1String("assets")
@@ -259,7 +259,7 @@ void QTextBrowserPrivate::_q_highlightLink(const QString &anchor)
         viewport->setCursor(Qt::PointingHandCursor);
 #endif
 
-        const QUrl url = resolveUrl(anchor);
+        const auto url = resolveUrl(anchor);
         emit q->highlighted(url);
         // convenience to ease connecting to QStatusBar::showMessage(const QString &)
         emit q->highlighted(url.toString());
@@ -277,22 +277,22 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
 
     QString txt;
 
-    bool doSetText = false;
+    auto doSetText = false;
 
-    QUrl currentUrlWithoutFragment = currentURL;
+    auto currentUrlWithoutFragment = currentURL;
     currentUrlWithoutFragment.setFragment(QString());
-    QUrl newUrlWithoutFragment = currentURL.resolved(url);
+    auto newUrlWithoutFragment = currentURL.resolved(url);
     newUrlWithoutFragment.setFragment(QString());
 
     if (url.isValid()
         && (newUrlWithoutFragment != currentUrlWithoutFragment || forceLoadOnSourceChange)) {
-        QVariant data = q->loadResource(QTextDocument::HtmlResource, resolveUrl(url));
+        auto data = q->loadResource(QTextDocument::HtmlResource, resolveUrl(url));
         if (data.type() == QVariant::String) {
             txt = data.toString();
         } else if (data.type() == QVariant::ByteArray) {
 #ifndef QT_NO_TEXTCODEC
-            QByteArray ba = data.toByteArray();
-            QTextCodec *codec = Qt::codecForHtml(ba);
+            auto ba = data.toByteArray();
+            auto codec = Qt::codecForHtml(ba);
             txt = codec->toUnicode(ba);
 #else
             txt = data.toString();
@@ -302,7 +302,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
             qWarning("QTextBrowser: No document for %s", url.toString().toLatin1().constData());
 
         if (q->isVisible()) {
-            QString firstTag = txt.left(txt.indexOf(QLatin1Char('>')) + 1);
+            auto firstTag = txt.left(txt.indexOf(QLatin1Char('>')) + 1);
             if (firstTag.startsWith(QLatin1String("<qt")) && firstTag.contains(QLatin1String("type")) && firstTag.contains(QLatin1String("detail"))) {
 #ifndef QT_NO_CURSOR
                 QApplication::restoreOverrideCursor();
@@ -550,7 +550,7 @@ QTextBrowserPrivate::HistoryEntry QTextBrowserPrivate::createHistoryEntry() cons
     entry.hpos = hbar->value();
     entry.vpos = vbar->value();
 
-    const QTextCursor cursor = control->textCursor();
+    const auto cursor = control->textCursor();
     if (control->cursorIsFocusIndicator()
         && cursor.hasSelection()) {
 
@@ -744,7 +744,7 @@ void QTextBrowser::setSearchPaths(const QStringList &paths)
 void QTextBrowser::reload()
 {
     Q_D(QTextBrowser);
-    QUrl s = d->currentURL;
+    auto s = d->currentURL;
     d->currentURL = QUrl();
     setSource(s);
 }
@@ -753,7 +753,7 @@ void QTextBrowser::setSource(const QUrl &url)
 {
     Q_D(QTextBrowser);
 
-    const QTextBrowserPrivate::HistoryEntry historyEntry = d->createHistoryEntry();
+    const auto historyEntry = d->createHistoryEntry();
 
     d->setSource(url);
 
@@ -1087,7 +1087,7 @@ QVariant QTextBrowser::loadResource(int /*type*/, const QUrl &name)
     Q_D(QTextBrowser);
 
     QByteArray data;
-    QString fileName = d->findFile(d->resolveUrl(name));
+    auto fileName = d->findFile(d->resolveUrl(name));
     QFile f(fileName);
     if (f.open(QFile::ReadOnly)) {
         data = f.readAll();
@@ -1140,7 +1140,7 @@ void QTextBrowser::clearHistory()
     Q_D(QTextBrowser);
     d->forwardStack.clear();
     if (!d->stack.isEmpty()) {
-        QTextBrowserPrivate::HistoryEntry historyEntry = d->stack.top();
+        auto historyEntry = d->stack.top();
         d->stack.resize(0);
         d->stack.push(historyEntry);
         d->home = historyEntry.url;

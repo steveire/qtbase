@@ -104,8 +104,8 @@ public:
         if (!isValid())
             return QRect();
 
-        QPoint tp = m_parent->mapToGlobal(QPoint(0,0));
-        QRect rec = m_parent->tabRect(m_index);
+        auto tp = m_parent->mapToGlobal(QPoint(0,0));
+        auto rec = m_parent->tabRect(m_index);
         rec = QRect(tp.x() + rec.x(), tp.y() + rec.y(), rec.width(), rec.height());
         return rec;
     }
@@ -190,12 +190,12 @@ QTabBar *QAccessibleTabBar::tabBar() const
 
 QAccessibleInterface* QAccessibleTabBar::child(int index) const
 {
-    if (QAccessible::Id id = m_childInterfaces.value(index))
+    if (auto id = m_childInterfaces.value(index))
         return QAccessible::accessibleInterface(id);
 
     // first the tabs, then 2 buttons
     if (index < tabBar()->count()) {
-        QAccessibleTabButton *button = new QAccessibleTabButton(tabBar(), index);
+        auto button = new QAccessibleTabButton(tabBar(), index);
         QAccessible::registerAccessibleInterface(button);
         m_childInterfaces.insert(index, QAccessible::uniqueId(button));
         return button;
@@ -219,9 +219,9 @@ int QAccessibleTabBar::indexOfChild(const QAccessibleInterface *child) const
     if (child->object() && child->object() == tabBar()->d_func()->rightB)
         return tabBar()->count() + 1;
     if (child->role() == QAccessible::PageTab) {
-        QAccessibleInterface *parent = child->parent();
+        auto parent = child->parent();
         if (parent == this) {
-            const QAccessibleTabButton *tabButton = static_cast<const QAccessibleTabButton *>(child);
+            auto tabButton = static_cast<const QAccessibleTabButton *>(child);
             return tabButton->index();
         }
     }
@@ -275,7 +275,7 @@ QComboBox *QAccessibleComboBox::comboBox() const
 QAccessibleInterface *QAccessibleComboBox::child(int index) const
 {
     if (index == 0) {
-        QAbstractItemView *view = comboBox()->view();
+        auto view = comboBox()->view();
         //QWidget *parent = view ? view->parentWidget() : 0;
         return QAccessible::queryAccessibleInterface(view);
     } else if (index == 1 && comboBox()->isEditable()) {
@@ -401,9 +401,9 @@ QAccessibleInterface *QAccessibleAbstractScrollArea::childAt(int x, int y) const
     if (!abstractScrollArea()->isVisible())
         return 0;
 
-    for (int i = 0; i < childCount(); ++i) {
-        QPoint wpos = accessibleChildren().at(i)->mapToGlobal(QPoint(0, 0));
-        QRect rect = QRect(wpos, accessibleChildren().at(i)->size());
+    for (auto i = 0; i < childCount(); ++i) {
+        auto wpos = accessibleChildren().at(i)->mapToGlobal(QPoint(0, 0));
+        auto rect = QRect(wpos, accessibleChildren().at(i)->size());
         if (rect.contains(x, y))
             return child(i);
     }
@@ -420,24 +420,24 @@ QWidgetList QAccessibleAbstractScrollArea::accessibleChildren() const
     QWidgetList children;
 
     // Viewport.
-    QWidget * viewport = abstractScrollArea()->viewport();
+    auto viewport = abstractScrollArea()->viewport();
     if (viewport)
         children.append(viewport);
 
     // Horizontal scrollBar container.
-    QScrollBar *horizontalScrollBar = abstractScrollArea()->horizontalScrollBar();
+    auto horizontalScrollBar = abstractScrollArea()->horizontalScrollBar();
     if (horizontalScrollBar && horizontalScrollBar->isVisible()) {
         children.append(horizontalScrollBar->parentWidget());
     }
 
     // Vertical scrollBar container.
-    QScrollBar *verticalScrollBar = abstractScrollArea()->verticalScrollBar();
+    auto verticalScrollBar = abstractScrollArea()->verticalScrollBar();
     if (verticalScrollBar && verticalScrollBar->isVisible()) {
         children.append(verticalScrollBar->parentWidget());
     }
 
     // CornerWidget.
-    QWidget *cornerWidget = abstractScrollArea()->cornerWidget();
+    auto cornerWidget = abstractScrollArea()->cornerWidget();
     if (cornerWidget && cornerWidget->isVisible())
         children.append(cornerWidget);
 

@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
 int QDesktopScreenWidget::screenNumber() const
 {
-    const QDesktopWidgetPrivate *desktopWidgetP
+    auto desktopWidgetP
         = static_cast<const QDesktopWidgetPrivate *>(qt_widget_private(QApplication::desktop()));
     return desktopWidgetP->screens.indexOf(const_cast<QDesktopScreenWidget *>(this));
 }
@@ -60,7 +60,7 @@ const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
                  "to get the screen geometry of a null widget");
         return QRect();
     }
-    QRect rect = QWidgetPrivate::screenGeometry(widget);
+    auto rect = QWidgetPrivate::screenGeometry(widget);
     if (rect.isNull())
         return screenGeometry(screenNumber(widget));
     else return rect;
@@ -73,7 +73,7 @@ const QRect QDesktopWidget::availableGeometry(const QWidget *widget) const
                  "to get the available geometry of a null widget");
         return QRect();
     }
-    QRect rect = QWidgetPrivate::screenGeometry(widget);
+    auto rect = QWidgetPrivate::screenGeometry(widget);
     if (rect.isNull())
         return availableGeometry(screenNumber(widget));
     else
@@ -83,17 +83,17 @@ const QRect QDesktopWidget::availableGeometry(const QWidget *widget) const
 void QDesktopWidgetPrivate::_q_updateScreens()
 {
     Q_Q(QDesktopWidget);
-    const QList<QScreen *> screenList = QGuiApplication::screens();
-    const int targetLength = screenList.length();
-    const int oldLength = screens.length();
+    const auto screenList = QGuiApplication::screens();
+    const auto targetLength = screenList.length();
+    const auto oldLength = screens.length();
 
     // Add or remove screen widgets as necessary
     while (screens.size() > targetLength)
         delete screens.takeLast();
 
-    for (int currentLength = screens.size(); currentLength < targetLength; ++currentLength) {
-        QScreen *qScreen = screenList.at(currentLength);
-        QDesktopScreenWidget *screenWidget = new QDesktopScreenWidget;
+    for (auto currentLength = screens.size(); currentLength < targetLength; ++currentLength) {
+        auto qScreen = screenList.at(currentLength);
+        auto screenWidget = new QDesktopScreenWidget;
         screenWidget->setGeometry(qScreen->geometry());
         QObject::connect(qScreen, SIGNAL(geometryChanged(QRect)),
                          q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
@@ -109,13 +109,13 @@ void QDesktopWidgetPrivate::_q_updateScreens()
     // update the geometry of each screen widget, determine virtual geometry,
     // set the new screen for window handle and emit change signals afterwards.
     QList<int> changedScreens;
-    for (int i = 0; i < screens.length(); i++) {
-        QDesktopScreenWidget *screenWidget = screens.at(i);
-        QScreen *qScreen = screenList.at(i);
-        QWindow *winHandle = screenWidget->windowHandle();
+    for (auto i = 0; i < screens.length(); i++) {
+        auto screenWidget = screens.at(i);
+        auto qScreen = screenList.at(i);
+        auto winHandle = screenWidget->windowHandle();
         if (winHandle && winHandle->screen() != qScreen)
             winHandle->setScreen(qScreen);
-        const QRect screenGeometry = qScreen->geometry();
+        const auto screenGeometry = qScreen->geometry();
         if (screenGeometry != screenWidget->geometry()) {
             screenWidget->setGeometry(screenGeometry);
             changedScreens.push_back(i);
@@ -135,7 +135,7 @@ void QDesktopWidgetPrivate::_q_updateScreens()
 void QDesktopWidgetPrivate::_q_availableGeometryChanged()
 {
     Q_Q(QDesktopWidget);
-    if (QScreen *screen = qobject_cast<QScreen *>(q->sender()))
+    if (auto screen = qobject_cast<QScreen *>(q->sender()))
         emit q->workAreaResized(QGuiApplication::screens().indexOf(screen));
 }
 
@@ -178,7 +178,7 @@ QWidget *QDesktopWidget::screen(int screen)
 
 const QRect QDesktopWidget::availableGeometry(int screenNo) const
 {
-    QList<QScreen *> screens = QGuiApplication::screens();
+    auto screens = QGuiApplication::screens();
     if (screenNo == -1)
         screenNo = 0;
     if (screenNo < 0 || screenNo >= screens.size())
@@ -189,7 +189,7 @@ const QRect QDesktopWidget::availableGeometry(int screenNo) const
 
 const QRect QDesktopWidget::screenGeometry(int screenNo) const
 {
-    QList<QScreen *> screens = QGuiApplication::screens();
+    auto screens = QGuiApplication::screens();
     if (screenNo == -1)
         screenNo = 0;
     if (screenNo < 0 || screenNo >= screens.size())
@@ -203,8 +203,8 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
     if (!w)
         return primaryScreen();
 
-    const QList<QScreen *> allScreens = QGuiApplication::screens();
-    QList<QScreen *> screens = allScreens;
+    const auto allScreens = QGuiApplication::screens();
+    auto screens = allScreens;
     if (screens.isEmpty()) // This should never happen
         return primaryScreen();
 
@@ -212,13 +212,13 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
     if (screens.count() != screens.constFirst()->virtualSiblings().count()) {
         // Find the root widget, get a QScreen from it and use the
         // virtual siblings for checking the window position.
-        const QWidget *root = w;
-        const QWidget *tmp = w;
+        auto root = w;
+        auto tmp = w;
         while ((tmp = tmp->parentWidget()))
             root = tmp;
-        const QWindow *winHandle = root->windowHandle();
+        auto winHandle = root->windowHandle();
         if (winHandle) {
-            const QScreen *winScreen = winHandle->screen();
+            auto winScreen = winHandle->screen();
             if (winScreen)
                 screens = winScreen->virtualSiblings();
         }
@@ -226,15 +226,15 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
 
     // Get the screen number from window position using screen geometry
     // and proper screens.
-    QRect frame = w->frameGeometry();
+    auto frame = w->frameGeometry();
     if (!w->isWindow())
         frame.moveTopLeft(w->mapToGlobal(QPoint(0, 0)));
 
     QScreen *widgetScreen = Q_NULLPTR;
-    int largestArea = 0;
+    auto largestArea = 0;
     foreach (QScreen *screen, screens) {
-        QRect intersected = screen->geometry().intersected(frame);
-        int area = intersected.width() * intersected.height();
+        auto intersected = screen->geometry().intersected(frame);
+        auto area = intersected.width() * intersected.height();
         if (largestArea < area) {
             widgetScreen = screen;
             largestArea = area;
@@ -245,9 +245,9 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
 
 int QDesktopWidget::screenNumber(const QPoint &p) const
 {
-    const QList<QScreen *> screens = QGuiApplication::screens();
+    const auto screens = QGuiApplication::screens();
     if (!screens.isEmpty()) {
-        const QList<QScreen *> primaryScreens = screens.first()->virtualSiblings();
+        const auto primaryScreens = screens.first()->virtualSiblings();
         // Find the screen index on the primary virtual desktop first
         foreach (QScreen *screen, primaryScreens) {
             if (screen->geometry().contains(p))
@@ -258,7 +258,7 @@ int QDesktopWidget::screenNumber(const QPoint &p) const
         // sure in the previous loop. Some other screens may repeat. Find
         // only when there is more than one virtual desktop.
         if (screens.count() != primaryScreens.count()) {
-            for (int i = 1; i < screens.size(); ++i) {
+            for (auto i = 1; i < screens.size(); ++i) {
                 if (screens[i]->geometry().contains(p))
                     return i;
             }

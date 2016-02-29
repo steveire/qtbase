@@ -241,8 +241,8 @@ QAbstractSliderPrivate::~QAbstractSliderPrivate()
 void QAbstractSlider::setRange(int min, int max)
 {
     Q_D(QAbstractSlider);
-    int oldMin = d->minimum;
-    int oldMax = d->maximum;
+    auto oldMin = d->minimum;
+    auto oldMax = d->maximum;
     d->minimum = min;
     d->maximum = qMax(min, max);
     if (oldMin != d->minimum || oldMax != d->maximum) {
@@ -303,7 +303,7 @@ void QAbstractSlider::setOrientation(Qt::Orientation orientation)
 
     d->orientation = orientation;
     if (!testAttribute(Qt::WA_WState_OwnSizePolicy)) {
-        QSizePolicy sp = sizePolicy();
+        auto sp = sizePolicy();
         sp.transpose();
         setSizePolicy(sp);
         setAttribute(Qt::WA_WState_OwnSizePolicy, false);
@@ -461,7 +461,7 @@ bool QAbstractSlider::hasTracking() const
 void QAbstractSlider::setSliderDown(bool down)
 {
     Q_D(QAbstractSlider);
-    bool doEmit = d->pressed != down;
+    auto doEmit = d->pressed != down;
 
     d->pressed = down;
 
@@ -697,11 +697,11 @@ void QAbstractSlider::sliderChange(SliderChange)
 bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::KeyboardModifiers modifiers, int delta)
 {
     Q_Q(QAbstractSlider);
-    int stepsToScroll = 0;
+    auto stepsToScroll = 0;
     // in Qt scrolling to the right gives negative values.
     if (orientation == Qt::Horizontal)
         delta = -delta;
-    qreal offset = qreal(delta) / 120;
+    auto offset = qreal(delta) / 120;
 
     if ((modifiers & Qt::ControlModifier) || (modifiers & Qt::ShiftModifier)) {
         // Scroll one page regardless of delta:
@@ -711,7 +711,7 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
         // Calculate how many lines to scroll. Depending on what delta is (and
         // offset), we might end up with a fraction (e.g. scroll 1.3 lines). We can
         // only scroll whole lines, so we keep the reminder until next event.
-        qreal stepsToScrollF =
+        auto stepsToScrollF =
 #ifndef QT_NO_WHEELEVENT
                 QApplication::wheelScrollLines() *
 #endif
@@ -738,7 +738,7 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
     if (invertedControls)
         stepsToScroll = -stepsToScroll;
 
-    int prevValue = value;
+    auto prevValue = value;
     position = bound(overflowSafeAdd(stepsToScroll)); // value will be updated by triggerAction()
     q->triggerAction(QAbstractSlider::SliderMove);
 
@@ -757,7 +757,7 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
 {
     Q_D(QAbstractSlider);
     e->ignore();
-    int delta = e->delta();
+    auto delta = e->delta();
     if (d->scrollByDelta(e->orientation(), e->modifiers(), delta))
         e->accept();
 }
@@ -770,7 +770,7 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
 void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
 {
     Q_D(QAbstractSlider);
-    SliderAction action = SliderNoAction;
+    auto action = SliderNoAction;
 #ifdef QT_KEYPAD_NAVIGATION
     if (ev->isAutoRepeat()) {
         if (!d->firstRepeat.isValid())

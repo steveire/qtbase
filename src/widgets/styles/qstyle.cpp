@@ -68,8 +68,8 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
         return 1;
     }
 
-    int count = 0;
-    for (int i = 0; i < MaxBits; ++i) {
+    auto count = 0;
+    for (auto i = 0; i < MaxBits; ++i) {
         if (uint bit = (controls & (0x1 << i)))
             array[count++] = QSizePolicy::ControlType(bit);
     }
@@ -598,7 +598,7 @@ void QStyle::drawItemText(QPainter *painter, const QRect &rect, int alignment, c
             painter->fillRect(br, QBrush(painter->background().color(), Qt::Dense5Pattern));
             return;
         } else if (proxy()->styleHint(SH_EtchDisabledText)) {
-            QPen pen = painter->pen();
+            auto pen = painter->pen();
             painter->setPen(pal.light().color());
             painter->drawText(rect.adjusted(1, 1, 1, 1), alignment, text);
             painter->setPen(pen);
@@ -622,9 +622,9 @@ void QStyle::drawItemText(QPainter *painter, const QRect &rect, int alignment, c
 void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
                             const QPixmap &pixmap) const
 {
-    qreal scale = pixmap.devicePixelRatio();
-    QRect aligned = alignedRect(QApplication::layoutDirection(), QFlag(alignment), pixmap.size() / scale, rect);
-    QRect inter = aligned.intersected(rect);
+    auto scale = pixmap.devicePixelRatio();
+    auto aligned = alignedRect(QApplication::layoutDirection(), QFlag(alignment), pixmap.size() / scale, rect);
+    auto inter = aligned.intersected(rect);
 
     painter->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(), inter.y() - aligned.y(), inter.width() * scale, inter.height() *scale);
 }
@@ -2136,7 +2136,7 @@ QRect QStyle::visualRect(Qt::LayoutDirection direction, const QRect &boundingRec
 {
     if (direction == Qt::LeftToRight)
         return logicalRect;
-    QRect rect = logicalRect;
+    auto rect = logicalRect;
     rect.translate(2 * (boundingRect.right() - logicalRect.right()) +
                    logicalRect.width() - boundingRect.width(), 0);
     return rect;
@@ -2165,10 +2165,10 @@ QPoint QStyle::visualPos(Qt::LayoutDirection direction, const QRect &boundingRec
 QRect QStyle::alignedRect(Qt::LayoutDirection direction, Qt::Alignment alignment, const QSize &size, const QRect &rectangle)
 {
     alignment = visualAlignment(direction, alignment);
-    int x = rectangle.x();
-    int y = rectangle.y();
-    int w = size.width();
-    int h = size.height();
+    auto x = rectangle.x();
+    auto y = rectangle.y();
+    auto w = size.width();
+    auto h = size.height();
     if ((alignment & Qt::AlignVCenter) == Qt::AlignVCenter)
         y += rectangle.size().height()/2 - h/2;
     else if ((alignment & Qt::AlignBottom) == Qt::AlignBottom)
@@ -2222,13 +2222,13 @@ int QStyle::sliderPositionFromValue(int min, int max, int logicalValue, int span
     uint p = upsideDown ? max - logicalValue : logicalValue - min;
 
     if (range > (uint)INT_MAX/4096) {
-        double dpos = (double(p))/(double(range)/span);
+        auto dpos = (double(p))/(double(range)/span);
         return int(dpos);
     } else if (range > (uint)span) {
         return (2 * p * span + range) / (2*range);
     } else {
-        uint div = span / range;
-        uint mod = span % range;
+        auto div = span / range;
+        auto mod = span % range;
         return p * div + (2 * p * mod + range) / (2 * range);
     }
     // equiv. to (p * span) / range + 0.5
@@ -2267,8 +2267,8 @@ int QStyle::sliderValueFromPosition(int min, int max, int pos, int span, bool up
         int tmp = (2 * pos * range + span) / (2 * span);
         return upsideDown ? max - tmp : tmp + min;
     } else {
-        uint div = range / span;
-        uint mod = range % span;
+        auto div = range / span;
+        auto mod = range % span;
         int tmp = pos * div + (2 * pos * mod + span) / (2 * span);
         return upsideDown ? max - tmp : tmp + min;
     }
@@ -2290,7 +2290,7 @@ int QStyle::sliderValueFromPosition(int min, int max, int pos, int span, bool up
  */
 QPalette QStyle::standardPalette() const
 {
-    QColor background = QColor(0xd4, 0xd0, 0xc8); // win 2000 grey
+    auto background = QColor(0xd4, 0xd0, 0xc8); // win 2000 grey
 
     QColor light(background.lighter());
     QColor dark(background.darker());
@@ -2364,13 +2364,13 @@ int QStyle::combinedLayoutSpacing(QSizePolicy::ControlTypes controls1,
 {
     QSizePolicy::ControlType array1[MaxBits];
     QSizePolicy::ControlType array2[MaxBits];
-    int count1 = unpackControlTypes(controls1, array1);
-    int count2 = unpackControlTypes(controls2, array2);
-    int result = -1;
+    auto count1 = unpackControlTypes(controls1, array1);
+    auto count2 = unpackControlTypes(controls2, array2);
+    auto result = -1;
 
-    for (int i = 0; i < count1; ++i) {
-        for (int j = 0; j < count2; ++j) {
-            int spacing = layoutSpacing(array1[i], array2[j], orientation, option, widget);
+    for (auto i = 0; i < count1; ++i) {
+        for (auto j = 0; j < count2; ++j) {
+            auto spacing = layoutSpacing(array1[i], array2[j], orientation, option, widget);
             result = qMax(spacing, result);
         }
     }

@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 bool QGraphicsGridLayoutEngineItem::isHidden() const
 {
-    if (QGraphicsItem *item = q_layoutItem->graphicsItem())
+    if (auto item = q_layoutItem->graphicsItem())
         return QGraphicsItemPrivate::get(item)->explicitlyHidden;
     return false;
 }
@@ -88,7 +88,7 @@ Qt::Orientation QGraphicsGridLayoutEngineItem::dynamicConstraintOrientation() co
 
 void QGraphicsGridLayoutEngine::setAlignment(QGraphicsLayoutItem *graphicsLayoutItem, Qt::Alignment alignment)
 {
-    if (QGraphicsGridLayoutEngineItem *gridEngineItem = findLayoutItem(graphicsLayoutItem)) {
+    if (auto gridEngineItem = findLayoutItem(graphicsLayoutItem)) {
         gridEngineItem->setAlignment(alignment);
         invalidate();
     }
@@ -96,7 +96,7 @@ void QGraphicsGridLayoutEngine::setAlignment(QGraphicsLayoutItem *graphicsLayout
 
 Qt::Alignment QGraphicsGridLayoutEngine::alignment(QGraphicsLayoutItem *graphicsLayoutItem) const
 {
-    if (QGraphicsGridLayoutEngineItem *gridEngineItem = findLayoutItem(graphicsLayoutItem))
+    if (auto gridEngineItem = findLayoutItem(graphicsLayoutItem))
         return gridEngineItem->alignment();
     return 0;
 }
@@ -107,13 +107,13 @@ void QGraphicsGridLayoutEngine::setStretchFactor(QGraphicsLayoutItem *layoutItem
 {
     Q_ASSERT(stretch >= 0);
 
-    if (QGraphicsGridLayoutEngineItem *item = findLayoutItem(layoutItem))
+    if (auto item = findLayoutItem(layoutItem))
         item->setStretchFactor(stretch, orientation);
 }
 
 int QGraphicsGridLayoutEngine::stretchFactor(QGraphicsLayoutItem *layoutItem, Qt::Orientation orientation) const
 {
-    if (QGraphicsGridLayoutEngineItem *item = findLayoutItem(layoutItem))
+    if (auto item = findLayoutItem(layoutItem))
         return item->stretchFactor(orientation);
     return 0;
 }

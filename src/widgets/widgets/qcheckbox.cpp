@@ -281,10 +281,10 @@ QSize QCheckBox::sizeHint() const
     if (d->sizeHint.isValid())
         return d->sizeHint;
     ensurePolished();
-    QFontMetrics fm = fontMetrics();
+    auto fm = fontMetrics();
     QStyleOptionButton opt;
     initStyleOption(&opt);
-    QSize sz = style()->itemTextRect(fm, QRect(), Qt::TextShowMnemonic, false,
+    auto sz = style()->itemTextRect(fm, QRect(), Qt::TextShowMnemonic, false,
                                      text()).size();
     if (!opt.icon.isNull())
         sz = QSize(sz.width() + opt.iconSize.width() + 4, qMax(sz.height(), opt.iconSize.height()));
@@ -320,7 +320,7 @@ void QCheckBox::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QCheckBox);
     if (testAttribute(Qt::WA_Hover)) {
-        bool hit = false;
+        auto hit = false;
         if (underMouse())
             hit = hitButton(e->pos());
 
@@ -351,7 +351,7 @@ void QCheckBox::checkStateSet()
 {
     Q_D(QCheckBox);
     d->noChange = false;
-    Qt::CheckState state = checkState();
+    auto state = checkState();
     if ((uint)state != d->publishedState) {
         d->publishedState = state;
         emit stateChanged(state);

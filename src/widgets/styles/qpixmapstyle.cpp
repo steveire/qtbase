@@ -130,16 +130,16 @@ void QPixmapStyle::polish(QWidget *widget)
 
     // Don't fill the interior of the QTextEdit
     if (qobject_cast<QTextEdit*>(widget)) {
-        QPalette p = widget->palette();
+        auto p = widget->palette();
         p.setBrush(QPalette::Base, Qt::NoBrush);
         widget->setPalette(p);
     }
 
-    if (QProgressBar *pb = qobject_cast<QProgressBar*>(widget)) {
+    if (auto pb = qobject_cast<QProgressBar*>(widget)) {
         // Center the text in the progress bar
         pb->setAlignment(Qt::AlignCenter);
         // Change the font size if needed, as it's used to compute the minimum size
-        QFont font = pb->font();
+        auto font = pb->font();
         font.setPixelSize(d->descriptors.value(PB_HBackground).size.height()/2);
         pb->setFont(font);
     }
@@ -147,14 +147,14 @@ void QPixmapStyle::polish(QWidget *widget)
     if (qobject_cast<QSlider*>(widget))
         widget->installEventFilter(this);
 
-    if (QComboBox *cb = qobject_cast<QComboBox*>(widget)) {
+    if (auto cb = qobject_cast<QComboBox*>(widget)) {
         widget->installEventFilter(this);
         // NOTE: This will break if the private API of QComboBox changes drastically
         // Make sure the popup is created so we can change the frame style
-        QAbstractItemView *list = cb->view();
+        auto list = cb->view();
         list->setProperty("_pixmap_combobox_list", true);
         list->setItemDelegate(new QStyledItemDelegate(list));
-        QPalette p = list->palette();
+        auto p = list->palette();
         p.setBrush(QPalette::Active, QPalette::Base, QBrush(Qt::transparent) );
         p.setBrush(QPalette::Active, QPalette::AlternateBase, QBrush(Qt::transparent) );
         p.setBrush(QPalette::Inactive, QPalette::Base, QBrush(Qt::transparent) );
@@ -163,7 +163,7 @@ void QPixmapStyle::polish(QWidget *widget)
         p.setBrush(QPalette::Disabled, QPalette::AlternateBase, QBrush(Qt::transparent) );
         list->setPalette(p);
 
-        QFrame *frame = qobject_cast<QFrame*>(list->parent());
+        auto frame = qobject_cast<QFrame*>(list->parent());
         if (frame) {
             const QPixmapStyleDescriptor &desc = d->descriptors.value(DD_PopupDown);
             const QPixmapStylePixmap &pix = d->pixmaps.value(DD_ItemSeparator);
@@ -181,9 +181,9 @@ void QPixmapStyle::polish(QWidget *widget)
     if (qstrcmp(widget->metaObject()->className(),"QComboBoxPrivateContainer") == 0)
         widget->installEventFilter(this);
 
-    if (QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget)) {
+    if (auto scrollArea = qobject_cast<QAbstractScrollArea*>(widget)) {
         scrollArea->viewport()->setAutoFillBackground(false);
-        if (QAbstractItemView *view = qobject_cast<QAbstractItemView*>(scrollArea)) {
+        if (auto view = qobject_cast<QAbstractItemView*>(scrollArea)) {
             view->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
             view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
         }
@@ -217,7 +217,7 @@ void QPixmapStyle::unpolish(QWidget *widget)
     if (qstrcmp(widget->metaObject()->className(),"QComboBoxPrivateContainer") == 0)
         widget->removeEventFilter(this);
 
-    if (QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget))
+    if (auto scrollArea = qobject_cast<QAbstractScrollArea*>(widget))
         QScroller::ungrabGesture(scrollArea->viewport());
 
     QCommonStyle::unpolish(widget);
@@ -285,10 +285,10 @@ void QPixmapStyle::drawControl(ControlElement element, const QStyleOption *optio
         if (qstrcmp(widget->metaObject()->className(),"QComboBoxPrivateContainer") == 0) {
             const QPixmapStyleDescriptor &desc = d->descriptors.value(DD_PopupDown);
             const QPixmapStylePixmap &pix = d->pixmaps.value(DD_ItemSeparator);
-            QRect rect = option->rect;
+            auto rect = option->rect;
             rect.adjust(-pix.margins.left(), -desc.margins.top(),
                         pix.margins.right(), desc.margins.bottom());
-            bool up = widget->property("_pixmapstyle_combobox_up").toBool();
+            auto up = widget->property("_pixmapstyle_combobox_up").toBool();
             drawCachedPixmap(up ? DD_PopupUp : DD_PopupDown, rect, painter);
         }
         else {
@@ -357,7 +357,7 @@ QRect QPixmapStyle::subElementRect(SubElement element, const QStyleOption *optio
     switch (element) {
     case SE_LineEditContents:
     {
-        QRect rect = QCommonStyle::subElementRect(element, option, widget);
+        auto rect = QCommonStyle::subElementRect(element, option, widget);
         const QPixmapStyleDescriptor &desc = d->descriptors.value(LE_Enabled);
         rect.adjust(desc.margins.left(), desc.margins.top(),
                     -desc.margins.right(), -desc.margins.bottom());
@@ -427,9 +427,9 @@ int QPixmapStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
                     qMax(pix.margins.top(), pix.margins.bottom()));
     }
     case PM_SliderThickness:
-        if (const QStyleOptionSlider *slider =
+        if (auto slider =
                     qstyleoption_cast<const QStyleOptionSlider*>(option)) {
-            const QPixmapStyleDescriptor desc =
+            const auto desc =
                 d->descriptors.value(slider->orientation == Qt::Horizontal
                                      ? SG_HEnabled : SG_VEnabled);
             return slider->orientation == Qt::Horizontal
@@ -437,9 +437,9 @@ int QPixmapStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
         }
         break;
     case PM_SliderControlThickness:
-        if (const QStyleOptionSlider *slider =
+        if (auto slider =
                     qstyleoption_cast<const QStyleOptionSlider*>(option)) {
-            const QPixmapStylePixmap pix =
+            const auto pix =
                     d->pixmaps.value(slider->orientation == Qt::Horizontal
                                      ? SH_HEnabled : SH_VEnabled);
             return slider->orientation == Qt::Horizontal
@@ -447,9 +447,9 @@ int QPixmapStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
         }
         break;
     case PM_SliderLength:
-        if (const QStyleOptionSlider *slider =
+        if (auto slider =
                     qstyleoption_cast<const QStyleOptionSlider*>(option)) {
-            const QPixmapStylePixmap pix =
+            const auto pix =
                     d->pixmaps.value(slider->orientation == Qt::Horizontal
                                      ? SH_HEnabled : SH_VEnabled);
             return slider->orientation == Qt::Horizontal
@@ -457,9 +457,9 @@ int QPixmapStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
         }
         break;
     case PM_ScrollBarExtent:
-        if (const QStyleOptionSlider *slider =
+        if (auto slider =
                     qstyleoption_cast<const QStyleOptionSlider*>(option)) {
-            const QPixmapStyleDescriptor desc =
+            const auto desc =
                     d->descriptors.value(slider->orientation == Qt::Horizontal
                                          ? SB_Horizontal : SB_Vertical);
             return slider->orientation == Qt::Horizontal
@@ -499,7 +499,7 @@ QStyle::SubControl QPixmapStyle::hitTestComplexControl(QStyle::ComplexControl co
                                                        const QPoint &pos,
                                                        const QWidget *widget) const
 {
-    const SubControl sc = QCommonStyle::hitTestComplexControl(control, option, pos, widget);
+    const auto sc = QCommonStyle::hitTestComplexControl(control, option, pos, widget);
     if (control == CC_ScrollBar) {
         if (sc == SC_ScrollBarAddLine)
             return SC_ScrollBarAddPage;
@@ -517,7 +517,7 @@ bool QPixmapStyle::eventFilter(QObject *watched, QEvent *event)
 {
     Q_D(QPixmapStyle);
 
-    if (QSlider *slider = qobject_cast<QSlider*>(watched)) {
+    if (auto slider = qobject_cast<QSlider*>(watched)) {
         switch (event->type()) {
         case QEvent::MouseButtonPress:
         case QEvent::MouseButtonRelease:
@@ -528,7 +528,7 @@ bool QPixmapStyle::eventFilter(QObject *watched, QEvent *event)
         }
     }
 
-    if (QComboBox *comboBox = qobject_cast<QComboBox*>(watched)) {
+    if (auto comboBox = qobject_cast<QComboBox*>(watched)) {
         switch (event->type()) {
         case QEvent::MouseButtonPress:
             event->ignore();
@@ -551,12 +551,12 @@ bool QPixmapStyle::eventFilter(QObject *watched, QEvent *event)
 
     if (qstrcmp(watched->metaObject()->className(),"QComboBoxPrivateContainer") == 0) {
         if (event->type() == QEvent::Show) {
-            QWidget *widget = qobject_cast<QWidget*>(watched);
-            int yPopup = widget->geometry().top();
-            int yCombo = widget->parentWidget()->mapToGlobal(QPoint(0, 0)).y();
-            QRect geom = widget->geometry();
+            auto widget = qobject_cast<QWidget*>(watched);
+            auto yPopup = widget->geometry().top();
+            auto yCombo = widget->parentWidget()->mapToGlobal(QPoint(0, 0)).y();
+            auto geom = widget->geometry();
             const QPixmapStyleDescriptor &desc = d->descriptors.value(DD_ButtonEnabled);
-            const bool up = yPopup < yCombo;
+            const auto up = yPopup < yCombo;
             geom.moveTop(geom.top() + (up ? desc.margins.top() : -desc.margins.bottom()));
             widget->setGeometry(geom);
             widget->setProperty("_pixmapstyle_combobox_up", up);
@@ -627,7 +627,7 @@ void QPixmapStyle::drawCachedPixmap(QPixmapStyle::ControlDescriptor control, con
     if (!d->descriptors.contains(control))
         return;
     const QPixmapStyleDescriptor &desc = d->descriptors.value(control);
-    const QPixmap pix = d->getCachedPixmap(control, desc, rect.size());
+    const auto pix = d->getCachedPixmap(control, desc, rect.size());
     Q_ASSERT(!pix.isNull());
     p->drawPixmap(rect, pix);
 }
@@ -685,7 +685,7 @@ void QPixmapStyle::drawPushButton(const QStyleOption *option,
     const bool pressed = option->state & State_Sunken;
     const bool enabled = option->state & State_Enabled;
 
-    ControlDescriptor control = PB_Enabled;
+    auto control = PB_Enabled;
     if (enabled)
         control = pressed ? PB_Pressed : (checked ? PB_Checked : PB_Enabled);
     else
@@ -702,7 +702,7 @@ void QPixmapStyle::drawLineEdit(const QStyleOption *option,
 
     const bool enabled = option->state & State_Enabled;
     const bool focused = option->state & State_HasFocus;
-    ControlDescriptor control = enabled ? (focused ? LE_Focused : LE_Enabled) : LE_Disabled;
+    auto control = enabled ? (focused ? LE_Focused : LE_Enabled) : LE_Disabled;
     drawCachedPixmap(control, option->rect, painter);
 }
 
@@ -711,7 +711,7 @@ void QPixmapStyle::drawTextEdit(const QStyleOption *option,
 {
     const bool enabled = option->state & State_Enabled;
     const bool focused = option->state & State_HasFocus;
-    ControlDescriptor control = enabled ? (focused ? TE_Focused : TE_Enabled) : TE_Disabled;
+    auto control = enabled ? (focused ? TE_Focused : TE_Enabled) : TE_Disabled;
     drawCachedPixmap(control, option->rect, painter);
 }
 
@@ -720,7 +720,7 @@ void QPixmapStyle::drawCheckBox(const QStyleOption *option,
 {
     Q_D(const QPixmapStyle);
 
-    const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton*>(option);
+    auto button = qstyleoption_cast<const QStyleOptionButton*>(option);
 
     const bool down = button->state & State_Sunken;
     const bool enabled = button->state & State_Enabled;
@@ -739,7 +739,7 @@ void QPixmapStyle::drawRadioButton(const QStyleOption *option,
 {
     Q_D(const QPixmapStyle);
 
-    const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton*>(option);
+    auto button = qstyleoption_cast<const QStyleOptionButton*>(option);
 
     const bool down = button->state & State_Sunken;
     const bool enabled = button->state & State_Enabled;
@@ -758,16 +758,16 @@ void QPixmapStyle::drawPanelItemViewItem(const QStyleOption *option, QPainter *p
 {
     Q_D(const QPixmapStyle);
 
-    ControlPixmap cp = ID_Separator;
-    ControlDescriptor cd = ID_Selected;
+    auto cp = ID_Separator;
+    auto cd = ID_Selected;
 
     if (widget && widget->property("_pixmap_combobox_list").toBool()) {
         cp = DD_ItemSeparator;
         cd = DD_ItemSelected;
     }
 
-    QPixmap pix = d->pixmaps.value(cp).pixmap;
-    QRect rect = option->rect;
+    auto pix = d->pixmaps.value(cp).pixmap;
+    auto rect = option->rect;
     rect.setBottom(rect.top() + pix.height()-1);
     painter->drawPixmap(rect, pix);
     if (option->state & QStyle::State_Selected) {
@@ -780,8 +780,8 @@ void QPixmapStyle::drawPanelItemViewItem(const QStyleOption *option, QPainter *p
 void QPixmapStyle::drawProgressBarBackground(const QStyleOption *option,
                                              QPainter *painter, const QWidget *) const
 {
-    bool vertical = false;
-    if (const QStyleOptionProgressBar *pb =
+    auto vertical = false;
+    if (auto pb =
             qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
         vertical = pb->orientation == Qt::Vertical;
     }
@@ -791,11 +791,11 @@ void QPixmapStyle::drawProgressBarBackground(const QStyleOption *option,
 void QPixmapStyle::drawProgressBarLabel(const QStyleOption *option,
                                         QPainter *painter, const QWidget *) const
 {
-    if (const QStyleOptionProgressBar *pb =
+    if (auto pb =
                     qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
-        const bool vertical = pb->orientation == Qt::Vertical;
+        const auto vertical = pb->orientation == Qt::Vertical;
         if (!vertical) {
-            QPalette::ColorRole textRole = QPalette::ButtonText;
+            auto textRole = QPalette::ButtonText;
             proxy()->drawItemText(painter, pb->rect,
                                   Qt::AlignCenter | Qt::TextSingleLine, pb->palette,
                                   pb->state & State_Enabled, pb->text, textRole);
@@ -806,9 +806,9 @@ void QPixmapStyle::drawProgressBarLabel(const QStyleOption *option,
 void QPixmapStyle::drawProgressBarFill(const QStyleOption *option,
                                        QPainter *painter, const QWidget *) const
 {
-    const QStyleOptionProgressBar *pbar =
+    auto pbar =
                 qstyleoption_cast<const QStyleOptionProgressBar*>(option);
-    const bool vertical = pbar->orientation == Qt::Vertical;
+    const auto vertical = pbar->orientation == Qt::Vertical;
     const bool flip = (pbar->direction == Qt::RightToLeft) ^ pbar->invertedAppearance;
 
     if (pbar->progress == pbar->maximum) {
@@ -817,11 +817,11 @@ void QPixmapStyle::drawProgressBarFill(const QStyleOption *option,
     } else {
         if (pbar->progress == 0)
             return;
-        const int maximum = pbar->maximum;
-        const qreal ratio = qreal(vertical?option->rect.height():option->rect.width())/maximum;
+        const auto maximum = pbar->maximum;
+        const auto ratio = qreal(vertical?option->rect.height():option->rect.width())/maximum;
         const int progress = pbar->progress*ratio;
 
-        QRect optRect = option->rect;
+        auto optRect = option->rect;
         if (vertical) {
             if (flip)
                 optRect.setBottom(optRect.top()+progress-1);
@@ -843,17 +843,17 @@ void QPixmapStyle::drawSlider(const QStyleOptionComplex *option,
 {
     Q_D(const QPixmapStyle);
 
-    const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider*>(option);
+    auto slider = qstyleoption_cast<const QStyleOptionSlider*>(option);
     if (!slider)
         return;
 
     const bool enabled = option->state & State_Enabled;
     const bool pressed = option->state & State_Sunken;
-    const Qt::Orientation orient = slider->orientation;
+    const auto orient = slider->orientation;
 
-    const QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
+    const auto handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
     if (option->subControls & SC_SliderGroove) {
-        QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
+        auto groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
         if (groove.isValid()) {
             // Draw the background
             ControlDescriptor control;
@@ -872,7 +872,7 @@ void QPixmapStyle::drawSlider(const QStyleOptionComplex *option,
                                   : SG_VActiveDisabled;
             }
             const QPixmapStyleDescriptor &desc = d->descriptors.value(control);
-            const QPixmap pix = d->getCachedPixmap(control, desc, groove.size());
+            const auto pix = d->getCachedPixmap(control, desc, groove.size());
             if (!pix.isNull()) {
                 groove.setRight(orient == Qt::Horizontal
                                ? handle.center().x() : handle.center().y());
@@ -898,32 +898,32 @@ void QPixmapStyle::drawComboBox(const QStyleOptionComplex *option,
     Q_D(const QPixmapStyle);
 
     const bool enabled = option->state & State_Enabled;
-    const bool pressed = widget->property("_pixmapstyle_combobox_pressed").toBool();
+    const auto pressed = widget->property("_pixmapstyle_combobox_pressed").toBool();
     const bool opened = option->state & State_On;
 
-    ControlDescriptor control =
+    auto control =
         enabled ? (pressed ? DD_ButtonPressed : DD_ButtonEnabled) : DD_ButtonDisabled;
     drawCachedPixmap(control, option->rect, painter);
 
-    ControlPixmap cp = enabled ? (opened ? DD_ArrowOpen
+    auto cp = enabled ? (opened ? DD_ArrowOpen
                                     : (pressed ? DD_ArrowPressed : DD_ArrowEnabled))
                                     : DD_ArrowDisabled;
-    QPixmapStylePixmap pix = d->pixmaps.value(cp);
-    QRect rect = comboBoxSubControlRect(option, SC_ComboBoxArrow, widget);
+    auto pix = d->pixmaps.value(cp);
+    auto rect = comboBoxSubControlRect(option, SC_ComboBoxArrow, widget);
     painter->drawPixmap(rect, pix.pixmap);
 }
 
 void QPixmapStyle::drawScrollBar(const QStyleOptionComplex *option,
                                  QPainter *painter, const QWidget *widget) const
 {
-    if (const QStyleOptionSlider *slider =
+    if (auto slider =
                     qstyleoption_cast<const QStyleOptionSlider*>(option)) {
         // Do not draw the scrollbar
         if (slider->minimum == slider->maximum)
             return;
 
-        QRect rect = scrollBarSubControlRect(option, SC_ScrollBarSlider, widget);
-        ControlDescriptor control = slider->orientation == Qt::Horizontal
+        auto rect = scrollBarSubControlRect(option, SC_ScrollBarSlider, widget);
+        auto control = slider->orientation == Qt::Horizontal
                 ? SB_Horizontal : SB_Vertical;
         drawCachedPixmap(control, rect, painter);
     }
@@ -936,10 +936,10 @@ QSize QPixmapStyle::pushButtonSizeFromContents(const QStyleOption *option,
     Q_D(const QPixmapStyle);
 
     const QPixmapStyleDescriptor &desc = d->descriptors.value(PB_Enabled);
-    const int bm = proxy()->pixelMetric(PM_ButtonMargin, option, widget);
+    const auto bm = proxy()->pixelMetric(PM_ButtonMargin, option, widget);
 
-    int w = contentsSize.width();
-    int h = contentsSize.height();
+    auto w = contentsSize.width();
+    auto h = contentsSize.height();
     w += desc.margins.left() + desc.margins.right() + bm;
     h += desc.margins.top() + desc.margins.bottom() + bm;
 
@@ -952,10 +952,10 @@ QSize QPixmapStyle::lineEditSizeFromContents(const QStyleOption *,
     Q_D(const QPixmapStyle);
 
     const QPixmapStyleDescriptor &desc = d->descriptors.value(LE_Enabled);
-    const int border = 2 * proxy()->pixelMetric(PM_DefaultFrameWidth);
+    const auto border = 2 * proxy()->pixelMetric(PM_DefaultFrameWidth);
 
-    int w = contentsSize.width() + border + desc.margins.left() + desc.margins.right();
-    int h = contentsSize.height() + border + desc.margins.top() + desc.margins.bottom();
+    auto w = contentsSize.width() + border + desc.margins.left() + desc.margins.right();
+    auto h = contentsSize.height() + border + desc.margins.top() + desc.margins.bottom();
 
     return d->computeSize(desc, w, h);
 }
@@ -966,17 +966,17 @@ QSize QPixmapStyle::progressBarSizeFromContents(const QStyleOption *option,
 {
     Q_D(const QPixmapStyle);
 
-    bool vertical = false;
-    if (const QStyleOptionProgressBar *pb =
+    auto vertical = false;
+    if (auto pb =
                     qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
         vertical = pb->orientation == Qt::Vertical;
     }
-    QSize result = QCommonStyle::sizeFromContents(CT_Slider, option, contentsSize, widget);
+    auto result = QCommonStyle::sizeFromContents(CT_Slider, option, contentsSize, widget);
     if (vertical) {
-        const QPixmapStyleDescriptor desc = d->descriptors.value(PB_VBackground);
+        const auto desc = d->descriptors.value(PB_VBackground);
         return QSize(desc.size.height(), result.height());
     } else {
-        const QPixmapStyleDescriptor desc = d->descriptors.value(PB_HBackground);
+        const auto desc = d->descriptors.value(PB_HBackground);
         return QSize(result.width(), desc.size.height());
     }
 }
@@ -987,13 +987,13 @@ QSize QPixmapStyle::sliderSizeFromContents(const QStyleOption *option,
 {
     Q_D(const QPixmapStyle);
 
-    const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider*>(option);
+    auto slider = qstyleoption_cast<const QStyleOptionSlider*>(option);
     if (!slider)
         return QSize();
 
-    QSize result = QCommonStyle::sizeFromContents(CT_Slider, option, contentsSize, widget);
+    auto result = QCommonStyle::sizeFromContents(CT_Slider, option, contentsSize, widget);
 
-    const QPixmapStyleDescriptor desc = d->descriptors.value(slider->orientation == Qt::Horizontal
+    const auto desc = d->descriptors.value(slider->orientation == Qt::Horizontal
                                                 ? SG_HEnabled : SG_VEnabled);
 
     if (slider->orientation == Qt::Horizontal)
@@ -1010,7 +1010,7 @@ QSize QPixmapStyle::comboBoxSizeFromContents(const QStyleOption *option,
 
     const QPixmapStyleDescriptor &desc = d->descriptors.value(DD_ButtonEnabled);
 
-    QSize result = QCommonStyle::sizeFromContents(CT_ComboBox, option, contentsSize, widget);
+    auto result = QCommonStyle::sizeFromContents(CT_ComboBox, option, contentsSize, widget);
     return d->computeSize(desc, result.width(), result.height());
 }
 
@@ -1020,10 +1020,10 @@ QSize QPixmapStyle::itemViewSizeFromContents(const QStyleOption *option,
 {
     Q_D(const QPixmapStyle);
 
-    QSize size = QCommonStyle::sizeFromContents(CT_ItemViewItem, option, contentsSize, widget);
+    auto size = QCommonStyle::sizeFromContents(CT_ItemViewItem, option, contentsSize, widget);
 
-    ControlPixmap cp = ID_Separator;
-    ControlDescriptor cd = ID_Selected;
+    auto cp = ID_Separator;
+    auto cd = ID_Selected;
     if (widget && widget->property("_pixmap_combobox_list").toBool()) {
         cp = DD_ItemSeparator;
         cd = DD_ItemSelected;
@@ -1041,7 +1041,7 @@ QRect QPixmapStyle::comboBoxSubControlRect(const QStyleOptionComplex *option,
 {
     Q_D(const QPixmapStyle);
 
-    QRect r = option->rect; // Default size
+    auto r = option->rect; // Default size
     const QPixmapStylePixmap &pix = d->pixmaps.value(DD_ArrowEnabled);
     const QPixmapStyleDescriptor &desc = d->descriptors.value(DD_ButtonEnabled);
 
@@ -1067,17 +1067,17 @@ QRect QPixmapStyle::comboBoxSubControlRect(const QStyleOptionComplex *option,
 QRect QPixmapStyle::scrollBarSubControlRect(const QStyleOptionComplex *option,
                                             QStyle::SubControl sc, const QWidget *) const
 {
-    if (const QStyleOptionSlider *slider =
+    if (auto slider =
                 qstyleoption_cast<const QStyleOptionSlider*>(option)) {
-        int length = (slider->orientation == Qt::Horizontal)
+        auto length = (slider->orientation == Qt::Horizontal)
                 ? slider->rect.width() : slider->rect.height();
-        int page = length * slider->pageStep
+        auto page = length * slider->pageStep
                 / (slider->maximum - slider->minimum + slider->pageStep);
-        int pos = length * slider->sliderValue
+        auto pos = length * slider->sliderValue
                 / (slider->maximum - slider->minimum + slider->pageStep);
         pos = qMin(pos+page, length) - page;
 
-        QRect rect = slider->rect;
+        auto rect = slider->rect;
 
         if (slider->orientation == Qt::Horizontal) {
             switch (sc) {
@@ -1123,7 +1123,7 @@ QPixmap QPixmapStylePrivate::scale(int w, int h, const QPixmap &pixmap, const QP
         const QColor transparent(0, 0, 0, 0);
         result.fill( transparent );
         QPainter p( &result );
-        const QMargins margins = desc.margins;
+        const auto margins = desc.margins;
         qDrawBorderPixmap(&p, result.rect(), margins, pixmap,
                           pixmap.rect(), margins, desc.tileRules);
     }

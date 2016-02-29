@@ -201,7 +201,7 @@ QButtonGroup::QButtonGroup(QObject *parent)
 QButtonGroup::~QButtonGroup()
 {
     Q_D(QButtonGroup);
-    for (int i = 0; i < d->buttonList.count(); ++i)
+    for (auto i = 0; i < d->buttonList.count(); ++i)
         d->buttonList.at(i)->d_func()->group = 0;
 }
 
@@ -222,12 +222,12 @@ void QButtonGroup::setExclusive(bool exclusive)
 void QButtonGroup::addButton(QAbstractButton *button, int id)
 {
     Q_D(QButtonGroup);
-    if (QButtonGroup *previous = button->d_func()->group)
+    if (auto previous = button->d_func()->group)
         previous->removeButton(button);
     button->d_func()->group = this;
     d->buttonList.append(button);
     if (id == -1) {
-        const QHash<QAbstractButton*, int>::const_iterator it
+        const auto it
                 = std::min_element(d->mapping.cbegin(), d->mapping.cend());
         if (it == d->mapping.cend())
             d->mapping[button] = -2;
@@ -298,7 +298,7 @@ void QButtonGroupPrivate::detectCheckedButton()
     checkedButton = 0;
     if (exclusive)
         return;
-    for (int i = 0; i < buttonList.count(); i++) {
+    for (auto i = 0; i < buttonList.count(); i++) {
         if (buttonList.at(i) != previous && buttonList.at(i)->isChecked()) {
             checkedButton = buttonList.at(i);
             return;
@@ -315,10 +315,10 @@ QList<QAbstractButton *>QAbstractButtonPrivate::queryButtonList() const
         return group->d_func()->buttonList;
 #endif
 
-    QList<QAbstractButton*>candidates = parent->findChildren<QAbstractButton *>();
+    auto candidates = parent->findChildren<QAbstractButton *>();
     if (autoExclusive) {
-        for (int i = candidates.count() - 1; i >= 0; --i) {
-            QAbstractButton *candidate = candidates.at(i);
+        for (auto i = candidates.count() - 1; i >= 0; --i) {
+            auto candidate = candidates.at(i);
             if (!candidate->autoExclusive()
 #ifndef QT_NO_BUTTONGROUP
                 || candidate->group()
@@ -338,12 +338,12 @@ QAbstractButton *QAbstractButtonPrivate::queryCheckedButton() const
 #endif
 
     Q_Q(const QAbstractButton);
-    QList<QAbstractButton *> buttonList = queryButtonList();
+    auto buttonList = queryButtonList();
     if (!autoExclusive || buttonList.count() == 1) // no group
         return 0;
 
-    for (int i = 0; i < buttonList.count(); ++i) {
-        QAbstractButton *b = buttonList.at(i);
+    for (auto i = 0; i < buttonList.count(); ++i) {
+        auto b = buttonList.at(i);
         if (b->d_func()->checked && b != q)
             return b;
     }
@@ -362,36 +362,36 @@ void QAbstractButtonPrivate::notifyChecked()
     } else
 #endif
     if (autoExclusive) {
-        if (QAbstractButton *b = queryCheckedButton())
+        if (auto b = queryCheckedButton())
             b->setChecked(false);
     }
 }
 
 void QAbstractButtonPrivate::moveFocus(int key)
 {
-    QList<QAbstractButton *> buttonList = queryButtonList();;
+    auto buttonList = queryButtonList();;
 #ifndef QT_NO_BUTTONGROUP
     bool exclusive = group ? group->d_func()->exclusive : autoExclusive;
 #else
     bool exclusive = autoExclusive;
 #endif
-    QWidget *f = QApplication::focusWidget();
-    QAbstractButton *fb = qobject_cast<QAbstractButton *>(f);
+    auto f = QApplication::focusWidget();
+    auto fb = qobject_cast<QAbstractButton *>(f);
     if (!fb || !buttonList.contains(fb))
         return;
 
     QAbstractButton *candidate = 0;
-    int bestScore = -1;
-    QRect target = f->rect().translated(f->mapToGlobal(QPoint(0,0)));
-    QPoint goal = target.center();
+    auto bestScore = -1;
+    auto target = f->rect().translated(f->mapToGlobal(QPoint(0,0)));
+    auto goal = target.center();
     uint focus_flag = qt_tab_all_widgets() ? Qt::TabFocus : Qt::StrongFocus;
 
-    for (int i = 0; i < buttonList.count(); ++i) {
-        QAbstractButton *button = buttonList.at(i);
+    for (auto i = 0; i < buttonList.count(); ++i) {
+        auto button = buttonList.at(i);
         if (button != f && button->window() == f->window() && button->isEnabled() && !button->isHidden() &&
             (autoExclusive || (button->focusPolicy() & focus_flag) == focus_flag)) {
-            QRect buttonRect = button->rect().translated(button->mapToGlobal(QPoint(0,0)));
-            QPoint p = buttonRect.center();
+            auto buttonRect = button->rect().translated(button->mapToGlobal(QPoint(0,0)));
+            auto p = buttonRect.center();
 
             //Priority to widgets that overlap on the same coordinate.
             //In that case, the distance in the direction will be used as significant score,
@@ -468,9 +468,9 @@ void QAbstractButtonPrivate::fixFocusPolicy()
 #endif
         return;
 
-    QList<QAbstractButton *> buttonList = queryButtonList();
-    for (int i = 0; i < buttonList.count(); ++i) {
-        QAbstractButton *b = buttonList.at(i);
+    auto buttonList = queryButtonList();
+    for (auto i = 0; i < buttonList.count(); ++i) {
+        auto b = buttonList.at(i);
         if (!b->isCheckable())
             continue;
         b->setFocusPolicy((Qt::FocusPolicy) ((b == q || !q->isCheckable())
@@ -505,7 +505,7 @@ void QAbstractButtonPrivate::click()
 
     down = false;
     blockRefresh = true;
-    bool changeState = true;
+    auto changeState = true;
     if (checked && queryCheckedButton() == q) {
         // the checked button of an exclusive or autoexclusive group cannot be unchecked
 #ifndef QT_NO_BUTTONGROUP
@@ -644,7 +644,7 @@ void QAbstractButton::setText(const QString &text)
         return;
     d->text = text;
 #ifndef QT_NO_SHORTCUT
-    QKeySequence newMnemonic = QKeySequence::mnemonic(text);
+    auto newMnemonic = QKeySequence::mnemonic(text);
     setShortcut(newMnemonic);
 #endif
     d->sizeHint = QSize();
@@ -1077,7 +1077,7 @@ bool QAbstractButton::event(QEvent *e)
 #ifndef QT_NO_SHORTCUT
     if (e->type() == QEvent::Shortcut) {
         Q_D(QAbstractButton);
-        QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
+        auto se = static_cast<QShortcutEvent *>(e);
         if (d->shortcutId != se->shortcutId())
             return false;
         if (!se->isAmbiguous()) {
@@ -1169,7 +1169,7 @@ void QAbstractButton::mouseMoveEvent(QMouseEvent *e)
 void QAbstractButton::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QAbstractButton);
-    bool next = true;
+    auto next = true;
     switch (e->key()) {
     case Qt::Key_Enter:
     case Qt::Key_Return:
@@ -1199,7 +1199,7 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
             return;
         }
 #endif
-        QWidget *pw = parentWidget();
+        auto pw = parentWidget();
         if (d->autoExclusive
 #ifndef QT_NO_BUTTONGROUP
         || d->group
@@ -1217,8 +1217,8 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
                 e->ignore();
         } else {
             // Prefer parent widget, use this if parent is absent
-            QWidget *w = pw ? pw : this;
-            bool reverse = (w->layoutDirection() == Qt::RightToLeft);
+            auto w = pw ? pw : this;
+            auto reverse = (w->layoutDirection() == Qt::RightToLeft);
             if ((e->key() == Qt::Key_Left && !reverse)
                 || (e->key() == Qt::Key_Right && reverse)) {
                 next = false;
@@ -1398,7 +1398,7 @@ QSize QAbstractButton::iconSize() const
     Q_D(const QAbstractButton);
     if (d->iconSize.isValid())
         return d->iconSize;
-    int e = style()->pixelMetric(QStyle::PM_ButtonIconSize, 0, this);
+    auto e = style()->pixelMetric(QStyle::PM_ButtonIconSize, 0, this);
     return QSize(e, e);
 }
 

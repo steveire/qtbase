@@ -232,7 +232,7 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     d->errors = new QErrorMessageTextView(this);
     d->again = new QCheckBox(this);
     d->ok = new QPushButton(this);
-    QGridLayout * grid = new QGridLayout(this);
+    auto grid = new QGridLayout(this);
 
     connect(d->ok, SIGNAL(clicked()), this, SLOT(accept()));
 
@@ -326,8 +326,8 @@ bool QErrorMessagePrivate::nextPending()
 {
     while (!pending.empty()) {
         QPair<QString,QString> &pendingMessage = pending.front();
-        QString message = qMove(pendingMessage.first);
-        QString type = qMove(pendingMessage.second);
+        auto message = qMove(pendingMessage.first);
+        auto type = qMove(pendingMessage.second);
         pending.pop();
         if (isMessageToBeShown(message, type)) {
 #ifndef QT_NO_TEXTHTMLPARSER

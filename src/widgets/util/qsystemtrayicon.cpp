@@ -441,10 +441,10 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
     setAttribute(Qt::WA_DeleteOnClose);
     QObject::connect(ti, SIGNAL(destroyed()), this, SLOT(close()));
 
-    QLabel *titleLabel = new QLabel;
+    auto titleLabel = new QLabel;
     titleLabel->installEventFilter(this);
     titleLabel->setText(title);
-    QFont f = titleLabel->font();
+    auto f = titleLabel->font();
     f.setBold(true);
 #ifdef Q_OS_WINCE
     f.setPointSize(f.pointSize() - 2);
@@ -456,18 +456,18 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
     const int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize);
     const int closeButtonSize = style()->pixelMetric(QStyle::PM_SmallIconSize) - 2;
 #else
-    const int iconSize = 18;
-    const int closeButtonSize = 15;
+    const auto iconSize = 18;
+    const auto closeButtonSize = 15;
 #endif
 
-    QPushButton *closeButton = new QPushButton;
+    auto closeButton = new QPushButton;
     closeButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
     closeButton->setIconSize(QSize(closeButtonSize, closeButtonSize));
     closeButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     closeButton->setFixedSize(closeButtonSize, closeButtonSize);
     QObject::connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
-    QLabel *msgLabel = new QLabel;
+    auto msgLabel = new QLabel;
 #ifdef Q_OS_WINCE
     f.setBold(false);
     msgLabel->setFont(f);
@@ -481,14 +481,14 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
 #ifdef Q_OS_WINCE
     int limit = QApplication::desktop()->availableGeometry(msgLabel).size().width() / 2;
 #else
-    int limit = QApplication::desktop()->availableGeometry(msgLabel).size().width() / 3;
+    auto limit = QApplication::desktop()->availableGeometry(msgLabel).size().width() / 3;
 #endif
     if (msgLabel->sizeHint().width() > limit) {
         msgLabel->setWordWrap(true);
         if (msgLabel->sizeHint().width() > limit) {
             msgLabel->d_func()->ensureTextControl();
-            if (QWidgetTextControl *control = msgLabel->d_func()->control) {
-                QTextOption opt = control->document()->defaultTextOption();
+            if (auto control = msgLabel->d_func()->control) {
+                auto opt = control->document()->defaultTextOption();
                 opt.setWrapMode(QTextOption::WrapAnywhere);
                 control->document()->setDefaultTextOption(opt);
             }
@@ -520,9 +520,9 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
         break;
     }
 
-    QGridLayout *layout = new QGridLayout;
+    auto layout = new QGridLayout;
     if (!si.isNull()) {
-        QLabel *iconLabel = new QLabel;
+        auto iconLabel = new QLabel;
         iconLabel->setPixmap(si.pixmap(iconSize, iconSize));
         iconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         iconLabel->setMargin(2);
@@ -538,7 +538,7 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
     layout->setMargin(3);
     setLayout(layout);
 
-    QPalette pal = palette();
+    auto pal = palette();
     pal.setColor(QPalette::Window, QColor(0xff, 0xff, 0xe1));
     pal.setColor(QPalette::WindowText, Qt::black);
     setPalette(pal);
@@ -563,18 +563,18 @@ void QBalloonTip::resizeEvent(QResizeEvent *ev)
 void QBalloonTip::balloon(const QPoint& pos, int msecs, bool showArrow)
 {
     this->showArrow = showArrow;
-    QRect scr = QApplication::desktop()->screenGeometry(pos);
-    QSize sh = sizeHint();
-    const int border = 1;
-    const int ah = 18, ao = 18, aw = 18, rc = 7;
-    bool arrowAtTop = (pos.y() + sh.height() + ah < scr.height());
-    bool arrowAtLeft = (pos.x() + sh.width() - ao < scr.width());
+    auto scr = QApplication::desktop()->screenGeometry(pos);
+    auto sh = sizeHint();
+    const auto border = 1;
+    const auto ah = 18, ao = 18, aw = 18, rc = 7;
+    auto arrowAtTop = (pos.y() + sh.height() + ah < scr.height());
+    auto arrowAtLeft = (pos.x() + sh.width() - ao < scr.width());
     setContentsMargins(border + 3,  border + (arrowAtTop ? ah : 0) + 2, border + 3, border + (arrowAtTop ? 0 : ah) + 2);
     updateGeometry();
     sh  = sizeHint();
 
     int ml, mr, mt, mb;
-    QSize sz = sizeHint();
+    auto sz = sizeHint();
     if (!arrowAtTop) {
         ml = mt = 0;
         mr = sz.width() - 1;
@@ -639,7 +639,7 @@ void QBalloonTip::balloon(const QPoint& pos, int msecs, bool showArrow)
     path.arcTo(QRect(ml, mt, rc*2, rc*2), 180, -90);
 
     // Set the mask
-    QBitmap bitmap = QBitmap(sizeHint());
+    auto bitmap = QBitmap(sizeHint());
     bitmap.fill(Qt::color0);
     QPainter painter1(&bitmap);
     painter1.setPen(QPen(Qt::color1, border));
@@ -755,14 +755,14 @@ void QSystemTrayIconPrivate::addPlatformMenu(QMenu *menu) const
     // be higher than 3 levels.
     QListIterator<QAction *> it(menu->actions());
     while (it.hasNext()) {
-        QAction *action = it.next();
+        auto action = it.next();
         if (action->menu())
             addPlatformMenu(action->menu());
     }
 
     // This menu should be processed *after* its children, otherwise
     // setMenu() is not called on respective QPlatformMenuItems.
-    QPlatformMenu *platformMenu = qpa_sys->createMenu();
+    auto platformMenu = qpa_sys->createMenu();
     if (platformMenu)
         menu->setPlatformMenu(platformMenu);
 }

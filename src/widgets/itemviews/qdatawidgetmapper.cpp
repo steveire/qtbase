@@ -92,7 +92,7 @@ public:
     inline void flipEventFilters(QAbstractItemDelegate *oldDelegate,
                                  QAbstractItemDelegate *newDelegate)
     {
-        for (QList<WidgetMapper>::const_iterator it = widgetMap.cbegin(), end = widgetMap.cend(); it != end; ++it) {
+        for (auto it = widgetMap.cbegin(), end = widgetMap.cend(); it != end; ++it) {
             QWidget *w = it->widget;
             if (!w)
                 continue;
@@ -132,7 +132,7 @@ public:
 
 int QDataWidgetMapperPrivate::findWidget(QWidget *w) const
 {
-    for (QList<WidgetMapper>::const_iterator it = widgetMap.cbegin(), end = widgetMap.cend(); it != end; ++it) {
+    for (auto it = widgetMap.cbegin(), end = widgetMap.cend(); it != end; ++it) {
         if (it->widget == w)
             return int(std::distance(widgetMap.cbegin(), it));
     }
@@ -171,7 +171,7 @@ void QDataWidgetMapperPrivate::populate(WidgetMapper &m)
 
 void QDataWidgetMapperPrivate::populate()
 {
-    for (QList<WidgetMapper>::iterator it = widgetMap.begin(), end = widgetMap.end(); it != end; ++it)
+    for (auto it = widgetMap.begin(), end = widgetMap.end(); it != end; ++it)
         populate(*it);
 }
 
@@ -187,7 +187,7 @@ void QDataWidgetMapperPrivate::_q_dataChanged(const QModelIndex &topLeft, const 
     if (topLeft.parent() != rootIndex)
         return; // not in our hierarchy
 
-    for (QList<WidgetMapper>::iterator it = widgetMap.begin(), end = widgetMap.end(); it != end; ++it) {
+    for (auto it = widgetMap.begin(), end = widgetMap.end(); it != end; ++it) {
         if (qContainsIndex(it->currentIndex, topLeft, bottomRight))
             populate(*it);
     }
@@ -198,7 +198,7 @@ void QDataWidgetMapperPrivate::_q_commitData(QWidget *w)
     if (submitPolicy == QDataWidgetMapper::ManualSubmit)
         return;
 
-    int idx = findWidget(w);
+    auto idx = findWidget(w);
     if (idx == -1)
         return; // not our widget
 
@@ -221,7 +221,7 @@ public:
 
 void QDataWidgetMapperPrivate::_q_closeEditor(QWidget *w, QAbstractItemDelegate::EndEditHint hint)
 {
-    int idx = findWidget(w);
+    auto idx = findWidget(w);
     if (idx == -1)
         return; // not our widget
 
@@ -413,7 +413,7 @@ QAbstractItemModel *QDataWidgetMapper::model() const
 void QDataWidgetMapper::setItemDelegate(QAbstractItemDelegate *delegate)
 {
     Q_D(QDataWidgetMapper);
-    QAbstractItemDelegate *oldDelegate = d->delegate;
+    auto oldDelegate = d->delegate;
     if (oldDelegate) {
         disconnect(oldDelegate, SIGNAL(commitData(QWidget*)), this, SLOT(_q_commitData(QWidget*)));
         disconnect(oldDelegate, SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),
@@ -524,7 +524,7 @@ void QDataWidgetMapper::removeMapping(QWidget *widget)
 {
     Q_D(QDataWidgetMapper);
 
-    int idx = d->findWidget(widget);
+    auto idx = d->findWidget(widget);
     if (idx == -1)
         return;
 
@@ -542,7 +542,7 @@ int QDataWidgetMapper::mappedSection(QWidget *widget) const
 {
     Q_D(const QDataWidgetMapper);
 
-    int idx = d->findWidget(widget);
+    auto idx = d->findWidget(widget);
     if (idx == -1)
         return -1;
 
@@ -561,7 +561,7 @@ QByteArray QDataWidgetMapper::mappedPropertyName(QWidget *widget) const
 {
     Q_D(const QDataWidgetMapper);
 
-    int idx = d->findWidget(widget);
+    auto idx = d->findWidget(widget);
     if (idx == -1)
         return QByteArray();
     const QDataWidgetMapperPrivate::WidgetMapper &m = d->widgetMap.at(idx);
@@ -581,7 +581,7 @@ QWidget *QDataWidgetMapper::mappedWidgetAt(int section) const
 {
     Q_D(const QDataWidgetMapper);
 
-    for (QList<QDataWidgetMapperPrivate::WidgetMapper>::const_iterator it = d->widgetMap.cbegin(), end = d->widgetMap.cend(); it != end; ++it) {
+    for (auto it = d->widgetMap.cbegin(), end = d->widgetMap.cend(); it != end; ++it) {
         if (it->section == section)
             return it->widget;
     }
@@ -620,7 +620,7 @@ bool QDataWidgetMapper::submit()
 {
     Q_D(QDataWidgetMapper);
 
-    for (QList<QDataWidgetMapperPrivate::WidgetMapper>::const_iterator it = d->widgetMap.cbegin(), end = d->widgetMap.cend(); it != end; ++it) {
+    for (auto it = d->widgetMap.cbegin(), end = d->widgetMap.cend(); it != end; ++it) {
         if (!d->commit(*it))
             return false;
     }
@@ -762,7 +762,7 @@ void QDataWidgetMapper::clearMapping()
 
     QList<QDataWidgetMapperPrivate::WidgetMapper> copy;
     d->widgetMap.swap(copy); // a C++98 move
-    for (QList<QDataWidgetMapperPrivate::WidgetMapper>::const_reverse_iterator it = copy.crbegin(), end = copy.crend(); it != end; ++it) {
+    for (auto it = copy.crbegin(), end = copy.crend(); it != end; ++it) {
         if (it->widget)
             it->widget->removeEventFilter(d->delegate);
     }

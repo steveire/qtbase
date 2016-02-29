@@ -328,7 +328,7 @@ bool QGroupBox::event(QEvent *e)
     Q_D(QGroupBox);
 #ifndef QT_NO_SHORTCUT
     if (e->type() == QEvent::Shortcut) {
-        QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
+        auto se = static_cast<QShortcutEvent *>(e);
         if (se->shortcutId() == d->shortcutId) {
             if (!isCheckable()) {
                 d->_q_fixFocus(Qt::ShortcutFocusReason);
@@ -345,13 +345,13 @@ bool QGroupBox::event(QEvent *e)
     switch (e->type()) {
     case QEvent::HoverEnter:
     case QEvent::HoverMove: {
-        QStyle::SubControl control = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
+        auto control = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
                                                                     static_cast<QHoverEvent *>(e)->pos(),
                                                                     this);
-        bool oldHover = d->hover;
+        auto oldHover = d->hover;
         d->hover = d->checkable && (control == QStyle::SC_GroupBoxLabel || control == QStyle::SC_GroupBoxCheckBox);
         if (oldHover != d->hover) {
-            QRect rect = style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this)
+            auto rect = style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this)
                          | style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxLabel, this);
             update(rect);
         }
@@ -360,13 +360,13 @@ bool QGroupBox::event(QEvent *e)
     case QEvent::HoverLeave:
         d->hover = false;
         if (d->checkable) {
-            QRect rect = style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this)
+            auto rect = style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this)
                          | style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxLabel, this);
             update(rect);
         }
         return true;
     case QEvent::KeyPress: {
-        QKeyEvent *k = static_cast<QKeyEvent*>(e);
+        auto k = static_cast<QKeyEvent*>(e);
         if (!k->isAutoRepeat() && (k->key() == Qt::Key_Select || k->key() == Qt::Key_Space)) {
             d->pressedControl = QStyle::SC_GroupBoxCheckBox;
             update(style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this));
@@ -375,9 +375,9 @@ bool QGroupBox::event(QEvent *e)
         break;
     }
     case QEvent::KeyRelease: {
-        QKeyEvent *k = static_cast<QKeyEvent*>(e);
+        auto k = static_cast<QKeyEvent*>(e);
         if (!k->isAutoRepeat() && (k->key() == Qt::Key_Select || k->key() == Qt::Key_Space)) {
-            bool toggle = (d->pressedControl == QStyle::SC_GroupBoxLabel
+            auto toggle = (d->pressedControl == QStyle::SC_GroupBoxLabel
                            || d->pressedControl == QStyle::SC_GroupBoxCheckBox);
             d->pressedControl = QStyle::SC_None;
             if (toggle)
@@ -398,7 +398,7 @@ void QGroupBox::childEvent(QChildEvent *c)
     Q_D(QGroupBox);
     if (c->type() != QEvent::ChildAdded || !c->child()->isWidgetType())
         return;
-    QWidget *w = (QWidget*)c->child();
+    auto w = (QWidget*)c->child();
     if (w->isWindow())
         return;
     if (d->checkable) {
@@ -425,11 +425,11 @@ void QGroupBox::childEvent(QChildEvent *c)
 void QGroupBoxPrivate::_q_fixFocus(Qt::FocusReason reason)
 {
     Q_Q(QGroupBox);
-    QWidget *fw = q->focusWidget();
+    auto fw = q->focusWidget();
     if (!fw || fw == q) {
         QWidget * best = 0;
         QWidget * candidate = 0;
-        QWidget * w = static_cast<QWidget*>(q);
+        auto w = static_cast<QWidget*>(q);
         while ((w = w->nextInFocusChain()) != q) {
             if (q->isAncestorOf(w) && (w->focusPolicy() & Qt::TabFocus) == Qt::TabFocus && w->isVisibleTo(q)) {
                 if (!best && qobject_cast<QRadioButton*>(w) && ((QRadioButton*)w)->isChecked())
@@ -459,7 +459,7 @@ void QGroupBoxPrivate::calculateFrame()
     Q_Q(QGroupBox);
     QStyleOptionGroupBox box;
     q->initStyleOption(&box);
-    QRect contentsRect = q->style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxContents, q);
+    auto contentsRect = q->style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxContents, q);
     q->setContentsMargins(contentsRect.left() - box.rect.left(), contentsRect.top() - box.rect.top(),
                           box.rect.right() - contentsRect.right(), box.rect.bottom() - contentsRect.bottom());
     setLayoutItemMargins(QStyle::SE_GroupBoxLayoutItem, &box);
@@ -489,15 +489,15 @@ QSize QGroupBox::minimumSizeHint() const
 
     QFontMetrics metrics(fontMetrics());
 
-    int baseWidth = metrics.width(d->title) + metrics.width(QLatin1Char(' '));
-    int baseHeight = metrics.height();
+    auto baseWidth = metrics.width(d->title) + metrics.width(QLatin1Char(' '));
+    auto baseHeight = metrics.height();
     if (d->checkable) {
         baseWidth += style()->pixelMetric(QStyle::PM_IndicatorWidth);
         baseWidth += style()->pixelMetric(QStyle::PM_CheckBoxLabelSpacing);
         baseHeight = qMax(baseHeight, style()->pixelMetric(QStyle::PM_IndicatorHeight));
     }
 
-    QSize size = style()->sizeFromContents(QStyle::CT_GroupBox, &option, QSize(baseWidth, baseHeight), this);
+    auto size = style()->sizeFromContents(QStyle::CT_GroupBox, &option, QSize(baseWidth, baseHeight), this);
     return size.expandedTo(QWidget::minimumSizeHint());
 }
 
@@ -555,7 +555,7 @@ void QGroupBox::setCheckable(bool checkable)
 {
     Q_D(QGroupBox);
 
-    bool wasCheckable = d->checkable;
+    auto wasCheckable = d->checkable;
     d->checkable = checkable;
 
     if (checkable) {
@@ -655,9 +655,9 @@ void QGroupBox::setChecked(bool b)
 void QGroupBoxPrivate::_q_setChildrenEnabled(bool b)
 {
     Q_Q(QGroupBox);
-    for (QObject *o : q->children()) {
+    for (auto o : q->children()) {
         if (o->isWidgetType()) {
-            QWidget *w = static_cast<QWidget *>(o);
+            auto w = static_cast<QWidget *>(o);
             if (b) {
                 if (!w->testAttribute(Qt::WA_ForceDisabled))
                     w->setEnabled(true);
@@ -718,9 +718,9 @@ void QGroupBox::mouseMoveEvent(QMouseEvent *event)
     Q_D(QGroupBox);
     QStyleOptionGroupBox box;
     initStyleOption(&box);
-    QStyle::SubControl pressed = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
+    auto pressed = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
                                                                 event->pos(), this);
-    bool oldOverCheckBox = d->overCheckBox;
+    auto oldOverCheckBox = d->overCheckBox;
     d->overCheckBox = (pressed == QStyle::SC_GroupBoxCheckBox || pressed == QStyle::SC_GroupBoxLabel);
     if (d->checkable && (d->pressedControl == QStyle::SC_GroupBoxCheckBox || d->pressedControl == QStyle::SC_GroupBoxLabel)
         && (d->overCheckBox != oldOverCheckBox))
@@ -744,9 +744,9 @@ void QGroupBox::mouseReleaseEvent(QMouseEvent *event)
     }
     QStyleOptionGroupBox box;
     initStyleOption(&box);
-    QStyle::SubControl released = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
+    auto released = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
                                                                  event->pos(), this);
-    bool toggle = d->checkable && (released == QStyle::SC_GroupBoxLabel
+    auto toggle = d->checkable && (released == QStyle::SC_GroupBoxLabel
                                    || released == QStyle::SC_GroupBoxCheckBox);
     d->pressedControl = QStyle::SC_None;
     d->overCheckBox = false;

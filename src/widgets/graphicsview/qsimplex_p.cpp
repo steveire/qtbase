@@ -104,7 +104,7 @@ void QSimplex::clearDataStructures()
     matrix = 0;
 
     // Constraints
-    for (int i = 0; i < constraints.size(); ++i) {
+    for (auto i = 0; i < constraints.size(); ++i) {
         delete constraints[i]->helper.first;
         delete constraints[i]->artificial;
         delete constraints[i];
@@ -136,8 +136,8 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
 
     // Make deep copy of constraints. We need this copy because we may change
     // them in the simplification method.
-    for (int i = 0; i < newConstraints.size(); ++i) {
-        QSimplexConstraint *c = new QSimplexConstraint;
+    for (auto i = 0; i < newConstraints.size(); ++i) {
+        auto c = new QSimplexConstraint;
         c->constant = newConstraints[i]->constant;
         c->ratio = newConstraints[i]->ratio;
         c->variables = newConstraints[i]->variables;
@@ -159,7 +159,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
     // "variables" is a list that provides a stable, indexed list of all variables
     // used in this problem.
     QSet<QSimplexVariable *> variablesSet;
-    for (int i = 0; i < constraints.size(); ++i) {
+    for (auto i = 0; i < constraints.size(); ++i) {
         const auto &v = constraints.at(i)->variables;
         for (auto it = v.cbegin(), end = v.cend(); it != end; ++it)
             variablesSet.insert(it.key());
@@ -169,7 +169,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
     // Set Variables reverse mapping
     // We also need to be able to find the index for a given variable, to do that
     // we store in each variable its index.
-    for (int i = 0; i < variables.size(); ++i) {
+    for (auto i = 0; i < variables.size(); ++i) {
         // The variable "0" goes at the column "1", etc...
         variables[i]->index = i + 1;
     }
@@ -186,10 +186,10 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
     //  - LessOrEqual: SLACK variable is added.
     //  - Equal: ARTIFICIAL variable is added.
     //  - More or Equal: ARTIFICIAL and SURPLUS variables are added.
-    int variableIndex = variables.size();
+    auto variableIndex = variables.size();
     QList <QSimplexVariable *> artificialList;
 
-    for (int i = 0; i < constraints.size(); ++i) {
+    for (auto i = 0; i < constraints.size(); ++i) {
         QSimplexVariable *slack;
         QSimplexVariable *surplus;
         QSimplexVariable *artificial;
@@ -223,7 +223,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
     // as to ensure they are at the end of the variable list and therefore
     // can be easily removed at the end of this method.
     firstArtificial = variableIndex + 1;
-    for (int i = 0; i < artificialList.size(); ++i)
+    for (auto i = 0; i < artificialList.size(); ++i)
         artificialList[i]->index = ++variableIndex;
     artificialList.clear();
 
@@ -241,12 +241,12 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
         qWarning("QSimplex: Unable to allocate memory!");
         return false;
     }
-    for (int i = columns * rows - 1; i >= 0; --i)
+    for (auto i = columns * rows - 1; i >= 0; --i)
         matrix[i] = 0.0;
 
     // Fill Matrix
-    for (int i = 1; i <= constraints.size(); ++i) {
-        QSimplexConstraint *c = constraints[i - 1];
+    for (auto i = 1; i <= constraints.size(); ++i) {
+        auto c = constraints[i - 1];
 
         if (c->artificial) {
             // Will use artificial basic variable
@@ -276,7 +276,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
 
     // Set objective for the first-phase Simplex.
     // Z = -1 * sum_of_artificial_vars
-    for (int j = firstArtificial; j < columns - 1; ++j)
+    for (auto j = firstArtificial; j < columns - 1; ++j)
         setValueAt(0, j, 1.0);
 
     // Maximize our objective (artificial vars go to zero)
@@ -330,8 +330,8 @@ void QSimplex::setObjective(QSimplexConstraint *newObjective)
 */
 void QSimplex::clearRow(int rowIndex)
 {
-    qreal *item = matrix + rowIndex * columns;
-    for (int i = 0; i < columns; ++i)
+    auto item = matrix + rowIndex * columns;
+    for (auto i = 0; i < columns; ++i)
         item[i] = 0.0;
 }
 
@@ -340,9 +340,9 @@ void QSimplex::clearRow(int rowIndex)
 */
 void QSimplex::clearColumns(int first, int last)
 {
-    for (int i = 0; i < rows; ++i) {
-        qreal *row = matrix + i * columns;
-        for (int j = first; j <= last; ++j)
+    for (auto i = 0; i < rows; ++i) {
+        auto row = matrix + i * columns;
+        for (auto j = first; j <= last; ++j)
             row[j] = 0.0;
     }
 }
@@ -355,14 +355,14 @@ void QSimplex::dumpMatrix()
     qDebug("---- Simplex Matrix ----\n");
 
     QString str(QLatin1String("       "));
-    for (int j = 0; j < columns; ++j)
+    for (auto j = 0; j < columns; ++j)
         str += QString::fromLatin1("  <%1 >").arg(j, 2);
     qDebug("%s", qPrintable(str));
-    for (int i = 0; i < rows; ++i) {
+    for (auto i = 0; i < rows; ++i) {
         str = QString::fromLatin1("Row %1:").arg(i, 2);
 
-        qreal *row = matrix + i * columns;
-        for (int j = 0; j < columns; ++j)
+        auto row = matrix + i * columns;
+        for (auto j = 0; j < columns; ++j)
             str += QString::fromLatin1("%1").arg(row[j], 7, 'f', 2);
         qDebug("%s", qPrintable(str));
     }
@@ -377,11 +377,11 @@ void QSimplex::combineRows(int toIndex, int fromIndex, qreal factor)
     if (!factor)
         return;
 
-    qreal *from = matrix + fromIndex * columns;
-    qreal *to = matrix + toIndex * columns;
+    auto from = matrix + fromIndex * columns;
+    auto to = matrix + toIndex * columns;
 
-    for (int j = 1; j < columns; ++j) {
-        qreal value = from[j];
+    for (auto j = 1; j < columns; ++j) {
+        auto value = from[j];
 
         // skip to[j] = to[j] + factor*0.0
         if (value == 0.0)
@@ -401,9 +401,9 @@ void QSimplex::combineRows(int toIndex, int fromIndex, qreal factor)
 int QSimplex::findPivotColumn()
 {
     qreal min = 0;
-    int minIndex = -1;
+    auto minIndex = -1;
 
-    for (int j = 0; j < columns-1; ++j) {
+    for (auto j = 0; j < columns-1; ++j) {
         if (valueAt(0, j) < min) {
             min = valueAt(0, j);
             minIndex = j;
@@ -432,15 +432,15 @@ int QSimplex::findPivotColumn()
 */
 int QSimplex::pivotRowForColumn(int column)
 {
-    qreal min = qreal(999999999999.0); // ###
-    int minIndex = -1;
+    auto min = qreal(999999999999.0); // ###
+    auto minIndex = -1;
 
-    for (int i = 1; i < rows; ++i) {
-        qreal divisor = valueAt(i, column);
+    for (auto i = 1; i < rows; ++i) {
+        auto divisor = valueAt(i, column);
         if (divisor <= 0)
             continue;
 
-        qreal quotient = valueAt(i, columns - 1) / divisor;
+        auto quotient = valueAt(i, columns - 1) / divisor;
         if (quotient < min) {
             min = quotient;
             minIndex = i;
@@ -457,7 +457,7 @@ int QSimplex::pivotRowForColumn(int column)
 */
 void QSimplex::reducedRowEchelon()
 {
-    for (int i = 1; i < rows; ++i) {
+    for (auto i = 1; i < rows; ++i) {
         int factorInObjectiveRow = valueAt(i, 0);
         combineRows(0, i, -1 * valueAt(0, factorInObjectiveRow));
     }
@@ -472,24 +472,24 @@ void QSimplex::reducedRowEchelon()
 bool QSimplex::iterate()
 {
     // Find Pivot column
-    int pivotColumn = findPivotColumn();
+    auto pivotColumn = findPivotColumn();
     if (pivotColumn == -1)
         return false;
 
     // Find Pivot row for column
-    int pivotRow = pivotRowForColumn(pivotColumn);
+    auto pivotRow = pivotRowForColumn(pivotColumn);
     if (pivotRow == -1) {
         qWarning("QSimplex: Unbounded problem!");
         return false;
     }
 
     // Normalize Pivot Row
-    qreal pivot = valueAt(pivotRow, pivotColumn);
+    auto pivot = valueAt(pivotRow, pivotColumn);
     if (pivot != 1.0)
         combineRows(pivotRow, pivotRow, (1.0 - pivot) / pivot);
 
     // Update other rows
-    for (int row=0; row < rows; ++row) {
+    for (auto row=0; row < rows; ++row) {
         if (row == pivotRow)
             continue;
 
@@ -584,13 +584,13 @@ void QSimplex::collectResults()
 
     // ### Is this really needed? Is there any chance that an
     // important variable remains as non-basic at the end of simplex?
-    for (int i = 0; i < variables.size(); ++i)
+    for (auto i = 0; i < variables.size(); ++i)
         variables[i]->result = 0;
 
     // Basic variables
     // Update the variable indicated in the first column with the value
     // in the last column.
-    for (int i = 1; i < rows; ++i) {
+    for (auto i = 1; i < rows; ++i) {
         int index = valueAt(i, 0) - 1;
         if (index < variables.size())
             variables[index]->result = valueAt(i, columns - 1);
@@ -605,20 +605,20 @@ void QSimplex::collectResults()
 bool QSimplex::simplifyConstraints(QList<QSimplexConstraint *> *constraints)
 {
     QHash<QSimplexVariable *, qreal> results;   // List of single-valued variables
-    bool modified = true;                       // Any chance more optimization exists?
+    auto modified = true;                       // Any chance more optimization exists?
 
     while (modified) {
         modified = false;
 
         // For all constraints
-        QList<QSimplexConstraint *>::iterator iter = constraints->begin();
+        auto iter = constraints->begin();
         while (iter != constraints->end()) {
-            QSimplexConstraint *c = *iter;
+            auto c = *iter;
             if ((c->ratio == QSimplexConstraint::Equal) && (c->variables.count() == 1)) {
                 // Check whether this is a constraint of type Var == K
                 // If so, save its value to "results".
-                QSimplexVariable *variable = c->variables.constBegin().key();
-                qreal result = c->constant / c->variables.value(variable);
+                auto variable = c->variables.constBegin().key();
+                auto result = c->constant / c->variables.value(variable);
 
                 results.insert(variable, result);
                 variable->result = result;

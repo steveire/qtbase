@@ -99,7 +99,7 @@ public:
     void updateTopLevelWidget()
     {
         Q_Q(QSizeGrip);
-        QWidget *w = qt_sizegrip_topLevelWidget(q);
+        auto w = qt_sizegrip_topLevelWidget(q);
         if (tlw == w)
             return;
         if (tlw)
@@ -116,7 +116,7 @@ public:
     void _q_showIfNotHidden()
     {
         Q_Q(QSizeGrip);
-        bool showSizeGrip = !(q->isHidden() && q->testAttribute(Qt::WA_WState_ExplicitShowHide));
+        auto showSizeGrip = !(q->isHidden() && q->testAttribute(Qt::WA_WState_ExplicitShowHide));
         updateTopLevelWidget();
         if (tlw && showSizeGrip) {
             Qt::WindowStates sizeGripNotVisibleState = Qt::WindowFullScreen;
@@ -157,10 +157,10 @@ void QSizeGripPrivate::updateMacSizer(bool hide) const
 Qt::Corner QSizeGripPrivate::corner() const
 {
     Q_Q(const QSizeGrip);
-    QWidget *tlw = qt_sizegrip_topLevelWidget(const_cast<QSizeGrip *>(q));
-    const QPoint sizeGripPos = q->mapTo(tlw, QPoint(0, 0));
-    bool isAtBottom = sizeGripPos.y() >= tlw->height() / 2;
-    bool isAtLeft = sizeGripPos.x() <= tlw->width() / 2;
+    auto tlw = qt_sizegrip_topLevelWidget(const_cast<QSizeGrip *>(q));
+    const auto sizeGripPos = q->mapTo(tlw, QPoint(0, 0));
+    auto isAtBottom = sizeGripPos.y() >= tlw->height() / 2;
+    auto isAtLeft = sizeGripPos.x() <= tlw->width() / 2;
     if (isAtLeft)
         return isAtBottom ? Qt::BottomLeftCorner : Qt::TopLeftCorner;
     else
@@ -286,7 +286,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
     }
 
     Q_D(QSizeGrip);
-    QWidget *tlw = qt_sizegrip_topLevelWidget(this);
+    auto tlw = qt_sizegrip_topLevelWidget(this);
     d->p = e->globalPos();
     d->gotMousePress = true;
     d->r = tlw->geometry();
@@ -298,8 +298,8 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
         && !(tlw->windowFlags() & Qt::X11BypassWindowManagerHint)
         && !tlw->testAttribute(Qt::WA_DontShowOnScreen)
         && !tlw->hasHeightForWidth()) {
-        QPlatformWindow *platformWindow = tlw->windowHandle()->handle();
-        const QPoint topLevelPos = mapTo(tlw, e->pos());
+        auto platformWindow = tlw->windowHandle()->handle();
+        const auto topLevelPos = mapTo(tlw, e->pos());
         d->m_platformSizeGrip = platformWindow && platformWindow->startSystemResize(topLevelPos, d->m_corner);
     }
 
@@ -308,17 +308,17 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
 
     // Find available desktop/workspace geometry.
     QRect availableGeometry;
-    bool hasVerticalSizeConstraint = true;
-    bool hasHorizontalSizeConstraint = true;
+    auto hasVerticalSizeConstraint = true;
+    auto hasHorizontalSizeConstraint = true;
     if (tlw->isWindow())
         availableGeometry = QApplication::desktop()->availableGeometry(tlw);
     else {
-        const QWidget *tlwParent = tlw->parentWidget();
+        auto tlwParent = tlw->parentWidget();
         // Check if tlw is inside QAbstractScrollArea/QScrollArea.
         // If that's the case tlw->parentWidget() will return the viewport
         // and tlw->parentWidget()->parentWidget() will return the scroll area.
 #ifndef QT_NO_SCROLLAREA
-        QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(tlwParent->parentWidget());
+        auto scrollArea = qobject_cast<QAbstractScrollArea *>(tlwParent->parentWidget());
         if (scrollArea) {
             hasHorizontalSizeConstraint = scrollArea->horizontalScrollBarPolicy() == Qt::ScrollBarAlwaysOff;
             hasVerticalSizeConstraint = scrollArea->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOff;
@@ -328,10 +328,10 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
     }
 
     // Find frame geometries, title bar height, and decoration sizes.
-    const QRect frameGeometry = tlw->frameGeometry();
-    const int titleBarHeight = qMax(tlw->geometry().y() - frameGeometry.y(), 0);
-    const int bottomDecoration = qMax(frameGeometry.height() - tlw->height() - titleBarHeight, 0);
-    const int leftRightDecoration = qMax((frameGeometry.width() - tlw->width()) / 2, 0);
+    const auto frameGeometry = tlw->frameGeometry();
+    const auto titleBarHeight = qMax(tlw->geometry().y() - frameGeometry.y(), 0);
+    const auto bottomDecoration = qMax(frameGeometry.height() - tlw->height() - titleBarHeight, 0);
+    const auto leftRightDecoration = qMax((frameGeometry.width() - tlw->width()) / 2, 0);
 
     // Determine dyMax depending on whether the sizegrip is at the bottom
     // of the widget or not.
@@ -376,7 +376,7 @@ void QSizeGrip::mouseMoveEvent(QMouseEvent * e)
         return;
     }
 
-    QWidget* tlw = qt_sizegrip_topLevelWidget(this);
+    auto tlw = qt_sizegrip_topLevelWidget(this);
     if (!d->gotMousePress || tlw->testAttribute(Qt::WA_WState_ConfigPending))
         return;
 

@@ -72,8 +72,8 @@ public:
 
     void visit(QList<QGraphicsItem *> *items) Q_DECL_OVERRIDE
     {
-        for (int i = 0; i < items->size(); ++i) {
-            QGraphicsItem *item = items->at(i);
+        for (auto i = 0; i < items->size(); ++i) {
+            auto item = items->at(i);
             if (onlyTopLevelItems && item->d_ptr->parent)
                 item = item->topLevelItem();
             if (!item->d_func()->itemDiscovered && item->d_ptr->visible) {
@@ -132,11 +132,11 @@ void QGraphicsSceneBspTree::removeItem(QGraphicsItem *item, const QRectF &rect)
 
 void QGraphicsSceneBspTree::removeItems(const QSet<QGraphicsItem *> &items)
 {
-    for (int i = 0; i < leaves.size(); ++i) {
+    for (auto i = 0; i < leaves.size(); ++i) {
         QList<QGraphicsItem *> newItemList;
         const QList<QGraphicsItem *> &oldItemList = leaves[i];
-        for (int j = 0; j < oldItemList.size(); ++j) {
-            QGraphicsItem *item = oldItemList.at(j);
+        for (auto j = 0; j < oldItemList.size(); ++j) {
+            auto item = oldItemList.at(j);
             if (!items.contains(item))
                 newItemList << item;
         }
@@ -151,7 +151,7 @@ QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QRectF &rect, bool onl
     findVisitor->onlyTopLevelItems = onlyTopLevelItems;
     climbTree(findVisitor, rect);
     // Reset discovery bits.
-    for (int i = 0; i < tmp.size(); ++i)
+    for (auto i = 0; i < tmp.size(); ++i)
         tmp.at(i)->d_ptr->itemDiscovered = 0;
     return tmp;
 }
@@ -163,11 +163,11 @@ int QGraphicsSceneBspTree::leafCount() const
 
 QString QGraphicsSceneBspTree::debug(int index) const
 {
-    const Node *node = &nodes.at(index);
+    auto node = &nodes.at(index);
 
     QString tmp;
     if (node->type == Node::Leaf) {
-        QRectF rect = rectForIndex(index);
+        auto rect = rectForIndex(index);
         if (!leaves[node->leafIndex].isEmpty()) {
             tmp += QString::fromLatin1("[%1, %2, %3, %4] contains %5 items\n")
                    .arg(rect.left()).arg(rect.top())
@@ -189,7 +189,7 @@ QString QGraphicsSceneBspTree::debug(int index) const
 
 void QGraphicsSceneBspTree::initialize(const QRectF &rect, int depth, int index)
 {
-    Node *node = &nodes[index];
+    auto node = &nodes[index];
     if (index == 0) {
         node->type = Node::Horizontal;
         node->offset = rect.center().x();
@@ -214,9 +214,9 @@ void QGraphicsSceneBspTree::initialize(const QRectF &rect, int depth, int index)
             offset2 = rect2.center().y();
         }
 
-        int childIndex = firstChildIndex(index);
+        auto childIndex = firstChildIndex(index);
 
-        Node *child = &nodes[childIndex];
+        auto child = &nodes[childIndex];
         child->offset = offset1;
         child->type = type;
 
@@ -238,7 +238,7 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
         return;
 
     const Node &node = nodes.at(index);
-    const int childIndex = firstChildIndex(index);
+    const auto childIndex = firstChildIndex(index);
 
     switch (node.type) {
     case Node::Leaf: {
@@ -270,9 +270,9 @@ QRectF QGraphicsSceneBspTree::rectForIndex(int index) const
     if (index <= 0)
         return rect;
 
-    int parentIdx = parentIndex(index);
-    QRectF rect = rectForIndex(parentIdx);
-    const Node *parent = &nodes.at(parentIdx);
+    auto parentIdx = parentIndex(index);
+    auto rect = rectForIndex(parentIdx);
+    auto parent = &nodes.at(parentIdx);
 
     if (parent->type == Node::Horizontal) {
         if (index & 1)

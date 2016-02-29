@@ -155,17 +155,17 @@ qreal QGraphicsItemAnimationPrivate::linearValueForStep(qreal step, const QVecto
 
     qreal stepBefore = 0;
     qreal stepAfter = 1;
-    qreal valueBefore = source.front().step == 0 ? source.front().value : defaultValue;
-    qreal valueAfter = source.back().value;
+    auto valueBefore = source.front().step == 0 ? source.front().value : defaultValue;
+    auto valueAfter = source.back().value;
 
     // Find the closest step and value before the given step.
-    for (int i = 0; i < source.size() && step >= source[i].step; ++i) {
+    for (auto i = 0; i < source.size() && step >= source[i].step; ++i) {
         stepBefore = source[i].step;
         valueBefore = source[i].value;
     }
 
     // Find the closest step and value after the given step.
-    for (int i = source.size() - 1; i >= 0 && step < source[i].step; --i) {
+    for (auto i = source.size() - 1; i >= 0 && step < source[i].step; --i) {
         stepAfter = source[i].step;
         valueAfter = source[i].value;
     }
@@ -181,7 +181,7 @@ void QGraphicsItemAnimationPrivate::insertUniquePair(qreal step, qreal value, QV
 
     const Pair pair = { step, value };
 
-    const QVector<Pair>::iterator result = std::lower_bound(binList->begin(), binList->end(), pair);
+    const auto result = std::lower_bound(binList->begin(), binList->end(), pair);
     if (result == binList->end() || pair < *result)
         binList->insert(result, pair);
     else
@@ -288,9 +288,9 @@ void QGraphicsItemAnimation::setPosAt(qreal step, const QPointF &pos)
 QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::posList() const
 {
     QList<QPair<qreal, QPointF> > list;
-    const int xPosCount = d->xPosition.size();
+    const auto xPosCount = d->xPosition.size();
     list.reserve(xPosCount);
-    for (int i = 0; i < xPosCount; ++i)
+    for (auto i = 0; i < xPosCount; ++i)
         list << QPair<qreal, QPointF>(d->xPosition.at(i).step, QPointF(d->xPosition.at(i).value, d->yPosition.at(i).value));
 
     return list;
@@ -344,9 +344,9 @@ void QGraphicsItemAnimation::setRotationAt(qreal step, qreal angle)
 QList<QPair<qreal, qreal> > QGraphicsItemAnimation::rotationList() const
 {
     QList<QPair<qreal, qreal> > list;
-    const int numRotations = d->rotation.size();
+    const auto numRotations = d->rotation.size();
     list.reserve(numRotations);
-    for (int i = 0; i < numRotations; ++i)
+    for (auto i = 0; i < numRotations; ++i)
         list << QPair<qreal, qreal>(d->rotation.at(i).step, d->rotation.at(i).value);
 
     return list;
@@ -394,9 +394,9 @@ void QGraphicsItemAnimation::setTranslationAt(qreal step, qreal dx, qreal dy)
 QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::translationList() const
 {
     QList<QPair<qreal, QPointF> > list;
-    const int numTranslations = d->xTranslation.size();
+    const auto numTranslations = d->xTranslation.size();
     list.reserve(numTranslations);
-    for (int i = 0; i < numTranslations; ++i)
+    for (auto i = 0; i < numTranslations; ++i)
         list << QPair<qreal, QPointF>(d->xTranslation.at(i).step, QPointF(d->xTranslation.at(i).value, d->yTranslation.at(i).value));
 
     return list;
@@ -445,9 +445,9 @@ void QGraphicsItemAnimation::setScaleAt(qreal step, qreal sx, qreal sy)
 QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::scaleList() const
 {
     QList<QPair<qreal, QPointF> > list;
-    const int numScales = d->horizontalScale.size();
+    const auto numScales = d->horizontalScale.size();
     list.reserve(numScales);
-    for (int i = 0; i < numScales; ++i)
+    for (auto i = 0; i < numScales; ++i)
         list << QPair<qreal, QPointF>(d->horizontalScale.at(i).step, QPointF(d->horizontalScale.at(i).value, d->verticalScale.at(i).value));
 
     return list;
@@ -495,9 +495,9 @@ void QGraphicsItemAnimation::setShearAt(qreal step, qreal sh, qreal sv)
 QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::shearList() const
 {
     QList<QPair<qreal, QPointF> > list;
-    const int numShears = d->horizontalShear.size();
+    const auto numShears = d->horizontalShear.size();
     list.reserve(numShears);
-    for (int i = 0; i < numShears; ++i)
+    for (auto i = 0; i < numShears; ++i)
         list << QPair<qreal, QPointF>(d->horizontalShear.at(i).step, QPointF(d->horizontalShear.at(i).value, d->verticalShear.at(i).value));
 
     return list;

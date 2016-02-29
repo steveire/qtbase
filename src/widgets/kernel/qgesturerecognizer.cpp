@@ -184,7 +184,7 @@ QGesture *QGestureRecognizer::create(QObject *target)
 void QGestureRecognizer::reset(QGesture *gesture)
 {
     if (gesture) {
-        QGesturePrivate *d = gesture->d_func();
+        auto d = gesture->d_func();
         d->state = Qt::NoGesture;
         d->hotSpot = QPointF();
         d->sceneHotSpot = QPointF();

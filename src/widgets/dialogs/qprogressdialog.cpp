@@ -118,7 +118,7 @@ void QProgressDialogPrivate::init(const QString &labelText, const QString &cance
     label = new QLabel(labelText, q);
     bar = new QProgressBar(q);
     bar->setRange(min, max);
-    int align = q->style()->styleHint(QStyle::SH_ProgressDialog_TextLabelAlignment, 0, q);
+    auto align = q->style()->styleHint(QStyle::SH_ProgressDialog_TextLabelAlignment, 0, q);
     label->setAlignment(Qt::Alignment(align));
     autoClose = true;
     autoReset = true;
@@ -138,21 +138,21 @@ void QProgressDialogPrivate::init(const QString &labelText, const QString &cance
 void QProgressDialogPrivate::layout()
 {
     Q_Q(QProgressDialog);
-    int sp = q->style()->pixelMetric(QStyle::PM_DefaultLayoutSpacing);
-    int mtb = q->style()->pixelMetric(QStyle::PM_DefaultTopLevelMargin);
-    int mlr = qMin(q->width() / 10, mtb);
-    const bool centered =
+    auto sp = q->style()->pixelMetric(QStyle::PM_DefaultLayoutSpacing);
+    auto mtb = q->style()->pixelMetric(QStyle::PM_DefaultTopLevelMargin);
+    auto mlr = qMin(q->width() / 10, mtb);
+    const auto centered =
         bool(q->style()->styleHint(QStyle::SH_ProgressDialog_CenterCancelButton, 0, q));
 
-    int additionalSpacing = 0;
-    QSize cs = cancel ? cancel->sizeHint() : QSize(0,0);
-    QSize bh = bar->sizeHint();
+    auto additionalSpacing = 0;
+    auto cs = cancel ? cancel->sizeHint() : QSize(0,0);
+    auto bh = bar->sizeHint();
     int cspc;
-    int lh = 0;
+    auto lh = 0;
 
     // Find spacing and sizes that fit.  It is important that a progress
     // dialog can be made very small if the user demands it so.
-    for (int attempt=5; attempt--;) {
+    for (auto attempt=5; attempt--;) {
         cspc = cancel ? cs.height() + sp : 0;
         lh = qMax(0, q->height() - mtb - bh.height() - sp - cspc);
 
@@ -508,7 +508,7 @@ void QProgressDialogPrivate::ensureSizeIsAtLeastSizeHint()
 {
     Q_Q(QProgressDialog);
 
-    QSize size = q->sizeHint();
+    auto size = q->sizeHint();
     if (q->isVisible())
         size = size.expandedTo(q->size());
     q->resize(size);
@@ -686,8 +686,8 @@ void QProgressDialog::setValue(int progress)
             } else {
                 if (elapsed > minWaitTime) {
                     int estimate;
-                    int totalSteps = maximum() - minimum();
-                    int myprogress = progress - minimum();
+                    auto totalSteps = maximum() - minimum();
+                    auto myprogress = progress - minimum();
                     if (myprogress == 0) myprogress = 1;
                     if ((totalSteps - myprogress) >= INT_MAX / elapsed)
                         estimate = (totalSteps - myprogress) / myprogress * elapsed;
@@ -719,11 +719,11 @@ void QProgressDialog::setValue(int progress)
 QSize QProgressDialog::sizeHint() const
 {
     Q_D(const QProgressDialog);
-    QSize sh = d->label ? d->label->sizeHint() : QSize(0, 0);
-    QSize bh = d->bar->sizeHint();
-    int margin = style()->pixelMetric(QStyle::PM_DefaultTopLevelMargin);
-    int spacing = style()->pixelMetric(QStyle::PM_DefaultLayoutSpacing);
-    int h = margin * 2 + bh.height() + sh.height() + spacing;
+    auto sh = d->label ? d->label->sizeHint() : QSize(0, 0);
+    auto bh = d->bar->sizeHint();
+    auto margin = style()->pixelMetric(QStyle::PM_DefaultTopLevelMargin);
+    auto spacing = style()->pixelMetric(QStyle::PM_DefaultLayoutSpacing);
+    auto h = margin * 2 + bh.height() + sh.height() + spacing;
     if (d->cancel)
         h += d->cancel->sizeHint().height() + spacing;
     return QSize(qMax(200, sh.width() + 2 * margin), h);

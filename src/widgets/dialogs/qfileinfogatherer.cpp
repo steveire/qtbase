@@ -134,7 +134,7 @@ void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStr
 {
     QMutexLocker locker(&mutex);
     // See if we already have this dir/file in our queue
-    int loc = this->path.lastIndexOf(path);
+    auto loc = this->path.lastIndexOf(path);
     while (loc > 0)  {
         if (this->files.at(loc) == files) {
             return;
@@ -162,8 +162,8 @@ void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStr
 */
 void QFileInfoGatherer::updateFile(const QString &filePath)
 {
-    QString dir = filePath.mid(0, filePath.lastIndexOf(QDir::separator()));
-    QString fileName = filePath.mid(dir.length() + 1);
+    auto dir = filePath.mid(0, filePath.lastIndexOf(QDir::separator()));
+    auto fileName = filePath.mid(dir.length() + 1);
     fetchExtendedInformation(dir, QStringList(fileName));
 }
 
@@ -217,9 +217,9 @@ void QFileInfoGatherer::run()
             condition.wait(&mutex);
         if (abort.load())
             return;
-        const QString thisPath = path.front();
+        const auto thisPath = path.front();
         path.pop_front();
-        const QStringList thisList = files.front();
+        const auto thisList = files.front();
         files.pop_front();
         locker.unlock();
 
@@ -262,7 +262,7 @@ QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
 
 static QString translateDriveName(const QFileInfo &drive)
 {
-    QString driveName = drive.absoluteFilePath();
+    auto driveName = drive.absoluteFilePath();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (driveName.startsWith(QLatin1Char('/'))) // UNC host
         return drive.fileName();
@@ -291,8 +291,8 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
             for (const auto &file : files)
                 infoList << QFileInfo(file);
         }
-        for (int i = infoList.count() - 1; i >= 0; --i) {
-            QString driveName = translateDriveName(infoList.at(i));
+        for (auto i = infoList.count() - 1; i >= 0; --i) {
+            auto driveName = translateDriveName(infoList.at(i));
             QVector<QPair<QString,QFileInfo> > updatedFiles;
             updatedFiles.append(QPair<QString,QFileInfo>(driveName, infoList.at(i)));
             emit updates(path, updatedFiles);
@@ -303,11 +303,11 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     QElapsedTimer base;
     base.start();
     QFileInfo fileInfo;
-    bool firstTime = true;
+    auto firstTime = true;
     QVector<QPair<QString, QFileInfo> > updatedFiles;
-    QStringList filesToCheck = files;
+    auto filesToCheck = files;
 
-    QString itPath = QDir::fromNativeSeparators(files.isEmpty() ? path : QLatin1String(""));
+    auto itPath = QDir::fromNativeSeparators(files.isEmpty() ? path : QLatin1String(""));
     QDirIterator dirIt(itPath, QDir::AllEntries | QDir::System | QDir::Hidden);
     QStringList allFiles;
     while (!abort.load() && dirIt.hasNext()) {
@@ -319,7 +319,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     if (!allFiles.isEmpty())
         emit newListOfFiles(path, allFiles);
 
-    QStringList::const_iterator filesIt = filesToCheck.constBegin();
+    auto filesIt = filesToCheck.constBegin();
     while (!abort.load() && filesIt != filesToCheck.constEnd()) {
         fileInfo.setFile(path + QDir::separator() + *filesIt);
         ++filesIt;

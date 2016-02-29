@@ -95,11 +95,11 @@ QColumnViewGrip::~QColumnViewGrip()
 */
 int QColumnViewGrip::moveGrip(int offset)
 {
-    QWidget *parentWidget = (QWidget*)parent();
+    auto parentWidget = (QWidget*)parent();
 
     // first resize the parent
-    int oldWidth = parentWidget->width();
-    int newWidth = oldWidth;
+    auto oldWidth = parentWidget->width();
+    auto newWidth = oldWidth;
     if (isRightToLeft())
        newWidth -= offset;
     else
@@ -108,8 +108,8 @@ int QColumnViewGrip::moveGrip(int offset)
     parentWidget->resize(newWidth, parentWidget->height());
 
     // Then have the view move the widget
-    int realOffset = parentWidget->width() - oldWidth;
-    int oldX = parentWidget->x();
+    auto realOffset = parentWidget->width() - oldWidth;
+    auto oldX = parentWidget->x();
     if (realOffset != 0)
         emit gripMoved(realOffset);
     if (isRightToLeft())
@@ -136,8 +136,8 @@ void QColumnViewGrip::paintEvent(QPaintEvent *event)
 void QColumnViewGrip::mouseDoubleClickEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
-    QWidget *parentWidget = (QWidget*)parent();
-    int offset = parentWidget->sizeHint().width() - parentWidget->width();
+    auto parentWidget = (QWidget*)parent();
+    auto offset = parentWidget->sizeHint().width() - parentWidget->width();
     if (isRightToLeft())
         offset *= -1;
     moveGrip(offset);
@@ -162,7 +162,7 @@ void QColumnViewGrip::mousePressEvent(QMouseEvent *event)
 void QColumnViewGrip::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QColumnViewGrip);
-    int offset = event->globalX() - d->originalXLocation;
+    auto offset = event->globalX() - d->originalXLocation;
     d->originalXLocation = moveGrip(offset) + d->originalXLocation;
     event->accept();
 }

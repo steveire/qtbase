@@ -66,7 +66,7 @@ QWidgetResizeHandler::QWidgetResizeHandler(QWidget *parent, QWidget *cw)
 {
     mode = Nowhere;
     widget->setMouseTracking(true);
-    QFrame *frame = qobject_cast<QFrame*>(widget);
+    auto frame = qobject_cast<QFrame*>(widget);
     range = frame ? frame->frameWidth() : RANGE;
     range = qMax(RANGE, range);
     activeForMove = activeForResize = true;
@@ -86,7 +86,7 @@ void QWidgetResizeHandler::setActive(Action ac, bool b)
 
 bool QWidgetResizeHandler::isActive(Action ac) const
 {
-    bool b = false;
+    auto b = false;
     if (ac & Move) b = activeForMove;
     if (ac & Resize) b |= activeForResize;
 
@@ -105,14 +105,14 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
         return false;
 
     Q_ASSERT(o == widget);
-    QWidget *w = widget;
+    auto w = widget;
     if (QApplication::activePopupWidget()) {
         if (buttonDown && ee->type() == QEvent::MouseButtonRelease)
             buttonDown = false;
         return false;
     }
 
-    QMouseEvent *e = (QMouseEvent*)ee;
+    auto e = (QMouseEvent*)ee;
     switch (e->type()) {
     case QEvent::MouseButtonPress: {
         if (w->isMaximized())
@@ -201,7 +201,7 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
 
 void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
 {
-    QPoint pos = widget->mapFromGlobal(e->globalPos());
+    auto pos = widget->mapFromGlobal(e->globalPos());
     if (!moveResizeMode && !buttonDown) {
         if (pos.y() <= range && pos.x() <= range)
             mode = TopLeft;
@@ -239,7 +239,7 @@ void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
         return;
 
 
-    QPoint globalPos = (!widget->isWindow() && widget->parentWidget()) ?
+    auto globalPos = (!widget->isWindow() && widget->parentWidget()) ?
                        widget->parentWidget()->mapFromGlobal(e->globalPos()) : e->globalPos();
     if (!widget->isWindow() && !widget->parentWidget()->rect().contains(globalPos)) {
         if (globalPos.x() < 0)
@@ -252,21 +252,21 @@ void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
             globalPos.ry() = widget->parentWidget()->height();
     }
 
-    QPoint p = globalPos + invertedMoveOffset;
-    QPoint pp = globalPos - moveOffset;
+    auto p = globalPos + invertedMoveOffset;
+    auto pp = globalPos - moveOffset;
 
     // Workaround for window managers which refuse to move a tool window partially offscreen.
     if (QGuiApplication::platformName() == QLatin1String("xcb")) {
-        const QRect desktop = QApplication::desktop()->availableGeometry(widget);
+        const auto desktop = QApplication::desktop()->availableGeometry(widget);
         pp.rx() = qMax(pp.x(), desktop.left());
         pp.ry() = qMax(pp.y(), desktop.top());
         p.rx() = qMin(p.x(), desktop.right());
         p.ry() = qMin(p.y(), desktop.bottom());
     }
 
-    QSize ms = qSmartMinSize(childWidget);
-    int mw = ms.width();
-    int mh = ms.height();
+    auto ms = qSmartMinSize(childWidget);
+    auto mw = ms.width();
+    auto mh = ms.height();
     if (childWidget != widget) {
         mw += 2 * fw;
         mh += 2 * fw + extrahei;
@@ -282,7 +282,7 @@ void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
     QPoint mp(widget->geometry().right() - mpsize.width() + 1,
                widget->geometry().bottom() - mpsize.height() + 1);
 
-    QRect geom = widget->geometry();
+    auto geom = widget->geometry();
 
     switch (mode) {
     case TopLeft:
@@ -335,9 +335,9 @@ void QWidgetResizeHandler::setMouseCursor(MousePosition m)
 #ifdef QT_NO_CURSOR
     Q_UNUSED(m);
 #else
-    QObjectList children = widget->children();
-    for (int i = 0; i < children.size(); ++i) {
-        if (QWidget *w = qobject_cast<QWidget*>(children.at(i))) {
+    auto children = widget->children();
+    for (auto i = 0; i < children.size(); ++i) {
+        if (auto w = qobject_cast<QWidget*>(children.at(i))) {
             if (!w->testAttribute(Qt::WA_SetCursor)) {
                 w->setCursor(Qt::ArrowCursor);
             }
@@ -373,8 +373,8 @@ void QWidgetResizeHandler::keyPressEvent(QKeyEvent * e)
     if (!isMove() && !isResize())
         return;
     bool is_control = e->modifiers() & Qt::ControlModifier;
-    int delta = is_control?1:8;
-    QPoint pos = QCursor::pos();
+    auto delta = is_control?1:8;
+    auto pos = QCursor::pos();
     switch (e->key()) {
     case Qt::Key_Left:
         pos.rx() -= delta;

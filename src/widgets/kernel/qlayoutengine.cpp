@@ -76,20 +76,20 @@ static inline int fRound(Fixed64 i) {
 void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
                int pos, int space, int spacer)
 {
-    int cHint = 0;
-    int cMin = 0;
-    int cMax = 0;
-    int sumStretch = 0;
-    int sumSpacing = 0;
-    int expandingCount = 0;
+    auto cHint = 0;
+    auto cMin = 0;
+    auto cMax = 0;
+    auto sumStretch = 0;
+    auto sumSpacing = 0;
+    auto expandingCount = 0;
 
-    bool allEmptyNonstretch = true;
-    int pendingSpacing = -1;
-    int spacerCount = 0;
+    auto allEmptyNonstretch = true;
+    auto pendingSpacing = -1;
+    auto spacerCount = 0;
     int i;
 
     for (i = start; i < start + count; i++) {
-        QLayoutStruct *data = &chain[i];
+        auto data = &chain[i];
 
         data->done = false;
         cHint += data->smartSizeHint();
@@ -112,14 +112,14 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
         allEmptyNonstretch = allEmptyNonstretch && data->empty && !data->expansive && data->stretch <= 0;
     }
 
-    int extraspace = 0;
+    auto extraspace = 0;
 
     if (space < cMin + sumSpacing) {
         /*
           Less space than minimumSize; take from the biggest first
         */
 
-        int minSize = cMin + sumSpacing;
+        auto minSize = cMin + sumSpacing;
 
         // shrink the spacers proportionally
         if (spacer >= 0) {
@@ -135,12 +135,12 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
 
         std::sort(minimumSizes.begin(), minimumSizes.end());
 
-        int space_left = space - sumSpacing;
+        auto space_left = space - sumSpacing;
 
-        int sum = 0;
-        int idx = 0;
-        int space_used=0;
-        int current = 0;
+        auto sum = 0;
+        auto idx = 0;
+        auto space_used=0;
+        auto current = 0;
         while (idx < count && space_used < space_left) {
             current = minimumSizes.at(idx);
             space_used = sum + current * (count - idx);
@@ -148,27 +148,27 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
             ++idx;
         }
         --idx;
-        int deficit = space_used - space_left;
+        auto deficit = space_used - space_left;
 
-        int items = count - idx;
+        auto items = count - idx;
         /*
          * If we truncate all items to "current", we would get "deficit" too many pixels. Therefore, we have to remove
          * deficit/items from each item bigger than maxval. The actual value to remove is deficitPerItem + remainder/items
          * "rest" is the accumulated error from using integer arithmetic.
         */
-        int deficitPerItem = deficit/items;
-        int remainder = deficit % items;
-        int maxval = current - deficitPerItem;
+        auto deficitPerItem = deficit/items;
+        auto remainder = deficit % items;
+        auto maxval = current - deficitPerItem;
 
-        int rest = 0;
+        auto rest = 0;
         for (i = start; i < start + count; i++) {
-            int maxv = maxval;
+            auto maxv = maxval;
             rest += remainder;
             if (rest >= items) {
                 maxv--;
                 rest-=items;
             }
-            QLayoutStruct *data = &chain[i];
+            auto data = &chain[i];
             data->size = qMin(data->minimumSize, maxv);
             data->done = true;
         }
@@ -179,13 +179,13 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
           Commented-out lines will give more space to stretchier
           items.
         */
-        int n = count;
-        int space_left = space - sumSpacing;
-        int overdraft = cHint - space_left;
+        auto n = count;
+        auto space_left = space - sumSpacing;
+        auto overdraft = cHint - space_left;
 
         // first give to the fixed ones:
         for (i = start; i < start + count; i++) {
-            QLayoutStruct *data = &chain[i];
+            auto data = &chain[i];
             if (!data->done
                  && data->minimumSize >= data->smartSizeHint()) {
                 data->size = data->smartSizeHint();
@@ -195,21 +195,21 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
                 n--;
             }
         }
-        bool finished = n == 0;
+        auto finished = n == 0;
         while (!finished) {
             finished = true;
-            Fixed64 fp_over = toFixed(overdraft);
+            auto fp_over = toFixed(overdraft);
             Fixed64 fp_w = 0;
 
             for (i = start; i < start+count; i++) {
-                QLayoutStruct *data = &chain[i];
+                auto data = &chain[i];
                 if (data->done)
                     continue;
                 // if (sumStretch <= 0)
                 fp_w += fp_over / n;
                 // else
                 //    fp_w += (fp_over * data->stretch) / sumStretch;
-                int w = fRound(fp_w);
+                auto w = fRound(fp_w);
                 data->size = data->smartSizeHint() - w;
                 fp_w -= toFixed(w); // give the difference to the next
                 if (data->size < data->minimumSize) {
@@ -224,11 +224,11 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
             }
         }
     } else { // extra space
-        int n = count;
-        int space_left = space - sumSpacing;
+        auto n = count;
+        auto space_left = space - sumSpacing;
         // first give to the fixed ones, and handle non-expansiveness
         for (i = start; i < start + count; i++) {
-            QLayoutStruct *data = &chain[i];
+            auto data = &chain[i];
             if (!data->done
                 && (data->maximumSize <= data->smartSizeHint()
                     || (!allEmptyNonstretch && data->empty &&
@@ -257,10 +257,10 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
         int surplus, deficit;
         do {
             surplus = deficit = 0;
-            Fixed64 fp_space = toFixed(space_left);
+            auto fp_space = toFixed(space_left);
             Fixed64 fp_w = 0;
             for (i = start; i < start + count; i++) {
-                QLayoutStruct *data = &chain[i];
+                auto data = &chain[i];
                 if (data->done)
                     continue;
                 extraspace = 0;
@@ -271,7 +271,7 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
                 } else {
                     fp_w += fp_space * 1 / n;
                 }
-                int w = fRound(fp_w);
+                auto w = fRound(fp_w);
                 data->size = w;
                 fp_w -= toFixed(w); // give the difference to the next
                 if (w < data->smartSizeHint()) {
@@ -283,7 +283,7 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
             if (deficit > 0 && surplus <= deficit) {
                 // give to the ones that have too little
                 for (i = start; i < start+count; i++) {
-                    QLayoutStruct *data = &chain[i];
+                    auto data = &chain[i];
                     if (!data->done && data->size < data->smartSizeHint()) {
                         data->size = data->smartSizeHint();
                         data->done = true;
@@ -298,7 +298,7 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
             if (surplus > 0 && surplus >= deficit) {
                 // take from the ones that have too much
                 for (i = start; i < start + count; i++) {
-                    QLayoutStruct *data = &chain[i];
+                    auto data = &chain[i];
                     if (!data->done && data->size > data->maximumSize) {
                         data->size = data->maximumSize;
                         data->done = true;
@@ -321,10 +321,10 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
       could, but don't, attempt a sub-pixel allocation of the extra
       space.
     */
-    int extra = extraspace / (spacerCount + 2);
-    int p = pos + extra;
+    auto extra = extraspace / (spacerCount + 2);
+    auto p = pos + extra;
     for (i = start; i < start+count; i++) {
-        QLayoutStruct *data = &chain[i];
+        auto data = &chain[i];
         data->pos = p;
         p += data->size;
         if (!data->empty)
@@ -376,7 +376,7 @@ Q_WIDGETS_EXPORT QSize qSmartMinSize(const QSize &sizeHint, const QSize &minSize
 
 Q_WIDGETS_EXPORT QSize qSmartMinSize(const QWidgetItem *i)
 {
-    QWidget *w = const_cast<QWidgetItem *>(i)->widget();
+    auto w = const_cast<QWidgetItem *>(i)->widget();
     return qSmartMinSize(w->sizeHint(), w->minimumSizeHint(),
                             w->minimumSize(), w->maximumSize(),
                             w->sizePolicy());
@@ -395,8 +395,8 @@ Q_WIDGETS_EXPORT QSize qSmartMaxSize(const QSize &sizeHint,
 {
     if (align & Qt::AlignHorizontal_Mask && align & Qt::AlignVertical_Mask)
         return QSize(QLAYOUTSIZE_MAX, QLAYOUTSIZE_MAX);
-    QSize s = maxSize;
-    QSize hint = sizeHint.expandedTo(minSize);
+    auto s = maxSize;
+    auto hint = sizeHint.expandedTo(minSize);
     if (s.width() == QWIDGETSIZE_MAX && !(align & Qt::AlignHorizontal_Mask))
         if (!(sizePolicy.horizontalPolicy() & QSizePolicy::GrowFlag))
             s.setWidth(hint.width());
@@ -414,7 +414,7 @@ Q_WIDGETS_EXPORT QSize qSmartMaxSize(const QSize &sizeHint,
 
 Q_WIDGETS_EXPORT QSize qSmartMaxSize(const QWidgetItem *i, Qt::Alignment align)
 {
-    QWidget *w = const_cast<QWidgetItem*>(i)->widget();
+    auto w = const_cast<QWidgetItem*>(i)->widget();
 
     return qSmartMaxSize(w->sizeHint().expandedTo(w->minimumSizeHint()), w->minimumSize(), w->maximumSize(),
                             w->sizePolicy(), align);
@@ -428,11 +428,11 @@ Q_WIDGETS_EXPORT QSize qSmartMaxSize(const QWidget *w, Qt::Alignment align)
 
 Q_WIDGETS_EXPORT int qSmartSpacing(const QLayout *layout, QStyle::PixelMetric pm)
 {
-    QObject *parent = layout->parent();
+    auto parent = layout->parent();
     if (!parent) {
         return -1;
     } else if (parent->isWidgetType()) {
-        QWidget *pw = static_cast<QWidget *>(parent);
+        auto pw = static_cast<QWidget *>(parent);
         return pw->style()->pixelMetric(pm, 0, pw);
     } else {
         return static_cast<QLayout *>(parent)->spacing();

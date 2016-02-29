@@ -135,7 +135,7 @@ QProxyStyle::QProxyStyle(const QString &key) :
     QCommonStyle(*new QProxyStylePrivate())
 {
     Q_D(QProxyStyle);
-    QStyle *style = QStyleFactory::create(key);
+    auto style = QStyleFactory::create(key);
     if (style) {
         d->baseStyle = style;
         style->setProxy(this);

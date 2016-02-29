@@ -144,7 +144,7 @@ bool QProgressBarPrivate::repaintRequired() const
     if (value == lastPaintedValue)
         return false;
 
-    int valueDifference = qAbs(value - lastPaintedValue);
+    auto valueDifference = qAbs(value - lastPaintedValue);
 
     // Check if the text needs to be repainted
     if (value == minimum || value == maximum)
@@ -160,12 +160,12 @@ bool QProgressBarPrivate::repaintRequired() const
     // Check if the bar needs to be repainted
     QStyleOptionProgressBar opt;
     q->initStyleOption(&opt);
-    int cw = q->style()->pixelMetric(QStyle::PM_ProgressBarChunkWidth, &opt, q);
-    QRect groove  = q->style()->subElementRect(QStyle::SE_ProgressBarGroove, &opt, q);
+    auto cw = q->style()->pixelMetric(QStyle::PM_ProgressBarChunkWidth, &opt, q);
+    auto groove  = q->style()->subElementRect(QStyle::SE_ProgressBarGroove, &opt, q);
     // This expression is basically
     // (valueDifference / (maximum - minimum) > cw / groove.width())
     // transformed to avoid integer division.
-    int grooveBlock = (q->orientation() == Qt::Horizontal) ? groove.width() : groove.height();
+    auto grooveBlock = (q->orientation() == Qt::Horizontal) ? groove.width() : groove.height();
     return (valueDifference * grooveBlock > cw * (maximum - minimum));
 }
 
@@ -422,11 +422,11 @@ void QProgressBar::paintEvent(QPaintEvent *)
 QSize QProgressBar::sizeHint() const
 {
     ensurePolished();
-    QFontMetrics fm = fontMetrics();
+    auto fm = fontMetrics();
     QStyleOptionProgressBar opt;
     initStyleOption(&opt);
-    int cw = style()->pixelMetric(QStyle::PM_ProgressBarChunkWidth, &opt, this);
-    QSize size = QSize(qMax(9, cw) * 7 + fm.width(QLatin1Char('0')) * 4, fm.height() + 8);
+    auto cw = style()->pixelMetric(QStyle::PM_ProgressBarChunkWidth, &opt, this);
+    auto size = QSize(qMax(9, cw) * 7 + fm.width(QLatin1Char('0')) * 4, fm.height() + 8);
     if (opt.orientation == Qt::Vertical)
         size = size.transposed();
     return style()->sizeFromContents(QStyle::CT_ProgressBar, &opt, size, this);
@@ -467,10 +467,10 @@ QString QProgressBar::text() const
             || (d->value == INT_MIN && d->minimum == INT_MIN))
         return QString();
 
-    qint64 totalSteps = qint64(d->maximum) - d->minimum;
+    auto totalSteps = qint64(d->maximum) - d->minimum;
 
-    QString result = d->format;
-    QLocale locale = d->locale; // Omit group separators for compatibility with previous versions that were non-localized.
+    auto result = d->format;
+    auto locale = d->locale; // Omit group separators for compatibility with previous versions that were non-localized.
     locale.setNumberOptions(locale.numberOptions() | QLocale::OmitGroupSeparator);
     result.replace(QLatin1String("%m"), locale.toString(totalSteps));
     result.replace(QLatin1String("%v"), locale.toString(d->value));
@@ -506,7 +506,7 @@ void QProgressBar::setOrientation(Qt::Orientation orientation)
         return;
     d->orientation = orientation;
     if (!testAttribute(Qt::WA_WState_OwnSizePolicy)) {
-        QSizePolicy sp = sizePolicy();
+        auto sp = sizePolicy();
         sp.transpose();
         setSizePolicy(sp);
         setAttribute(Qt::WA_WState_OwnSizePolicy, false);

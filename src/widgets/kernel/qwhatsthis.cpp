@@ -171,7 +171,7 @@ static const int hMargin = 12;
 
 static inline bool dropShadow()
 {
-    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+    if (auto theme = QGuiApplicationPrivate::platformTheme())
         return theme->themeHint(QPlatformTheme::DropShadow).toBool();
     return false;
 }
@@ -211,7 +211,7 @@ QWhatsThat::QWhatsThat(const QString& txt, QWidget* parent, QWidget *showTextFor
     }
     else
     {
-        int sw = QApplication::desktop()->width() / 3;
+        auto sw = QApplication::desktop()->width() / 3;
         if (sw < 200)
             sw = 200;
         else if (sw > 300)
@@ -255,7 +255,7 @@ void QWhatsThat::mouseReleaseEvent(QMouseEvent* e)
     if (!pressed)
         return;
     if (widget && e->button() == Qt::LeftButton && doc && rect().contains(e->pos())) {
-        QString a = doc->documentLayout()->anchorAt(e->pos() -  QPoint(hMargin, vMargin));
+        auto a = doc->documentLayout()->anchorAt(e->pos() -  QPoint(hMargin, vMargin));
         QString href;
         if (anchor == a)
             href = a;
@@ -276,7 +276,7 @@ void QWhatsThat::mouseMoveEvent(QMouseEvent* e)
 #else
     if (!doc)
         return;
-    QString a = doc->documentLayout()->anchorAt(e->pos() -  QPoint(hMargin, vMargin));
+    auto a = doc->documentLayout()->anchorAt(e->pos() -  QPoint(hMargin, vMargin));
     if (!a.isEmpty())
         setCursor(Qt::PointingHandCursor);
     else
@@ -291,9 +291,9 @@ void QWhatsThat::keyPressEvent(QKeyEvent*)
 
 void QWhatsThat::paintEvent(QPaintEvent*)
 {
-    const bool drawShadow = dropShadow();
+    const auto drawShadow = dropShadow();
 
-    QRect r = rect();
+    auto r = rect();
     r.adjust(0, 0, -1, -1);
     if (drawShadow)
         r.adjust(0, 0, -shadowWidth, -shadowWidth);
@@ -302,8 +302,8 @@ void QWhatsThat::paintEvent(QPaintEvent*)
     p.setPen(QPen(palette().toolTipText(), 0));
     p.setBrush(palette().toolTipBase());
     p.drawRect(r);
-    int w = r.width();
-    int h = r.height();
+    auto w = r.width();
+    auto h = r.height();
     p.setPen(palette().brush(QPalette::Dark).color());
     p.drawRect(1, 1, w-2, h-2);
     if (drawShadow) {
@@ -325,7 +325,7 @@ void QWhatsThat::paintEvent(QPaintEvent*)
 
     if (doc) {
         p.translate(r.x(), r.y());
-        QRect rect = r;
+        auto rect = r;
         rect.translate(-r.x(), -r.y());
         p.setClipRect(rect);
         QAbstractTextDocumentLayout::PaintContext context;
@@ -375,9 +375,9 @@ class QWhatsThisPrivate : public QObject
 
 void QWhatsThisPrivate::notifyToplevels(QEvent *e)
 {
-    QWidgetList toplevels = QApplication::topLevelWidgets();
-    for (int i = 0; i < toplevels.count(); ++i) {
-        QWidget *w = toplevels.at(i);
+    auto toplevels = QApplication::topLevelWidgets();
+    for (auto i = 0; i < toplevels.count(); ++i) {
+        auto w = toplevels.at(i);
         QApplication::sendEvent(w, e);
     }
 }
@@ -390,10 +390,10 @@ QWhatsThisPrivate::QWhatsThisPrivate()
     instance = this;
     qApp->installEventFilter(this);
 
-    QPoint pos = QCursor::pos();
-    if (QWidget *w = QApplication::widgetAt(pos)) {
+    auto pos = QCursor::pos();
+    if (auto w = QApplication::widgetAt(pos)) {
         QHelpEvent e(QEvent::QueryWhatsThis, w->mapFromGlobal(pos), pos);
-        bool sentEvent = QApplication::sendEvent(w, &e);
+        auto sentEvent = QApplication::sendEvent(w, &e);
 #ifdef QT_NO_CURSOR
         Q_UNUSED(sentEvent);
 #else
@@ -427,12 +427,12 @@ bool QWhatsThisPrivate::eventFilter(QObject *o, QEvent *e)
 {
     if (!o->isWidgetType())
         return false;
-    QWidget * w = static_cast<QWidget *>(o);
-    bool customWhatsThis = w->testAttribute(Qt::WA_CustomWhatsThis);
+    auto w = static_cast<QWidget *>(o);
+    auto customWhatsThis = w->testAttribute(Qt::WA_CustomWhatsThis);
     switch (e->type()) {
     case QEvent::MouseButtonPress:
     {
-        QMouseEvent *me = static_cast<QMouseEvent*>(e);
+        auto me = static_cast<QMouseEvent*>(e);
         if (me->button() == Qt::RightButton || customWhatsThis)
             return false;
         QHelpEvent e(QEvent::WhatsThis, me->pos(), me->globalPos());
@@ -443,9 +443,9 @@ bool QWhatsThisPrivate::eventFilter(QObject *o, QEvent *e)
 
     case QEvent::MouseMove:
     {
-        QMouseEvent *me = static_cast<QMouseEvent*>(e);
+        auto me = static_cast<QMouseEvent*>(e);
         QHelpEvent e(QEvent::QueryWhatsThis, me->pos(), me->globalPos());
-        bool sentEvent = QApplication::sendEvent(w, &e);
+        auto sentEvent = QApplication::sendEvent(w, &e);
 #ifdef QT_NO_CURSOR
         Q_UNUSED(sentEvent);
 #else
@@ -463,7 +463,7 @@ bool QWhatsThisPrivate::eventFilter(QObject *o, QEvent *e)
         break;
     case QEvent::KeyPress:
     {
-        QKeyEvent* kev = (QKeyEvent*)e;
+        auto kev = (QKeyEvent*)e;
 
         if (kev->matches(QKeySequence::Cancel)) {
             QWhatsThis::leaveWhatsThisMode();
@@ -570,7 +570,7 @@ void QWhatsThisPrivate::say(QWidget * widget, const QString &text, int x, int y)
     if (text.size() == 0)
         return;
     // make a fresh widget, and set it up
-    QWhatsThat *whatsThat = new QWhatsThat(
+    auto whatsThat = new QWhatsThat(
         text,
 #if defined(Q_DEAD_CODE_FROM_QT4_X11) && !defined(QT_NO_CURSOR)
         QApplication::desktop()->screen(widget ? widget->x11Info().screen() : QCursor::x11Screen()),
@@ -583,7 +583,7 @@ void QWhatsThisPrivate::say(QWidget * widget, const QString &text, int x, int y)
 
     // okay, now to find a suitable location
 
-    int scr = (widget ?
+    auto scr = (widget ?
                 QApplication::desktop()->screenNumber(widget) :
 #if defined(Q_DEAD_CODE_FROM_QT4_X11) && !defined(QT_NO_CURSOR)
                 QCursor::x11Screen()
@@ -591,12 +591,12 @@ void QWhatsThisPrivate::say(QWidget * widget, const QString &text, int x, int y)
                 QApplication::desktop()->screenNumber(QPoint(x,y))
 #endif // Q_DEAD_CODE_FROM_QT4_X11
                );
-    QRect screen = QApplication::desktop()->screenGeometry(scr);
+    auto screen = QApplication::desktop()->screenGeometry(scr);
 
-    int w = whatsThat->width();
-    int h = whatsThat->height();
-    int sx = screen.x();
-    int sy = screen.y();
+    auto w = whatsThat->width();
+    auto h = whatsThat->height();
+    auto sx = screen.x();
+    auto sy = screen.y();
 
     // first try locating the widget immediately above/below,
     // with nice alignment if possible.

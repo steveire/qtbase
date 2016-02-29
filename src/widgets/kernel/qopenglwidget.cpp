@@ -619,11 +619,11 @@ void QOpenGLWidgetPaintDevicePrivate::beginPaint()
     // like using QOpenGLWidget as the viewport of a graphics view, that expect clearing
     // with the palette's background color.
     if (w->autoFillBackground()) {
-        QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+        auto f = QOpenGLContext::currentContext()->functions();
         if (w->format().hasAlpha()) {
             f->glClearColor(0, 0, 0, 0);
         } else {
-            QColor c = w->palette().brush(w->backgroundRole()).color();
+            auto c = w->palette().brush(w->backgroundRole()).color();
             float alpha = c.alphaF();
             f->glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
         }
@@ -633,8 +633,8 @@ void QOpenGLWidgetPaintDevicePrivate::beginPaint()
 
 void QOpenGLWidgetPaintDevice::ensureActiveTarget()
 {
-    QOpenGLWidgetPaintDevicePrivate *d = static_cast<QOpenGLWidgetPaintDevicePrivate *>(d_ptr.data());
-    QOpenGLWidgetPrivate *wd = static_cast<QOpenGLWidgetPrivate *>(QWidgetPrivate::get(d->w));
+    auto d = static_cast<QOpenGLWidgetPaintDevicePrivate *>(d_ptr.data());
+    auto wd = static_cast<QOpenGLWidgetPrivate *>(QWidgetPrivate::get(d->w));
     if (!wd->initialized)
         return;
 
@@ -695,8 +695,8 @@ void QOpenGLWidgetPrivate::recreateFbo()
     delete resolvedFbo;
     resolvedFbo = 0;
 
-    int samples = requestedSamples;
-    QOpenGLExtensions *extfuncs = static_cast<QOpenGLExtensions *>(context->functions());
+    auto samples = requestedSamples;
+    auto extfuncs = static_cast<QOpenGLExtensions *>(context->functions());
     if (!extfuncs->hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample))
         samples = 0;
 
@@ -704,7 +704,7 @@ void QOpenGLWidgetPrivate::recreateFbo()
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
     format.setSamples(samples);
 
-    const QSize deviceSize = q->size() * q->devicePixelRatioF();
+    const auto deviceSize = q->size() * q->devicePixelRatioF();
     fbo = new QOpenGLFramebufferObject(deviceSize, format);
     if (samples > 0)
         resolvedFbo = new QOpenGLFramebufferObject(deviceSize);
@@ -744,8 +744,8 @@ void QOpenGLWidgetPrivate::initialize()
 
     // Get our toplevel's context with which we will share in order to make the
     // texture usable by the underlying window's backingstore.
-    QWidget *tlw = q->window();
-    QOpenGLContext *shareContext = get(tlw)->shareContext();
+    auto tlw = q->window();
+    auto shareContext = get(tlw)->shareContext();
     if (Q_UNLIKELY(!shareContext)) {
         qWarning("QOpenGLWidget: Cannot be used without a context shared with the toplevel.");
         return;
@@ -768,7 +768,7 @@ void QOpenGLWidgetPrivate::initialize()
     }
 
     // Propagate settings that make sense only for the tlw.
-    QSurfaceFormat tlwFormat = tlw->windowHandle()->format();
+    auto tlwFormat = tlw->windowHandle()->format();
     if (requestedFormat.swapInterval() != tlwFormat.swapInterval()) {
         // Most platforms will pick up the changed swap interval on the next
         // makeCurrent or swapBuffers.
@@ -818,10 +818,10 @@ void QOpenGLWidgetPrivate::invokeUserPaint()
 {
     Q_Q(QOpenGLWidget);
 
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    auto ctx = QOpenGLContext::currentContext();
     Q_ASSERT(ctx && fbo);
 
-    QOpenGLFunctions *f = ctx->functions();
+    auto f = ctx->functions();
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbo->handle();
 
     f->glViewport(0, 0, q->width() * q->devicePixelRatioF(), q->height() * q->devicePixelRatioF());
@@ -852,11 +852,11 @@ void QOpenGLWidgetPrivate::render()
 
 void QOpenGLWidgetPrivate::invalidateFbo()
 {
-    QOpenGLExtensions *f = static_cast<QOpenGLExtensions *>(QOpenGLContext::currentContext()->functions());
+    auto f = static_cast<QOpenGLExtensions *>(QOpenGLContext::currentContext()->functions());
     if (f->hasOpenGLExtension(QOpenGLExtensions::DiscardFramebuffer)) {
-        const int gl_color_attachment0 = 0x8CE0;  // GL_COLOR_ATTACHMENT0
-        const int gl_depth_attachment = 0x8D00;   // GL_DEPTH_ATTACHMENT
-        const int gl_stencil_attachment = 0x8D20; // GL_STENCIL_ATTACHMENT
+        const auto gl_color_attachment0 = 0x8CE0;  // GL_COLOR_ATTACHMENT0
+        const auto gl_depth_attachment = 0x8D00;   // GL_DEPTH_ATTACHMENT
+        const auto gl_stencil_attachment = 0x8D20; // GL_STENCIL_ATTACHMENT
         const GLenum attachments[] = {
             gl_color_attachment0, gl_depth_attachment, gl_stencil_attachment
         };
@@ -884,7 +884,7 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
         q->makeCurrent();
     }
 
-    QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatioF(), false, false);
+    auto res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatioF(), false, false);
     res.setDevicePixelRatio(q->devicePixelRatioF());
 
     // While we give no guarantees of what is going to be left bound, prefer the
@@ -1224,9 +1224,9 @@ int QOpenGLWidget::metric(QPaintDevice::PaintDeviceMetric metric) const
     if (d->inBackingStorePaint)
         return QWidget::metric(metric);
 
-    QWidget *tlw = window();
-    QWindow *window = tlw ? tlw->windowHandle() : 0;
-    QScreen *screen = tlw && tlw->windowHandle() ? tlw->windowHandle()->screen() : 0;
+    auto tlw = window();
+    auto window = tlw ? tlw->windowHandle() : 0;
+    auto screen = tlw && tlw->windowHandle() ? tlw->windowHandle()->screen() : 0;
     if (!screen && QGuiApplication::primaryScreen())
         screen = QGuiApplication::primaryScreen();
 

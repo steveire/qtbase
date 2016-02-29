@@ -229,8 +229,8 @@ void QFrame::initStyleOption(QStyleOptionFrame *option) const
     Q_D(const QFrame);
     option->initFrom(this);
 
-    int frameShape  = d->frameStyle & QFrame::Shape_Mask;
-    int frameShadow = d->frameStyle & QFrame::Shadow_Mask;
+    auto frameShape  = d->frameStyle & QFrame::Shape_Mask;
+    auto frameShadow = d->frameStyle & QFrame::Shadow_Mask;
     option->frameShape = Shape(int(option->frameShape) | frameShape);
     option->rect = frameRect();
     switch (frameShape) {
@@ -417,7 +417,7 @@ void QFramePrivate::updateStyledFrameWidths()
     QStyleOptionFrame opt;
     q->initStyleOption(&opt);
 
-    QRect cr = q->style()->subElementRect(QStyle::SE_ShapedFrameContents, &opt, q);
+    auto cr = q->style()->subElementRect(QStyle::SE_ShapedFrameContents, &opt, q);
     leftFrameWidth = cr.left() - opt.rect.left();
     topFrameWidth = cr.top() - opt.rect.top();
     rightFrameWidth = opt.rect.right() - cr.right(),
@@ -434,7 +434,7 @@ void QFramePrivate::updateStyledFrameWidths()
 void QFramePrivate::updateFrameWidth()
 {
     Q_Q(QFrame);
-    QRect fr = q->frameRect();
+    auto fr = q->frameRect();
     updateStyledFrameWidths();
     q->setFrameRect(fr);
     setLayoutItemMargins(QStyle::SE_FrameLayoutItem);
@@ -475,7 +475,7 @@ int QFrame::frameWidth() const
 QRect QFrame::frameRect() const
 {
     Q_D(const QFrame);
-    QRect fr = contentsRect();
+    auto fr = contentsRect();
     fr.adjust(-d->leftFrameWidth, -d->topFrameWidth, d->rightFrameWidth, d->bottomFrameWidth);
     return fr;
 }
@@ -483,7 +483,7 @@ QRect QFrame::frameRect() const
 void QFrame::setFrameRect(const QRect &r)
 {
     Q_D(QFrame);
-    QRect cr = r.isValid() ? r : rect();
+    auto cr = r.isValid() ? r : rect();
     cr.adjust(d->leftFrameWidth, d->topFrameWidth, -d->rightFrameWidth, -d->bottomFrameWidth);
     setContentsMargins(cr.left(), cr.top(), rect().right() - cr.right(), rect().bottom() - cr.bottom());
 }
@@ -547,7 +547,7 @@ bool QFrame::event(QEvent *e)
 {
     if (e->type() == QEvent::ParentChange)
         d_func()->updateFrameWidth();
-    bool result = QWidget::event(e);
+    auto result = QWidget::event(e);
     //this has to be done after the widget has been polished
     if (e->type() == QEvent::Polish)
         d_func()->updateFrameWidth();

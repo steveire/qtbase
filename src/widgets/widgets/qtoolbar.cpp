@@ -87,8 +87,8 @@ void QToolBarPrivate::init()
     q->setAttribute(Qt::WA_X11NetWmWindowTypeToolBar);
     q->setProperty("_q_platform_MacUseNSWindow", QVariant(true));
 
-    QStyle *style = q->style();
-    int e = style->pixelMetric(QStyle::PM_ToolBarIconSize, 0, q);
+    auto style = q->style();
+    auto e = style->pixelMetric(QStyle::PM_ToolBarIconSize, 0, q);
     iconSize = QSize(e, e);
 
     layout = new QToolBarLayout(q);
@@ -146,8 +146,8 @@ void QToolBarPrivate::updateWindowFlags(bool floating, bool unplug)
 void QToolBarPrivate::setWindowState(bool floating, bool unplug, const QRect &rect)
 {
     Q_Q(QToolBar);
-    bool visible = !q->isHidden();
-    bool wasFloating = q->isFloating(); // ...is also currently using popup menus
+    auto visible = !q->isHidden();
+    auto wasFloating = q->isFloating(); // ...is also currently using popup menus
 
     q->hide();
 
@@ -173,9 +173,9 @@ void QToolBarPrivate::initDrag(const QPoint &pos)
     if (state != 0)
         return;
 
-    QMainWindow *win = qobject_cast<QMainWindow*>(parent);
+    auto win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
-    QMainWindowLayout *layout = qt_mainwindow_layout(win);
+    auto layout = qt_mainwindow_layout(win);
     Q_ASSERT(layout != 0);
     if (layout->pluggingWidget != 0) // the main window is animating a docking operation
         return;
@@ -199,9 +199,9 @@ void QToolBarPrivate::startDrag(bool moving)
     if ((moving && state->moving) || state->dragging)
         return;
 
-    QMainWindow *win = qobject_cast<QMainWindow*>(parent);
+    auto win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
-    QMainWindowLayout *layout = qt_mainwindow_layout(win);
+    auto layout = qt_mainwindow_layout(win);
     Q_ASSERT(layout != 0);
 
     if (!moving) {
@@ -220,7 +220,7 @@ void QToolBarPrivate::endDrag()
     q->releaseMouse();
 
     if (state->dragging) {
-        QMainWindowLayout *layout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
+        auto layout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
         Q_ASSERT(layout != 0);
 
         if (!layout->plug(state->widgetItem)) {
@@ -306,17 +306,17 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
         return false;
     }
 
-    QMainWindow *win = qobject_cast<QMainWindow*>(parent);
+    auto win = qobject_cast<QMainWindow*>(parent);
     if (win == 0)
         return true;
 
-    QMainWindowLayout *layout = qt_mainwindow_layout(win);
+    auto layout = qt_mainwindow_layout(win);
     Q_ASSERT(layout != 0);
 
     if (layout->pluggingWidget == 0
         && (event->pos() - state->pressPos).manhattanLength() > QApplication::startDragDistance()) {
-            const bool wasDragging = state->dragging;
-            const bool moving = !q->isWindow() && (orientation == Qt::Vertical ?
+            const auto wasDragging = state->dragging;
+            const auto moving = !q->isWindow() && (orientation == Qt::Vertical ?
                 event->x() >= 0 && event->x() < q->width() :
                 event->y() >= 0 && event->y() < q->height());
 
@@ -331,7 +331,7 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
     }
 
     if (state->dragging) {
-        QPoint pos = event->globalPos();
+        auto pos = event->globalPos();
         // if we are right-to-left, we move so as to keep the right edge the same distance
         // from the mouse
         if (q->isLeftToRight())
@@ -344,10 +344,10 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
     } else if (state->moving) {
 
         const QPoint rtl(q->width() - state->pressPos.x(), state->pressPos.y()); //for RTL
-        const QPoint globalPressPos = q->mapToGlobal(q->isRightToLeft() ? rtl : state->pressPos);
-        int pos = 0;
+        const auto globalPressPos = q->mapToGlobal(q->isRightToLeft() ? rtl : state->pressPos);
+        auto pos = 0;
 
-        QPoint delta = event->globalPos() - globalPressPos;
+        auto delta = event->globalPos() - globalPressPos;
         if (orientation == Qt::Vertical) {
             pos = q->y() + delta.y();
         } else {
@@ -366,7 +366,7 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
 void QToolBarPrivate::unplug(const QRect &_r)
 {
     Q_Q(QToolBar);
-    QRect r = _r;
+    auto r = _r;
     r.moveTopLeft(q->mapToGlobal(QPoint(0, 0)));
     setWindowState(true, true, r);
     layout->setExpanded(false);
@@ -671,12 +671,12 @@ QSize QToolBar::iconSize() const
 void QToolBar::setIconSize(const QSize &iconSize)
 {
     Q_D(QToolBar);
-    QSize sz = iconSize;
+    auto sz = iconSize;
     if (!sz.isValid()) {
-        QMainWindow *mw = qobject_cast<QMainWindow *>(parentWidget());
+        auto mw = qobject_cast<QMainWindow *>(parentWidget());
         if (mw && mw->layout()) {
-            QLayout *layout = mw->layout();
-            int i = 0;
+            auto layout = mw->layout();
+            auto i = 0;
             QLayoutItem *item = 0;
             do {
                 item = layout->itemAt(i++);
@@ -686,7 +686,7 @@ void QToolBar::setIconSize(const QSize &iconSize)
         }
     }
     if (!sz.isValid()) {
-        const int metric = style()->pixelMetric(QStyle::PM_ToolBarIconSize, 0, this);
+        const auto metric = style()->pixelMetric(QStyle::PM_ToolBarIconSize, 0, this);
         sz = QSize(metric, metric);
     }
     if (d->iconSize != sz) {
@@ -735,8 +735,8 @@ void QToolBar::setToolButtonStyle(Qt::ToolButtonStyle toolButtonStyle)
 */
 void QToolBar::clear()
 {
-    QList<QAction *> actions = this->actions();
-    for(int i = 0; i < actions.size(); i++)
+    auto actions = this->actions();
+    for(auto i = 0; i < actions.size(); i++)
         removeAction(actions.at(i));
 }
 
@@ -748,7 +748,7 @@ void QToolBar::clear()
 */
 QAction *QToolBar::addAction(const QString &text)
 {
-    QAction *action = new QAction(text, this);
+    auto action = new QAction(text, this);
     addAction(action);
     return action;
 }
@@ -761,7 +761,7 @@ QAction *QToolBar::addAction(const QString &text)
 */
 QAction *QToolBar::addAction(const QIcon &icon, const QString &text)
 {
-    QAction *action = new QAction(icon, text, this);
+    auto action = new QAction(icon, text, this);
     addAction(action);
     return action;
 }
@@ -776,7 +776,7 @@ QAction *QToolBar::addAction(const QIcon &icon, const QString &text)
 QAction *QToolBar::addAction(const QString &text,
                              const QObject *receiver, const char* member)
 {
-    QAction *action = new QAction(text, this);
+    auto action = new QAction(text, this);
     QObject::connect(action, SIGNAL(triggered(bool)), receiver, member);
     addAction(action);
     return action;
@@ -793,7 +793,7 @@ QAction *QToolBar::addAction(const QString &text,
 QAction *QToolBar::addAction(const QIcon &icon, const QString &text,
                              const QObject *receiver, const char* member)
 {
-    QAction *action = new QAction(icon, text, this);
+    auto action = new QAction(icon, text, this);
     QObject::connect(action, SIGNAL(triggered(bool)), receiver, member);
     addAction(action);
     return action;
@@ -882,7 +882,7 @@ QAction *QToolBar::addAction(const QIcon &icon, const QString &text,
 */
 QAction *QToolBar::addSeparator()
 {
-    QAction *action = new QAction(this);
+    auto action = new QAction(this);
     action->setSeparator(true);
     addAction(action);
     return action;
@@ -896,7 +896,7 @@ QAction *QToolBar::addSeparator()
 */
 QAction *QToolBar::insertSeparator(QAction *before)
 {
-    QAction *action = new QAction(this);
+    auto action = new QAction(this);
     action->setSeparator(true);
     insertAction(before, action);
     return action;
@@ -919,7 +919,7 @@ QAction *QToolBar::insertSeparator(QAction *before)
 */
 QAction *QToolBar::addWidget(QWidget *widget)
 {
-    QWidgetAction *action = new QWidgetAction(this);
+    auto action = new QWidgetAction(this);
     action->setDefaultWidget(widget);
     action->d_func()->autoCreated = true;
     addAction(action);
@@ -938,7 +938,7 @@ QAction *QToolBar::addWidget(QWidget *widget)
 */
 QAction *QToolBar::insertWidget(QAction *before, QWidget *widget)
 {
-    QWidgetAction *action = new QWidgetAction(this);
+    auto action = new QWidgetAction(this);
     action->setDefaultWidget(widget);
     action->d_func()->autoCreated = true;
     insertAction(before, action);
@@ -955,7 +955,7 @@ QRect QToolBar::actionGeometry(QAction *action) const
 {
     Q_D(const QToolBar);
 
-    int index = d->layout->indexOf(action);
+    auto index = d->layout->indexOf(action);
     if (index == -1)
         return QRect();
     return d->layout->itemAt(index)->widget()->geometry();
@@ -970,11 +970,11 @@ QRect QToolBar::actionGeometry(QAction *action) const
 QAction *QToolBar::actionAt(const QPoint &p) const
 {
     Q_D(const QToolBar);
-    QWidget *widget = childAt(p);
-    int index = d->layout->indexOf(widget);
+    auto widget = childAt(p);
+    auto index = d->layout->indexOf(widget);
     if (index == -1)
         return 0;
-    QLayoutItem *item = d->layout->itemAt(index);
+    auto item = d->layout->itemAt(index);
     return static_cast<QToolBarItem*>(item)->action;
 }
 
@@ -989,8 +989,8 @@ QAction *QToolBar::actionAt(const QPoint &p) const
 void QToolBar::actionEvent(QActionEvent *event)
 {
     Q_D(QToolBar);
-    QAction *action = event->action();
-    QWidgetAction *widgetAction = qobject_cast<QWidgetAction *>(action);
+    auto action = event->action();
+    auto widgetAction = qobject_cast<QWidgetAction *>(action);
 
     switch (event->type()) {
         case QEvent::ActionAdded: {
@@ -1005,7 +1005,7 @@ void QToolBar::actionEvent(QActionEvent *event)
             if (widgetAction != 0 && widgetAction->d_func()->autoCreated)
                 widgetAction->setParent(this);
 
-            int index = d->layout->count();
+            auto index = d->layout->count();
             if (event->before()) {
                 index = d->layout->indexOf(event->before());
                 Q_ASSERT_X(index != -1, "QToolBar::insertAction", "internal error");
@@ -1019,7 +1019,7 @@ void QToolBar::actionEvent(QActionEvent *event)
             break;
 
         case QEvent::ActionRemoved: {
-            int index = d->layout->indexOf(action);
+            auto index = d->layout->indexOf(action);
             if (index != -1) {
                 delete d->layout->takeAt(index);
             }
@@ -1060,7 +1060,7 @@ void QToolBar::paintEvent(QPaintEvent *)
     Q_D(QToolBar);
 
     QPainter p(this);
-    QStyle *style = this->style();
+    auto style = this->style();
     QStyleOptionToolBar opt;
     initStyleOption(&opt);
 
@@ -1090,20 +1090,20 @@ static bool waitForPopup(QToolBar *tb, QWidget *popup)
     if (popup == 0 || popup->isHidden())
         return false;
 
-    QWidget *w = popup;
+    auto w = popup;
     while (w != 0) {
         if (w == tb)
             return true;
         w = w->parentWidget();
     }
 
-    QMenu *menu = qobject_cast<QMenu*>(popup);
+    auto menu = qobject_cast<QMenu*>(popup);
     if (menu == 0)
         return false;
 
-    QAction *action = menu->menuAction();
-    QList<QWidget*> widgets = action->associatedWidgets();
-    for (int i = 0; i < widgets.count(); ++i) {
+    auto action = menu->menuAction();
+    auto widgets = action->associatedWidgets();
+    for (auto i = 0; i < widgets.count(); ++i) {
         if (waitForPopup(tb, widgets.at(i)))
             return true;
     }
@@ -1134,7 +1134,7 @@ bool QToolBar::event(QEvent *event)
     switch (event->type()) {
     case QEvent::Timer:
         if (d->waitForPopupTimer.timerId() == static_cast<QTimerEvent*>(event)->timerId()) {
-            QWidget *w = QApplication::activePopupWidget();
+            auto w = QApplication::activePopupWidget();
             if (!waitForPopup(this, w)) {
                 d->waitForPopupTimer.stop();
                 if (!this->underMouse())
@@ -1172,7 +1172,7 @@ bool QToolBar::event(QEvent *event)
         return true;
     case QEvent::HoverMove: {
 #ifndef QT_NO_CURSOR
-        QHoverEvent *e = static_cast<QHoverEvent*>(event);
+        auto e = static_cast<QHoverEvent*>(event);
         QStyleOptionToolBar opt;
         initStyleOption(&opt);
         if (style()->subElementRect(QStyle::SE_ToolBarHandle, &opt, this).contains(e->pos()))
@@ -1210,7 +1210,7 @@ bool QToolBar::event(QEvent *event)
             if (!d->layout->expanded)
                 break;
 
-            QWidget *w = QApplication::activePopupWidget();
+            auto w = QApplication::activePopupWidget();
             if (waitForPopup(this, w)) {
                 d->waitForPopupTimer.start(POPUP_TIMER_INTERVAL, this);
                 break;
@@ -1248,7 +1248,7 @@ QWidget *QToolBar::widgetForAction(QAction *action) const
 {
     Q_D(const QToolBar);
 
-    int index = d->layout->indexOf(action);
+    auto index = d->layout->indexOf(action);
     if (index == -1)
         return 0;
 
@@ -1278,12 +1278,12 @@ void QToolBar::initStyleOption(QStyleOptionToolBar *option) const
     option->toolBarArea = Qt::NoToolBarArea;
 
     // Add more styleoptions if the toolbar has been added to a mainwindow.
-    QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
+    auto mainWindow = qobject_cast<QMainWindow *>(parentWidget());
 
     if (!mainWindow)
         return;
 
-    QMainWindowLayout *layout = qt_mainwindow_layout(mainWindow);
+    auto layout = qt_mainwindow_layout(mainWindow);
     Q_ASSERT_X(layout != 0, "QToolBar::initStyleOption()",
                "QMainWindow->layout() != QMainWindowLayout");
 

@@ -154,7 +154,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
     AttributeSelector attr;
 
     // pixmap based style doesn't support any features
-    bool styleIsPixmapBased = baseStyle()->inherits("QMacStyle")
+    auto styleIsPixmapBased = baseStyle()->inherits("QMacStyle")
                            || baseStyle()->inherits("QWindowsXPStyle");
 
 

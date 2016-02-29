@@ -120,7 +120,7 @@ QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn)
     // window to ParentRelative (so that it inherits the background of its X11 parent window), call
     // xcb_clear_region before painting (so that the inherited background is visible) and then grab
     // the just-drawn background from the X11 server.
-    bool hasAlphaChannel = QXcbIntegrationFunctions::xEmbedSystemTrayVisualHasAlphaChannel();
+    auto hasAlphaChannel = QXcbIntegrationFunctions::xEmbedSystemTrayVisualHasAlphaChannel();
     setAttribute(Qt::WA_TranslucentBackground, hasAlphaChannel);
     if (!hasAlphaChannel) {
         createWinId();
@@ -172,7 +172,7 @@ QRect QSystemTrayIconSys::globalGeometry() const
 
 void QSystemTrayIconSys::mousePressEvent(QMouseEvent *ev)
 {
-    QPoint globalPos = ev->globalPos();
+    auto globalPos = ev->globalPos();
 #ifndef QT_NO_CONTEXTMENU
     if (ev->button() == Qt::RightButton && q->contextMenu())
         q->contextMenu()->popup(globalPos);
@@ -340,7 +340,7 @@ bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
         return true;
 
     // no QPlatformSystemTrayIcon so fall back to default xcb platform behavior
-    const QString platform = QGuiApplication::platformName();
+    const auto platform = QGuiApplication::platformName();
     if (platform.compare(QLatin1String("xcb"), Qt::CaseInsensitive) == 0)
        return locateSystemTray();
     return false;

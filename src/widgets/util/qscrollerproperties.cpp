@@ -154,7 +154,7 @@ bool QScrollerProperties::operator!=(const QScrollerProperties &sp) const
 
 bool QScrollerPropertiesPrivate::operator==(const QScrollerPropertiesPrivate &p) const
 {
-    bool same = true;
+    auto same = true;
     same &= (mousePressEventDelay == p.mousePressEventDelay);
     same &= (dragStartDistance == p.dragStartDistance);
     same &= (dragVelocitySmoothingFactor == p.dragVelocitySmoothingFactor);

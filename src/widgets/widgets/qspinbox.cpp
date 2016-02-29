@@ -511,9 +511,9 @@ int QSpinBox::valueFromText(const QString &text) const
 {
     Q_D(const QSpinBox);
 
-    QString copy = text;
-    int pos = d->edit->cursorPosition();
-    QValidator::State state = QValidator::Acceptable;
+    auto copy = text;
+    auto pos = d->edit->cursorPosition();
+    auto state = QValidator::Acceptable;
     return d->validateAndInterpret(copy, pos, state).toInt();
 }
 
@@ -909,7 +909,7 @@ void QDoubleSpinBox::setDecimals(int decimals)
 QString QDoubleSpinBox::textFromValue(double value) const
 {
     Q_D(const QDoubleSpinBox);
-    QString str = locale().toString(value, 'f', d->decimals);
+    auto str = locale().toString(value, 'f', d->decimals);
     if (!d->showGroupSeparator && qAbs(value) >= 1000.0)
         str.remove(locale().groupSeparator());
 
@@ -932,9 +932,9 @@ double QDoubleSpinBox::valueFromText(const QString &text) const
 {
     Q_D(const QDoubleSpinBox);
 
-    QString copy = text;
-    int pos = d->edit->cursorPosition();
-    QValidator::State state = QValidator::Acceptable;
+    auto copy = text;
+    auto pos = d->edit->cursorPosition();
+    auto state = QValidator::Acceptable;
     return d->validateAndInterpret(copy, pos, state).toDouble();
 }
 
@@ -1032,13 +1032,13 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
 
         return cachedValue;
     }
-    const int max = maximum.toInt();
-    const int min = minimum.toInt();
+    const auto max = maximum.toInt();
+    const auto min = minimum.toInt();
 
-    QString copy = stripped(input, &pos);
+    auto copy = stripped(input, &pos);
     QSBDEBUG() << "input" << input << "copy" << copy;
     state = QValidator::Acceptable;
-    int num = min;
+    auto num = min;
 
     if (max != min && (copy.isEmpty()
                        || (min < 0 && copy == QLatin1String("-"))
@@ -1048,13 +1048,13 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
     } else if (copy.startsWith(QLatin1Char('-')) && min >= 0) {
         state = QValidator::Invalid; // special-case -0 will be interpreted as 0 and thus not be invalid with a range from 0-100
     } else {
-        bool ok = false;
+        auto ok = false;
         if (displayIntegerBase != 10) {
             num = copy.toInt(&ok, displayIntegerBase);
         } else {
             num = locale.toInt(copy, &ok);
             if (!ok && copy.contains(locale.groupSeparator()) && (max >= 1000 || min <= -1000)) {
-                QString copy2 = copy;
+                auto copy2 = copy;
                 copy2.remove(locale.groupSeparator());
                 num = locale.toInt(copy2, &ok);
             }
@@ -1164,15 +1164,15 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                    << state << " and value was " << cachedValue;
         return cachedValue;
     }
-    const double max = maximum.toDouble();
-    const double min = minimum.toDouble();
+    const auto max = maximum.toDouble();
+    const auto min = minimum.toDouble();
 
-    QString copy = stripped(input, &pos);
+    auto copy = stripped(input, &pos);
     QSBDEBUG() << "input" << input << "copy" << copy;
-    int len = copy.size();
-    double num = min;
-    const bool plus = max >= 0;
-    const bool minus = min <= 0;
+    auto len = copy.size();
+    auto num = min;
+    const auto plus = max >= 0;
+    const auto minus = min <= 0;
 
     switch (len) {
     case 0:
@@ -1201,7 +1201,7 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
         state = QValidator::Invalid;
         goto end;
     } else if (len > 1) {
-        const int dec = copy.indexOf(locale.decimalPoint());
+        const auto dec = copy.indexOf(locale.decimalPoint());
         if (dec != -1) {
             if (dec + 1 < copy.size() && copy.at(dec + 1) == locale.decimalPoint() && pos == dec + 1) {
                 copy.remove(dec + 1, 1); // typing a delimiter when you are on the delimiter
@@ -1212,7 +1212,7 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                 state = QValidator::Invalid;
                 goto end;
             }
-            for (int i=dec + 1; i<copy.size(); ++i) {
+            for (auto i=dec + 1; i<copy.size(); ++i) {
                 if (copy.at(i).isSpace() || copy.at(i) == locale.groupSeparator()) {
                     QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Invalid";
                     state = QValidator::Invalid;
@@ -1220,8 +1220,8 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                 }
             }
         } else {
-            const QChar last = copy.at(len - 1);
-            const QChar secondLast = copy.at(len - 2);
+            const auto last = copy.at(len - 1);
+            const auto secondLast = copy.at(len - 2);
             if ((last == locale.groupSeparator() || last.isSpace())
                 && (secondLast == locale.groupSeparator() || secondLast.isSpace())) {
                 state = QValidator::Invalid;
@@ -1236,7 +1236,7 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
     }
 
     {
-        bool ok = false;
+        auto ok = false;
         num = locale.toDouble(copy, &ok);
         QSBDEBUG() << __FILE__ << __LINE__ << locale << copy << num << ok;
 
@@ -1248,8 +1248,8 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                     goto end;
                 }
 
-                const int len = copy.size();
-                for (int i=0; i<len- 1; ++i) {
+                const auto len = copy.size();
+                for (auto i=0; i<len- 1; ++i) {
                     if (copy.at(i) == locale.groupSeparator() && copy.at(i + 1) == locale.groupSeparator()) {
                         QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Invalid";
                         state = QValidator::Invalid;
@@ -1257,7 +1257,7 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                     }
                 }
 
-                QString copy2 = copy;
+                auto copy2 = copy;
                 copy2.remove(locale.groupSeparator());
                 num = locale.toDouble(copy2, &ok);
                 QSBDEBUG() << locale.groupSeparator() << num << copy2 << ok;

@@ -98,7 +98,7 @@ public:
 #ifndef QT_NO_CONTEXTMENU
         void contextMenuEvent(QContextMenuEvent * e) Q_DECL_OVERRIDE
         {
-            QMenu *menu = createStandardContextMenu();
+            auto menu = createStandardContextMenu();
             menu->setAttribute(Qt::WA_DeleteOnClose);
             menu->popup(e->globalPos());
         }
@@ -109,9 +109,9 @@ public:
         : QWidget(parent)
         , copyAvailable(false)
     {
-        QVBoxLayout *layout = new QVBoxLayout;
+        auto layout = new QVBoxLayout;
         layout->setMargin(0);
-        QFrame *line = new QFrame(this);
+        auto line = new QFrame(this);
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
         layout->addWidget(line);
@@ -176,10 +176,10 @@ public:
         ensurePolished();
         QStyleOptionButton opt;
         initStyleOption(&opt);
-        const QFontMetrics fm = fontMetrics();
+        const auto fm = fontMetrics();
         opt.text = label(ShowLabel);
-        QSize sz = fm.size(Qt::TextShowMnemonic, opt.text);
-        QSize ret = style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this).
+        auto sz = fm.size(Qt::TextShowMnemonic, opt.text);
+        auto ret = style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this).
                       expandedTo(QApplication::globalStrut());
         opt.text = label(HideLabel);
         sz = fm.size(Qt::TextShowMnemonic, opt.text);
@@ -301,8 +301,8 @@ void QMessageBoxPrivate::setupLayout()
 {
     Q_Q(QMessageBox);
     delete q->layout();
-    QGridLayout *grid = new QGridLayout;
-    bool hasIcon = iconLabel->pixmap() && !iconLabel->pixmap()->isNull();
+    auto grid = new QGridLayout;
+    auto hasIcon = iconLabel->pixmap() && !iconLabel->pixmap()->isNull();
 
     if (hasIcon)
         grid->addWidget(iconLabel, 0, 0, 2, 1, Qt::AlignTop);
@@ -310,7 +310,7 @@ void QMessageBoxPrivate::setupLayout()
 #ifdef Q_OS_MAC
     QSpacerItem *indentSpacer = new QSpacerItem(14, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
 #else
-    QSpacerItem *indentSpacer = new QSpacerItem(hasIcon ? 7 : 15, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
+    auto indentSpacer = new QSpacerItem(hasIcon ? 7 : 15, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
 #endif
     grid->addItem(indentSpacer, 0, hasIcon ? 1 : 0, 2, 1);
     grid->addWidget(label, 0, hasIcon ? 2 : 1, 1, 1);
@@ -361,12 +361,12 @@ void QMessageBoxPrivate::updateSize()
     if (!q->isVisible())
         return;
 
-    QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
+    auto screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
 #if defined(Q_OS_WINCE)
     // the width of the screen, less the window border.
     int hardLimit = screenSize.width() - (q->frameGeometry().width() - q->geometry().width());
 #else
-    int hardLimit = qMin(screenSize.width() - 480, 1000); // can never get bigger than this
+    auto hardLimit = qMin(screenSize.width() - 480, 1000); // can never get bigger than this
     // on small screens allows the messagebox be the same size as the screen
     if (screenSize.width() <= 1024)
         hardLimit = screenSize.width();
@@ -376,7 +376,7 @@ void QMessageBoxPrivate::updateSize()
 #else
     // note: ideally on windows, hard and soft limits but it breaks compat
 #ifndef Q_OS_WINCE
-    int softLimit = qMin(screenSize.width()/2, 500);
+    auto softLimit = qMin(screenSize.width()/2, 500);
 #else
     int softLimit = qMin(screenSize.width() * 3 / 4, 500);
 #endif //Q_OS_WINCE
@@ -386,7 +386,7 @@ void QMessageBoxPrivate::updateSize()
         informativeLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
     label->setWordWrap(false); // makes the label return min size
-    int width = layoutMinimumWidth();
+    auto width = layoutMinimumWidth();
 
     if (width > softLimit) {
         label->setWordWrap(true);
@@ -394,8 +394,8 @@ void QMessageBoxPrivate::updateSize()
 
         if (width > hardLimit) {
             label->d_func()->ensureTextControl();
-            if (QWidgetTextControl *control = label->d_func()->control) {
-                QTextOption opt = control->document()->defaultTextOption();
+            if (auto control = label->d_func()->control) {
+                auto opt = control->document()->defaultTextOption();
                 opt.setWrapMode(QTextOption::WrapAnywhere);
                 control->document()->setDefaultTextOption(opt);
             }
@@ -411,8 +411,8 @@ void QMessageBoxPrivate::updateSize()
         width = qMax(width, layoutMinimumWidth());
         if (width > hardLimit) { // longest word is really big, so wrap anywhere
             informativeLabel->d_func()->ensureTextControl();
-            if (QWidgetTextControl *control = informativeLabel->d_func()->control) {
-                QTextOption opt = control->document()->defaultTextOption();
+            if (auto control = informativeLabel->d_func()->control) {
+                auto opt = control->document()->defaultTextOption();
                 opt.setWrapMode(QTextOption::WrapAnywhere);
                 control->document()->setDefaultTextOption(opt);
             }
@@ -423,12 +423,12 @@ void QMessageBoxPrivate::updateSize()
     }
 
     QFontMetrics fm(QApplication::font("QMdiSubWindowTitleBar"));
-    int windowTitleWidth = qMin(fm.width(q->windowTitle()) + 50, hardLimit);
+    auto windowTitleWidth = qMin(fm.width(q->windowTitle()) + 50, hardLimit);
     if (windowTitleWidth > width)
         width = windowTitleWidth;
 
     layout->activate();
-    int height = (layout->hasHeightForWidth())
+    auto height = (layout->hasHeightForWidth())
                      ? layout->totalHeightForWidth(width)
                      : layout->totalMinimumSize().height();
 
@@ -876,7 +876,7 @@ void QMessageBox::addButton(QAbstractButton *button, ButtonRole role)
 QPushButton *QMessageBox::addButton(const QString& text, ButtonRole role)
 {
     Q_D(QMessageBox);
-    QPushButton *pushButton = new QPushButton(text);
+    auto pushButton = new QPushButton(text);
     addButton(pushButton, role);
     d->updateSize();
     return pushButton;
@@ -894,7 +894,7 @@ QPushButton *QMessageBox::addButton(const QString& text, ButtonRole role)
 QPushButton *QMessageBox::addButton(StandardButton button)
 {
     Q_D(QMessageBox);
-    QPushButton *pushButton = d->buttonBox->addButton((QDialogButtonBox::StandardButton)button);
+    auto pushButton = d->buttonBox->addButton((QDialogButtonBox::StandardButton)button);
     if (pushButton)
         d->autoAddOkButton = false;
     return pushButton;
@@ -935,7 +935,7 @@ void QMessageBox::setStandardButtons(StandardButtons buttons)
     Q_D(QMessageBox);
     d->buttonBox->setStandardButtons(QDialogButtonBox::StandardButtons(int(buttons)));
 
-    QList<QAbstractButton *> buttonList = d->buttonBox->buttons();
+    auto buttonList = d->buttonBox->buttons();
     if (!buttonList.contains(d->escapeButton))
         d->escapeButton = 0;
     if (!buttonList.contains(d->defaultButton))
@@ -1046,7 +1046,7 @@ void QMessageBoxPrivate::detectEscapeButton()
         return;
 
     // If there is only one button, make it the escape button
-    const QList<QAbstractButton *> buttons = buttonBox->buttons();
+    const auto buttons = buttonBox->buttons();
     if (buttons.count() == 1) {
         detectedEscapeButton = buttons.first();
         return;
@@ -1170,7 +1170,7 @@ void QMessageBox::setCheckBox(QCheckBox *cb)
     }
     d->checkbox = cb;
     if (d->checkbox) {
-        QSizePolicy sp = d->checkbox->sizePolicy();
+        auto sp = d->checkbox->sizePolicy();
         sp.setHorizontalPolicy(QSizePolicy::MinimumExpanding);
         d->checkbox->setSizePolicy(sp);
     }
@@ -1360,7 +1360,7 @@ void QMessageBox::setTextInteractionFlags(Qt::TextInteractionFlags flags)
 */
 bool QMessageBox::event(QEvent *e)
 {
-    bool result =QDialog::event(e);
+    auto result =QDialog::event(e);
     switch (e->type()) {
         case QEvent::LayoutRequest:
             d_func()->updateSize();
@@ -1511,9 +1511,9 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
     if (!(e->modifiers() & (Qt::AltModifier | Qt::ControlModifier | Qt::MetaModifier))) {
         int key = e->key() & ~Qt::MODIFIER_MASK;
         if (key) {
-            const QList<QAbstractButton *> buttons = d->buttonBox->buttons();
+            const auto buttons = d->buttonBox->buttons();
             for (auto *pb : buttons) {
-                QKeySequence shortcut = pb->shortcut();
+                auto shortcut = pb->shortcut();
                 if (!shortcut.isEmpty() && key == int(shortcut[0] & ~Qt::MODIFIER_MASK)) {
                     pb->animateClick();
                     return;
@@ -1552,7 +1552,7 @@ void QMessageBox::setVisible(bool visible)
 void QMessageBox::open(QObject *receiver, const char *member)
 {
     Q_D(QMessageBox);
-    const char *signal = member && strchr(member, '*') ? SIGNAL(buttonClicked(QAbstractButton*))
+    auto signal = member && strchr(member, '*') ? SIGNAL(buttonClicked(QAbstractButton*))
                                                        : SIGNAL(finished(int));
     connect(this, signal, receiver, member);
     d->signalToDisconnectOnClose = signal;
@@ -1634,7 +1634,7 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
                                                             int(defaultButton), 0);
 
     QMessageBox msgBox(icon, title, text, QMessageBox::NoButton, parent);
-    QDialogButtonBox *buttonBox = msgBox.findChild<QDialogButtonBox*>();
+    auto buttonBox = msgBox.findChild<QDialogButtonBox*>();
     Q_ASSERT(buttonBox != 0);
 
     uint mask = QMessageBox::FirstButton;
@@ -1643,7 +1643,7 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
         mask <<= 1;
         if (!sb)
             continue;
-        QPushButton *button = msgBox.addButton((QMessageBox::StandardButton)sb);
+        auto button = msgBox.addButton((QMessageBox::StandardButton)sb);
         // Choose the first accept role as the default
         if (msgBox.defaultButton())
             continue;
@@ -1819,14 +1819,14 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
     }
 #endif
 
-    QMessageBox *msgBox = new QMessageBox(title, text, Information, 0, 0, 0, parent
+    auto msgBox = new QMessageBox(title, text, Information, 0, 0, 0, parent
 #ifdef Q_OS_MAC
                                           , Qt::WindowTitleHint | Qt::WindowSystemMenuHint
 #endif
     );
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
-    QIcon icon = msgBox->windowIcon();
-    QSize size = icon.actualSize(QSize(64, 64));
+    auto icon = msgBox->windowIcon();
+    auto size = icon.actualSize(QSize(64, 64));
     msgBox->setIconPixmap(icon.pixmap(size));
 
     // should perhaps be a style hint
@@ -1906,7 +1906,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         ).arg(QStringLiteral("2016"),
               QStringLiteral("qt.io/licensing"),
               QStringLiteral("qt.io"));
-    QMessageBox *msgBox = new QMessageBox(parent);
+    auto msgBox = new QMessageBox(parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     msgBox->setWindowTitle(title.isEmpty() ? tr("About Qt") : title);
     msgBox->setText(translatedTextAboutQtCaption);
@@ -1986,7 +1986,7 @@ static bool detectedCompat(int button0, int button1, int button2)
 QAbstractButton *QMessageBoxPrivate::findButton(int button0, int button1, int button2, int flags)
 {
     Q_Q(QMessageBox);
-    int button = 0;
+    auto button = 0;
 
     if (button0 & flags) {
         button = button0;
@@ -2013,7 +2013,7 @@ void QMessageBoxPrivate::addOldButtons(int button0, int button1, int button2)
 QAbstractButton *QMessageBoxPrivate::abstractButtonForId(int id) const
 {
     Q_Q(const QMessageBox);
-    QAbstractButton *result = customButtonList.value(id);
+    auto result = customButtonList.value(id);
     if (result)
         return result;
     if (id & QMessageBox::FlagMask)    // for compatibility with Qt 4.0/4.1 (even if it is silly)
@@ -2039,7 +2039,7 @@ int QMessageBoxPrivate::showOldMessageBox(QWidget *parent, QMessageBox::Icon ico
                                             int escapeButtonNumber)
 {
     QMessageBox messageBox(icon, title, text, QMessageBox::NoButton, parent);
-    QString myButton0Text = button0Text;
+    auto myButton0Text = button0Text;
     if (myButton0Text.isEmpty())
         myButton0Text = QDialogButtonBox::tr("OK");
     messageBox.addButton(myButton0Text, QMessageBox::ActionRole);
@@ -2483,7 +2483,7 @@ QString QMessageBox::buttonText(int button) const
 {
     Q_D(const QMessageBox);
 
-    if (QAbstractButton *abstractButton = d->abstractButtonForId(button)) {
+    if (auto abstractButton = d->abstractButtonForId(button)) {
         return abstractButton->text();
     } else if (d->buttonBox->buttons().isEmpty() && (button == Ok || button == Old_Ok)) {
         // for compatibility with Qt 4.0/4.1
@@ -2504,7 +2504,7 @@ QString QMessageBox::buttonText(int button) const
 void QMessageBox::setButtonText(int button, const QString &text)
 {
     Q_D(QMessageBox);
-    if (QAbstractButton *abstractButton = d->abstractButtonForId(button)) {
+    if (auto abstractButton = d->abstractButtonForId(button)) {
         abstractButton->setText(text);
     } else if (d->buttonBox->buttons().isEmpty() && (button == Ok || button == Old_Ok)) {
         // for compatibility with Qt 4.0/4.1
@@ -2551,7 +2551,7 @@ void QMessageBox::setDetailedText(const QString &text)
             d->detailsText->hide();
         }
         if (!d->detailsButton) {
-            const bool autoAddOkButton = d->autoAddOkButton; // QTBUG-39334, addButton() clears the flag.
+            const auto autoAddOkButton = d->autoAddOkButton; // QTBUG-39334, addButton() clears the flag.
             d->detailsButton = new DetailButton(this);
             addButton(d->detailsButton, QMessageBox::ActionRole);
             d->autoAddOkButton = autoAddOkButton;
@@ -2596,7 +2596,7 @@ void QMessageBox::setInformativeText(const QString &text)
         d->informativeLabel = 0;
     } else {
         if (!d->informativeLabel) {
-            QLabel *label = new QLabel;
+            auto label = new QLabel;
             label->setObjectName(QLatin1String("qt_msgbox_informativelabel"));
             label->setTextInteractionFlags(Qt::TextInteractionFlags(style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, 0, this)));
             label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -2659,8 +2659,8 @@ void QMessageBox::setWindowModality(Qt::WindowModality windowModality)
 
 QPixmap QMessageBoxPrivate::standardIcon(QMessageBox::Icon icon, QMessageBox *mb)
 {
-    QStyle *style = mb ? mb->style() : QApplication::style();
-    int iconSize = style->pixelMetric(QStyle::PM_MessageBoxIconSize, 0, mb);
+    auto style = mb ? mb->style() : QApplication::style();
+    auto iconSize = style->pixelMetric(QStyle::PM_MessageBoxIconSize, 0, mb);
     QIcon tmpIcon;
     switch (icon) {
     case QMessageBox::Information:

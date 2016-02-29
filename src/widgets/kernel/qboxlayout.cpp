@@ -143,10 +143,10 @@ static inline bool horz(QBoxLayout::Direction dir)
  */
 void QBoxLayoutPrivate::effectiveMargins(int *left, int *top, int *right, int *bottom) const
 {
-    int l = leftMargin;
-    int t = topMargin;
-    int r = rightMargin;
-    int b = bottomMargin;
+    auto l = leftMargin;
+    auto t = topMargin;
+    auto r = rightMargin;
+    auto b = bottomMargin;
 #ifdef Q_OS_MAC
     Q_Q(const QBoxLayout);
     if (horz(dir)) {
@@ -257,41 +257,41 @@ void QBoxLayoutPrivate::setupGeom()
         return;
 
     Q_Q(QBoxLayout);
-    int maxw = horz(dir) ? 0 : QLAYOUTSIZE_MAX;
-    int maxh = horz(dir) ? QLAYOUTSIZE_MAX : 0;
-    int minw = 0;
-    int minh = 0;
-    int hintw = 0;
-    int hinth = 0;
+    auto maxw = horz(dir) ? 0 : QLAYOUTSIZE_MAX;
+    auto maxh = horz(dir) ? QLAYOUTSIZE_MAX : 0;
+    auto minw = 0;
+    auto minh = 0;
+    auto hintw = 0;
+    auto hinth = 0;
 
-    bool horexp = false;
-    bool verexp = false;
+    auto horexp = false;
+    auto verexp = false;
 
     hasHfw = false;
 
-    int n = list.count();
+    auto n = list.count();
     geomArray.clear();
     QVector<QLayoutStruct> a(n);
 
     QSizePolicy::ControlTypes controlTypes1;
     QSizePolicy::ControlTypes controlTypes2;
-    int fixedSpacing = q->spacing();
-    int previousNonEmptyIndex = -1;
+    auto fixedSpacing = q->spacing();
+    auto previousNonEmptyIndex = -1;
 
     QStyle *style = 0;
     if (fixedSpacing < 0) {
-        if (QWidget *parentWidget = q->parentWidget())
+        if (auto parentWidget = q->parentWidget())
             style = parentWidget->style();
     }
 
-    for (int i = 0; i < n; i++) {
-        QBoxLayoutItem *box = list.at(i);
-        QSize max = box->item->maximumSize();
-        QSize min = box->item->minimumSize();
-        QSize hint = box->item->sizeHint();
-        Qt::Orientations exp = box->item->expandingDirections();
-        bool empty = box->item->isEmpty();
-        int spacing = 0;
+    for (auto i = 0; i < n; i++) {
+        auto box = list.at(i);
+        auto max = box->item->maximumSize();
+        auto min = box->item->minimumSize();
+        auto hint = box->item->sizeHint();
+        auto exp = box->item->expandingDirections();
+        auto empty = box->item->isEmpty();
+        auto spacing = 0;
 
         if (!empty) {
             if (fixedSpacing >= 0) {
@@ -310,8 +310,8 @@ void QBoxLayoutPrivate::setupGeom()
                 controlTypes1 = controlTypes2;
                 controlTypes2 = box->item->controlTypes();
                 if (previousNonEmptyIndex >= 0) {
-                    QSizePolicy::ControlTypes actual1 = controlTypes1;
-                    QSizePolicy::ControlTypes actual2 = controlTypes2;
+                    auto actual1 = controlTypes1;
+                    auto actual2 = controlTypes2;
                     if (dir == QBoxLayout::RightToLeft || dir == QBoxLayout::BottomToTop)
                         qSwap(actual1, actual2);
 
@@ -330,10 +330,10 @@ void QBoxLayoutPrivate::setupGeom()
             previousNonEmptyIndex = i;
         }
 
-        bool ignore = empty && box->item->widget(); // ignore hidden widgets
-        bool dummy = true;
+        auto ignore = empty && box->item->widget(); // ignore hidden widgets
+        auto dummy = true;
         if (horz(dir)) {
-            bool expand = (exp & Qt::Horizontal || box->stretch > 0);
+            auto expand = (exp & Qt::Horizontal || box->stretch > 0);
             horexp = horexp || expand;
             maxw += spacing + max.width();
             minw += spacing + min.width();
@@ -350,7 +350,7 @@ void QBoxLayoutPrivate::setupGeom()
             a[i].expansive = expand;
             a[i].stretch = box->stretch ? box->stretch : box->hStretch();
         } else {
-            bool expand = (exp & Qt::Vertical || box->stretch > 0);
+            auto expand = (exp & Qt::Vertical || box->stretch > 0);
             verexp = verexp || expand;
             maxh += spacing + max.height();
             minh += spacing + min.height();
@@ -401,23 +401,23 @@ void QBoxLayoutPrivate::setupGeom()
 void QBoxLayoutPrivate::calcHfw(int w)
 {
     QVector<QLayoutStruct> &a = geomArray;
-    int n = a.count();
-    int h = 0;
-    int mh = 0;
+    auto n = a.count();
+    auto h = 0;
+    auto mh = 0;
 
     Q_ASSERT(n == list.size());
 
     if (horz(dir)) {
         qGeomCalc(a, 0, n, 0, w);
-        for (int i = 0; i < n; i++) {
-            QBoxLayoutItem *box = list.at(i);
+        for (auto i = 0; i < n; i++) {
+            auto box = list.at(i);
             h = qMax(h, box->hfw(a.at(i).size));
             mh = qMax(mh, box->mhfw(a.at(i).size));
         }
     } else {
-        for (int i = 0; i < n; ++i) {
-            QBoxLayoutItem *box = list.at(i);
-            int spacing = a.at(i).spacing;
+        for (auto i = 0; i < n; ++i) {
+            auto box = list.at(i);
+            auto spacing = a.at(i).spacing;
             h += box->hfw(w);
             mh += box->mhfw(w);
             h += spacing;
@@ -434,10 +434,10 @@ QLayoutItem* QBoxLayoutPrivate::replaceAt(int index, QLayoutItem *item)
     Q_Q(QBoxLayout);
     if (!item)
         return 0;
-    QBoxLayoutItem *b = list.value(index);
+    auto b = list.value(index);
     if (!b)
         return 0;
-    QLayoutItem *r = b->item;
+    auto r = b->item;
 
     b->item = item;
     q->invalidate();
@@ -637,7 +637,7 @@ QSize QBoxLayout::maximumSize() const
     if (d->dirty)
         const_cast<QBoxLayout*>(this)->d_func()->setupGeom();
 
-    QSize s = d->maxSize.boundedTo(QSize(QLAYOUTSIZE_MAX, QLAYOUTSIZE_MAX));
+    auto s = d->maxSize.boundedTo(QSize(QLAYOUTSIZE_MAX, QLAYOUTSIZE_MAX));
 
     if (alignment() & Qt::AlignHorizontal_Mask)
         s.setWidth(QLAYOUTSIZE_MAX);
@@ -724,12 +724,12 @@ QLayoutItem *QBoxLayout::takeAt(int index)
     Q_D(QBoxLayout);
     if (index < 0 || index >= d->list.count())
         return 0;
-    QBoxLayoutItem *b = d->list.takeAt(index);
-    QLayoutItem *item = b->item;
+    auto b = d->list.takeAt(index);
+    auto item = b->item;
     b->item = 0;
     delete b;
 
-    if (QLayout *l = item->layout()) {
+    if (auto l = item->layout()) {
         // sanity check in case the user passed something weird to QObject::setParent()
         if (l->parent() == this)
             l->setParent(0);
@@ -758,11 +758,11 @@ void QBoxLayout::setGeometry(const QRect &r)
 {
     Q_D(QBoxLayout);
     if (d->dirty || r != geometry()) {
-        QRect oldRect = geometry();
+        auto oldRect = geometry();
         QLayout::setGeometry(r);
         if (d->dirty)
             d->setupGeom();
-        QRect cr = alignment() ? alignmentRect(r) : r;
+        auto cr = alignment() ? alignmentRect(r) : r;
 
         int left, top, right, bottom;
         d->effectiveMargins(&left, &top, &right, &bottom);
@@ -770,23 +770,23 @@ void QBoxLayout::setGeometry(const QRect &r)
                 cr.width() - (left + right),
                 cr.height() - (top + bottom));
 
-        QVector<QLayoutStruct> a = d->geomArray;
-        int pos = horz(d->dir) ? s.x() : s.y();
-        int space = horz(d->dir) ? s.width() : s.height();
-        int n = a.count();
+        auto a = d->geomArray;
+        auto pos = horz(d->dir) ? s.x() : s.y();
+        auto space = horz(d->dir) ? s.width() : s.height();
+        auto n = a.count();
         if (d->hasHfw && !horz(d->dir)) {
-            for (int i = 0; i < n; i++) {
-                QBoxLayoutItem *box = d->list.at(i);
+            for (auto i = 0; i < n; i++) {
+                auto box = d->list.at(i);
                 if (box->item->hasHeightForWidth()) {
-                    int width = qBound(box->item->minimumSize().width(), s.width(), box->item->maximumSize().width());
+                    auto width = qBound(box->item->minimumSize().width(), s.width(), box->item->maximumSize().width());
                     a[i].sizeHint = a[i].minimumSize =
                                     box->item->heightForWidth(width);
                 }
             }
         }
 
-        Direction visualDir = d->dir;
-        QWidget *parent = parentWidget();
+        auto visualDir = d->dir;
+        auto parent = parentWidget();
         if (parent && parent->isRightToLeft()) {
             if (d->dir == LeftToRight)
                 visualDir = RightToLeft;
@@ -796,12 +796,12 @@ void QBoxLayout::setGeometry(const QRect &r)
 
         qGeomCalc(a, 0, n, pos, space);
 
-        bool reverse = (horz(visualDir)
+        auto reverse = (horz(visualDir)
                         ? ((r.right() > oldRect.right()) != (visualDir == RightToLeft))
                         : r.bottom() > oldRect.bottom());
-        for (int j = 0; j < n; j++) {
-            int i = reverse ? n-j-1 : j;
-            QBoxLayoutItem *box = d->list.at(i);
+        for (auto j = 0; j < n; j++) {
+            auto i = reverse ? n-j-1 : j;
+            auto box = d->list.at(i);
 
             switch (visualDir) {
             case LeftToRight:
@@ -829,7 +829,7 @@ void QBoxLayout::setGeometry(const QRect &r)
 void QBoxLayout::addItem(QLayoutItem *item)
 {
     Q_D(QBoxLayout);
-    QBoxLayoutItem *it = new QBoxLayoutItem(item);
+    auto it = new QBoxLayoutItem(item);
     d->list.append(it);
     invalidate();
 }
@@ -847,7 +847,7 @@ void QBoxLayout::insertItem(int index, QLayoutItem *item)
     if (index < 0)                                // append
         index = d->list.count();
 
-    QBoxLayoutItem *it = new QBoxLayoutItem(item);
+    auto it = new QBoxLayoutItem(item);
     d->list.insert(index, it);
     invalidate();
 }
@@ -874,7 +874,7 @@ void QBoxLayout::insertSpacing(int index, int size)
         b = QLayoutPrivate::createSpacerItem(this, 0, size, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
     QT_TRY {
-        QBoxLayoutItem *it = new QBoxLayoutItem(b);
+        auto it = new QBoxLayoutItem(b);
         it->magic = true;
         d->list.insert(index, it);
 
@@ -904,7 +904,7 @@ void QBoxLayout::insertStretch(int index, int stretch)
     else
         b = QLayoutPrivate::createSpacerItem(this, 0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    QBoxLayoutItem *it = new QBoxLayoutItem(b, stretch);
+    auto it = new QBoxLayoutItem(b, stretch);
     it->magic = true;
     d->list.insert(index, it);
     invalidate();
@@ -925,7 +925,7 @@ void QBoxLayout::insertSpacerItem(int index, QSpacerItem *spacerItem)
     if (index < 0)                                // append
         index = d->list.count();
 
-    QBoxLayoutItem *it = new QBoxLayoutItem(spacerItem);
+    auto it = new QBoxLayoutItem(spacerItem);
     it->magic = true;
     d->list.insert(index, it);
     invalidate();
@@ -948,7 +948,7 @@ void QBoxLayout::insertLayout(int index, QLayout *layout, int stretch)
         return;
     if (index < 0)                                // append
         index = d->list.count();
-    QBoxLayoutItem *it = new QBoxLayoutItem(layout, stretch);
+    auto it = new QBoxLayoutItem(layout, stretch);
     d->list.insert(index, it);
     invalidate();
 }
@@ -982,7 +982,7 @@ void QBoxLayout::insertWidget(int index, QWidget *widget, int stretch,
     addChildWidget(widget);
     if (index < 0)                                // append
         index = d->list.count();
-    QWidgetItem *b = QLayoutPrivate::createWidgetItem(this, widget);
+    auto b = QLayoutPrivate::createWidgetItem(this, widget);
     b->setAlignment(alignment);
 
     QBoxLayoutItem *it;
@@ -1089,7 +1089,7 @@ void QBoxLayout::addStrut(int size)
     else
         b = QLayoutPrivate::createSpacerItem(this, size, 0, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
-    QBoxLayoutItem *it = new QBoxLayoutItem(b);
+    auto it = new QBoxLayoutItem(b);
     it->magic = true;
     d->list.append(it);
     invalidate();
@@ -1107,8 +1107,8 @@ bool QBoxLayout::setStretchFactor(QWidget *widget, int stretch)
     Q_D(QBoxLayout);
     if (!widget)
         return false;
-    for (int i = 0; i < d->list.size(); ++i) {
-        QBoxLayoutItem *box = d->list.at(i);
+    for (auto i = 0; i < d->list.size(); ++i) {
+        auto box = d->list.at(i);
         if (box->item->widget() == widget) {
             box->stretch = stretch;
             invalidate();
@@ -1128,8 +1128,8 @@ bool QBoxLayout::setStretchFactor(QWidget *widget, int stretch)
 bool QBoxLayout::setStretchFactor(QLayout *layout, int stretch)
 {
     Q_D(QBoxLayout);
-    for (int i = 0; i < d->list.size(); ++i) {
-        QBoxLayoutItem *box = d->list.at(i);
+    for (auto i = 0; i < d->list.size(); ++i) {
+        auto box = d->list.at(i);
         if (box->item->layout() == layout) {
             if (box->stretch != stretch) {
                 box->stretch = stretch;
@@ -1151,7 +1151,7 @@ void QBoxLayout::setStretch(int index, int stretch)
 {
     Q_D(QBoxLayout);
     if (index >= 0 && index < d->list.size()) {
-        QBoxLayoutItem *box = d->list.at(index);
+        auto box = d->list.at(index);
         if (box->stretch != stretch) {
             box->stretch = stretch;
             invalidate();
@@ -1186,14 +1186,14 @@ void QBoxLayout::setDirection(Direction direction)
         //#### a bit yucky, knows too much.
         //#### probably best to add access functions to spacerItem
         //#### or even a QSpacerItem::flip()
-        for (int i = 0; i < d->list.size(); ++i) {
-            QBoxLayoutItem *box = d->list.at(i);
+        for (auto i = 0; i < d->list.size(); ++i) {
+            auto box = d->list.at(i);
             if (box->magic) {
-                QSpacerItem *sp = box->item->spacerItem();
+                auto sp = box->item->spacerItem();
                 if (sp) {
                     if (sp->expandingDirections() == Qt::Orientations(0) /*No Direction*/) {
                         //spacing or strut
-                        QSize s = sp->sizeHint();
+                        auto s = sp->sizeHint();
                         sp->changeSize(s.height(), s.width(),
                             horz(direction) ? QSizePolicy::Fixed:QSizePolicy::Minimum,
                             horz(direction) ? QSizePolicy::Minimum:QSizePolicy::Fixed);

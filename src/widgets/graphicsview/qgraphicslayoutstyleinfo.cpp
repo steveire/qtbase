@@ -101,7 +101,7 @@ QStyle *QGraphicsLayoutStyleInfo::style() const
 {
     if (!m_style) {
         Q_ASSERT(m_layout);
-        QGraphicsItem *item = m_layout->parentItem();
+        auto item = m_layout->parentItem();
         m_style = (item && item->isWidget()) ? static_cast<QGraphicsWidget*>(item)->style() : QApplication::style();
     }
     return m_style;

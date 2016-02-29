@@ -95,7 +95,7 @@ QTreeWidgetItemIterator::QTreeWidgetItemIterator(QTreeWidget *widget, IteratorFl
 : current(0), flags(flags)
 {
     Q_ASSERT(widget);
-    QTreeModel *model = qobject_cast<QTreeModel*>(widget->model());
+    auto model = qobject_cast<QTreeModel*>(widget->model());
     Q_ASSERT(model);
     d_ptr.reset(new QTreeWidgetItemIteratorPrivate(this, model));
     model->iterators.append(this);
@@ -120,21 +120,21 @@ QTreeWidgetItemIterator::QTreeWidgetItemIterator(QTreeWidgetItem *item, Iterator
 {
     Q_D(QTreeWidgetItemIterator);
     Q_ASSERT(item);
-    QTreeModel *model = qobject_cast<QTreeModel*>(item->view->model());
+    auto model = qobject_cast<QTreeModel*>(item->view->model());
     Q_ASSERT(model);
     model->iterators.append(this);
 
     // Initialize m_currentIndex and m_parentIndex as it would be if we had traversed from
     // the beginning.
-    QTreeWidgetItem *parent = item;
+    auto parent = item;
     parent = parent->parent();
-    QTreeWidgetItem *root = d->m_model->rootItem;
+    auto root = d->m_model->rootItem;
     d->m_currentIndex = (parent ? parent : root)->indexOfChild(item);
 
     while (parent) {
-        QTreeWidgetItem *itm = parent;
+        auto itm = parent;
         parent = parent->parent();
-        const int index = (parent ? parent : root)->indexOfChild(itm);
+        const auto index = (parent ? parent : root)->indexOfChild(itm);
         d->m_parentIndex.prepend(index);
     }
 
@@ -211,7 +211,7 @@ bool QTreeWidgetItemIterator::matchesFlags(const QTreeWidgetItem *item) const
         return true;
 
     {
-        Qt::ItemFlags itemFlags = item->flags();
+        auto itemFlags = item->flags();
         if ((flags & Selectable) && !(itemFlags & Qt::ItemIsSelectable))
             return false;
         if ((flags & NotSelectable) && (itemFlags & Qt::ItemIsSelectable))
@@ -236,7 +236,7 @@ bool QTreeWidgetItemIterator::matchesFlags(const QTreeWidgetItem *item) const
 
     if (flags & (Checked|NotChecked)) {
         // ### We only test the check state for column 0
-        Qt::CheckState check = item->checkState(0);
+        auto check = item->checkState(0);
         // PartiallyChecked matches as Checked.
         if ((flags & Checked) && (check == Qt::Unchecked))
             return false;
@@ -269,12 +269,12 @@ QTreeWidgetItem* QTreeWidgetItemIteratorPrivate::nextSibling(const QTreeWidgetIt
 {
     Q_ASSERT(item);
     QTreeWidgetItem *next = 0;
-    if (QTreeWidgetItem *par = item->parent()) {
-        int i = par->indexOfChild(const_cast<QTreeWidgetItem*>(item));
+    if (auto par = item->parent()) {
+        auto i = par->indexOfChild(const_cast<QTreeWidgetItem*>(item));
         next = par->child(i + 1);
     } else {
-        QTreeWidget *tw = item->treeWidget();
-        int i = tw->indexOfTopLevelItem(const_cast<QTreeWidgetItem*>(item));
+        auto tw = item->treeWidget();
+        auto i = tw->indexOfTopLevelItem(const_cast<QTreeWidgetItem*>(item));
         next = tw->topLevelItem(i + 1);
     }
     return next;
@@ -292,7 +292,7 @@ QTreeWidgetItem *QTreeWidgetItemIteratorPrivate::next(const QTreeWidgetItem *cur
         next = current->child(0);
     } else {
         // walk the sibling
-        QTreeWidgetItem *parent = current->parent();
+        auto parent = current->parent();
         next = parent ? parent->child(m_currentIndex + 1)
                       : m_model->rootItem->child(m_currentIndex + 1);
         while (!next && parent) {
@@ -313,7 +313,7 @@ QTreeWidgetItem *QTreeWidgetItemIteratorPrivate::previous(const QTreeWidgetItem 
 
     QTreeWidgetItem *prev = 0;
     // walk the previous sibling
-    QTreeWidgetItem *parent = current->parent();
+    auto parent = current->parent();
     prev = parent ? parent->child(m_currentIndex - 1)
                   : m_model->rootItem->child(m_currentIndex - 1);
     if (prev) {
@@ -337,7 +337,7 @@ void QTreeWidgetItemIteratorPrivate::ensureValidIterator(const QTreeWidgetItem *
     Q_ASSERT(itemToBeRemoved);
 
     if (!q->current) return;
-    QTreeWidgetItem *nextItem = q->current;
+    auto nextItem = q->current;
 
     // Do not walk to the ancestor to find the other item if they have the same parent.
     if (nextItem->parent() != itemToBeRemoved->parent()) {
@@ -348,7 +348,7 @@ void QTreeWidgetItemIteratorPrivate::ensureValidIterator(const QTreeWidgetItem *
     // If the item to be removed is an ancestor of the current iterator item,
     // we need to adjust the iterator.
     if (nextItem == itemToBeRemoved) {
-        QTreeWidgetItem *parent = nextItem;
+        auto parent = nextItem;
         nextItem = 0;
         while (parent && !nextItem) {
             nextItem = nextSibling(parent);
@@ -369,11 +369,11 @@ void QTreeWidgetItemIteratorPrivate::ensureValidIterator(const QTreeWidgetItem *
         // They have the same parent, i.e. we have to adjust the m_currentIndex member of the iterator
         // if the deleted item is to the left of the nextItem.
 
-        QTreeWidgetItem *par = itemToBeRemoved->parent();   // We know they both have the same parent.
-        QTreeWidget *tw = itemToBeRemoved->treeWidget();    // ..and widget
-        int indexOfItemToBeRemoved = par ? par->indexOfChild(const_cast<QTreeWidgetItem *>(itemToBeRemoved))
+        auto par = itemToBeRemoved->parent();   // We know they both have the same parent.
+        auto tw = itemToBeRemoved->treeWidget();    // ..and widget
+        auto indexOfItemToBeRemoved = par ? par->indexOfChild(const_cast<QTreeWidgetItem *>(itemToBeRemoved))
             : tw->indexOfTopLevelItem(const_cast<QTreeWidgetItem *>(itemToBeRemoved));
-        int indexOfNextItem = par ? par->indexOfChild(nextItem) : tw->indexOfTopLevelItem(nextItem);
+        auto indexOfNextItem = par ? par->indexOfChild(nextItem) : tw->indexOfTopLevelItem(nextItem);
 
         if (indexOfItemToBeRemoved <= indexOfNextItem) {
             // A sibling to the left of us was deleted, adjust the m_currentIndex member of the iterator.

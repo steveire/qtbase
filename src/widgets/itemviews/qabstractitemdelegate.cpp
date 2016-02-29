@@ -383,8 +383,8 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
     switch (event->type()) {
 #ifndef QT_NO_TOOLTIP
     case QEvent::ToolTip: {
-        QHelpEvent *he = static_cast<QHelpEvent*>(event);
-        QVariant tooltip = index.data(Qt::ToolTipRole);
+        auto he = static_cast<QHelpEvent*>(event);
+        auto tooltip = index.data(Qt::ToolTipRole);
         if (tooltip.canConvert<QString>()) {
             QToolTip::showText(he->globalPos(), tooltip.toString(), view);
             return true;
@@ -397,8 +397,8 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
             return true;
         break; }
     case QEvent::WhatsThis: {
-        QHelpEvent *he = static_cast<QHelpEvent*>(event);
-        QVariant whatsthis = index.data(Qt::WhatsThisRole);
+        auto he = static_cast<QHelpEvent*>(event);
+        auto whatsthis = index.data(Qt::WhatsThisRole);
         if (whatsthis.canConvert<QString>()) {
             QWhatsThis::showText(he->globalPos(), whatsthis.toString(), view);
             return true;
@@ -453,11 +453,11 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
 {
     Q_Q(QAbstractItemDelegate);
 
-    QWidget *editor = qobject_cast<QWidget*>(object);
+    auto editor = qobject_cast<QWidget*>(object);
     if (!editor)
         return false;
     if (event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        auto keyEvent = static_cast<QKeyEvent *>(event);
         if (editorHandlesKeyEvent(editor, keyEvent))
             return false;
 
@@ -497,7 +497,7 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
     } else if (event->type() == QEvent::FocusOut || (event->type() == QEvent::Hide && editor->isWindow())) {
         //the Hide event will take care of he editors that are in fact complete dialogs
         if (!editor->isActiveWindow() || (QApplication::focusWidget() != editor)) {
-            QWidget *w = QApplication::focusWidget();
+            auto w = QApplication::focusWidget();
             while (w) { // don't worry about focus changes internally in the editor
                 if (w == editor)
                     return false;
@@ -506,7 +506,7 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
 #ifndef QT_NO_DRAGANDDROP
             // The window may lose focus during an drag operation.
             // i.e when dragging involves the taskbar on Windows.
-            QPlatformDrag *platformDrag = QGuiApplicationPrivate::instance()->platformIntegration()->drag();
+            auto platformDrag = QGuiApplicationPrivate::instance()->platformIntegration()->drag();
             if (platformDrag && platformDrag->currentDrag()) {
                 return false;
             }
@@ -528,10 +528,10 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
 bool QAbstractItemDelegatePrivate::tryFixup(QWidget *editor)
 {
 #ifndef QT_NO_LINEEDIT
-    if (QLineEdit *e = qobject_cast<QLineEdit*>(editor)) {
+    if (auto e = qobject_cast<QLineEdit*>(editor)) {
         if (!e->hasAcceptableInput()) {
-            if (const QValidator *validator = e->validator()) {
-                QString text = e->text();
+            if (auto validator = e->validator()) {
+                auto text = e->text();
                 validator->fixup(text);
                 e->setText(text);
             }

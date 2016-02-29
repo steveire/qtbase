@@ -136,7 +136,7 @@ QSizeF *QGraphicsLayoutItemPrivate::effectiveSizeHints(const QSizeF &constraint)
 {
     Q_Q(const QGraphicsLayoutItem);
     QSizeF *sizeHintCache;
-    const bool hasConstraint = constraint.width() >= 0 || constraint.height() >= 0;
+    const auto hasConstraint = constraint.width() >= 0 || constraint.height() >= 0;
     if (hasConstraint) {
         if (!sizeHintWithConstraintCacheDirty && constraint == cachedConstraint)
             return cachedSizeHintsWithConstraints;
@@ -147,7 +147,7 @@ QSizeF *QGraphicsLayoutItemPrivate::effectiveSizeHints(const QSizeF &constraint)
         sizeHintCache = cachedSizeHints;
     }
 
-    for (int i = 0; i < Qt::NSizeHints; ++i) {
+    for (auto i = 0; i < Qt::NSizeHints; ++i) {
         sizeHintCache[i] = constraint;
         if (userSizeHints)
             combineSize(sizeHintCache[i], userSizeHints[i]);
@@ -212,7 +212,7 @@ QGraphicsItem *QGraphicsLayoutItemPrivate::parentItem() const
 {
     Q_Q(const QGraphicsLayoutItem);
 
-    const QGraphicsLayoutItem *parent = q;
+    auto parent = q;
     while (parent && parent->isLayout()) {
         parent = parent->parentLayoutItem();
     }
@@ -276,14 +276,14 @@ bool QGraphicsLayoutItemPrivate::hasHeightForWidth() const
 {
     Q_Q(const QGraphicsLayoutItem);
     if (isLayout) {
-        const QGraphicsLayout *l = static_cast<const QGraphicsLayout *>(q);
-        for (int i = l->count() - 1; i >= 0; --i) {
+        auto l = static_cast<const QGraphicsLayout *>(q);
+        for (auto i = l->count() - 1; i >= 0; --i) {
             if (QGraphicsLayoutItemPrivate::get(l->itemAt(i))->hasHeightForWidth())
                 return true;
         }
-    } else if (QGraphicsItem *item = q->graphicsItem()) {
+    } else if (auto item = q->graphicsItem()) {
         if (item->isWidget()) {
-            QGraphicsWidget *w = static_cast<QGraphicsWidget *>(item);
+            auto w = static_cast<QGraphicsWidget *>(item);
             if (w->layout()) {
                 return QGraphicsLayoutItemPrivate::get(w->layout())->hasHeightForWidth();
             }
@@ -296,14 +296,14 @@ bool QGraphicsLayoutItemPrivate::hasWidthForHeight() const
 {
     Q_Q(const QGraphicsLayoutItem);
     if (isLayout) {
-        const QGraphicsLayout *l = static_cast<const QGraphicsLayout *>(q);
-        for (int i = l->count() - 1; i >= 0; --i) {
+        auto l = static_cast<const QGraphicsLayout *>(q);
+        for (auto i = l->count() - 1; i >= 0; --i) {
             if (QGraphicsLayoutItemPrivate::get(l->itemAt(i))->hasWidthForHeight())
                 return true;
         }
-    } else if (QGraphicsItem *item = q->graphicsItem()) {
+    } else if (auto item = q->graphicsItem()) {
         if (item->isWidget()) {
-            QGraphicsWidget *w = static_cast<QGraphicsWidget *>(item);
+            auto w = static_cast<QGraphicsWidget *>(item);
             if (w->layout()) {
                 return QGraphicsLayoutItemPrivate::get(w->layout())->hasWidthForHeight();
             }
@@ -413,11 +413,11 @@ QGraphicsLayoutItem::QGraphicsLayoutItem(QGraphicsLayoutItemPrivate &dd)
 */
 QGraphicsLayoutItem::~QGraphicsLayoutItem()
 {
-    QGraphicsLayoutItem *parentLI = parentLayoutItem();
+    auto parentLI = parentLayoutItem();
     if (parentLI && parentLI->isLayout()) {
-        QGraphicsLayout *lay = static_cast<QGraphicsLayout*>(parentLI);
+        auto lay = static_cast<QGraphicsLayout*>(parentLI);
         // this is not optimal
-        for (int i = lay->count() - 1; i >= 0; --i) {
+        for (auto i = lay->count() - 1; i >= 0; --i) {
             if (lay->itemAt(i) == this) {
                 lay->removeAt(i);
                 break;
@@ -716,7 +716,7 @@ void QGraphicsLayoutItem::setMaximumHeight(qreal height)
 void QGraphicsLayoutItem::setGeometry(const QRectF &rect)
 {
     Q_D(QGraphicsLayoutItem);
-    QSizeF effectiveSize = rect.size().expandedTo(effectiveSizeHint(Qt::MinimumSize))
+    auto effectiveSize = rect.size().expandedTo(effectiveSizeHint(Qt::MinimumSize))
                                 .boundedTo(effectiveSizeHint(Qt::MaximumSize));
     d->geom = QRectF(rect.topLeft(), effectiveSize);
 }

@@ -85,7 +85,7 @@ void QGraphicsWidgetPrivate::init(QGraphicsItem *parentItem, Qt::WindowFlags wFl
 qreal QGraphicsWidgetPrivate::titleBarHeight(const QStyleOptionTitleBar &options) const
 {
     Q_Q(const QGraphicsWidget);
-    int height = q->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
+    auto height = q->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
     return (qreal)height;
 }
 
@@ -129,7 +129,7 @@ void QGraphicsWidgetPrivate::ensureMargins() const
 {
     if (!margins) {
         margins = new qreal[4];
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             margins[i] = 0;
     }
 }
@@ -144,7 +144,7 @@ void QGraphicsWidgetPrivate::ensureWindowFrameMargins() const
 {
     if (!windowFrameMargins) {
         windowFrameMargins = new qreal[4];
-        for (int i = 0; i < 4; ++i)
+        for (auto i = 0; i < 4; ++i)
             windowFrameMargins[i] = 0;
     }
 }
@@ -171,8 +171,8 @@ void QGraphicsWidgetPrivate::setPalette_helper(const QPalette &palette)
 void QGraphicsWidgetPrivate::resolvePalette(uint inheritedMask)
 {
     inheritedPaletteResolveMask = inheritedMask;
-    QPalette naturalPalette = naturalWidgetPalette();
-    QPalette resolvedPalette = palette.resolve(naturalPalette);
+    auto naturalPalette = naturalWidgetPalette();
+    auto resolvedPalette = palette.resolve(naturalPalette);
     updatePalette(resolvedPalette);
 }
 
@@ -188,10 +188,10 @@ void QGraphicsWidgetPrivate::updatePalette(const QPalette &palette)
     int mask = palette.resolve() | inheritedPaletteResolveMask;
 
     // Propagate to children.
-    for (int i = 0; i < children.size(); ++i) {
-        QGraphicsItem *item = children.at(i);
+    for (auto i = 0; i < children.size(); ++i) {
+        auto item = children.at(i);
         if (item->isWidget()) {
-            QGraphicsWidget *w = static_cast<QGraphicsWidget *>(item);
+            auto w = static_cast<QGraphicsWidget *>(item);
             if (!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))
                 w->d_func()->resolvePalette(mask);
         } else {
@@ -212,10 +212,10 @@ void QGraphicsWidgetPrivate::setLayoutDirection_helper(Qt::LayoutDirection direc
     q->setAttribute(Qt::WA_RightToLeft, (direction == Qt::RightToLeft));
 
     // Propagate this change to all children.
-    for (int i = 0; i < children.size(); ++i) {
-        QGraphicsItem *item = children.at(i);
+    for (auto i = 0; i < children.size(); ++i) {
+        auto item = children.at(i);
         if (item->isWidget()) {
-            QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
+            auto widget = static_cast<QGraphicsWidget *>(item);
             if (widget->parentWidget() && !widget->testAttribute(Qt::WA_SetLayoutDirection))
                 widget->d_func()->setLayoutDirection_helper(direction);
         }
@@ -232,7 +232,7 @@ void QGraphicsWidgetPrivate::resolveLayoutDirection()
     if (q->testAttribute(Qt::WA_SetLayoutDirection)) {
         return;
     }
-    if (QGraphicsWidget *parentWidget = q->parentWidget()) {
+    if (auto parentWidget = q->parentWidget()) {
         setLayoutDirection_helper(parentWidget->layoutDirection());
     } else if (scene) {
         // ### shouldn't the scene have a layoutdirection really? how does
@@ -247,7 +247,7 @@ QPalette QGraphicsWidgetPrivate::naturalWidgetPalette() const
 {
     Q_Q(const QGraphicsWidget);
     QPalette palette;
-    if (QGraphicsWidget *parent = q->parentWidget()) {
+    if (auto parent = q->parentWidget()) {
         palette = parent->palette();
     } else if (scene) {
         palette = scene->palette();
@@ -267,10 +267,10 @@ void QGraphicsWidgetPrivate::resolveFont(uint inheritedMask)
 {
     Q_Q(QGraphicsWidget);
     inheritedFontResolveMask = inheritedMask;
-    if (QGraphicsWidget *p = q->parentWidget())
+    if (auto p = q->parentWidget())
         inheritedFontResolveMask |= p->d_func()->inheritedFontResolveMask;
-    QFont naturalFont = naturalWidgetFont();
-    QFont resolvedFont = font.resolve(naturalFont);
+    auto naturalFont = naturalWidgetFont();
+    auto resolvedFont = font.resolve(naturalFont);
     updateFont(resolvedFont);
 }
 
@@ -286,10 +286,10 @@ void QGraphicsWidgetPrivate::updateFont(const QFont &font)
     int mask = font.resolve() | inheritedFontResolveMask;
 
     // Propagate to children.
-    for (int i = 0; i < children.size(); ++i) {
-        QGraphicsItem *item = children.at(i);
+    for (auto i = 0; i < children.size(); ++i) {
+        auto item = children.at(i);
         if (item->isWidget()) {
-            QGraphicsWidget *w = static_cast<QGraphicsWidget *>(item);
+            auto w = static_cast<QGraphicsWidget *>(item);
             if (!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))
                 w->d_func()->resolveFont(mask);
         } else {
@@ -308,7 +308,7 @@ QFont QGraphicsWidgetPrivate::naturalWidgetFont() const
 {
     Q_Q(const QGraphicsWidget);
     QFont naturalFont; // ### no application font support
-    if (QGraphicsWidget *parent = q->parentWidget()) {
+    if (auto parent = q->parentWidget()) {
         naturalFont = parent->font();
     } else if (scene) {
         naturalFont = scene->font();
@@ -326,7 +326,7 @@ void QGraphicsWidgetPrivate::initStyleOptionTitleBar(QStyleOptionTitleBar *optio
     option->titleBarFlags = windowFlags;
     option->subControls = QStyle::SC_TitleBarCloseButton | QStyle::SC_TitleBarLabel | QStyle::SC_TitleBarSysMenu;
     option->activeSubControls = windowData->hoveredSubControl;
-    bool isActive = q->isActiveWindow();
+    auto isActive = q->isActiveWindow();
     option->state.setFlag(QStyle::State_Active, isActive);
     if (isActive) {
         option->titleBarState = Qt::WindowActive;
@@ -334,8 +334,8 @@ void QGraphicsWidgetPrivate::initStyleOptionTitleBar(QStyleOptionTitleBar *optio
     } else {
         option->titleBarState = Qt::WindowNoState;
     }
-    QFont windowTitleFont = QApplication::font("QMdiSubWindowTitleBar");
-    QRect textRect = q->style()->subControlRect(QStyle::CC_TitleBar, option, QStyle::SC_TitleBarLabel, 0);
+    auto windowTitleFont = QApplication::font("QMdiSubWindowTitleBar");
+    auto textRect = q->style()->subControlRect(QStyle::CC_TitleBar, option, QStyle::SC_TitleBarLabel, 0);
     option->text = QFontMetrics(windowTitleFont).elidedText(
         windowData->windowTitle, Qt::ElideRight, textRect.width());
 }
@@ -375,7 +375,7 @@ void QGraphicsWidgetPrivate::windowFrameMouseReleaseEvent(QGraphicsSceneMouseEve
             bar.rect = q->windowFrameRect().toRect();
             bar.rect.moveTo(0,0);
             bar.rect.setHeight(q->style()->pixelMetric(QStyle::PM_TitleBarHeight, &bar));
-            QPointF pos = event->pos();
+            auto pos = event->pos();
             if (windowFrameMargins) {
                 pos.rx() += windowFrameMargins[Left];
                 pos.ry() += windowFrameMargins[Top];
@@ -425,20 +425,20 @@ static qreal minimumHeightForWidth(qreal width, qreal minh, qreal maxh,
                                    bool heightForWidth = true)
 {
     qreal minimumHeightForWidth = -1;
-    const bool hasHFW = QGraphicsLayoutItemPrivate::get(widget)->hasHeightForWidth();
+    const auto hasHFW = QGraphicsLayoutItemPrivate::get(widget)->hasHeightForWidth();
     if (hasHFW == heightForWidth) {
         minimumHeightForWidth = hasHFW
                                 ? widget->effectiveSizeHint(Qt::MinimumSize, QSizeF(width, -1)).height()
                                 : widget->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, width)).width();    //"width" is here height!
     } else {
         // widthForHeight
-        const qreal constraint = width;
+        const auto constraint = width;
         while (maxh - minh > 0.1) {
-            qreal middle = minh + (maxh - minh)/2;
+            auto middle = minh + (maxh - minh)/2;
             // ### really bad, if we are a widget with a layout it will call
             // layout->effectiveSizeHint(Qt::MiniumumSize), which again will call
             // sizeHint three times because of how the cache works
-            qreal hfw = hasHFW
+            auto hfw = hasHFW
                         ? widget->effectiveSizeHint(Qt::MinimumSize, QSizeF(middle, -1)).height()
                         : widget->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, middle)).width();
             if (hfw > constraint) {
@@ -461,15 +461,15 @@ static qreal minimumWidthForHeight(qreal height, qreal minw, qreal maxw,
 static QSizeF closestAcceptableSize(const QSizeF &proposed,
                                     const QGraphicsWidget *widget)
 {
-    const QSizeF current = widget->size();
+    const auto current = widget->size();
 
-    qreal minw = proposed.width();
-    qreal maxw = current.width();
-    qreal minh = proposed.height();
-    qreal maxh = current.height();
+    auto minw = proposed.width();
+    auto maxw = current.width();
+    auto minh = proposed.height();
+    auto maxh = current.height();
 
-    qreal middlew = maxw;
-    qreal middleh = maxh;
+    auto middlew = maxw;
+    auto middleh = maxh;
     qreal min_hfw;
     min_hfw = minimumHeightForWidth(maxw, minh, maxh, widget);
 
@@ -510,15 +510,15 @@ static void _q_boundGeometryToSizeConstraints(const QRectF &startGeometry,
                                               const QSizeF &min, const QSizeF &max,
                                               const QGraphicsWidget *widget)
 {
-    const QRectF proposedRect = *rect;
-    qreal width = qBound(min.width(), proposedRect.width(), max.width());
-    qreal height = qBound(min.height(), proposedRect.height(), max.height());
+    const auto proposedRect = *rect;
+    auto width = qBound(min.width(), proposedRect.width(), max.width());
+    auto height = qBound(min.height(), proposedRect.height(), max.height());
 
-    const bool hasHFW = QGraphicsLayoutItemPrivate::get(widget)->hasHeightForWidth();
-    const bool hasWFH = QGraphicsLayoutItemPrivate::get(widget)->hasWidthForHeight();
+    const auto hasHFW = QGraphicsLayoutItemPrivate::get(widget)->hasHeightForWidth();
+    const auto hasWFH = QGraphicsLayoutItemPrivate::get(widget)->hasWidthForHeight();
 
-    const bool widthChanged = proposedRect.width() != widget->size().width();
-    const bool heightChanged = proposedRect.height() != widget->size().height();
+    const auto widthChanged = proposedRect.width() != widget->size().width();
+    const auto heightChanged = proposedRect.height() != widget->size().height();
 
     if (hasHFW || hasWFH) {
         if (widthChanged || heightChanged) {
@@ -539,7 +539,7 @@ static void _q_boundGeometryToSizeConstraints(const QRectF &startGeometry,
                 proposed = proposedRect.width();
             }
             if (minimumHeightForWidth(constraint, minExtent, maxExtent, widget, hasHFW) > proposed) {
-                QSizeF effectiveSize = closestAcceptableSize(QSizeF(width, height), widget);
+                auto effectiveSize = closestAcceptableSize(QSizeF(width, height), widget);
                 width = effectiveSize.width();
                 height = effectiveSize.height();
             }
@@ -667,10 +667,10 @@ void QGraphicsWidgetPrivate::windowFrameHoverMoveEvent(QGraphicsSceneHoverEvent 
     }
 
     bool wasMouseOver = windowData->buttonMouseOver;
-    QRect oldButtonRect = windowData->buttonRect;
+    auto oldButtonRect = windowData->buttonRect;
     windowData->buttonRect = QRect();
     windowData->buttonMouseOver = false;
-    QPointF pos = event->pos();
+    auto pos = event->pos();
     QStyleOptionTitleBar bar;
     // make sure that the coordinates (rect and pos) we send to the style are positive.
     if (windowFrameMargins) {
@@ -682,8 +682,8 @@ void QGraphicsWidgetPrivate::windowFrameHoverMoveEvent(QGraphicsSceneHoverEvent 
     bar.rect.moveTo(0,0);
     bar.rect.setHeight(int(titleBarHeight(bar)));
 
-    Qt::CursorShape cursorShape = Qt::ArrowCursor;
-    bool needsSetCursorCall = true;
+    auto cursorShape = Qt::ArrowCursor;
+    auto needsSetCursorCall = true;
     switch (q->windowFrameSectionAt(event->pos())) {
         case Qt::TopLeftSection:
         case Qt::BottomRightSection:
@@ -748,7 +748,7 @@ void QGraphicsWidgetPrivate::windowFrameHoverLeaveEvent(QGraphicsSceneHoverEvent
 
         ensureWindowData();
 
-        bool needsUpdate = false;
+        auto needsUpdate = false;
         if (windowData->hoveredSubControl == QStyle::SC_TitleBarCloseButton
             || windowData->buttonMouseOver)
             needsUpdate = true;
@@ -786,10 +786,10 @@ void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *new
     // (this), and the last (this, or the last widget that is still
     // a descendent of this). also find the widgets that currently /
     // before reparenting point to this widgets' focus chain.
-    QGraphicsWidget *focusFirst = q;
-    QGraphicsWidget *focusBefore = focusPrev;
-    QGraphicsWidget *focusLast = focusFirst;
-    QGraphicsWidget *focusAfter = focusNext;
+    auto focusFirst = q;
+    auto focusBefore = focusPrev;
+    auto focusLast = focusFirst;
+    auto focusAfter = focusNext;
     do {
         if (!q->isAncestorOf(focusAfter))
             break;
@@ -808,9 +808,9 @@ void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *new
     if (newParent) {
         // attach to new parent's focus chain as the last element
         // in its chain.
-        QGraphicsWidget *newFocusFirst = newParent;
-        QGraphicsWidget *newFocusLast = newFocusFirst;
-        QGraphicsWidget *newFocusAfter = newFocusFirst->d_func()->focusNext;
+        auto newFocusFirst = newParent;
+        auto newFocusLast = newFocusFirst;
+        auto newFocusAfter = newFocusFirst->d_func()->focusNext;
         do {
             if (!newParent->isAncestorOf(newFocusAfter))
                 break;

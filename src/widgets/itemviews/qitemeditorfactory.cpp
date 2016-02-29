@@ -162,9 +162,9 @@ Q_SIGNALS:
 */
 QWidget *QItemEditorFactory::createEditor(int userType, QWidget *parent) const
 {
-    QItemEditorCreatorBase *creator = creatorMap.value(userType, 0);
+    auto creator = creatorMap.value(userType, 0);
     if (!creator) {
-        const QItemEditorFactory *dfactory = defaultFactory();
+        auto dfactory = defaultFactory();
         return dfactory == this ? 0 : dfactory->createEditor(userType, parent);
     }
     return creator->createWidget(parent);
@@ -175,9 +175,9 @@ QWidget *QItemEditorFactory::createEditor(int userType, QWidget *parent) const
 */
 QByteArray QItemEditorFactory::valuePropertyName(int userType) const
 {
-    QItemEditorCreatorBase *creator = creatorMap.value(userType, 0);
+    auto creator = creatorMap.value(userType, 0);
     if (!creator) {
-        const QItemEditorFactory *dfactory = defaultFactory();
+        auto dfactory = defaultFactory();
         return dfactory == this ? QByteArray() : dfactory->valuePropertyName(userType);
     }
     return creator->valuePropertyName();
@@ -190,7 +190,7 @@ QItemEditorFactory::~QItemEditorFactory()
 {
     //we make sure we delete all the QItemEditorCreatorBase
     //this has to be done only once, hence the QSet
-    QSet<QItemEditorCreatorBase*> set = creatorMap.values().toSet();
+    auto set = creatorMap.values().toSet();
     qDeleteAll(set);
 }
 
@@ -206,7 +206,7 @@ void QItemEditorFactory::registerEditor(int userType, QItemEditorCreatorBase *cr
 {
     const auto it = creatorMap.constFind(userType);
     if (it != creatorMap.cend()) {
-        QItemEditorCreatorBase *oldCreator = it.value();
+        auto oldCreator = it.value();
         Q_ASSERT(oldCreator);
         creatorMap.erase(it);
         if (std::find(creatorMap.cbegin(), creatorMap.cend(), oldCreator) == creatorMap.cend())
@@ -229,19 +229,19 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
     switch (userType) {
 #ifndef QT_NO_COMBOBOX
     case QVariant::Bool: {
-        QBooleanComboBox *cb = new QBooleanComboBox(parent);
+        auto cb = new QBooleanComboBox(parent);
         cb->setFrame(false);
         return cb; }
 #endif
 #ifndef QT_NO_SPINBOX
     case QVariant::UInt: {
-        QSpinBox *sb = new QUIntSpinBox(parent);
+        auto sb = new QUIntSpinBox(parent);
         sb->setFrame(false);
         sb->setMinimum(0);
         sb->setMaximum(INT_MAX);
         return sb; }
     case QVariant::Int: {
-        QSpinBox *sb = new QSpinBox(parent);
+        auto sb = new QSpinBox(parent);
         sb->setFrame(false);
         sb->setMinimum(INT_MIN);
         sb->setMaximum(INT_MAX);
@@ -249,15 +249,15 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
 #endif
 #ifndef QT_NO_DATETIMEEDIT
     case QVariant::Date: {
-        QDateTimeEdit *ed = new QDateEdit(parent);
+        auto ed = new QDateEdit(parent);
         ed->setFrame(false);
         return ed; }
     case QVariant::Time: {
-        QDateTimeEdit *ed = new QTimeEdit(parent);
+        auto ed = new QTimeEdit(parent);
         ed->setFrame(false);
         return ed; }
     case QVariant::DateTime: {
-        QDateTimeEdit *ed = new QDateTimeEdit(parent);
+        auto ed = new QDateTimeEdit(parent);
         ed->setFrame(false);
         return ed; }
 #endif
@@ -265,7 +265,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         return new QLabel(parent);
 #ifndef QT_NO_SPINBOX
     case QVariant::Double: {
-        QDoubleSpinBox *sb = new QDoubleSpinBox(parent);
+        auto sb = new QDoubleSpinBox(parent);
         sb->setFrame(false);
         sb->setMinimum(-DBL_MAX);
         sb->setMaximum(DBL_MAX);
@@ -275,7 +275,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
     case QVariant::String:
     default: {
         // the default editor is a lineedit
-        QExpandingLineEdit *le = new QExpandingLineEdit(parent);
+        auto le = new QExpandingLineEdit(parent);
         le->setFrame(le->style()->styleHint(QStyle::SH_ItemView_DrawDelegateFrame, 0, le));
         if (!le->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, le))
             le->setWidgetOwnsGeometry(true);
@@ -553,29 +553,29 @@ void QExpandingLineEdit::updateMinimumWidth()
 {
     int left, right;
     getTextMargins(&left, 0, &right, 0);
-    int width = left + right + 4 /*horizontalMargin in qlineedit.cpp*/;
+    auto width = left + right + 4 /*horizontalMargin in qlineedit.cpp*/;
     getContentsMargins(&left, 0, &right, 0);
     width += left + right;
 
     QStyleOptionFrame opt;
     initStyleOption(&opt);
 
-    int minWidth = style()->sizeFromContents(QStyle::CT_LineEdit, &opt, QSize(width, 0).
+    auto minWidth = style()->sizeFromContents(QStyle::CT_LineEdit, &opt, QSize(width, 0).
                                       expandedTo(QApplication::globalStrut()), this).width();
     setMinimumWidth(minWidth);
 }
 
 void QExpandingLineEdit::resizeToContents()
 {
-    int oldWidth = width();
+    auto oldWidth = width();
     if (originalWidth == -1)
         originalWidth = oldWidth;
-    if (QWidget *parent = parentWidget()) {
-        QPoint position = pos();
-        int hintWidth = minimumWidth() + fontMetrics().width(displayText());
-        int parentWidth = parent->width();
-        int maxWidth = isRightToLeft() ? position.x() + oldWidth : parentWidth - position.x();
-        int newWidth = qBound(originalWidth, hintWidth, maxWidth);
+    if (auto parent = parentWidget()) {
+        auto position = pos();
+        auto hintWidth = minimumWidth() + fontMetrics().width(displayText());
+        auto parentWidth = parent->width();
+        auto maxWidth = isRightToLeft() ? position.x() + oldWidth : parentWidth - position.x();
+        auto newWidth = qBound(originalWidth, hintWidth, maxWidth);
         if (widgetOwnsGeometry)
             setMaximumWidth(newWidth);
         if (isRightToLeft())

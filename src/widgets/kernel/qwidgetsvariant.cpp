@@ -109,7 +109,7 @@ static bool convert(const QVariant::Private *d, int type, void *result, bool *ok
 #if !defined(QT_NO_DEBUG_STREAM)
 static void streamDebug(QDebug dbg, const QVariant &v)
 {
-    QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
+    auto d = const_cast<QVariant::Private *>(&v.data_ptr());
     switch (d->type) {
     case QVariant::SizePolicy:
         dbg.nospace() << *v_cast<QSizePolicy>(d);

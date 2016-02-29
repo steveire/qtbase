@@ -464,7 +464,7 @@ void QLineEdit::addAction(QAction *action, ActionPosition position)
 
 QAction *QLineEdit::addAction(const QIcon &icon, ActionPosition position)
 {
-    QAction *result = new QAction(icon, QString(), this);
+    auto result = new QAction(icon, QString(), this);
     addAction(result, position);
     return result;
 }
@@ -489,12 +489,12 @@ void QLineEdit::setClearButtonEnabled(bool enable)
     if (enable == isClearButtonEnabled())
         return;
     if (enable) {
-        QAction *clearAction = new QAction(d->clearButtonIcon(), QString(), this);
+        auto clearAction = new QAction(d->clearButtonIcon(), QString(), this);
         clearAction->setEnabled(!isReadOnly());
         clearAction->setObjectName(QLatin1String(clearButtonActionNameC));
         d->addAction(clearAction, 0, QLineEdit::TrailingPosition, QLineEditPrivate::SideWidgetClearButton | QLineEditPrivate::SideWidgetFadeInWithText);
     } else {
-        QAction *clearAction = findChild<QAction *>(QLatin1String(clearButtonActionNameC));
+        auto clearAction = findChild<QAction *>(QLatin1String(clearButtonActionNameC));
         Q_ASSERT(clearAction);
         d->removeAction(clearAction);
         delete clearAction;
@@ -567,7 +567,7 @@ void QLineEdit::setEchoMode(EchoMode mode)
     Q_D(QLineEdit);
     if (mode == (EchoMode)d->control->echoMode())
         return;
-    Qt::InputMethodHints imHints = inputMethodHints();
+    auto imHints = inputMethodHints();
     imHints.setFlag(Qt::ImhHiddenText, mode == Password || mode == NoEcho);
     imHints.setFlag(Qt::ImhNoAutoUppercase, mode != Normal);
     imHints.setFlag(Qt::ImhNoPredictiveText, mode != Normal);
@@ -681,10 +681,10 @@ QSize QLineEdit::sizeHint() const
     Q_D(const QLineEdit);
     ensurePolished();
     QFontMetrics fm(font());
-    int h = qMax(fm.height(), 14) + 2*d->verticalMargin
+    auto h = qMax(fm.height(), 14) + 2*d->verticalMargin
             + d->topTextMargin + d->bottomTextMargin
             + d->topmargin + d->bottommargin;
-    int w = fm.width(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
+    auto w = fm.width(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
             + d->effectiveLeftTextMargin() + d->effectiveRightTextMargin()
             + d->leftmargin + d->rightmargin; // "some"
     QStyleOptionFrame opt;
@@ -704,11 +704,11 @@ QSize QLineEdit::minimumSizeHint() const
 {
     Q_D(const QLineEdit);
     ensurePolished();
-    QFontMetrics fm = fontMetrics();
-    int h = fm.height() + qMax(2*d->verticalMargin, fm.leading())
+    auto fm = fontMetrics();
+    auto h = fm.height() + qMax(2*d->verticalMargin, fm.leading())
             + d->topTextMargin + d->bottomTextMargin
             + d->topmargin + d->bottommargin;
-    int w = fm.maxWidth()
+    auto w = fm.maxWidth()
             + d->effectiveLeftTextMargin() + d->effectiveRightTextMargin()
             + d->leftmargin + d->rightmargin;
     QStyleOptionFrame opt;
@@ -1400,7 +1400,7 @@ bool QLineEdit::event(QEvent * e)
     Q_D(QLineEdit);
     if (e->type() == QEvent::Timer) {
         // ### Qt6: move to timerEvent, is here for binary compatibility
-        int timerId = ((QTimerEvent*)e)->timerId();
+        auto timerId = ((QTimerEvent*)e)->timerId();
         if (false) {
 #ifndef QT_NO_DRAGANDDROP
         } else if (timerId == d->dndTimer.timerId()) {
@@ -1419,7 +1419,7 @@ bool QLineEdit::event(QEvent * e)
         QTimer::singleShot(0, this, SLOT(_q_handleWindowActivate()));
 #ifndef QT_NO_SHORTCUT
     } else if (e->type() == QEvent::ShortcutOverride) {
-        QKeyEvent *ke = static_cast<QKeyEvent*>(e);
+        auto ke = static_cast<QKeyEvent*>(e);
         d->control->processShortcutOverrideEvent(ke);
 #endif
     } else if (e->type() == QEvent::KeyRelease) {
@@ -1485,7 +1485,7 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
 #ifdef Q_OS_ANDROID
     mark = mark && (d->imHints & Qt::ImhNoPredictiveText);
 #endif // Q_OS_ANDROID
-    int cursor = d->xToPos(e->pos().x());
+    auto cursor = d->xToPos(e->pos().x());
 #ifndef QT_NO_DRAGANDDROP
     if (!mark && d->dragEnabled && d->control->echoMode() == Normal &&
          e->button() == Qt::LeftButton && d->inSelection(e->pos().x())) {
@@ -1513,14 +1513,14 @@ void QLineEdit::mouseMoveEvent(QMouseEvent * e)
 #endif
         {
 #ifndef Q_OS_ANDROID
-            const bool select = true;
+            const auto select = true;
 #else
             const bool select = (d->imHints & Qt::ImhNoPredictiveText);
 #endif
 #ifndef QT_NO_IM
             if (d->control->composeMode() && select) {
-                int startPos = d->xToPos(d->mousePressPos.x());
-                int currentPos = d->xToPos(e->pos().x());
+                auto startPos = d->xToPos(d->mousePressPos.x());
+                auto currentPos = d->xToPos(e->pos().x());
                 if (startPos != currentPos)
                     d->control->setSelection(startPos, currentPos - startPos);
 
@@ -1574,22 +1574,22 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
     Q_D(QLineEdit);
 
     if (e->button() == Qt::LeftButton) {
-        int position = d->xToPos(e->pos().x());
+        auto position = d->xToPos(e->pos().x());
 
         // exit composition mode
 #ifndef QT_NO_IM
         if (d->control->composeMode()) {
-            int preeditPos = d->control->cursor();
-            int posInPreedit = position - d->control->cursor();
-            int preeditLength = d->control->preeditAreaText().length();
-            bool positionOnPreedit = false;
+            auto preeditPos = d->control->cursor();
+            auto posInPreedit = position - d->control->cursor();
+            auto preeditLength = d->control->preeditAreaText().length();
+            auto positionOnPreedit = false;
 
             if (posInPreedit >= 0 && posInPreedit <= preeditLength)
                 positionOnPreedit = true;
 
-            int textLength = d->control->end();
+            auto textLength = d->control->end();
             d->control->commitPreedit();
-            int sizeChange = d->control->end() - textLength;
+            auto sizeChange = d->control->end() - textLength;
 
             if (positionOnPreedit) {
                 if (sizeChange == 0)
@@ -1832,7 +1832,7 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
         d->updatePasswordEchoEditing(false);
     }
 
-    Qt::FocusReason reason = e->reason();
+    auto reason = e->reason();
     if (reason != Qt::ActiveWindowFocusReason &&
         reason != Qt::PopupFocusReason)
         deselect();
@@ -1869,20 +1869,20 @@ void QLineEdit::paintEvent(QPaintEvent *)
 {
     Q_D(QLineEdit);
     QPainter p(this);
-    QPalette pal = palette();
+    auto pal = palette();
 
     QStyleOptionFrame panel;
     initStyleOption(&panel);
     style()->drawPrimitive(QStyle::PE_PanelLineEdit, &panel, &p, this);
-    QRect r = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
+    auto r = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
     r.setX(r.x() + d->effectiveLeftTextMargin());
     r.setY(r.y() + d->topTextMargin);
     r.setRight(r.right() - d->effectiveRightTextMargin());
     r.setBottom(r.bottom() - d->bottomTextMargin);
     p.setClipRect(r);
 
-    QFontMetrics fm = fontMetrics();
-    Qt::Alignment va = QStyle::visualAlignment(d->control->layoutDirection(), QFlag(d->alignment));
+    auto fm = fontMetrics();
+    auto va = QStyle::visualAlignment(d->control->layoutDirection(), QFlag(d->alignment));
     switch (va & Qt::AlignVertical_Mask) {
      case Qt::AlignBottom:
          d->vscroll = r.y() + r.height() - fm.height() - d->verticalMargin;
@@ -1899,30 +1899,30 @@ void QLineEdit::paintEvent(QPaintEvent *)
 
     if (d->shouldShowPlaceholderText()) {
         if (!d->placeholderText.isEmpty()) {
-            const Qt::LayoutDirection layoutDir = d->placeholderText.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
-            const Qt::Alignment alignPhText = QStyle::visualAlignment(layoutDir, QFlag(d->alignment));
-            QColor col = pal.text().color();
+            const auto layoutDir = d->placeholderText.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
+            const auto alignPhText = QStyle::visualAlignment(layoutDir, QFlag(d->alignment));
+            auto col = pal.text().color();
             col.setAlpha(128);
-            QPen oldpen = p.pen();
+            auto oldpen = p.pen();
             p.setPen(col);
-            Qt::LayoutDirection oldLayoutDir = p.layoutDirection();
+            auto oldLayoutDir = p.layoutDirection();
             p.setLayoutDirection(layoutDir);
 
-            const QString elidedText = fm.elidedText(d->placeholderText, Qt::ElideRight, lineRect.width());
+            const auto elidedText = fm.elidedText(d->placeholderText, Qt::ElideRight, lineRect.width());
             p.drawText(lineRect, alignPhText, elidedText);
             p.setPen(oldpen);
             p.setLayoutDirection(oldLayoutDir);
         }
     }
 
-    int cix = qRound(d->control->cursorToX());
+    auto cix = qRound(d->control->cursorToX());
 
     // horizontal scrolling. d->hscroll is the left indent from the beginning
     // of the text line to the left edge of lineRect. we update this value
     // depending on the delta from the last paint event; in effect this means
     // the below code handles all scrolling based on the textline (widthUsed),
     // the line edit rect (lineRect) and the cursor position (cix).
-    int widthUsed = qRound(d->control->naturalTextWidth()) + 1;
+    auto widthUsed = qRound(d->control->naturalTextWidth()) + 1;
     if (widthUsed <= lineRect.width()) {
         // text fits in lineRect; use hscroll for alignment
         switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
@@ -1953,11 +1953,11 @@ void QLineEdit::paintEvent(QPaintEvent *)
     }
 
     // the y offset is there to keep the baseline constant in case we have script changes in the text.
-    QPoint topLeft = lineRect.topLeft() - QPoint(d->hscroll, d->control->ascent() - fm.ascent());
+    auto topLeft = lineRect.topLeft() - QPoint(d->hscroll, d->control->ascent() - fm.ascent());
 
     // draw text, selections and cursors
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(style())) {
+    if (auto cssStyle = qobject_cast<QStyleSheetStyle*>(style())) {
         cssStyle->styleSheetPalette(this, &panel, &pal);
     }
 #endif
@@ -2022,15 +2022,15 @@ void QLineEdit::dragLeaveEvent(QDragLeaveEvent *)
 void QLineEdit::dropEvent(QDropEvent* e)
 {
     Q_D(QLineEdit);
-    QString str = e->mimeData()->text();
+    auto str = e->mimeData()->text();
 
     if (!str.isNull() && !d->control->isReadOnly()) {
         if (e->source() == this && e->dropAction() == Qt::CopyAction)
             deselect();
-        int cursorPos = d->xToPos(e->pos().x());
-        int selStart = cursorPos;
-        int oldSelStart = d->control->selectionStart();
-        int oldSelEnd = d->control->selectionEnd();
+        auto cursorPos = d->xToPos(e->pos().x());
+        auto selStart = cursorPos;
+        auto oldSelStart = d->control->selectionStart();
+        auto oldSelEnd = d->control->selectionEnd();
         d->control->moveCursor(cursorPos, false);
         d->cursorVisible = false;
         e->acceptProposedAction();
@@ -2075,7 +2075,7 @@ void QLineEdit::dropEvent(QDropEvent* e)
 */
 void QLineEdit::contextMenuEvent(QContextMenuEvent *event)
 {
-    if (QMenu *menu = createStandardContextMenu()) {
+    if (auto menu = createStandardContextMenu()) {
         menu->setAttribute(Qt::WA_DeleteOnClose);
         menu->popup(event->globalPos());
     }
@@ -2083,7 +2083,7 @@ void QLineEdit::contextMenuEvent(QContextMenuEvent *event)
 
 static inline void setActionIcon(QAction *action, const QString &name)
 {
-    const QIcon icon = QIcon::fromTheme(name);
+    const auto icon = QIcon::fromTheme(name);
     if (!icon.isNull())
         action->setIcon(icon);
 }
@@ -2097,7 +2097,7 @@ static inline void setActionIcon(QAction *action, const QString &name)
 QMenu *QLineEdit::createStandardContextMenu()
 {
     Q_D(QLineEdit);
-    QMenu *popup = new QMenu(this);
+    auto popup = new QMenu(this);
     popup->setObjectName(QLatin1String("qt_edit_menu"));
     QAction *action = 0;
 
@@ -2155,7 +2155,7 @@ QMenu *QLineEdit::createStandardContextMenu()
 
     if (!d->control->isReadOnly() && QGuiApplication::styleHints()->useRtlExtensions()) {
         popup->addSeparator();
-        QUnicodeControlCharacterMenu *ctrlCharacterMenu = new QUnicodeControlCharacterMenu(this, popup);
+        auto ctrlCharacterMenu = new QUnicodeControlCharacterMenu(this, popup);
         popup->addMenu(ctrlCharacterMenu);
     }
     return popup;

@@ -225,8 +225,8 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
 {
     Q_D(QGraphicsAnchorLayout);
 
-    for (int i = count() - 1; i >= 0; --i) {
-        QGraphicsLayoutItem *item = d->items.at(i);
+    for (auto i = count() - 1; i >= 0; --i) {
+        auto item = d->items.at(i);
         removeAt(i);
         if (item) {
             if (item->ownedByLayout())
@@ -271,7 +271,7 @@ QGraphicsAnchorLayout::addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint
                                  QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge)
 {
     Q_D(QGraphicsAnchorLayout);
-    QGraphicsAnchor *a = d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
+    auto a = d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
     invalidate();
     return a;
 }
@@ -318,8 +318,8 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
     Q_D(QGraphicsAnchorLayout);
 
     // Horizontal anchor
-    Qt::AnchorPoint firstEdge = (firstCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
-    Qt::AnchorPoint secondEdge = (secondCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
+    auto firstEdge = (firstCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
+    auto secondEdge = (secondCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
     if (d->addAnchor(firstItem, firstEdge, secondItem, secondEdge)) {
         // Vertical anchor
         firstEdge = (firstCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
@@ -350,7 +350,7 @@ void QGraphicsAnchorLayout::addAnchors(QGraphicsLayoutItem *firstItem,
                                        QGraphicsLayoutItem *secondItem,
                                        Qt::Orientations orientations)
 {
-    bool ok = true;
+    auto ok = true;
     if (orientations & Qt::Horizontal) {
         // Currently, if the first is ok, then the rest of the calls should be ok
         ok = addAnchor(secondItem, Qt::AnchorLeft, firstItem, Qt::AnchorLeft) != 0;
@@ -454,7 +454,7 @@ void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
 void QGraphicsAnchorLayout::removeAt(int index)
 {
     Q_D(QGraphicsAnchorLayout);
-    QGraphicsLayoutItem *item = d->items.value(index);
+    auto item = d->items.value(index);
 
     if (!item)
         return;

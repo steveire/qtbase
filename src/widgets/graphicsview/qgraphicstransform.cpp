@@ -107,7 +107,7 @@ void QGraphicsTransformPrivate::setItem(QGraphicsItem *i)
 
     if (item) {
         Q_Q(QGraphicsTransform);
-        QGraphicsItemPrivate *d_ptr = item->d_ptr.data();
+        auto d_ptr = item->d_ptr.data();
 
         item->prepareGeometryChange();
         Q_ASSERT(d_ptr->transformData);

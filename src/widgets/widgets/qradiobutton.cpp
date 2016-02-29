@@ -197,7 +197,7 @@ QSize QRadioButton::sizeHint() const
     ensurePolished();
     QStyleOptionButton opt;
     initStyleOption(&opt);
-    QSize sz = style()->itemTextRect(fontMetrics(), QRect(), Qt::TextShowMnemonic,
+    auto sz = style()->itemTextRect(fontMetrics(), QRect(), Qt::TextShowMnemonic,
                                      false, text()).size();
     if (!opt.icon.isNull())
         sz = QSize(sz.width() + opt.iconSize.width() + 4, qMax(sz.height(), opt.iconSize.height()));
@@ -231,7 +231,7 @@ void QRadioButton::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QRadioButton);
     if (testAttribute(Qt::WA_Hover)) {
-        bool hit = false;
+        auto hit = false;
         if (underMouse())
             hit = hitButton(e->pos());
 

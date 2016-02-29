@@ -72,8 +72,8 @@ QGesture *QPanGestureRecognizer::create(QObject *target)
 static QPointF panOffset(const QList<QTouchEvent::TouchPoint> &touchPoints, int maxCount)
 {
     QPointF result;
-    const int count = qMin(touchPoints.size(), maxCount);
-    for (int p = 0; p < count; ++p)
+    const auto count = qMin(touchPoints.size(), maxCount);
+    for (auto p = 0; p < count; ++p)
         result += touchPoints.at(p).pos() - touchPoints.at(p).startPos();
     return result / qreal(count);
 }
@@ -82,22 +82,22 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
                                                             QObject *,
                                                             QEvent *event)
 {
-    QPanGesture *q = static_cast<QPanGesture *>(state);
-    QPanGesturePrivate *d = q->d_func();
+    auto q = static_cast<QPanGesture *>(state);
+    auto d = q->d_func();
 
     QGestureRecognizer::Result result = QGestureRecognizer::Ignore;
     switch (event->type()) {
     case QEvent::TouchBegin: {
-        const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
+        auto ev = static_cast<const QTouchEvent *>(event);
         result = QGestureRecognizer::MayBeGesture;
-        QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+        auto p = ev->touchPoints().at(0);
         d->lastOffset = d->offset = QPointF();
         d->pointCount = m_pointCount;
         break;
     }
     case QEvent::TouchEnd: {
         if (q->state() != Qt::NoGesture) {
-            const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
+            auto ev = static_cast<const QTouchEvent *>(event);
             if (ev->touchPoints().size() == d->pointCount) {
                 d->lastOffset = d->offset;
                 d->offset = panOffset(ev->touchPoints(), d->pointCount);
@@ -109,7 +109,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
         break;
     }
     case QEvent::TouchUpdate: {
-        const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
+        auto ev = static_cast<const QTouchEvent *>(event);
         if (ev->touchPoints().size() >= d->pointCount) {
             d->lastOffset = d->offset;
             d->offset = panOffset(ev->touchPoints(), d->pointCount);
@@ -131,8 +131,8 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
 
 void QPanGestureRecognizer::reset(QGesture *state)
 {
-    QPanGesture *pan = static_cast<QPanGesture*>(state);
-    QPanGesturePrivate *d = pan->d_func();
+    auto pan = static_cast<QPanGesture*>(state);
+    auto d = pan->d_func();
 
     d->lastOffset = d->offset = QPointF();
     d->acceleration = 0;
@@ -161,8 +161,8 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
                                                               QObject *,
                                                               QEvent *event)
 {
-    QPinchGesture *q = static_cast<QPinchGesture *>(state);
-    QPinchGesturePrivate *d = q->d_func();
+    auto q = static_cast<QPinchGesture *>(state);
+    auto d = q->d_func();
 
     QGestureRecognizer::Result result = QGestureRecognizer::Ignore;
 
@@ -180,16 +180,16 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
         break;
     }
     case QEvent::TouchUpdate: {
-        const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
+        auto ev = static_cast<const QTouchEvent *>(event);
         d->changeFlags = 0;
         if (ev->touchPoints().size() == 2) {
-            QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
-            QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
+            auto p1 = ev->touchPoints().at(0);
+            auto p2 = ev->touchPoints().at(1);
 
             d->hotSpot = p1.screenPos();
             d->isHotSpotSet = true;
 
-            QPointF centerPoint = (p1.screenPos() + p2.screenPos()) / 2.0;
+            auto centerPoint = (p1.screenPos() + p2.screenPos()) / 2.0;
             if (d->isNewSequence) {
                 d->startPosition[0] = p1.screenPos();
                 d->startPosition[1] = p2.screenPos();
@@ -208,7 +208,7 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
                 d->lastScaleFactor = d->scaleFactor;
                 QLineF line(p1.screenPos(), p2.screenPos());
                 QLineF lastLine(p1.lastScreenPos(),  p2.lastScreenPos());
-                qreal newScaleFactor = line.length() / lastLine.length();
+                auto newScaleFactor = line.length() / lastLine.length();
                 if (newScaleFactor > kSingleStepScaleMax || newScaleFactor < kSingleStepScaleMin)
                     return QGestureRecognizer::Ignore;
                 d->scaleFactor = newScaleFactor;
@@ -216,13 +216,13 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
             d->totalScaleFactor = d->totalScaleFactor * d->scaleFactor;
             d->changeFlags |= QPinchGesture::ScaleFactorChanged;
 
-            qreal angle = QLineF(p1.screenPos(), p2.screenPos()).angle();
+            auto angle = QLineF(p1.screenPos(), p2.screenPos()).angle();
             if (angle > 180)
                 angle -= 360;
-            qreal startAngle = QLineF(p1.startScreenPos(), p2.startScreenPos()).angle();
+            auto startAngle = QLineF(p1.startScreenPos(), p2.startScreenPos()).angle();
             if (startAngle > 180)
                 startAngle -= 360;
-            const qreal rotationAngle = startAngle - angle;
+            const auto rotationAngle = startAngle - angle;
             if (d->isNewSequence)
                 d->lastRotationAngle = 0.0;
             else
@@ -251,8 +251,8 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
 
 void QPinchGestureRecognizer::reset(QGesture *state)
 {
-    QPinchGesture *pinch = static_cast<QPinchGesture *>(state);
-    QPinchGesturePrivate *d = pinch->d_func();
+    auto pinch = static_cast<QPinchGesture *>(state);
+    auto d = pinch->d_func();
 
     d->totalChangeFlags = d->changeFlags = 0;
 
@@ -286,8 +286,8 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
                                                               QObject *,
                                                               QEvent *event)
 {
-    QSwipeGesture *q = static_cast<QSwipeGesture *>(state);
-    QSwipeGesturePrivate *d = q->d_func();
+    auto q = static_cast<QSwipeGesture *>(state);
+    auto d = q->d_func();
 
     QGestureRecognizer::Result result = QGestureRecognizer::Ignore;
 
@@ -308,14 +308,14 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
         break;
     }
     case QEvent::TouchUpdate: {
-        const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
+        auto ev = static_cast<const QTouchEvent *>(event);
         if (d->state == QSwipeGesturePrivate::NoGesture)
             result = QGestureRecognizer::CancelGesture;
         else if (ev->touchPoints().size() == 3) {
             d->state = QSwipeGesturePrivate::ThreePointsReached;
-            QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
-            QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
-            QTouchEvent::TouchPoint p3 = ev->touchPoints().at(2);
+            auto p1 = ev->touchPoints().at(0);
+            auto p2 = ev->touchPoints().at(1);
+            auto p3 = ev->touchPoints().at(2);
 
             if (d->lastPositions[0].isNull()) {
                 d->lastPositions[0] = p1.startScreenPos().toPoint();
@@ -332,15 +332,15 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
                              p2.screenPos().y() - d->lastPositions[1].y() +
                              p3.screenPos().y() - d->lastPositions[2].y()) / 3;
 
-            const int distance = xDistance >= yDistance ? xDistance : yDistance;
+            const auto distance = xDistance >= yDistance ? xDistance : yDistance;
             int elapsedTime = d->time.restart();
             if (!elapsedTime)
                 elapsedTime = 1;
             d->velocityValue = 0.9 * d->velocityValue + (qreal) distance / elapsedTime;
             d->swipeAngle = QLineF(p1.startScreenPos(), p1.screenPos()).angle();
 
-            static const int MoveThreshold = 50;
-            static const int directionChangeThreshold = MoveThreshold / 8;
+            static const auto MoveThreshold = 50;
+            static const auto directionChangeThreshold = MoveThreshold / 8;
             if (qAbs(xDistance) > MoveThreshold || qAbs(yDistance) > MoveThreshold) {
                 // measure the distance to check if the direction changed
                 d->lastPositions[0] = p1.screenPos().toPoint();
@@ -349,14 +349,14 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
                 result = QGestureRecognizer::TriggerGesture;
                 // QTBUG-46195, small changes in direction should not cause the gesture to be canceled.
                 if (d->verticalDirection == QSwipeGesture::NoDirection || qAbs(yDistance) > directionChangeThreshold) {
-                    const QSwipeGesture::SwipeDirection vertical = yDistance > 0
+                    const auto vertical = yDistance > 0
                         ? QSwipeGesture::Down : QSwipeGesture::Up;
                     if (d->verticalDirection != QSwipeGesture::NoDirection && d->verticalDirection != vertical)
                         result = QGestureRecognizer::CancelGesture;
                     d->verticalDirection = vertical;
                 }
                 if (d->horizontalDirection == QSwipeGesture::NoDirection || qAbs(xDistance) > directionChangeThreshold) {
-                    const QSwipeGesture::SwipeDirection horizontal = xDistance > 0
+                    const auto horizontal = xDistance > 0
                         ? QSwipeGesture::Right : QSwipeGesture::Left;
                     if (d->horizontalDirection != QSwipeGesture::NoDirection && d->horizontalDirection != horizontal)
                         result = QGestureRecognizer::CancelGesture;
@@ -394,8 +394,8 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
 
 void QSwipeGestureRecognizer::reset(QGesture *state)
 {
-    QSwipeGesture *q = static_cast<QSwipeGesture *>(state);
-    QSwipeGesturePrivate *d = q->d_func();
+    auto q = static_cast<QSwipeGesture *>(state);
+    auto d = q->d_func();
 
     d->verticalDirection = d->horizontalDirection = QSwipeGesture::NoDirection;
     d->swipeAngle = 0;
@@ -428,10 +428,10 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
                                                             QObject *,
                                                             QEvent *event)
 {
-    QTapGesture *q = static_cast<QTapGesture *>(state);
-    QTapGesturePrivate *d = q->d_func();
+    auto q = static_cast<QTapGesture *>(state);
+    auto d = q->d_func();
 
-    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
+    auto ev = static_cast<const QTouchEvent *>(event);
 
     QGestureRecognizer::Result result = QGestureRecognizer::CancelGesture;
 
@@ -445,8 +445,8 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd: {
         if (q->state() != Qt::NoGesture && ev->touchPoints().size() == 1) {
-            QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-            QPoint delta = p.pos().toPoint() - p.startPos().toPoint();
+            auto p = ev->touchPoints().at(0);
+            auto delta = p.pos().toPoint() - p.startPos().toPoint();
             enum { TapRadius = 40 };
             if (delta.manhattanLength() <= TapRadius) {
                 if (event->type() == QEvent::TouchEnd)
@@ -471,8 +471,8 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
 
 void QTapGestureRecognizer::reset(QGesture *state)
 {
-    QTapGesture *q = static_cast<QTapGesture *>(state);
-    QTapGesturePrivate *d = q->d_func();
+    auto q = static_cast<QTapGesture *>(state);
+    auto d = q->d_func();
 
     d->position = QPointF();
 
@@ -499,8 +499,8 @@ QGestureRecognizer::Result
 QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
                                         QEvent *event)
 {
-    QTapAndHoldGesture *q = static_cast<QTapAndHoldGesture *>(state);
-    QTapAndHoldGesturePrivate *d = q->d_func();
+    auto q = static_cast<QTapAndHoldGesture *>(state);
+    auto d = q->d_func();
 
     if (object == state && event->type() == QEvent::Timer) {
         q->killTimer(d->timerId);
@@ -508,10 +508,10 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         return QGestureRecognizer::FinishGesture | QGestureRecognizer::ConsumeEventHint;
     }
 
-    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-    const QMouseEvent *me = static_cast<const QMouseEvent *>(event);
+    auto ev = static_cast<const QTouchEvent *>(event);
+    auto me = static_cast<const QMouseEvent *>(event);
 #ifndef QT_NO_GRAPHICSVIEW
-    const QGraphicsSceneMouseEvent *gsme = static_cast<const QGraphicsSceneMouseEvent *>(event);
+    auto gsme = static_cast<const QGraphicsSceneMouseEvent *>(event);
 #endif
 
     enum { TapRadius = 40 };
@@ -548,21 +548,21 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         return QGestureRecognizer::CancelGesture; // get out of the MayBeGesture state
     case QEvent::TouchUpdate:
         if (d->timerId && ev->touchPoints().size() == 1) {
-            QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-            QPoint delta = p.pos().toPoint() - p.startPos().toPoint();
+            auto p = ev->touchPoints().at(0);
+            auto delta = p.pos().toPoint() - p.startPos().toPoint();
             if (delta.manhattanLength() <= TapRadius)
                 return QGestureRecognizer::MayBeGesture;
         }
         return QGestureRecognizer::CancelGesture;
     case QEvent::MouseMove: {
-        QPoint delta = me->globalPos() - d->position.toPoint();
+        auto delta = me->globalPos() - d->position.toPoint();
         if (d->timerId && delta.manhattanLength() <= TapRadius)
             return QGestureRecognizer::MayBeGesture;
         return QGestureRecognizer::CancelGesture;
     }
 #ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneMouseMove: {
-        QPoint delta = gsme->screenPos() - d->position.toPoint();
+        auto delta = gsme->screenPos() - d->position.toPoint();
         if (d->timerId && delta.manhattanLength() <= TapRadius)
             return QGestureRecognizer::MayBeGesture;
         return QGestureRecognizer::CancelGesture;
@@ -575,8 +575,8 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
 
 void QTapAndHoldGestureRecognizer::reset(QGesture *state)
 {
-    QTapAndHoldGesture *q = static_cast<QTapAndHoldGesture *>(state);
-    QTapAndHoldGesturePrivate *d = q->d_func();
+    auto q = static_cast<QTapAndHoldGesture *>(state);
+    auto d = q->d_func();
 
     d->position = QPointF();
     if (d->timerId)

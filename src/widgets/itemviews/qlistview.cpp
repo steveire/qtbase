@@ -237,7 +237,7 @@ void QListView::setMovement(Movement movement)
     d->movement = movement;
 
 #ifndef QT_NO_DRAGANDDROP
-    bool movable = (movement != Static);
+    auto movable = (movement != Static);
     setDragEnabled(movable);
     d->viewport->setAcceptDrops(movable);
 #endif
@@ -501,7 +501,7 @@ void QListView::setViewMode(ViewMode mode)
     }
 
 #ifndef QT_NO_DRAGANDDROP
-    bool movable = (d->movement != Static);
+    auto movable = (d->movement != Static);
     setDragEnabled(movable);
     setAcceptDrops(movable);
 #endif
@@ -546,7 +546,7 @@ bool QListView::isRowHidden(int row) const
 void QListView::setRowHidden(int row, bool hide)
 {
     Q_D(QListView);
-    const bool hidden = d->isHidden(row);
+    const auto hidden = d->isHidden(row);
     if (hide && !hidden)
         d->commonListView->appendHiddenRow(row);
     else if (!hide && hidden)
@@ -574,7 +574,7 @@ void QListView::scrollTo(const QModelIndex &index, ScrollHint hint)
     if (index.parent() != d->root || index.column() != d->column)
         return;
 
-    const QRect rect = visualRect(index);
+    const auto rect = visualRect(index);
     if (hint == EnsureVisible && d->viewport->rect().contains(rect)) {
         d->viewport->update(rect);
         return;
@@ -591,11 +591,11 @@ int QListViewPrivate::horizontalScrollToValue(const QModelIndex &index, const QR
                                               QListView::ScrollHint hint) const
 {
     Q_Q(const QListView);
-    const QRect area = viewport->rect();
-    const bool leftOf = q->isRightToLeft()
+    const auto area = viewport->rect();
+    const auto leftOf = q->isRightToLeft()
                         ? (rect.left() < area.left()) && (rect.right() < area.right())
                         : rect.left() < area.left();
-    const bool rightOf = q->isRightToLeft()
+    const auto rightOf = q->isRightToLeft()
                          ? rect.right() > area.right()
                          : (rect.right() > area.right()) && (rect.left() > area.left());
     return commonListView->horizontalScrollToValue(q->visualIndex(index), hint, leftOf, rightOf, area, rect);
@@ -605,9 +605,9 @@ int QListViewPrivate::verticalScrollToValue(const QModelIndex &index, const QRec
                                             QListView::ScrollHint hint) const
 {
     Q_Q(const QListView);
-    const QRect area = viewport->rect();
-    const bool above = (hint == QListView::EnsureVisible && rect.top() < area.top());
-    const bool below = (hint == QListView::EnsureVisible && rect.bottom() > area.bottom());
+    const auto area = viewport->rect();
+    const auto above = (hint == QListView::EnsureVisible && rect.top() < area.top());
+    const auto below = (hint == QListView::EnsureVisible && rect.bottom() > area.bottom());
     return commonListView->verticalScrollToValue(q->visualIndex(index), hint, above, below, area, rect);
 }
 
@@ -618,13 +618,13 @@ void QListViewPrivate::selectAll(QItemSelectionModel::SelectionFlags command)
 
     QItemSelection selection;
     QModelIndex topLeft;
-    int row = 0;
-    const int colCount = model->columnCount(root);
+    auto row = 0;
+    const auto colCount = model->columnCount(root);
     for(; row < model->rowCount(root); ++row) {
         if (isHidden(row)) {
             //it might be the end of a selection range
             if (topLeft.isValid()) {
-                QModelIndex bottomRight = model->index(row - 1, colCount - 1, root);
+                auto bottomRight = model->index(row - 1, colCount - 1, root);
                 selection.append(QItemSelectionRange(topLeft, bottomRight));
                 topLeft = QModelIndex();
             }
@@ -637,7 +637,7 @@ void QListViewPrivate::selectAll(QItemSelectionModel::SelectionFlags command)
 
     if (topLeft.isValid()) {
         //last selected range
-        QModelIndex bottomRight = model->index(row - 1, colCount - 1, root);
+        auto bottomRight = model->index(row - 1, colCount - 1, root);
         selection.append(QItemSelectionRange(topLeft, bottomRight));
     }
 
@@ -656,13 +656,13 @@ QItemViewPaintPairs QListViewPrivate::draggablePaintPairs(const QModelIndexList 
     Q_ASSERT(r);
     Q_Q(const QListView);
     QRect &rect = *r;
-    const QRect viewportRect = viewport->rect();
+    const auto viewportRect = viewport->rect();
     QItemViewPaintPairs ret;
-    QVector<QModelIndex> visibleIndexes = intersectingSet(viewportRect.translated(q->horizontalOffset(), q->verticalOffset()));
+    auto visibleIndexes = intersectingSet(viewportRect.translated(q->horizontalOffset(), q->verticalOffset()));
     std::sort(visibleIndexes.begin(), visibleIndexes.end());
     for (const auto &index : indexes) {
         if (std::binary_search(visibleIndexes.cbegin(), visibleIndexes.cend(), index)) {
-            const QRect current = q->visualRect(index);
+            const auto current = q->visualRect(index);
             QItemViewPaintPair p = { current, index };
             ret += p;
             rect |= current;
@@ -760,9 +760,9 @@ void QListView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int e
     // if the parent is above d->root in the tree, nothing will happen
     QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
     if (parent == d->root) {
-        QSet<QPersistentModelIndex>::iterator it = d->hiddenRows.begin();
+        auto it = d->hiddenRows.begin();
         while (it != d->hiddenRows.end()) {
-            int hiddenRow = it->row();
+            auto hiddenRow = it->row();
             if (hiddenRow >= start && hiddenRow <= end) {
                 it = d->hiddenRows.erase(it);
             } else {
@@ -862,13 +862,13 @@ void QListView::resizeEvent(QResizeEvent *e)
     if (d->delayedPendingLayout)
         return;
 
-    QSize delta = e->size() - e->oldSize();
+    auto delta = e->size() - e->oldSize();
 
     if (delta.isNull())
       return;
 
-    bool listWrap = (d->viewMode == ListMode) && d->wrapItemText;
-    bool flowDimensionChanged = (d->flow == LeftToRight && delta.width() != 0)
+    auto listWrap = (d->viewMode == ListMode) && d->wrapItemText;
+    auto flowDimensionChanged = (d->flow == LeftToRight && delta.width() != 0)
                                 || (d->flow == TopToBottom && delta.height() != 0);
 
     // We post a delayed relayout in the following cases :
@@ -934,9 +934,9 @@ void QListView::startDrag(Qt::DropActions supportedActions)
 QStyleOptionViewItem QListView::viewOptions() const
 {
     Q_D(const QListView);
-    QStyleOptionViewItem option = QAbstractItemView::viewOptions();
+    auto option = QAbstractItemView::viewOptions();
     if (!d->iconSize.isValid()) { // otherwise it was already set in abstractitemview
-        int pm = (d->viewMode == QListView::ListMode
+        auto pm = (d->viewMode == QListView::ListMode
                   ? style()->pixelMetric(QStyle::PM_ListViewIconSize, 0, this)
                   : style()->pixelMetric(QStyle::PM_IconViewIconSize, 0, this));
         option.decorationSize = QSize(pm, pm);
@@ -965,30 +965,30 @@ void QListView::paintEvent(QPaintEvent *e)
     Q_D(QListView);
     if (!d->itemDelegate)
         return;
-    QStyleOptionViewItem option = d->viewOptionsV1();
+    auto option = d->viewOptionsV1();
     QPainter painter(d->viewport);
 
-    const QVector<QModelIndex> toBeRendered = d->intersectingSet(e->rect().translated(horizontalOffset(), verticalOffset()), false);
+    const auto toBeRendered = d->intersectingSet(e->rect().translated(horizontalOffset(), verticalOffset()), false);
 
-    const QModelIndex current = currentIndex();
+    const auto current = currentIndex();
     const QModelIndex hover = d->hover;
-    const QAbstractItemModel *itemModel = d->model;
+    auto itemModel = d->model;
     const QItemSelectionModel *selections = d->selectionModel;
-    const bool focus = (hasFocus() || d->viewport->hasFocus()) && current.isValid();
-    const bool alternate = d->alternatingColors;
-    const QStyle::State state = option.state;
-    const QAbstractItemView::State viewState = this->state();
-    const bool enabled = (state & QStyle::State_Enabled) != 0;
+    const auto focus = (hasFocus() || d->viewport->hasFocus()) && current.isValid();
+    const auto alternate = d->alternatingColors;
+    const auto state = option.state;
+    const auto viewState = this->state();
+    const auto enabled = (state & QStyle::State_Enabled) != 0;
 
-    bool alternateBase = false;
-    int previousRow = -2; // trigger the alternateBase adjustment on first pass
+    auto alternateBase = false;
+    auto previousRow = -2; // trigger the alternateBase adjustment on first pass
 
-    int maxSize = (flow() == TopToBottom)
+    auto maxSize = (flow() == TopToBottom)
         ? qMax(viewport()->size().width(), d->contentsSize().width()) - 2 * d->spacing()
         : qMax(viewport()->size().height(), d->contentsSize().height()) - 2 * d->spacing();
 
-    QVector<QModelIndex>::const_iterator end = toBeRendered.constEnd();
-    for (QVector<QModelIndex>::const_iterator it = toBeRendered.constBegin(); it != end; ++it) {
+    auto end = toBeRendered.constEnd();
+    for (auto it = toBeRendered.constBegin(); it != end; ++it) {
         Q_ASSERT((*it).isValid());
         option.rect = visualRect(*it);
 
@@ -1018,11 +1018,11 @@ void QListView::paintEvent(QPaintEvent *e)
         option.state.setFlag(QStyle::State_MouseOver, *it == hover);
 
         if (alternate) {
-            int row = (*it).row();
+            auto row = (*it).row();
             if (row != previousRow + 1) {
                 // adjust alternateBase according to rows in the "gap"
                 if (!d->hiddenRows.isEmpty()) {
-                    for (int r = qMax(previousRow + 1, 0); r < row; ++r) {
+                    for (auto r = qMax(previousRow + 1, 0); r < row; ++r) {
                         if (!d->isHidden(r))
                             alternateBase = !alternateBase;
                     }
@@ -1034,7 +1034,7 @@ void QListView::paintEvent(QPaintEvent *e)
 
             // draw background of the item (only alternate row). rest of the background
             // is provided by the delegate
-            QStyle::State oldState = option.state;
+            auto oldState = option.state;
             option.state &= ~QStyle::State_Selected;
             style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &option, &painter, this);
             option.state = oldState;
@@ -1073,8 +1073,8 @@ QModelIndex QListView::indexAt(const QPoint &p) const
 {
     Q_D(const QListView);
     QRect rect(p.x() + horizontalOffset(), p.y() + verticalOffset(), 1, 1);
-    const QVector<QModelIndex> intersectVector = d->intersectingSet(rect);
-    QModelIndex index = intersectVector.count() > 0
+    const auto intersectVector = d->intersectingSet(rect);
+    auto index = intersectVector.count() > 0
                         ? intersectVector.last() : QModelIndex();
     if (index.isValid() && visualRect(index).contains(p))
         return index;
@@ -1105,12 +1105,12 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
     Q_D(QListView);
     Q_UNUSED(modifiers);
 
-    QModelIndex current = currentIndex();
+    auto current = currentIndex();
     if (!current.isValid()) {
-        int rowCount = d->model->rowCount(d->root);
+        auto rowCount = d->model->rowCount(d->root);
         if (!rowCount)
             return QModelIndex();
-        int row = 0;
+        auto row = 0;
         while (row < rowCount && d->isHiddenOrDisabled(row))
             ++row;
         if (row >= rowCount)
@@ -1118,14 +1118,14 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         return d->model->index(row, d->column, d->root);
     }
 
-    const QRect initialRect = rectForIndex(current);
-    QRect rect = initialRect;
+    const auto initialRect = rectForIndex(current);
+    auto rect = initialRect;
     if (rect.isEmpty()) {
         return d->model->index(0, d->column, d->root);
     }
     if (d->gridSize().isValid()) rect.setSize(d->gridSize());
 
-    QSize contents = d->contentsSize();
+    auto contents = d->contentsSize();
     QVector<QModelIndex> intersectVector;
 
     switch (cursorAction) {
@@ -1258,15 +1258,15 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
         return;
 
     // if we are wrapping, we can only selecte inside the contents rectangle
-    int w = qMax(d->contentsSize().width(), d->viewport->width());
-    int h = qMax(d->contentsSize().height(), d->viewport->height());
+    auto w = qMax(d->contentsSize().width(), d->viewport->width());
+    auto h = qMax(d->contentsSize().height(), d->viewport->height());
     if (d->wrap && !QRect(0, 0, w, h).intersects(rect))
         return;
 
     QItemSelection selection;
 
     if (rect.width() == 1 && rect.height() == 1) {
-        const QVector<QModelIndex> intersectVector = d->intersectingSet(rect.translated(horizontalOffset(), verticalOffset()));
+        const auto intersectVector = d->intersectingSet(rect.translated(horizontalOffset(), verticalOffset()));
         QModelIndex tl;
         if (!intersectVector.isEmpty())
             tl = intersectVector.last(); // special case for mouse press; only select the top item
@@ -1279,7 +1279,7 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
             QModelIndex tl, br;
             // get the first item
             const QRect topLeft(rect.left() + horizontalOffset(), rect.top() + verticalOffset(), 1, 1);
-            QVector<QModelIndex> intersectVector = d->intersectingSet(topLeft);
+            auto intersectVector = d->intersectingSet(topLeft);
             if (!intersectVector.isEmpty())
                 tl = intersectVector.last();
             // get the last item
@@ -1292,15 +1292,15 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
             if (tl.isValid() && br.isValid()
                 && d->isIndexEnabled(tl)
                 && d->isIndexEnabled(br)) {
-                QRect first = rectForIndex(tl);
-                QRect last = rectForIndex(br);
+                auto first = rectForIndex(tl);
+                auto last = rectForIndex(br);
                 QRect middle;
                 if (d->flow == LeftToRight) {
                     QRect &top = first;
                     QRect &bottom = last;
                     // if bottom is above top, swap them
                     if (top.center().y() > bottom.center().y()) {
-                        QRect tmp = top;
+                        auto tmp = top;
                         top = bottom;
                         bottom = tmp;
                     }
@@ -1343,7 +1343,7 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
                     if (left.center().x() > right.center().x())
                         qSwap(left, right);
 
-                    int ch = contentsSize().height();
+                    auto ch = contentsSize().height();
                     if (left.left() != right.left()) {
                         // left rectangle
                         if (isRightToLeft())
@@ -1372,9 +1372,9 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
                 }
 
                 // do the selections
-                QItemSelection topSelection = d->selection(first);
-                QItemSelection middleSelection = d->selection(middle);
-                QItemSelection bottomSelection = d->selection(last);
+                auto topSelection = d->selection(first);
+                auto middleSelection = d->selection(middle);
+                auto bottomSelection = d->selection(last);
                 // merge
                 selection.merge(topSelection, QItemSelectionModel::Select);
                 selection.merge(middleSelection, QItemSelectionModel::Select);
@@ -1396,21 +1396,21 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
 {
     Q_D(const QListView);
     // ### NOTE: this is a potential bottleneck in non-static mode
-    int c = d->column;
+    auto c = d->column;
     QRegion selectionRegion;
     const QRect &viewportRect = d->viewport->rect();
     for (const auto &elem : selection) {
         if (!elem.isValid())
             continue;
-        QModelIndex parent = elem.topLeft().parent();
+        auto parent = elem.topLeft().parent();
         //we only display the children of the root in a listview
         //we're not interested in the other model indexes
         if (parent != d->root)
             continue;
-        int t = elem.topLeft().row();
-        int b = elem.bottomRight().row();
+        auto t = elem.topLeft().row();
+        auto b = elem.bottomRight().row();
         if (d->viewMode == IconMode || d->isWrapping()) { // in non-static mode, we have to go through all selected items
-            for (int r = t; r <= b; ++r) {
+            for (auto r = t; r <= b; ++r) {
                 const QRect &rect = visualRect(d->model->index(r, c, parent));
                 if (viewportRect.intersects(rect))
                     selectionRegion += rect;
@@ -1418,8 +1418,8 @@ QRegion QListView::visualRegionForSelection(const QItemSelection &selection) con
         } else { // in static mode, we can optimize a bit
             while (t <= b && d->isHidden(t)) ++t;
             while (b >= t && d->isHidden(b)) --b;
-            const QModelIndex top = d->model->index(t, c, parent);
-            const QModelIndex bottom = d->model->index(b, c, parent);
+            const auto top = d->model->index(t, c, parent);
+            const auto bottom = d->model->index(b, c, parent);
             QRect rect(visualRect(top).topLeft(),
                        visualRect(bottom).bottomRight());
             if (viewportRect.intersects(rect))
@@ -1439,7 +1439,7 @@ QModelIndexList QListView::selectedIndexes() const
     if (!d->selectionModel)
         return QModelIndexList();
 
-    QModelIndexList viewSelected = d->selectionModel->selectedIndexes();
+    auto viewSelected = d->selectionModel->selectedIndexes();
     auto ignorable = [this, d](const QModelIndex &index) {
         return index.column() != d->column || index.parent() != d->root || isIndexHidden(index);
     };
@@ -1459,7 +1459,7 @@ void QListView::doItemsLayout()
     // showing the scroll bars will trigger a resize event,
     // so we set the state to expanding to avoid
     // triggering another layout
-    QAbstractItemView::State oldState = state();
+    auto oldState = state();
     setState(ExpandingState);
     if (d->model->columnCount(d->root) > 0) { // no columns means no contents
         d->resetBatchStartRow();
@@ -1484,9 +1484,9 @@ void QListView::updateGeometries()
         horizontalScrollBar()->setRange(0, 0);
         verticalScrollBar()->setRange(0, 0);
     } else {
-        QModelIndex index = d->model->index(0, d->column, d->root);
-        QStyleOptionViewItem option = d->viewOptionsV1();
-        QSize step = d->itemSize(option, index);
+        auto index = d->model->index(0, d->column, d->root);
+        auto option = d->viewOptionsV1();
+        auto step = d->itemSize(option, index);
         d->commonListView->updateHorizontalScrollBar(step);
         d->commonListView->updateVerticalScrollBar(step);
     }
@@ -1674,23 +1674,23 @@ void QListViewPrivate::prepareItemsLayout()
     //take the size as if there were scrollbar in order to prevent scrollbar to blink
     layoutBounds = QRect(QPoint(), q->maximumViewportSize());
 
-    int frameAroundContents = 0;
+    auto frameAroundContents = 0;
     if (q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents))
         frameAroundContents = q->style()->pixelMetric(QStyle::PM_DefaultFrameWidth) * 2;
 
     // maximumViewportSize() already takes scrollbar into account if policy is
     // Qt::ScrollBarAlwaysOn but scrollbar extent must be deduced if policy
     // is Qt::ScrollBarAsNeeded
-    int verticalMargin = vbarpolicy==Qt::ScrollBarAsNeeded
+    auto verticalMargin = vbarpolicy==Qt::ScrollBarAsNeeded
         ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, vbar) + frameAroundContents
         : 0;
-    int horizontalMargin =  hbarpolicy==Qt::ScrollBarAsNeeded
+    auto horizontalMargin =  hbarpolicy==Qt::ScrollBarAsNeeded
         ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, hbar) + frameAroundContents
         : 0;
 
     layoutBounds.adjust(0, 0, -verticalMargin, -horizontalMargin);
 
-    int rowCount = model->columnCount(root) <= 0 ? 0 : model->rowCount(root);
+    auto rowCount = model->columnCount(root) <= 0 ? 0 : model->rowCount(root);
     commonListView->setRowCount(rowCount);
 }
 
@@ -1699,9 +1699,9 @@ void QListViewPrivate::prepareItemsLayout()
 */
 bool QListViewPrivate::doItemsLayout(int delta)
 {
-    int max = model->rowCount(root) - 1;
-    int first = batchStartRow();
-    int last = qMin(first + delta - 1, max);
+    auto max = model->rowCount(root) - 1;
+    auto first = batchStartRow();
+    auto last = qMin(first + delta - 1, max);
 
     if (first == 0) {
         layoutChildren(); // make sure the viewport has the right size
@@ -1739,25 +1739,25 @@ QRect QListViewPrivate::mapToViewport(const QRect &rect, bool extend) const
     if (!rect.isValid())
         return rect;
 
-    QRect result = extend ? commonListView->mapToViewport(rect) : rect;
-    int dx = -q->horizontalOffset();
-    int dy = -q->verticalOffset();
+    auto result = extend ? commonListView->mapToViewport(rect) : rect;
+    auto dx = -q->horizontalOffset();
+    auto dy = -q->verticalOffset();
     return result.adjusted(dx, dy, dx, dy);
 }
 
 QModelIndex QListViewPrivate::closestIndex(const QRect &target,
                                            const QVector<QModelIndex> &candidates) const
 {
-    int distance = 0;
-    int shortest = INT_MAX;
+    auto distance = 0;
+    auto shortest = INT_MAX;
     QModelIndex closest;
-    QVector<QModelIndex>::const_iterator it = candidates.begin();
+    auto it = candidates.begin();
 
     for (; it != candidates.end(); ++it) {
         if (!(*it).isValid())
             continue;
 
-        const QRect indexRect = indexToListViewItem(*it).rect();
+        const auto indexRect = indexToListViewItem(*it).rect();
 
         //if the center x (or y) position of an item is included in the rect of the other item,
         //we define the distance between them as the difference in x (or y) of their respective center.
@@ -1784,13 +1784,13 @@ QModelIndex QListViewPrivate::closestIndex(const QRect &target,
 QSize QListViewPrivate::itemSize(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     if (!uniformItemSizes) {
-        const QAbstractItemDelegate *delegate = delegateForIndex(index);
+        auto delegate = delegateForIndex(index);
         return delegate ? delegate->sizeHint(option, index) : QSize();
     }
     if (!cachedItemSize.isValid()) { // the last item is probaly the largest, so we use its size
-        int row = model->rowCount(root) - 1;
-        QModelIndex sample = model->index(row, column, root);
-        const QAbstractItemDelegate *delegate = delegateForIndex(sample);
+        auto row = model->rowCount(root) - 1;
+        auto sample = model->index(row, column, root);
+        auto delegate = delegateForIndex(sample);
         cachedItemSize = delegate ? delegate->sizeHint(option, sample) : QSize();
     }
     return cachedItemSize;
@@ -1800,8 +1800,8 @@ QItemSelection QListViewPrivate::selection(const QRect &rect) const
 {
     QItemSelection selection;
     QModelIndex tl, br;
-    const QVector<QModelIndex> intersectVector = intersectingSet(rect);
-    QVector<QModelIndex>::const_iterator it = intersectVector.begin();
+    const auto intersectVector = intersectingSet(rect);
+    auto it = intersectVector.begin();
     for (; it != intersectVector.end(); ++it) {
         if (!tl.isValid() && !br.isValid()) {
             tl = br = *it;
@@ -1885,12 +1885,12 @@ void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
     // for the actual content. But still one of the scroll bars will become enabled due to
     // the other one using the space. The other one will become invisible in the same cycle.
     // -> Infinite loop, QTBUG-39902
-    const bool bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
+    const auto bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
                                     qq->horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded;
 
-    const QSize viewportSize = qq->contentsRect().size();
+    const auto viewportSize = qq->contentsRect().size();
 
-    bool verticalWantsToShow = contentsSize.height() > viewportSize.height();
+    auto verticalWantsToShow = contentsSize.height() > viewportSize.height();
     bool horizontalWantsToShow;
     if (verticalWantsToShow)
         horizontalWantsToShow = contentsSize.width() > viewportSize.width() - qq->verticalScrollBar()->width();
@@ -1915,12 +1915,12 @@ void QCommonListViewBase::updateVerticalScrollBar(const QSize &step)
     // for the actual content. But still one of the scroll bars will become enabled due to
     // the other one using the space. The other one will become invisible in the same cycle.
     // -> Infinite loop, QTBUG-39902
-    const bool bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
+    const auto bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
                                     qq->horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded;
 
-    const QSize viewportSize = qq->contentsRect().size();
+    const auto viewportSize = qq->contentsRect().size();
 
-    bool horizontalWantsToShow = contentsSize.width() > viewportSize.width();
+    auto horizontalWantsToShow = contentsSize.width() > viewportSize.width();
     bool verticalWantsToShow;
     if (horizontalWantsToShow)
         verticalWantsToShow = contentsSize.height() > viewportSize.height() - qq->horizontalScrollBar()->height();
@@ -1944,8 +1944,8 @@ void QCommonListViewBase::scrollContentsBy(int dx, int dy, bool /*scrollElasticB
 int QCommonListViewBase::verticalScrollToValue(int /*index*/, QListView::ScrollHint hint,
                                           bool above, bool below, const QRect &area, const QRect &rect) const
 {
-    int verticalValue = verticalScrollBar()->value();
-    QRect adjusted = rect.adjusted(-spacing(), -spacing(), spacing(), spacing());
+    auto verticalValue = verticalScrollBar()->value();
+    auto adjusted = rect.adjusted(-spacing(), -spacing(), spacing(), spacing());
     if (hint == QListView::PositionAtTop || above)
         verticalValue += adjusted.top();
     else if (hint == QListView::PositionAtBottom || below)
@@ -1963,7 +1963,7 @@ int QCommonListViewBase::horizontalOffset() const
 int QCommonListViewBase::horizontalScrollToValue(const int /*index*/, QListView::ScrollHint hint,
                                             bool leftOf, bool rightOf, const QRect &area, const QRect &rect) const
 {
-    int horizontalValue = horizontalScrollBar()->value();
+    auto horizontalValue = horizontalScrollBar()->value();
     if (isRightToLeft()) {
         if (hint == QListView::PositionAtCenter) {
             horizontalValue += ((area.width() - rect.width()) / 2) - rect.left();
@@ -1993,9 +1993,9 @@ int QCommonListViewBase::horizontalScrollToValue(const int /*index*/, QListView:
 #ifndef QT_NO_DRAGANDDROP
 QAbstractItemView::DropIndicatorPosition QListModeViewBase::position(const QPoint &pos, const QRect &rect, const QModelIndex &index) const
 {
-    QAbstractItemView::DropIndicatorPosition r = QAbstractItemView::OnViewport;
+    auto r = QAbstractItemView::OnViewport;
     if (!dd->overwrite) {
-        const int margin = 2;
+        const auto margin = 2;
         if (pos.x() - rect.left() < margin) {
             r = QAbstractItemView::AboveItem;   // Visually, on the left
         } else if (rect.right() - pos.x() < margin) {
@@ -2004,7 +2004,7 @@ QAbstractItemView::DropIndicatorPosition QListModeViewBase::position(const QPoin
             r = QAbstractItemView::OnItem;
         }
     } else {
-        QRect touchingRect = rect;
+        auto touchingRect = rect;
         touchingRect.adjust(-1, -1, 1, 1);
         if (touchingRect.contains(pos, false)) {
             r = QAbstractItemView::OnItem;
@@ -2027,18 +2027,18 @@ void QListModeViewBase::dragMoveEvent(QDragMoveEvent *event)
     event->ignore();
 
     // can't use indexAt, doesn't account for spacing.
-    QPoint p = event->pos();
+    auto p = event->pos();
     QRect rect(p.x() + horizontalOffset(), p.y() + verticalOffset(), 1, 1);
     rect.adjust(-dd->spacing(), -dd->spacing(), dd->spacing(), dd->spacing());
-    const QVector<QModelIndex> intersectVector = dd->intersectingSet(rect);
-    QModelIndex index = intersectVector.count() > 0
+    const auto intersectVector = dd->intersectingSet(rect);
+    auto index = intersectVector.count() > 0
                         ? intersectVector.last() : QModelIndex();
     dd->hover = index;
     if (!dd->droppingOnItself(event, index)
         && dd->canDrop(event)) {
 
         if (index.isValid() && dd->showDropIndicator) {
-            QRect rect = qq->visualRect(index);
+            auto rect = qq->visualRect(index);
             dd->dropIndicatorPosition = position(event->pos(), rect, index);
             // if spacing, should try to draw between items, not just next to item.
             switch (dd->dropIndicatorPosition) {
@@ -2106,10 +2106,10 @@ bool QListModeViewBase::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QM
     QModelIndex index;
     if (dd->viewport->rect().contains(event->pos())) {
         // can't use indexAt, doesn't account for spacing.
-        QPoint p = event->pos();
+        auto p = event->pos();
         QRect rect(p.x() + horizontalOffset(), p.y() + verticalOffset(), 1, 1);
         rect.adjust(-dd->spacing(), -dd->spacing(), dd->spacing(), dd->spacing());
-        const QVector<QModelIndex> intersectVector = dd->intersectingSet(rect);
+        const auto intersectVector = dd->intersectingSet(rect);
         index = intersectVector.count() > 0
             ? intersectVector.last() : QModelIndex();
         if (!index.isValid())
@@ -2118,8 +2118,8 @@ bool QListModeViewBase::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QM
 
     // If we are allowed to do the drop
     if (dd->model->supportedDropActions() & event->dropAction()) {
-        int row = -1;
-        int col = -1;
+        auto row = -1;
+        auto col = -1;
         if (index != dd->root) {
             dd->dropIndicatorPosition = position(event->pos(), qq->visualRect(index), index);
             switch (dd->dropIndicatorPosition) {
@@ -2156,9 +2156,9 @@ void QListModeViewBase::updateVerticalScrollBar(const QSize &step)
     if (verticalScrollMode() == QAbstractItemView::ScrollPerItem
         && ((flow() == QListView::TopToBottom && !isWrapping())
         || (flow() == QListView::LeftToRight && isWrapping()))) {
-            const int steps = (flow() == QListView::TopToBottom ? scrollValueMap : segmentPositions).count() - 1;
+            const auto steps = (flow() == QListView::TopToBottom ? scrollValueMap : segmentPositions).count() - 1;
             if (steps > 0) {
-                const int pageSteps = perItemScrollingPageSteps(viewport()->height(), contentsSize.height(), isWrapping());
+                const auto pageSteps = perItemScrollingPageSteps(viewport()->height(), contentsSize.height(), isWrapping());
                 verticalScrollBar()->setSingleStep(1);
                 verticalScrollBar()->setPageStep(pageSteps);
                 verticalScrollBar()->setRange(0, steps - pageSteps);
@@ -2177,9 +2177,9 @@ void QListModeViewBase::updateHorizontalScrollBar(const QSize &step)
     if (horizontalScrollMode() == QAbstractItemView::ScrollPerItem
         && ((flow() == QListView::TopToBottom && isWrapping())
         || (flow() == QListView::LeftToRight && !isWrapping()))) {
-            int steps = (flow() == QListView::TopToBottom ? segmentPositions : scrollValueMap).count() - 1;
+            auto steps = (flow() == QListView::TopToBottom ? segmentPositions : scrollValueMap).count() - 1;
             if (steps > 0) {
-                const int pageSteps = perItemScrollingPageSteps(viewport()->width(), contentsSize.width(), isWrapping());
+                const auto pageSteps = perItemScrollingPageSteps(viewport()->width(), contentsSize.width(), isWrapping());
                 horizontalScrollBar()->setSingleStep(1);
                 horizontalScrollBar()->setPageStep(pageSteps);
                 horizontalScrollBar()->setRange(0, steps - pageSteps);
@@ -2199,9 +2199,9 @@ int QListModeViewBase::verticalScrollToValue(int index, QListView::ScrollHint hi
         if (scrollValueMap.isEmpty()) {
             value = 0;
         } else {
-            int scrollBarValue = verticalScrollBar()->value();
-            int numHidden = 0;
-            for (int i = 0; i < flowPositions.count() - 1 && i <= scrollBarValue; ++i)
+            auto scrollBarValue = verticalScrollBar()->value();
+            auto numHidden = 0;
+            for (auto i = 0; i < flowPositions.count() - 1 && i <= scrollBarValue; ++i)
                 if (isHidden(i))
                     ++numHidden;
             value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()) - numHidden, flowPositions.count() - 1);
@@ -2224,16 +2224,16 @@ int QListModeViewBase::horizontalOffset() const
     if (horizontalScrollMode() == QAbstractItemView::ScrollPerItem) {
         if (isWrapping()) {
             if (flow() == QListView::TopToBottom && !segmentPositions.isEmpty()) {
-                const int max = segmentPositions.count() - 1;
-                int currentValue = qBound(0, horizontalScrollBar()->value(), max);
-                int position = segmentPositions.at(currentValue);
-                int maximumValue = qBound(0, horizontalScrollBar()->maximum(), max);
-                int maximum = segmentPositions.at(maximumValue);
+                const auto max = segmentPositions.count() - 1;
+                auto currentValue = qBound(0, horizontalScrollBar()->value(), max);
+                auto position = segmentPositions.at(currentValue);
+                auto maximumValue = qBound(0, horizontalScrollBar()->maximum(), max);
+                auto maximum = segmentPositions.at(maximumValue);
                 return (isRightToLeft() ? maximum - position : position);
             }
         } else if (flow() == QListView::LeftToRight && !flowPositions.isEmpty()) {
-            int position = flowPositions.at(scrollValueMap.at(horizontalScrollBar()->value()));
-            int maximum = flowPositions.at(scrollValueMap.at(horizontalScrollBar()->maximum()));
+            auto position = flowPositions.at(scrollValueMap.at(horizontalScrollBar()->value()));
+            auto maximum = flowPositions.at(scrollValueMap.at(horizontalScrollBar()->maximum()));
             return (isRightToLeft() ? maximum - position : position);
         }
     }
@@ -2245,13 +2245,13 @@ int QListModeViewBase::verticalOffset() const
     if (verticalScrollMode() == QAbstractItemView::ScrollPerItem) {
         if (isWrapping()) {
             if (flow() == QListView::LeftToRight && !segmentPositions.isEmpty()) {
-                int value = verticalScrollBar()->value();
+                auto value = verticalScrollBar()->value();
                 if (value >= segmentPositions.count())
                     return 0;
                 return segmentPositions.at(value) - spacing();
             }
         } else if (flow() == QListView::TopToBottom && !flowPositions.isEmpty()) {
-            int value = verticalScrollBar()->value();
+            auto value = verticalScrollBar()->value();
             if (value > scrollValueMap.count())
                 return 0;
             return flowPositions.at(scrollValueMap.at(value)) - spacing();
@@ -2284,43 +2284,43 @@ int QListModeViewBase::horizontalScrollToValue(int index, QListView::ScrollHint 
 void QListModeViewBase::scrollContentsBy(int dx, int dy, bool scrollElasticBand)
 {
     // ### reorder this logic
-    const int verticalValue = verticalScrollBar()->value();
-    const int horizontalValue = horizontalScrollBar()->value();
-    const bool vertical = (verticalScrollMode() == QAbstractItemView::ScrollPerItem);
-    const bool horizontal = (horizontalScrollMode() == QAbstractItemView::ScrollPerItem);
+    const auto verticalValue = verticalScrollBar()->value();
+    const auto horizontalValue = horizontalScrollBar()->value();
+    const auto vertical = (verticalScrollMode() == QAbstractItemView::ScrollPerItem);
+    const auto horizontal = (horizontalScrollMode() == QAbstractItemView::ScrollPerItem);
 
     if (isWrapping()) {
         if (segmentPositions.isEmpty())
             return;
-        const int max = segmentPositions.count() - 1;
+        const auto max = segmentPositions.count() - 1;
         if (horizontal && flow() == QListView::TopToBottom && dx != 0) {
-            int currentValue = qBound(0, horizontalValue, max);
-            int previousValue = qBound(0, currentValue + dx, max);
-            int currentCoordinate = segmentPositions.at(currentValue) - spacing();
-            int previousCoordinate = segmentPositions.at(previousValue) - spacing();
+            auto currentValue = qBound(0, horizontalValue, max);
+            auto previousValue = qBound(0, currentValue + dx, max);
+            auto currentCoordinate = segmentPositions.at(currentValue) - spacing();
+            auto previousCoordinate = segmentPositions.at(previousValue) - spacing();
             dx = previousCoordinate - currentCoordinate;
         } else if (vertical && flow() == QListView::LeftToRight && dy != 0) {
-            int currentValue = qBound(0, verticalValue, max);
-            int previousValue = qBound(0, currentValue + dy, max);
-            int currentCoordinate = segmentPositions.at(currentValue) - spacing();
-            int previousCoordinate = segmentPositions.at(previousValue) - spacing();
+            auto currentValue = qBound(0, verticalValue, max);
+            auto previousValue = qBound(0, currentValue + dy, max);
+            auto currentCoordinate = segmentPositions.at(currentValue) - spacing();
+            auto previousCoordinate = segmentPositions.at(previousValue) - spacing();
             dy = previousCoordinate - currentCoordinate;
         }
     } else {
         if (flowPositions.isEmpty())
             return;
-        const int max = scrollValueMap.count() - 1;
+        const auto max = scrollValueMap.count() - 1;
         if (vertical && flow() == QListView::TopToBottom && dy != 0) {
-            int currentValue = qBound(0, verticalValue, max);
-            int previousValue = qBound(0, currentValue + dy, max);
-            int currentCoordinate = flowPositions.at(scrollValueMap.at(currentValue));
-            int previousCoordinate = flowPositions.at(scrollValueMap.at(previousValue));
+            auto currentValue = qBound(0, verticalValue, max);
+            auto previousValue = qBound(0, currentValue + dy, max);
+            auto currentCoordinate = flowPositions.at(scrollValueMap.at(currentValue));
+            auto previousCoordinate = flowPositions.at(scrollValueMap.at(previousValue));
             dy = previousCoordinate - currentCoordinate;
         } else if (horizontal && flow() == QListView::LeftToRight && dx != 0) {
-            int currentValue = qBound(0, horizontalValue, max);
-            int previousValue = qBound(0, currentValue + dx, max);
-            int currentCoordinate = flowPositions.at(scrollValueMap.at(currentValue));
-            int previousCoordinate = flowPositions.at(scrollValueMap.at(previousValue));
+            auto currentValue = qBound(0, horizontalValue, max);
+            auto previousValue = qBound(0, currentValue + dx, max);
+            auto currentCoordinate = flowPositions.at(scrollValueMap.at(currentValue));
+            auto previousCoordinate = flowPositions.at(scrollValueMap.at(previousValue));
             dx = previousCoordinate - currentCoordinate;
         }
     }
@@ -2346,13 +2346,13 @@ QListViewItem QListModeViewBase::indexToListViewItem(const QModelIndex &index) c
         || index.row() >= flowPositions.count())
         return QListViewItem();
 
-    const int segment = qBinarySearch<int>(segmentStartRows, index.row(),
+    const auto segment = qBinarySearch<int>(segmentStartRows, index.row(),
                                            0, segmentStartRows.count() - 1);
 
 
-    QStyleOptionViewItem options = viewOptions();
+    auto options = viewOptions();
     options.rect.setSize(contentsSize);
-    QSize size = (uniformItemSizes() && cachedItemSize().isValid())
+    auto size = (uniformItemSizes() && cachedItemSize().isValid())
                  ? cachedItemSize() : itemSize(options, index);
 
     QPoint pos;
@@ -2363,7 +2363,7 @@ QListViewItem QListModeViewBase::indexToListViewItem(const QModelIndex &index) c
         pos.setY(flowPositions.at(index.row()));
         pos.setX(segmentPositions.at(segment));
         if (isWrapping()) { // make the items as wide as the segment
-            int right = (segment + 1 >= segmentPositions.count()
+            auto right = (segment + 1 >= segmentPositions.count()
                      ? contentsSize.width()
                      : segmentPositions.at(segment + 1));
             size.setWidth(right - pos.x());
@@ -2413,9 +2413,9 @@ QPoint QListModeViewBase::initStaticLayout(const QListViewLayoutInfo &info)
 */
 void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
 {
-    const bool useItemSize = !info.grid.isValid();
-    const QPoint topLeft = initStaticLayout(info);
-    QStyleOptionViewItem option = viewOptions();
+    const auto useItemSize = !info.grid.isValid();
+    const auto topLeft = initStaticLayout(info);
+    auto option = viewOptions();
     option.rect = info.bounds;
     option.rect.adjust(info.spacing, info.spacing, -info.spacing, -info.spacing);
 
@@ -2451,13 +2451,13 @@ void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
         deltaSegHint = info.grid.width();
     }
 
-    for (int row = info.first; row <= info.last; ++row) {
+    for (auto row = info.first; row <= info.last; ++row) {
         if (isHidden(row)) { // ###
             flowPositions.append(flowPosition);
         } else {
             // if we are not using a grid, we need to find the deltas
             if (useItemSize) {
-                QSize hint = itemSize(option, modelIndex(row));
+                auto hint = itemSize(option, modelIndex(row));
                 if (info.flow == QListView::LeftToRight) {
                     deltaFlowPosition = hint.width() + info.spacing;
                     deltaSegHint = hint.height() + info.spacing;
@@ -2492,7 +2492,7 @@ void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
     if (info.last == info.max)
         flowPosition -= info.spacing; // remove extra spacing
     // set the contents size
-    QRect rect = info.bounds;
+    auto rect = info.bounds;
     if (info.flow == QListView::LeftToRight) {
         rect.setRight(segmentPositions.count() == 1 ? flowPosition : info.bounds.right());
         rect.setBottom(segPosition + deltaSegPosition);
@@ -2540,18 +2540,18 @@ QVector<QModelIndex> QListModeViewBase::intersectingSet(const QRect &area) const
     if (segmentPositions.count() < 2 || flowPositions.isEmpty())
         return ret;
     // the last segment position is actually the edge of the last segment
-    const int segLast = segmentPositions.count() - 2;
-    int seg = qBinarySearch<int>(segmentPositions, segStartPosition, 0, segLast + 1);
+    const auto segLast = segmentPositions.count() - 2;
+    auto seg = qBinarySearch<int>(segmentPositions, segStartPosition, 0, segLast + 1);
     for (; seg <= segLast && segmentPositions.at(seg) <= segEndPosition; ++seg) {
-        int first = segmentStartRows.at(seg);
-        int last = (seg < segLast ? segmentStartRows.at(seg + 1) : batchStartRow) - 1;
+        auto first = segmentStartRows.at(seg);
+        auto last = (seg < segLast ? segmentStartRows.at(seg + 1) : batchStartRow) - 1;
         if (segmentExtents.at(seg) < flowStartPosition)
             continue;
-        int row = qBinarySearch<int>(flowPositions, flowStartPosition, first, last);
+        auto row = qBinarySearch<int>(flowPositions, flowStartPosition, first, last);
         for (; row <= last && flowPositions.at(row) <= flowEndPosition; ++row) {
             if (isHidden(row))
                 continue;
-            QModelIndex index = modelIndex(row);
+            auto index = modelIndex(row);
             if (index.isValid())
                 ret += index;
 #if 0 // for debugging
@@ -2575,7 +2575,7 @@ QRect QListModeViewBase::mapToViewport(const QRect &rect) const
         return rect;
     // If the listview is in "listbox-mode", the items are as wide as the view.
     // But we don't shrink the items.
-    QRect result = rect;
+    auto result = rect;
     if (flow() == QListView::TopToBottom) {
         result.setLeft(spacing());
         result.setWidth(qMax(rect.width(), qMax(contentsSize.width(), viewport()->width()) - 2 * spacing()));
@@ -2599,16 +2599,16 @@ int QListModeViewBase::perItemScrollingPageSteps(int length, int bounds, bool wr
     if (positions.isEmpty() || bounds <= length)
         return positions.count();
     if (uniformItemSizes()) {
-        for (int i = 1; i < positions.count(); ++i)
+        for (auto i = 1; i < positions.count(); ++i)
             if (positions.at(i) > 0)
                 return length / positions.at(i);
         return 0; // all items had height 0
     }
-    int pageSteps = 0;
-    int steps = positions.count() - 1;
-    int max = qMax(length, bounds);
-    int min = qMin(length, bounds);
-    int pos = min - (max - positions.last());
+    auto pageSteps = 0;
+    auto steps = positions.count() - 1;
+    auto max = qMax(length, bounds);
+    auto min = qMin(length, bounds);
+    auto pos = min - (max - positions.last());
 
     while (pos >= 0 && steps > 0) {
         pos -= (positions.at(steps) - positions.at(steps - 1));
@@ -2631,22 +2631,22 @@ int QListModeViewBase::perItemScrollToValue(int index, int scrollValue, int view
     itemExtent += spacing();
     QVector<int> visibleFlowPositions;
     visibleFlowPositions.reserve(flowPositions.count() - 1);
-    for (int i = 0; i < flowPositions.count() - 1; i++) { // flowPositions count is +1 larger than actual row count
+    for (auto i = 0; i < flowPositions.count() - 1; i++) { // flowPositions count is +1 larger than actual row count
         if (!isHidden(i))
             visibleFlowPositions.append(flowPositions.at(i));
     }
 
     if (!wrap) {
-        int topIndex = index;
-        const int bottomIndex = topIndex;
-        const int bottomCoordinate = visibleFlowPositions.at(index);
+        auto topIndex = index;
+        const auto bottomIndex = topIndex;
+        const auto bottomCoordinate = visibleFlowPositions.at(index);
 
         while (topIndex > 0 &&
                (bottomCoordinate - visibleFlowPositions.at(topIndex - 1) + itemExtent) <= (viewportSize)) {
             topIndex--;
         }
 
-        const int itemCount = bottomIndex - topIndex + 1;
+        const auto itemCount = bottomIndex - topIndex + 1;
         switch (hint) {
         case QAbstractItemView::PositionAtTop:
             return index;
@@ -2658,23 +2658,23 @@ int QListModeViewBase::perItemScrollToValue(int index, int scrollValue, int view
             break;
         }
     } else { // wrapping
-        Qt::Orientation flowOrientation = (flow() == QListView::LeftToRight
+        auto flowOrientation = (flow() == QListView::LeftToRight
                                            ? Qt::Horizontal : Qt::Vertical);
         if (flowOrientation == orientation) { // scrolling in the "flow" direction
             // ### wrapped scrolling in the flow direction
             return visibleFlowPositions.at(index); // ### always pixel based for now
         } else if (!segmentStartRows.isEmpty()) { // we are scrolling in the "segment" direction
-            int segment = qBinarySearch<int>(segmentStartRows, index, 0, segmentStartRows.count() - 1);
-            int leftSegment = segment;
-            const int rightSegment = leftSegment;
-            const int bottomCoordinate = segmentPositions.at(segment);
+            auto segment = qBinarySearch<int>(segmentStartRows, index, 0, segmentStartRows.count() - 1);
+            auto leftSegment = segment;
+            const auto rightSegment = leftSegment;
+            const auto bottomCoordinate = segmentPositions.at(segment);
 
             while (leftSegment > scrollValue &&
                 (bottomCoordinate - segmentPositions.at(leftSegment-1) + itemExtent) <= (viewportSize)) {
                     leftSegment--;
             }
 
-            const int segmentCount = rightSegment - leftSegment + 1;
+            const auto segmentCount = rightSegment - leftSegment + 1;
             switch (hint) {
             case QAbstractItemView::PositionAtTop:
                 return segment;
@@ -2709,7 +2709,7 @@ void QIconModeViewBase::setPositionForIndex(const QPoint &position, const QModel
 {
     if (index.row() >= items.count())
         return;
-    const QSize oldContents = contentsSize;
+    const auto oldContents = contentsSize;
     qq->update(index); // update old position
     moveItem(index.row(), position);
     qq->update(index); // update new position
@@ -2738,10 +2738,10 @@ bool QIconModeViewBase::filterStartDrag(Qt::DropActions supportedActions)
     // This function does the same thing as in QAbstractItemView::startDrag(),
     // plus adding viewitems to the draggedItems list.
     // We need these items to draw the drag items
-    QModelIndexList indexes = dd->selectionModel->selectedIndexes();
+    auto indexes = dd->selectionModel->selectedIndexes();
     if (indexes.count() > 0 ) {
         if (viewport()->acceptDrops()) {
-            QModelIndexList::ConstIterator it = indexes.constBegin();
+            auto it = indexes.constBegin();
             for (; it != indexes.constEnd(); ++it)
                 if (dd->model->flags(*it) & Qt::ItemIsDragEnabled
                     && (*it).column() == dd->column)
@@ -2749,13 +2749,13 @@ bool QIconModeViewBase::filterStartDrag(Qt::DropActions supportedActions)
         }
 
         QRect rect;
-        QPixmap pixmap = dd->renderToPixmap(indexes, &rect);
+        auto pixmap = dd->renderToPixmap(indexes, &rect);
         rect.adjust(horizontalOffset(), verticalOffset(), 0, 0);
-        QDrag *drag = new QDrag(qq);
+        auto drag = new QDrag(qq);
         drag->setMimeData(dd->model->mimeData(indexes));
         drag->setPixmap(pixmap);
         drag->setHotSpot(dd->pressedPosition - rect.topLeft());
-        Qt::DropAction action = drag->exec(supportedActions, Qt::CopyAction);
+        auto action = drag->exec(supportedActions, Qt::CopyAction);
         draggedItems.clear();
         if (action == Qt::MoveAction)
             dd->clearOrRemove();
@@ -2768,23 +2768,23 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     if (e->source() != qq)
         return false;
 
-    const QSize contents = contentsSize;
+    const auto contents = contentsSize;
     QPoint offset(horizontalOffset(), verticalOffset());
-    QPoint end = e->pos() + offset;
+    auto end = e->pos() + offset;
     if (qq->acceptDrops()) {
-        const Qt::ItemFlags dropableFlags = Qt::ItemIsDropEnabled|Qt::ItemIsEnabled;
+        const auto dropableFlags = Qt::ItemIsDropEnabled|Qt::ItemIsEnabled;
         const QVector<QModelIndex> &dropIndices = intersectingSet(QRect(end, QSize(1, 1)));
         foreach (const QModelIndex &index, dropIndices)
             if ((index.flags() & dropableFlags) == dropableFlags)
                 return false;
     }
-    QPoint start = dd->pressedPosition;
-    QPoint delta = (dd->movement == QListView::Snap ? snapToGrid(end) - snapToGrid(start) : end - start);
-    const QList<QModelIndex> indexes = dd->selectionModel->selectedIndexes();
+    auto start = dd->pressedPosition;
+    auto delta = (dd->movement == QListView::Snap ? snapToGrid(end) - snapToGrid(start) : end - start);
+    const auto indexes = dd->selectionModel->selectedIndexes();
     for (const auto &index : indexes) {
-        QRect rect = dd->rectForIndex(index);
+        auto rect = dd->rectForIndex(index);
         viewport()->update(dd->mapToViewport(rect, false));
-        QPoint dest = rect.topLeft() + delta;
+        auto dest = rect.topLeft() + delta;
         if (qq->isRightToLeft())
             dest.setX(dd->flipX(dest.x()) - rect.width());
         moveItem(index.row(), dest);
@@ -2820,7 +2820,7 @@ bool QIconModeViewBase::filterDragMoveEvent(QDragMoveEvent *e)
     // ignore by default
     e->ignore();
     // get old dragged items rect
-    QRect itemsRect = this->itemsRect(draggedItems);
+    auto itemsRect = this->itemsRect(draggedItems);
     viewport()->update(itemsRect.translated(draggedItemsDelta()));
     // update position
     draggedItemsPos = e->pos();
@@ -2830,7 +2830,7 @@ bool QIconModeViewBase::filterDragMoveEvent(QDragMoveEvent *e)
     QModelIndex index;
     if (movement() == QListView::Snap) {
         QRect rect(snapToGrid(e->pos() + offset()), gridSize());
-        const QVector<QModelIndex> intersectVector = intersectingSet(rect);
+        const auto intersectVector = intersectingSet(rect);
         index = intersectVector.count() > 0 ? intersectVector.last() : QModelIndex();
     } else {
         index = qq->indexAt(e->pos());
@@ -2868,9 +2868,9 @@ void QIconModeViewBase::scrollContentsBy(int dx, int dy, bool scrollElasticBand)
 void QIconModeViewBase::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
     if (column() >= topLeft.column() && column() <= bottomRight.column())  {
-        QStyleOptionViewItem option = viewOptions();
-        int bottom = qMin(items.count(), bottomRight.row() + 1);
-        for (int row = topLeft.row(); row < bottom; ++row)
+        auto option = viewOptions();
+        auto bottom = qMin(items.count(), bottomRight.row() + 1);
+        for (auto row = topLeft.row(); row < bottom; ++row)
             items[row].resize(itemSize(option, modelIndex(row)));
     }
 }
@@ -2879,9 +2879,9 @@ bool QIconModeViewBase::doBatchedItemLayout(const QListViewLayoutInfo &info, int
 {
     if (info.last >= items.count()) {
         //first we create the items
-        QStyleOptionViewItem option = viewOptions();
-        for (int row = items.count(); row <= info.last; ++row) {
-            QSize size = itemSize(option, modelIndex(row));
+        auto option = viewOptions();
+        for (auto row = items.count(); row <= info.last; ++row) {
+            auto size = itemSize(option, modelIndex(row));
             QListViewItem item(QRect(0, 0, size.width(), size.height()), row); // default pos
             items.append(item);
         }
@@ -2900,11 +2900,11 @@ QListViewItem QIconModeViewBase::indexToListViewItem(const QModelIndex &index) c
 void QIconModeViewBase::initBspTree(const QSize &contents)
 {
     // remove all items from the tree
-    int leafCount = tree.leafCount();
-    for (int l = 0; l < leafCount; ++l)
+    auto leafCount = tree.leafCount();
+    for (auto l = 0; l < leafCount; ++l)
         tree.leaf(l).clear();
     // we have to get the bounding rect of the items before we can initialize the tree
-    QBspTree::Node::Type type = QBspTree::Node::Both; // 2D
+    auto type = QBspTree::Node::Both; // 2D
     // simple heuristics to get better bsp
     if (contents.height() / contents.width() >= 3)
         type = QBspTree::Node::HorizontalPlane;
@@ -2922,7 +2922,7 @@ QPoint QIconModeViewBase::initDynamicLayout(const QListViewLayoutInfo &info)
         y = info.bounds.y() + info.spacing;
         items.reserve(rowCount() - hiddenCount());
     } else {
-        int idx = info.first - 1;
+        auto idx = info.first - 1;
         while (idx > 0 && !items.at(idx).isValid())
             --idx;
         const QListViewItem &item = items.at(idx);
@@ -2941,8 +2941,8 @@ QPoint QIconModeViewBase::initDynamicLayout(const QListViewLayoutInfo &info)
 */
 void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
 {
-    const bool useItemSize = !info.grid.isValid();
-    const QPoint topLeft = initDynamicLayout(info);
+    const auto useItemSize = !info.grid.isValid();
+    const auto topLeft = initDynamicLayout(info);
 
     int segStartPosition;
     int segEndPosition;
@@ -2975,7 +2975,7 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
 
     QRect rect(QPoint(), topLeft);
     QListViewItem *item = 0;
-    for (int row = info.first; row <= info.last; ++row) {
+    for (auto row = info.first; row <= info.last; ++row) {
         item = &items[row];
         if (isHidden(row)) {
             item->invalidate();
@@ -3047,7 +3047,7 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
     }
     batchSavedDeltaSeg = deltaSegPosition;
     batchStartRow = info.last + 1;
-    bool done = (info.last >= rowCount() - 1);
+    auto done = (info.last >= rowCount() - 1);
     // resize the content area
     if (done || !info.bounds.contains(item->rect())) {
         contentsSize = rect.size();
@@ -3059,13 +3059,13 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
     if (rect.size().isEmpty())
         return;
     // resize tree
-    int insertFrom = info.first;
+    auto insertFrom = info.first;
     if (done || info.first == 0) {
         initBspTree(rect.size());
         insertFrom = 0;
     }
     // insert items in tree
-    for (int row = insertFrom; row <= info.last; ++row)
+    for (auto row = insertFrom; row <= info.last; ++row)
         tree.insertLeaf(items.at(row).rect(), row);
     // if the new items are visble, update the viewport
     QRect changedRect(topLeft, rect.bottomRight());
@@ -3075,7 +3075,7 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
 
 QVector<QModelIndex> QIconModeViewBase::intersectingSet(const QRect &area) const
 {
-    QIconModeViewBase *that = const_cast<QIconModeViewBase*>(this);
+    auto that = const_cast<QIconModeViewBase*>(this);
     QBspTree::Data data(static_cast<void*>(that));
     QVector<QModelIndex> res;
     that->interSectingVector = &res;
@@ -3086,8 +3086,8 @@ QVector<QModelIndex> QIconModeViewBase::intersectingSet(const QRect &area) const
 
 QRect QIconModeViewBase::itemsRect(const QVector<QModelIndex> &indexes) const
 {
-    QVector<QModelIndex>::const_iterator it = indexes.begin();
-    QListViewItem item = indexToListViewItem(*it);
+    auto it = indexes.begin();
+    auto item = indexToListViewItem(*it);
     QRect rect(item.x, item.y, item.w, item.h);
     for (; it != indexes.end(); ++it) {
         item = indexToListViewItem(*it);
@@ -3100,7 +3100,7 @@ int QIconModeViewBase::itemIndex(const QListViewItem &item) const
 {
     if (!item.isValid())
         return -1;
-    int i = item.indexHint;
+    auto i = item.indexHint;
     if (i < items.count()) {
         if (items.at(i) == item)
             return i;
@@ -3108,10 +3108,10 @@ int QIconModeViewBase::itemIndex(const QListViewItem &item) const
         i = items.count() - 1;
     }
 
-    int j = i;
-    int c = items.count();
-    bool a = true;
-    bool b = true;
+    auto j = i;
+    auto c = items.count();
+    auto a = true;
+    auto b = true;
 
     while (a || b) {
         if (a) {
@@ -3136,15 +3136,15 @@ void QIconModeViewBase::addLeaf(QVector<int> &leaf, const QRect &area,
                                    uint visited, QBspTree::Data data)
 {
     QListViewItem *vi;
-    QIconModeViewBase *_this = static_cast<QIconModeViewBase *>(data.ptr);
-    for (int i = 0; i < leaf.count(); ++i) {
-        int idx = leaf.at(i);
+    auto _this = static_cast<QIconModeViewBase *>(data.ptr);
+    for (auto i = 0; i < leaf.count(); ++i) {
+        auto idx = leaf.at(i);
         if (idx < 0 || idx >= _this->items.count())
             continue;
         vi = &_this->items[idx];
         Q_ASSERT(vi);
         if (vi->isValid() && vi->rect().intersects(area) && vi->visited != visited) {
-            QModelIndex index  = _this->dd->listViewItemToIndex(*vi);
+            auto index  = _this->dd->listViewItemToIndex(*vi);
             Q_ASSERT(index.isValid());
             _this->interSectingVector->append(index);
             vi->visited = visited;
@@ -3155,8 +3155,8 @@ void QIconModeViewBase::addLeaf(QVector<int> &leaf, const QRect &area,
 void QIconModeViewBase::moveItem(int index, const QPoint &dest)
 {
     // does not impact on the bintree itself or the contents rect
-    QListViewItem *item = &items[index];
-    QRect rect = item->rect();
+    auto item = &items[index];
+    auto rect = item->rect();
 
     // move the item without removing it from the tree
     tree.removeLeaf(rect, index);
@@ -3174,15 +3174,15 @@ void QIconModeViewBase::moveItem(int index, const QPoint &dest)
 
 QPoint QIconModeViewBase::snapToGrid(const QPoint &pos) const
 {
-    int x = pos.x() - (pos.x() % gridSize().width());
-    int y = pos.y() - (pos.y() % gridSize().height());
+    auto x = pos.x() - (pos.x() % gridSize().width());
+    auto y = pos.y() - (pos.y() % gridSize().height());
     return QPoint(x, y);
 }
 
 QPoint QIconModeViewBase::draggedItemsDelta() const
 {
     if (movement() == QListView::Snap) {
-        QPoint snapdelta = QPoint((offset().x() % gridSize().width()),
+        auto snapdelta = QPoint((offset().x() % gridSize().width()),
                                   (offset().y() % gridSize().height()));
         return snapToGrid(draggedItemsPos + snapdelta) - snapToGrid(pressedPosition()) - snapdelta;
     }
@@ -3191,7 +3191,7 @@ QPoint QIconModeViewBase::draggedItemsDelta() const
 
 QRect QIconModeViewBase::draggedItemsRect() const
 {
-    QRect rect = itemsRect(draggedItems);
+    auto rect = itemsRect(draggedItems);
     rect.translate(draggedItemsDelta());
     return rect;
 }
@@ -3220,7 +3220,7 @@ void QIconModeViewBase::clear()
 void QIconModeViewBase::updateContentsSize()
 {
     QRect bounding;
-    for (int i = 0; i < items.count(); ++i)
+    for (auto i = 0; i < items.count(); ++i)
         bounding |= items.at(i).rect();
     contentsSize = bounding.size();
 }
@@ -3233,7 +3233,7 @@ void QListView::currentChanged(const QModelIndex &current, const QModelIndex &pr
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         if (current.isValid()) {
-            int entry = visualIndex(current);
+            auto entry = visualIndex(current);
             QAccessibleEvent event(this, QAccessible::Focus);
             event.setChild(entry);
             QAccessible::updateAccessibility(&event);
@@ -3252,16 +3252,16 @@ void QListView::selectionChanged(const QItemSelection &selected,
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         // ### does not work properly for selection ranges.
-        QModelIndex sel = selected.indexes().value(0);
+        auto sel = selected.indexes().value(0);
         if (sel.isValid()) {
-            int entry = visualIndex(sel);
+            auto entry = visualIndex(sel);
             QAccessibleEvent event(this, QAccessible::SelectionAdd);
             event.setChild(entry);
             QAccessible::updateAccessibility(&event);
         }
-        QModelIndex desel = deselected.indexes().value(0);
+        auto desel = deselected.indexes().value(0);
         if (desel.isValid()) {
-            int entry = visualIndex(desel);
+            auto entry = visualIndex(desel);
             QAccessibleEvent event(this, QAccessible::SelectionRemove);
             event.setChild(entry);
             QAccessible::updateAccessibility(&event);
@@ -3275,9 +3275,9 @@ int QListView::visualIndex(const QModelIndex &index) const
 {
     Q_D(const QListView);
     d->executePostedLayout();
-    QListViewItem itm = d->indexToListViewItem(index);
-    int visualIndex = d->commonListView->itemIndex(itm);
-    for (int row = 0; row <= index.row() && visualIndex >= 0; row++) {
+    auto itm = d->indexToListViewItem(index);
+    auto visualIndex = d->commonListView->itemIndex(itm);
+    for (auto row = 0; row <= index.row() && visualIndex >= 0; row++) {
         if (d->isHidden(row))
             visualIndex--;
     }

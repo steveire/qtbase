@@ -314,9 +314,9 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     Q_D(const QGraphicsEffectSource);
 
     // Shortcut, no cache for childless pixmap items...
-    const QGraphicsItem *item = graphicsItem();
+    auto item = graphicsItem();
     if (system == Qt::LogicalCoordinates && mode == QGraphicsEffect::NoPad && item && isPixmap()) {
-        const QGraphicsPixmapItem *pixmapItem = static_cast<const QGraphicsPixmapItem *>(item);
+        auto pixmapItem = static_cast<const QGraphicsPixmapItem *>(item);
         if (offset)
             *offset = pixmapItem->offset().toPoint();
         return pixmapItem->pixmap();
@@ -699,7 +699,7 @@ void QGraphicsColorizeEffect::draw(QPainter *painter)
     QPoint offset;
     if (sourceIsPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset, NoPad);
+        const auto pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset, NoPad);
         if (!pixmap.isNull())
             d->filter->draw(painter, offset, pixmap);
 
@@ -707,11 +707,11 @@ void QGraphicsColorizeEffect::draw(QPainter *painter)
     }
 
     // Draw pixmap in deviceCoordinates to avoid pixmap scaling.
-    const QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset);
+    const auto pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset);
     if (pixmap.isNull())
         return;
 
-    QTransform restoreTransform = painter->worldTransform();
+    auto restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap);
     painter->setWorldTransform(restoreTransform);
@@ -865,10 +865,10 @@ void QGraphicsBlurEffect::draw(QPainter *painter)
         return;
     }
 
-    PixmapPadMode mode = PadToEffectiveBoundingRect;
+    auto mode = PadToEffectiveBoundingRect;
 
     QPoint offset;
-    QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset, mode);
+    auto pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset, mode);
     if (pixmap.isNull())
         return;
 
@@ -1056,15 +1056,15 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter)
         return;
     }
 
-    PixmapPadMode mode = PadToEffectiveBoundingRect;
+    auto mode = PadToEffectiveBoundingRect;
 
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
-    const QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset, mode);
+    const auto pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset, mode);
     if (pixmap.isNull())
         return;
 
-    QTransform restoreTransform = painter->worldTransform();
+    auto restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap);
     painter->setWorldTransform(restoreTransform);
@@ -1202,8 +1202,8 @@ void QGraphicsOpacityEffect::draw(QPainter *painter)
     }
 
     QPoint offset;
-    Qt::CoordinateSystem system = sourceIsPixmap() ? Qt::LogicalCoordinates : Qt::DeviceCoordinates;
-    QPixmap pixmap = sourcePixmap(system, &offset, QGraphicsEffect::NoPad);
+    auto system = sourceIsPixmap() ? Qt::LogicalCoordinates : Qt::DeviceCoordinates;
+    auto pixmap = sourcePixmap(system, &offset, QGraphicsEffect::NoPad);
     if (pixmap.isNull())
         return;
 
@@ -1215,7 +1215,7 @@ void QGraphicsOpacityEffect::draw(QPainter *painter)
         pixmapPainter.setRenderHints(painter->renderHints());
         pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
         if (system == Qt::DeviceCoordinates) {
-            QTransform worldTransform = painter->worldTransform();
+            auto worldTransform = painter->worldTransform();
             worldTransform *= QTransform::fromTranslate(-offset.x(), -offset.y());
             pixmapPainter.setWorldTransform(worldTransform);
             pixmapPainter.fillRect(sourceBoundingRect(), d->opacityMask);

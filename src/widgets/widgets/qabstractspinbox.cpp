@@ -509,7 +509,7 @@ void QAbstractSpinBox::selectAll()
 
 
     if (!d->specialValue()) {
-        const int tmp = d->edit->displayText().size() - d->suffix.size();
+        const auto tmp = d->edit->displayText().size() - d->suffix.size();
         d->edit->setSelection(tmp, -(tmp - d->prefix.size()));
     } else {
         d->edit->selectAll();
@@ -625,11 +625,11 @@ void QAbstractSpinBox::stepBy(int steps)
 {
     Q_D(QAbstractSpinBox);
 
-    const QVariant old = d->value;
-    QString tmp = d->edit->displayText();
-    int cursorPos = d->edit->cursorPosition();
-    bool dontstep = false;
-    EmitPolicy e = EmitIfChanged;
+    const auto old = d->value;
+    auto tmp = d->edit->displayText();
+    auto cursorPos = d->edit->cursorPosition();
+    auto dontstep = false;
+    auto e = EmitIfChanged;
     if (d->pendingEmit) {
         dontstep = validate(tmp, cursorPos) != QValidator::Acceptable;
         d->cleared = false;
@@ -726,7 +726,7 @@ void QAbstractSpinBox::interpretText()
 QVariant QAbstractSpinBox::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     Q_D(const QAbstractSpinBox);
-    const QVariant lineEditValue = d->edit->inputMethodQuery(query);
+    const auto lineEditValue = d->edit->inputMethodQuery(query);
     switch (query) {
     case Qt::ImHints:
         if (const int hints = inputMethodHints())
@@ -757,7 +757,7 @@ bool QAbstractSpinBox::event(QEvent *event)
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
-        if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
+        if (auto he = static_cast<const QHoverEvent *>(event))
             d->updateHoverControl(he->pos());
         break;
     case QEvent::ShortcutOverride:
@@ -859,8 +859,8 @@ QSize QAbstractSpinBox::sizeHint() const
         ensurePolished();
 
         const QFontMetrics fm(fontMetrics());
-        int h = d->edit->sizeHint().height();
-        int w = 0;
+        auto h = d->edit->sizeHint().height();
+        auto w = 0;
         QString s;
         QString fixedContent =  d->prefix + d->suffix + QLatin1Char(' ');
         s = d->textFromValue(d->minimum);
@@ -899,8 +899,8 @@ QSize QAbstractSpinBox::minimumSizeHint() const
         ensurePolished();
 
         const QFontMetrics fm(fontMetrics());
-        int h = d->edit->minimumSizeHint().height();
-        int w = 0;
+        auto h = d->edit->minimumSizeHint().height();
+        auto w = 0;
 
         QString s;
         QString fixedContent =  d->prefix + QLatin1Char(' ');
@@ -970,8 +970,8 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
     if (!event->text().isEmpty() && d->edit->cursorPosition() < d->prefix.size())
         d->edit->setCursorPosition(d->prefix.size());
 
-    int steps = 1;
-    bool isPgUpOrDown = false;
+    auto steps = 1;
+    auto isPgUpOrDown = false;
     switch (event->key()) {
     case Qt::Key_PageUp:
     case Qt::Key_PageDown:
@@ -990,7 +990,7 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
         }
 #endif
         event->accept();
-        const bool up = (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_Up);
+        const auto up = (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_Up);
         if (!(stepEnabled() & (up ? StepUpEnabled : StepDownEnabled)))
             return;
         if (!up)
@@ -1058,8 +1058,8 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
     case Qt::Key_End:
     case Qt::Key_Home:
         if (event->modifiers() & Qt::ShiftModifier) {
-            int currentPos = d->edit->cursorPosition();
-            const QString text = d->edit->displayText();
+            auto currentPos = d->edit->cursorPosition();
+            const auto text = d->edit->displayText();
             if (event->key() == Qt::Key_End) {
                 if ((currentPos == 0 && !d->prefix.isEmpty()) || text.size() - d->suffix.size() <= currentPos) {
                     break; // let lineedit handle this
@@ -1118,7 +1118,7 @@ void QAbstractSpinBox::wheelEvent(QWheelEvent *event)
 {
     Q_D(QAbstractSpinBox);
     d->wheelDeltaRemainder += event->angleDelta().y();
-    const int steps = d->wheelDeltaRemainder / 120;
+    const auto steps = d->wheelDeltaRemainder / 120;
     d->wheelDeltaRemainder -= steps * 120;
     if (stepEnabled() & (steps > 0 ? StepUpEnabled : StepDownEnabled))
         stepBy(event->modifiers() & Qt::ControlModifier ? steps * 10 : steps);
@@ -1200,7 +1200,7 @@ void QAbstractSpinBox::timerEvent(QTimerEvent *event)
 {
     Q_D(QAbstractSpinBox);
 
-    bool doStep = false;
+    auto doStep = false;
     if (event->timerId() == d->spinClickThresholdTimerId) {
         killTimer(d->spinClickThresholdTimerId);
         d->spinClickThresholdTimerId = -1;
@@ -1221,7 +1221,7 @@ void QAbstractSpinBox::timerEvent(QTimerEvent *event)
     }
 
     if (doStep) {
-        const StepEnabled st = stepEnabled();
+        const auto st = stepEnabled();
         if (d->buttonState & Up) {
             if (!(st & StepUpEnabled)) {
                 d->reset();
@@ -1258,22 +1258,22 @@ void QAbstractSpinBox::contextMenuEvent(QContextMenuEvent *event)
 
     d->reset();
 
-    QAction *selAll = new QAction(tr("&Select All"), menu);
+    auto selAll = new QAction(tr("&Select All"), menu);
     menu->insertAction(d->edit->d_func()->selectAllAction,
                       selAll);
     menu->removeAction(d->edit->d_func()->selectAllAction);
     menu->addSeparator();
     const uint se = stepEnabled();
-    QAction *up = menu->addAction(tr("&Step up"));
+    auto up = menu->addAction(tr("&Step up"));
     up->setEnabled(se & StepUpEnabled);
-    QAction *down = menu->addAction(tr("Step &down"));
+    auto down = menu->addAction(tr("Step &down"));
     down->setEnabled(se & StepDownEnabled);
     menu->addSeparator();
 
     const QPointer<QAbstractSpinBox> that = this;
-    const QPoint pos = (event->reason() == QContextMenuEvent::Mouse)
+    const auto pos = (event->reason() == QContextMenuEvent::Mouse)
         ? event->globalPos() : mapToGlobal(QPoint(event->pos().x(), 0)) + QPoint(width() / 2, height() / 2);
-    const QAction *action = menu->exec(pos);
+    auto action = menu->exec(pos);
     delete static_cast<QMenu *>(menu);
     if (that && action) {
         if (action == up) {
@@ -1300,7 +1300,7 @@ void QAbstractSpinBox::mouseMoveEvent(QMouseEvent *event)
 
     // If we have a timer ID, update the state
     if (d->spinClickTimerId != -1 && d->buttonSymbols != NoButtons) {
-        const StepEnabled se = stepEnabled();
+        const auto se = stepEnabled();
         if ((se & StepUpEnabled) && d->hoverControl == QStyle::SC_SpinBoxUp)
             d->updateState(true);
         else if ((se & StepDownEnabled) && d->hoverControl == QStyle::SC_SpinBoxDown)
@@ -1326,7 +1326,7 @@ void QAbstractSpinBox::mousePressEvent(QMouseEvent *event)
     d->updateHoverControl(event->pos());
     event->accept();
 
-    const StepEnabled se = (d->buttonSymbols == NoButtons) ? StepEnabled(StepNone) : stepEnabled();
+    const auto se = (d->buttonSymbols == NoButtons) ? StepEnabled(StepNone) : stepEnabled();
     if ((se & StepUpEnabled) && d->hoverControl == QStyle::SC_SpinBoxUp) {
         d->updateState(true);
     } else if ((se & StepDownEnabled) && d->hoverControl == QStyle::SC_SpinBoxDown) {
@@ -1383,9 +1383,9 @@ QAbstractSpinBoxPrivate::~QAbstractSpinBoxPrivate()
 bool QAbstractSpinBoxPrivate::updateHoverControl(const QPoint &pos)
 {
     Q_Q(QAbstractSpinBox);
-    QRect lastHoverRect = hoverRect;
-    QStyle::SubControl lastHoverControl = hoverControl;
-    bool doesHover = q->testAttribute(Qt::WA_Hover);
+    auto lastHoverRect = hoverRect;
+    auto lastHoverControl = hoverControl;
+    auto doesHover = q->testAttribute(Qt::WA_Hover);
     if (lastHoverControl != newHoverControl(pos) && doesHover) {
         q->update(lastHoverRect);
         q->update(hoverRect);
@@ -1418,11 +1418,11 @@ QStyle::SubControl QAbstractSpinBoxPrivate::newHoverControl(const QPoint &pos)
 
 QString QAbstractSpinBoxPrivate::stripped(const QString &t, int *pos) const
 {
-    QString text = t;
+    auto text = t;
     if (specialValueText.size() == 0 || text != specialValueText) {
-        int from = 0;
-        int size = text.size();
-        bool changed = false;
+        auto from = 0;
+        auto size = text.size();
+        auto changed = false;
         if (prefix.size() && text.startsWith(prefix)) {
             from += prefix.size();
             size -= from;
@@ -1436,7 +1436,7 @@ QString QAbstractSpinBoxPrivate::stripped(const QString &t, int *pos) const
             text = text.mid(from, size);
     }
 
-    const int s = text.size();
+    const auto s = text.size();
     text = text.trimmed();
     if (pos)
         (*pos) -= (s - text.size());
@@ -1484,11 +1484,11 @@ void QAbstractSpinBoxPrivate::_q_editorTextChanged(const QString &t)
     Q_Q(QAbstractSpinBox);
 
     if (keyboardTracking) {
-        QString tmp = t;
-        int pos = edit->cursorPosition();
-        QValidator::State state = q->validate(tmp, pos);
+        auto tmp = t;
+        auto pos = edit->cursorPosition();
+        auto state = q->validate(tmp, pos);
         if (state == QValidator::Acceptable) {
-            const QVariant v = valueFromText(tmp);
+            const auto v = valueFromText(tmp);
             setValue(v, EmitIfChanged, tmp != t);
             pendingEmit = false;
         } else {
@@ -1514,8 +1514,8 @@ void QAbstractSpinBoxPrivate::_q_editorCursorPositionChanged(int oldpos, int new
     if (!edit->hasSelectedText() && !ignoreCursorPositionChanged && !specialValue()) {
         ignoreCursorPositionChanged = true;
 
-        bool allowSelection = true;
-        int pos = -1;
+        auto allowSelection = true;
+        auto pos = -1;
         if (newpos < prefix.size() && newpos != 0) {
             if (oldpos == 0) {
                 allowSelection = false;
@@ -1533,7 +1533,7 @@ void QAbstractSpinBoxPrivate::_q_editorCursorPositionChanged(int oldpos, int new
             }
         }
         if (pos != -1) {
-            const int selSize = edit->selectionStart() >= 0 && allowSelection
+            const auto selSize = edit->selectionStart() >= 0 && allowSelection
                                   ? (edit->selectedText().size()
                                      * (newpos < pos ? -1 : 1)) - newpos + pos
                                   : 0;
@@ -1672,7 +1672,7 @@ void QAbstractSpinBox::initStyleOption(QStyleOptionSpinBox *option) const
 
 QVariant QAbstractSpinBoxPrivate::bound(const QVariant &val, const QVariant &old, int steps) const
 {
-    QVariant v = val;
+    auto v = val;
     if (!wrapping || steps == 0 || old.isNull()) {
         if (variantCompare(v, minimum) < 0) {
             v = wrapping ? maximum : minimum;
@@ -1681,12 +1681,12 @@ QVariant QAbstractSpinBoxPrivate::bound(const QVariant &val, const QVariant &old
             v = wrapping ? minimum : maximum;
         }
     } else {
-        const bool wasMin = old == minimum;
-        const bool wasMax = old == maximum;
-        const int oldcmp = variantCompare(v, old);
-        const int maxcmp = variantCompare(v, maximum);
-        const int mincmp = variantCompare(v, minimum);
-        const bool wrapped = (oldcmp > 0 && steps < 0) || (oldcmp < 0 && steps > 0);
+        const auto wasMin = old == minimum;
+        const auto wasMax = old == maximum;
+        const auto oldcmp = variantCompare(v, old);
+        const auto maxcmp = variantCompare(v, maximum);
+        const auto mincmp = variantCompare(v, minimum);
+        const auto wrapped = (oldcmp > 0 && steps < 0) || (oldcmp < 0 && steps > 0);
         if (maxcmp > 0) {
             v = ((wasMax && !wrapped && steps > 0) || (steps < 0 && !wasMin && wrapped))
                 ? minimum : maximum;
@@ -1711,7 +1711,7 @@ void QAbstractSpinBoxPrivate::setValue(const QVariant &val, EmitPolicy ep,
                                        bool doUpdate)
 {
     Q_Q(QAbstractSpinBox);
-    const QVariant old = value;
+    const auto old = value;
     value = bound(val);
     pendingEmit = false;
     cleared = false;
@@ -1736,13 +1736,13 @@ void QAbstractSpinBoxPrivate::updateEdit()
     Q_Q(QAbstractSpinBox);
     if (type == QVariant::Invalid)
         return;
-    const QString newText = specialValue() ? specialValueText : prefix + textFromValue(value) + suffix;
+    const auto newText = specialValue() ? specialValueText : prefix + textFromValue(value) + suffix;
     if (newText == edit->displayText() || cleared)
         return;
 
-    const bool empty = edit->text().isEmpty();
-    int cursor = edit->cursorPosition();
-    int selsize = edit->selectedText().size();
+    const auto empty = edit->text().isEmpty();
+    auto cursor = edit->cursorPosition();
+    auto selsize = edit->selectedText().size();
     const QSignalBlocker blocker(edit);
     edit->setText(newText);
 
@@ -1845,14 +1845,14 @@ void QAbstractSpinBoxPrivate::interpret(EmitPolicy ep)
     if (type == QVariant::Invalid || cleared)
         return;
 
-    QVariant v = getZeroVariant();
-    bool doInterpret = true;
-    QString tmp = edit->displayText();
-    int pos = edit->cursorPosition();
-    const int oldpos = pos;
+    auto v = getZeroVariant();
+    auto doInterpret = true;
+    auto tmp = edit->displayText();
+    auto pos = edit->cursorPosition();
+    const auto oldpos = pos;
 
     if (q->validate(tmp, pos) != QValidator::Acceptable) {
-        const QString copy = tmp;
+        const auto copy = tmp;
         q->fixup(tmp);
         QASBDEBUG() << "QAbstractSpinBoxPrivate::interpret() text '"
                     << edit->displayText()
@@ -1942,8 +1942,8 @@ QVariant operator+(const QVariant &arg1, const QVariant &arg2)
                  arg1.typeName(), arg2.typeName(), __FILE__, __LINE__);
     switch (arg1.type()) {
     case QVariant::Int: {
-        const int int1 = arg1.toInt();
-        const int int2 = arg2.toInt();
+        const auto int1 = arg1.toInt();
+        const auto int2 = arg2.toInt();
         if (int1 > 0 && (int2 >= INT_MAX - int1)) {
             // The increment overflows
             ret = QVariant(INT_MAX);
@@ -1957,8 +1957,8 @@ QVariant operator+(const QVariant &arg1, const QVariant &arg2)
     }
     case QVariant::Double: ret = QVariant(arg1.toDouble() + arg2.toDouble()); break;
     case QVariant::DateTime: {
-        QDateTime a2 = arg2.toDateTime();
-        QDateTime a1 = arg1.toDateTime().addDays(QDATETIMEEDIT_DATETIME_MIN.daysTo(a2));
+        auto a2 = arg2.toDateTime();
+        auto a1 = arg1.toDateTime().addDays(QDATETIMEEDIT_DATETIME_MIN.daysTo(a2));
         a1.setTime(a1.time().addMSecs(QTime().msecsTo(a2.time())));
         ret = QVariant(a1);
     }
@@ -1983,15 +1983,15 @@ QVariant operator-(const QVariant &arg1, const QVariant &arg2)
     case QVariant::Int: ret = QVariant(arg1.toInt() - arg2.toInt()); break;
     case QVariant::Double: ret = QVariant(arg1.toDouble() - arg2.toDouble()); break;
     case QVariant::DateTime: {
-        QDateTime a1 = arg1.toDateTime();
-        QDateTime a2 = arg2.toDateTime();
+        auto a1 = arg1.toDateTime();
+        auto a2 = arg2.toDateTime();
         int days = a2.daysTo(a1);
         int secs = a2.secsTo(a1);
-        int msecs = qMax(0, a1.time().msec() - a2.time().msec());
+        auto msecs = qMax(0, a1.time().msec() - a2.time().msec());
         if (days < 0 || secs < 0 || msecs < 0) {
             ret = arg1;
         } else {
-            QDateTime dt = a2.addDays(days).addSecs(secs);
+            auto dt = a2.addDays(days).addSecs(secs);
             if (msecs > 0)
                 dt.setTime(dt.time().addMSecs(msecs));
             ret = QVariant(dt);
@@ -2017,10 +2017,10 @@ QVariant operator*(const QVariant &arg1, double multiplier)
         break;
     case QVariant::Double: ret = QVariant(arg1.toDouble() * multiplier); break;
     case QVariant::DateTime: {
-        double days = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDateTime().date()) * multiplier;
-        int daysInt = (int)days;
+        auto days = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDateTime().date()) * multiplier;
+        auto daysInt = (int)days;
         days -= daysInt;
-        long msecs = (long)((QDATETIMEEDIT_TIME_MIN.msecsTo(arg1.toDateTime().time()) * multiplier)
+        auto msecs = (long)((QDATETIMEEDIT_TIME_MIN.msecsTo(arg1.toDateTime().time()) * multiplier)
                             + (days * (24 * 3600 * 1000)));
         ret = QDateTime(QDate().addDays(int(days)), QTime().addMSecs(msecs));
         break;
@@ -2127,7 +2127,7 @@ QVariant QAbstractSpinBoxPrivate::variantBound(const QVariant &min,
 {
     Q_ASSERT(variantCompare(min, max) <= 0);
     if (variantCompare(min, value) < 0) {
-        const int compMax = variantCompare(value, max);
+        const auto compMax = variantCompare(value, max);
         return (compMax < 0 ? value : max);
     } else {
         return min;

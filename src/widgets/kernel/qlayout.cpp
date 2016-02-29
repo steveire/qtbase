@@ -56,10 +56,10 @@ QT_BEGIN_NAMESPACE
 static int menuBarHeightForWidth(QWidget *menubar, int w)
 {
     if (menubar && !menubar->isHidden() && !menubar->isWindow()) {
-        int result = menubar->heightForWidth(qMax(w, menubar->minimumWidth()));
+        auto result = menubar->heightForWidth(qMax(w, menubar->minimumWidth()));
         if (result == -1)
             result = menubar->sizeHint().height();
-        const int min = qSmartMinSize(menubar).height();
+        const auto min = qSmartMinSize(menubar).height();
         result = qBound(min, result, menubar->maximumSize().height());
         if (result != -1)
             return result;
@@ -171,7 +171,7 @@ void QLayoutPrivate::getMargin(int *result, int userMargin, QStyle::PixelMetric 
         *result = userMargin;
     } else if (!topLevel) {
         *result = 0;
-    } else if (QWidget *pw = q->parentWidget()) {
+    } else if (auto pw = q->parentWidget()) {
         *result = pw->style()->pixelMetric(pm, 0, pw);
     } else {
         *result = 0;
@@ -186,7 +186,7 @@ QLayoutPrivate::QSpacerItemFactoryMethod QLayoutPrivate::spacerItemFactoryMethod
 QWidgetItem *QLayoutPrivate::createWidgetItem(const QLayout *layout, QWidget *widget)
 {
     if (widgetItemFactoryMethod)
-        if (QWidgetItem *wi = (*widgetItemFactoryMethod)(layout, widget))
+        if (auto wi = (*widgetItemFactoryMethod)(layout, widget))
             return wi;
     return new QWidgetItemV2(widget);
 }
@@ -194,7 +194,7 @@ QWidgetItem *QLayoutPrivate::createWidgetItem(const QLayout *layout, QWidget *wi
 QSpacerItem *QLayoutPrivate::createSpacerItem(const QLayout *layout, int w, int h, QSizePolicy::Policy hPolicy, QSizePolicy::Policy vPolicy)
 {
     if (spacerItemFactoryMethod)
-        if (QSpacerItem *si = (*spacerItemFactoryMethod)(layout, w, h, hPolicy, vPolicy))
+        if (auto si = (*spacerItemFactoryMethod)(layout, w, h, hPolicy, vPolicy))
             return si;
     return new QSpacerItem(w, h,  hPolicy, vPolicy);
 }
@@ -236,8 +236,8 @@ void QLayout::addWidget(QWidget *w)
 */
 bool QLayout::setAlignment(QWidget *w, Qt::Alignment alignment)
 {
-    int i = 0;
-    QLayoutItem *item = itemAt(i);
+    auto i = 0;
+    auto item = itemAt(i);
     while (item) {
         if (item->widget() == w) {
             item->setAlignment(alignment);
@@ -259,8 +259,8 @@ bool QLayout::setAlignment(QWidget *w, Qt::Alignment alignment)
 */
 bool QLayout::setAlignment(QLayout *l, Qt::Alignment alignment)
 {
-    int i = 0;
-    QLayoutItem *item = itemAt(i);
+    auto i = 0;
+    auto item = itemAt(i);
     while (item) {
         if (item->layout() == l) {
             item->setAlignment(alignment);
@@ -316,11 +316,11 @@ int QLayout::margin() const
 
 int QLayout::spacing() const
 {
-    if (const QBoxLayout* boxlayout = qobject_cast<const QBoxLayout*>(this)) {
+    if (auto boxlayout = qobject_cast<const QBoxLayout*>(this)) {
         return boxlayout->spacing();
-    } else if (const QGridLayout* gridlayout = qobject_cast<const QGridLayout*>(this)) {
+    } else if (auto gridlayout = qobject_cast<const QGridLayout*>(this)) {
         return gridlayout->spacing();
-    } else if (const QFormLayout* formlayout = qobject_cast<const QFormLayout*>(this)) {
+    } else if (auto formlayout = qobject_cast<const QFormLayout*>(this)) {
         return formlayout->spacing();
     } else {
         Q_D(const QLayout);
@@ -343,11 +343,11 @@ void QLayout::setMargin(int margin)
 
 void QLayout::setSpacing(int spacing)
 {
-    if (QBoxLayout* boxlayout = qobject_cast<QBoxLayout*>(this)) {
+    if (auto boxlayout = qobject_cast<QBoxLayout*>(this)) {
         boxlayout->setSpacing(spacing);
-    } else if (QGridLayout* gridlayout = qobject_cast<QGridLayout*>(this)) {
+    } else if (auto gridlayout = qobject_cast<QGridLayout*>(this)) {
         gridlayout->setSpacing(spacing);
-    } else if (QFormLayout* formlayout = qobject_cast<QFormLayout*>(this)) {
+    } else if (auto formlayout = qobject_cast<QFormLayout*>(this)) {
         formlayout->setSpacing(spacing);
     } else {
         Q_D(QLayout);
@@ -474,7 +474,7 @@ QWidget *QLayout::parentWidget() const
     Q_D(const QLayout);
     if (!d->topLevel) {
         if (parent()) {
-            QLayout *parentLayout = qobject_cast<QLayout*>(parent());
+            auto parentLayout = qobject_cast<QLayout*>(parent());
             if (Q_UNLIKELY(!parentLayout)) {
                 qWarning("QLayout::parentWidget: A layout can only have another layout as a parent.");
                 return 0;
@@ -494,8 +494,8 @@ QWidget *QLayout::parentWidget() const
 */
 bool QLayout::isEmpty() const
 {
-    int i = 0;
-    QLayoutItem *item = itemAt(i);
+    auto i = 0;
+    auto item = itemAt(i);
     while (item) {
         if (!item->isEmpty())
             return false;
@@ -513,7 +513,7 @@ QSizePolicy::ControlTypes QLayout::controlTypes() const
     if (count() == 0)
         return QSizePolicy::DefaultType;
     QSizePolicy::ControlTypes types;
-    for (int i = count() - 1; i >= 0; --i)
+    for (auto i = count() - 1; i >= 0; --i)
         types |= itemAt(i)->controlTypes();
     return types;
 }
@@ -548,10 +548,10 @@ void QLayout::invalidate()
 
 static bool removeWidgetRecursively(QLayoutItem *li, QWidget *w)
 {
-    QLayout *lay = li->layout();
+    auto lay = li->layout();
     if (!lay)
         return false;
-    int i = 0;
+    auto i = 0;
     QLayoutItem *child;
     while ((child = lay->itemAt(i))) {
         if (child->widget() == w) {
@@ -571,10 +571,10 @@ static bool removeWidgetRecursively(QLayoutItem *li, QWidget *w)
 void QLayoutPrivate::doResize(const QSize &r)
 {
     Q_Q(QLayout);
-    int mbh = menuBarHeightForWidth(menubar, r.width());
-    QWidget *mw = q->parentWidget();
-    QRect rect = mw->testAttribute(Qt::WA_LayoutOnEntireRect) ? mw->rect() : mw->contentsRect();
-    const int mbTop = rect.top();
+    auto mbh = menuBarHeightForWidth(menubar, r.width());
+    auto mw = q->parentWidget();
+    auto rect = mw->testAttribute(Qt::WA_LayoutOnEntireRect) ? mw->rect() : mw->contentsRect();
+    const auto mbTop = rect.top();
     rect.setTop(rect.top() + mbh);
     q->setGeometry(rect);
 #ifndef QT_NO_MENUBAR
@@ -599,7 +599,7 @@ void QLayout::widgetEvent(QEvent *e)
     switch (e->type()) {
     case QEvent::Resize:
         if (d->activated) {
-            QResizeEvent *r = (QResizeEvent *)e;
+            auto r = (QResizeEvent *)e;
             d->doResize(r->size());
         } else {
             activate();
@@ -607,9 +607,9 @@ void QLayout::widgetEvent(QEvent *e)
         break;
     case QEvent::ChildRemoved:
         {
-            QChildEvent *c = (QChildEvent *)e;
+            auto c = (QChildEvent *)e;
             if (c->child()->isWidgetType()) {
-                QWidget *w = (QWidget *)c->child();
+                auto w = (QWidget *)c->child();
 #ifndef QT_NO_MENUBAR
                 if (w == d->menubar)
                     d->menubar = 0;
@@ -637,8 +637,8 @@ void QLayout::childEvent(QChildEvent *e)
         return;
 
     if (e->type() == QEvent::ChildRemoved) {
-        QChildEvent *c = (QChildEvent*)e;
-        int i = 0;
+        auto c = (QChildEvent*)e;
+        auto i = 0;
 
         QLayoutItem *item;
         while ((item = itemAt(i))) {
@@ -660,15 +660,15 @@ void QLayout::childEvent(QChildEvent *e)
 int QLayout::totalHeightForWidth(int w) const
 {
     Q_D(const QLayout);
-    int side=0, top=0;
+    auto side=0, top=0;
     if (d->topLevel) {
-        QWidget *parent = parentWidget();
+        auto parent = parentWidget();
         parent->ensurePolished();
-        QWidgetPrivate *wd = parent->d_func();
+        auto wd = parent->d_func();
         side += wd->leftmargin + wd->rightmargin;
         top += wd->topmargin + wd->bottommargin;
     }
-    int h = heightForWidth(w - side) + top;
+    auto h = heightForWidth(w - side) + top;
 #ifndef QT_NO_MENUBAR
     h += menuBarHeightForWidth(d->menubar, w);
 #endif
@@ -682,16 +682,16 @@ int QLayout::totalHeightForWidth(int w) const
 QSize QLayout::totalMinimumSize() const
 {
     Q_D(const QLayout);
-    int side=0, top=0;
+    auto side=0, top=0;
     if (d->topLevel) {
-        QWidget *pw = parentWidget();
+        auto pw = parentWidget();
         pw->ensurePolished();
-        QWidgetPrivate *wd = pw->d_func();
+        auto wd = pw->d_func();
         side += wd->leftmargin + wd->rightmargin;
         top += wd->topmargin + wd->bottommargin;
     }
 
-    QSize s = minimumSize();
+    auto s = minimumSize();
 #ifndef QT_NO_MENUBAR
     top += menuBarHeightForWidth(d->menubar, s.width() + side);
 #endif
@@ -705,16 +705,16 @@ QSize QLayout::totalMinimumSize() const
 QSize QLayout::totalSizeHint() const
 {
     Q_D(const QLayout);
-    int side=0, top=0;
+    auto side=0, top=0;
     if (d->topLevel) {
-        QWidget *pw = parentWidget();
+        auto pw = parentWidget();
         pw->ensurePolished();
-        QWidgetPrivate *wd = pw->d_func();
+        auto wd = pw->d_func();
         side += wd->leftmargin + wd->rightmargin;
         top += wd->topmargin + wd->bottommargin;
     }
 
-    QSize s = sizeHint();
+    auto s = sizeHint();
     if (hasHeightForWidth())
         s.setHeight(heightForWidth(s.width() + side));
 #ifndef QT_NO_MENUBAR
@@ -730,16 +730,16 @@ QSize QLayout::totalSizeHint() const
 QSize QLayout::totalMaximumSize() const
 {
     Q_D(const QLayout);
-    int side=0, top=0;
+    auto side=0, top=0;
     if (d->topLevel) {
-        QWidget *pw = parentWidget();
+        auto pw = parentWidget();
         pw->ensurePolished();
-        QWidgetPrivate *wd = pw->d_func();
+        auto wd = pw->d_func();
         side += wd->leftmargin + wd->rightmargin;
         top += wd->topmargin + wd->bottommargin;
     }
 
-    QSize s = maximumSize();
+    auto s = maximumSize();
 #ifndef QT_NO_MENUBAR
     top += menuBarHeightForWidth(d->menubar, s.width());
 #endif
@@ -789,7 +789,7 @@ void QLayout::addChildLayout(QLayout *l)
     }
     l->setParent(this);
 
-    if (QWidget *mw = parentWidget()) {
+    if (auto mw = parentWidget()) {
         l->d_func()->reparentChildWidgets(mw);
     }
 
@@ -800,7 +800,7 @@ void QLayout::addChildLayout(QLayout *l)
  */
 bool QLayout::adoptLayout(QLayout *layout)
 {
-    const bool ok = !layout->parent();
+    const auto ok = !layout->parent();
     addChildLayout(layout);
     return ok;
 }
@@ -819,30 +819,30 @@ static bool layoutDebug()
 void QLayoutPrivate::reparentChildWidgets(QWidget *mw)
 {
     Q_Q(QLayout);
-    int n =  q->count();
+    auto n =  q->count();
 
 #ifndef QT_NO_MENUBAR
     if (menubar && menubar->parentWidget() != mw) {
         menubar->setParent(mw);
     }
 #endif
-    bool mwVisible = mw && mw->isVisible();
-    for (int i = 0; i < n; ++i) {
-        QLayoutItem *item = q->itemAt(i);
-        if (QWidget *w = item->widget()) {
-            QWidget *pw = w->parentWidget();
+    auto mwVisible = mw && mw->isVisible();
+    for (auto i = 0; i < n; ++i) {
+        auto item = q->itemAt(i);
+        if (auto w = item->widget()) {
+            auto pw = w->parentWidget();
 #ifdef QT_DEBUG
             if (Q_UNLIKELY(pw && pw != mw && layoutDebug())) {
                 qWarning("QLayout::addChildLayout: widget %s \"%ls\" in wrong parent; moved to correct parent",
                          w->metaObject()->className(), qUtf16Printable(w->objectName()));
             }
 #endif
-            bool needShow = mwVisible && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide));
+            auto needShow = mwVisible && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide));
             if (pw != mw)
                 w->setParent(mw);
             if (needShow)
                 QMetaObject::invokeMethod(w, "_q_showIfNotHidden", Qt::QueuedConnection); //show later
-        } else if (QLayout *l = item->layout()) {
+        } else if (auto l = item->layout()) {
             l->d_func()->reparentChildWidgets(mw);
         }
     }
@@ -899,13 +899,13 @@ bool QLayoutPrivate::checkLayout(QLayout *otherLayout) const
 */
 void QLayout::addChildWidget(QWidget *w)
 {
-    QWidget *mw = parentWidget();
-    QWidget *pw = w->parentWidget();
+    auto mw = parentWidget();
+    auto pw = w->parentWidget();
 
     //Qt::WA_LaidOut is never reset. It only means that the widget at some point has
     //been in a layout.
     if (pw && w->testAttribute(Qt::WA_LaidOut)) {
-        QLayout *l = pw->layout();
+        auto l = pw->layout();
         if (l && removeWidgetRecursively(l, w)) {
 #ifdef QT_DEBUG
             if (Q_UNLIKELY(layoutDebug()))
@@ -922,7 +922,7 @@ void QLayout::addChildWidget(QWidget *w)
 #endif
         pw = 0;
     }
-    bool needShow = mw && mw->isVisible() && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide));
+    auto needShow = mw && mw->isVisible() && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide));
     if (!pw && mw)
         w->setParent(mw);
     w->setAttribute(Qt::WA_LaidOut);
@@ -1017,10 +1017,10 @@ Qt::Orientations QLayout::expandingDirections() const
 void QLayout::activateRecursiveHelper(QLayoutItem *item)
 {
     item->invalidate();
-    QLayout *layout = item->layout();
+    auto layout = item->layout();
     if (layout) {
         QLayoutItem *child;
-        int i=0;
+        auto i=0;
         while ((child = layout->itemAt(i++)))
             activateRecursiveHelper(child);
         layout->d_func()->activated = true;
@@ -1038,12 +1038,12 @@ void QLayout::activateRecursiveHelper(QLayoutItem *item)
 
 void QLayout::update()
 {
-    QLayout *layout = this;
+    auto layout = this;
     while (layout && layout->d_func()->activated) {
         layout->d_func()->activated = false;
         if (layout->d_func()->topLevel) {
             Q_ASSERT(layout->parent()->isWidgetType());
-            QWidget *mw = static_cast<QWidget*>(layout->parent());
+            auto mw = static_cast<QWidget*>(layout->parent());
             QApplication::postEvent(mw, new QEvent(QEvent::LayoutRequest));
             break;
         }
@@ -1069,7 +1069,7 @@ bool QLayout::activate()
         return static_cast<QLayout*>(parent())->activate();
     if (d->activated)
         return false;
-    QWidget *mw = static_cast<QWidget*>(parent());
+    auto mw = static_cast<QWidget*>(parent());
     if (Q_UNLIKELY(!mw)) {
         qWarning("QLayout::activate: %s \"%ls\" does not have a main widget",
                  metaObject()->className(), qUtf16Printable(objectName()));
@@ -1077,7 +1077,7 @@ bool QLayout::activate()
     }
     activateRecursiveHelper(this);
 
-    QWidgetPrivate *md = mw->d_func();
+    auto md = mw->d_func();
     uint explMin = md->extra ? md->extra->explicitMinSize : 0;
     uint explMax = md->extra ? md->extra->explicitMaxSize : 0;
 
@@ -1100,14 +1100,14 @@ bool QLayout::activate()
         bool widthSet = explMin & Qt::Horizontal;
         bool heightSet = explMin & Qt::Vertical;
         if (mw->isWindow()) {
-            QSize ms = totalMinimumSize();
+            auto ms = totalMinimumSize();
             if (widthSet)
                 ms.setWidth(mw->minimumSize().width());
             if (heightSet)
                 ms.setHeight(mw->minimumSize().height());
             mw->setMinimumSize(ms);
         } else if (!widthSet || !heightSet) {
-            QSize ms = mw->minimumSize();
+            auto ms = mw->minimumSize();
             if (!widthSet)
                 ms.setWidth(0);
             if (!heightSet)
@@ -1160,9 +1160,9 @@ QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOpt
     if (!from || !to)
         return 0;
 
-    int index = -1;
+    auto index = -1;
     QLayoutItem *item = 0;
-    for (int u = 0; u < count(); ++u) {
+    for (auto u = 0; u < count(); ++u) {
         item = itemAt(u);
         if (!item)
             continue;
@@ -1173,7 +1173,7 @@ QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOpt
         }
 
         if (item->layout() && (options & Qt::FindChildrenRecursively)) {
-            QLayoutItem *r = item->layout()->replaceWidget(from, to, options);
+            auto r = item->layout()->replaceWidget(from, to, options);
             if (r)
                 return r;
         }
@@ -1182,9 +1182,9 @@ QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOpt
         return 0;
 
     addChildWidget(to);
-    QLayoutItem *newitem = new QWidgetItem(to);
+    auto newitem = new QWidgetItem(to);
     newitem->setAlignment(item->alignment());
-    QLayoutItem *r = d->replaceAt(index, newitem);
+    auto r = d->replaceAt(index, newitem);
     if (!r)
         delete newitem;
     return r;
@@ -1241,8 +1241,8 @@ QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOpt
 */
 int QLayout::indexOf(QWidget *widget) const
 {
-    int i = 0;
-    QLayoutItem *item = itemAt(i);
+    auto i = 0;
+    auto item = itemAt(i);
     while (item) {
         if (item->widget() == widget)
             return i;
@@ -1311,17 +1311,17 @@ QLayout::SizeConstraint QLayout::sizeConstraint() const
 */
 QRect QLayout::alignmentRect(const QRect &r) const
 {
-    QSize s = sizeHint();
-    Qt::Alignment a = alignment();
+    auto s = sizeHint();
+    auto a = alignment();
 
     /*
       This is a hack to obtain the real maximum size, not
       QSize(QLAYOUTSIZE_MAX, QLAYOUTSIZE_MAX), the value consistently
       returned by QLayoutItems that have an alignment.
     */
-    QLayout *that = const_cast<QLayout *>(this);
+    auto that = const_cast<QLayout *>(this);
     that->setAlignment(0);
-    QSize ms = that->maximumSize();
+    auto ms = that->maximumSize();
     that->setAlignment(a);
 
     if ((expandingDirections() & Qt::Horizontal) ||
@@ -1332,21 +1332,21 @@ QRect QLayout::alignmentRect(const QRect &r) const
          !(a & Qt::AlignVertical_Mask)) {
         s.setHeight(qMin(r.height(), ms.height()));
     } else if (hasHeightForWidth()) {
-        int hfw = heightForWidth(s.width());
+        auto hfw = heightForWidth(s.width());
         if (hfw < s.height())
             s.setHeight(qMin(hfw, ms.height()));
     }
 
     s = s.boundedTo(r.size());
-    int x = r.x();
-    int y = r.y();
+    auto x = r.x();
+    auto y = r.y();
 
     if (a & Qt::AlignBottom)
         y += (r.height() - s.height());
     else if (!(a & Qt::AlignTop))
         y += (r.height() - s.height()) / 2;
 
-    QWidget *parent = parentWidget();
+    auto parent = parentWidget();
     a = QStyle::visualAlignment(parent ? parent->layoutDirection() : QApplication::layoutDirection(), a);
     if (a & Qt::AlignRight)
         x += (r.width() - s.width());
@@ -1368,7 +1368,7 @@ QRect QLayout::alignmentRect(const QRect &r) const
 */
 void QLayout::removeWidget(QWidget *widget)
 {
-    int i = 0;
+    auto i = 0;
     QLayoutItem *child;
     while ((child = itemAt(i))) {
         if (child->widget() == widget) {
@@ -1391,7 +1391,7 @@ void QLayout::removeWidget(QWidget *widget)
 */
 void QLayout::removeItem(QLayoutItem *item)
 {
-    int i = 0;
+    auto i = 0;
     QLayoutItem *child;
     while ((child = itemAt(i))) {
         if (child == item) {
@@ -1438,13 +1438,13 @@ bool QLayout::isEnabled() const
 
 QSize QLayout::closestAcceptableSize(const QWidget *widget, const QSize &size)
 {
-    QSize result = size.boundedTo(qSmartMaxSize(widget));
+    auto result = size.boundedTo(qSmartMaxSize(widget));
     result = result.expandedTo(qSmartMinSize(widget));
-    QLayout *l = widget->layout();
+    auto l = widget->layout();
     if (l && l->hasHeightForWidth() && result.height() < l->minimumHeightForWidth(result.width()) ) {
-        QSize current = widget->size();
-        int currentHfw =  l->minimumHeightForWidth(current.width());
-        int newHfw = l->minimumHeightForWidth(result.width());
+        auto current = widget->size();
+        auto currentHfw =  l->minimumHeightForWidth(current.width());
+        auto newHfw = l->minimumHeightForWidth(result.width());
         if (current.height() < currentHfw || currentHfw == newHfw) {
             //handle the constant hfw case and the vertical-only case, as well as the
             // current-size-is-not-correct case
@@ -1452,13 +1452,13 @@ QSize QLayout::closestAcceptableSize(const QWidget *widget, const QSize &size)
         } else {
             // binary search; assume hfw is decreasing ###
 
-            int maxw = qMax(widget->width(),result.width());
-            int maxh = qMax(widget->height(), result.height());
-            int minw = qMin(widget->width(),result.width());
-            int minh = qMin(widget->height(), result.height());
+            auto maxw = qMax(widget->width(),result.width());
+            auto maxh = qMax(widget->height(), result.height());
+            auto minw = qMin(widget->width(),result.width());
+            auto minh = qMin(widget->height(), result.height());
 
-            int minhfw = l->minimumHeightForWidth(minw);
-            int maxhfw = l->minimumHeightForWidth(maxw);
+            auto minhfw = l->minimumHeightForWidth(minw);
+            auto maxhfw = l->minimumHeightForWidth(maxw);
             while (minw < maxw) {
                 if (minhfw > maxh) { //assume decreasing
                     minw = maxw - (maxw-minw)/2;

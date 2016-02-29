@@ -162,7 +162,7 @@ QGraphicsLayout::QGraphicsLayout(QGraphicsLayoutItem *parent)
     setParentLayoutItem(parent);
     if (parent && !parent->isLayout()) {
         // If a layout has a parent that is not a layout it must be a QGraphicsWidget.
-        QGraphicsItem *itemParent = parent->graphicsItem();
+        auto itemParent = parent->graphicsItem();
         if (itemParent && itemParent->isWidget()) {
             static_cast<QGraphicsWidget *>(itemParent)->d_func()->setLayout_helper(this);
         } else {
@@ -183,7 +183,7 @@ QGraphicsLayout::QGraphicsLayout(QGraphicsLayoutPrivate &dd, QGraphicsLayoutItem
     setParentLayoutItem(parent);
     if (parent && !parent->isLayout()) {
         // If a layout has a parent that is not a layout it must be a QGraphicsWidget.
-        QGraphicsItem *itemParent = parent->graphicsItem();
+        auto itemParent = parent->graphicsItem();
         if (itemParent && itemParent->isWidget()) {
             static_cast<QGraphicsWidget *>(itemParent)->d_func()->setLayout_helper(this);
         } else {
@@ -273,10 +273,10 @@ void QGraphicsLayout::activate()
     Q_ASSERT(!parentItem->isLayout());
 
     if (QGraphicsLayout::instantInvalidatePropagation()) {
-        QGraphicsWidget *parentWidget = static_cast<QGraphicsWidget*>(parentItem);
+        auto parentWidget = static_cast<QGraphicsWidget*>(parentItem);
         if (!parentWidget->parentLayoutItem()) {
             // we've reached the topmost widget, resize it
-            bool wasResized = parentWidget->testAttribute(Qt::WA_Resized);
+            auto wasResized = parentWidget->testAttribute(Qt::WA_Resized);
             parentWidget->resize(parentWidget->size());
             parentWidget->setAttribute(Qt::WA_Resized, wasResized);
         }
@@ -329,7 +329,7 @@ void QGraphicsLayout::invalidate()
             layoutItem->d_func()->sizeHintWithConstraintCacheDirty = true;
         }
 
-        bool postIt = layoutItem ? !layoutItem->isLayout() : false;
+        auto postIt = layoutItem ? !layoutItem->isLayout() : false;
         if (postIt) {
             layoutItem = this;
             while (layoutItem && layoutItem->isLayout()
@@ -355,7 +355,7 @@ void QGraphicsLayout::updateGeometry()
         d->activated = false;
         QGraphicsLayoutItem::updateGeometry();
 
-        QGraphicsLayoutItem *parentItem = parentLayoutItem();
+        auto parentItem = parentLayoutItem();
         if (!parentItem)
             return;
 
@@ -365,7 +365,7 @@ void QGraphicsLayout::updateGeometry()
             parentItem->updateGeometry();
     } else {
         QGraphicsLayoutItem::updateGeometry();
-        if (QGraphicsLayoutItem *parentItem = parentLayoutItem()) {
+        if (auto parentItem = parentLayoutItem()) {
             if (parentItem->isLayout()) {
                 parentItem->updateGeometry();
             } else {

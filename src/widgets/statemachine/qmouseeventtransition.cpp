@@ -187,7 +187,7 @@ bool QMouseEventTransition::eventTest(QEvent *event)
     Q_D(const QMouseEventTransition);
     if (!QEventTransition::eventTest(event))
         return false;
-    QStateMachine::WrappedEvent *we = static_cast<QStateMachine::WrappedEvent*>(event);
+    auto we = static_cast<QStateMachine::WrappedEvent*>(event);
     d->transition->setEventType(we->event()->type());
     return QAbstractTransitionPrivate::get(d->transition)->callEventTest(we->event());
 }

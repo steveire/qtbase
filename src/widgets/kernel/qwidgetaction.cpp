@@ -118,10 +118,10 @@ QWidgetAction::QWidgetAction(QObject *parent)
 QWidgetAction::~QWidgetAction()
 {
     Q_D(QWidgetAction);
-    for (int i = 0; i < d->createdWidgets.count(); ++i)
+    for (auto i = 0; i < d->createdWidgets.count(); ++i)
         disconnect(d->createdWidgets.at(i), SIGNAL(destroyed(QObject*)),
                    this, SLOT(_q_widgetDestroyed(QObject*)));
-    QList<QWidget *> widgetsToDelete = d->createdWidgets;
+    auto widgetsToDelete = d->createdWidgets;
     d->createdWidgets.clear();
     qDeleteAll(widgetsToDelete);
     delete d->defaultWidget;
@@ -174,7 +174,7 @@ QWidget *QWidgetAction::requestWidget(QWidget *parent)
 {
     Q_D(QWidgetAction);
 
-    QWidget *w = createWidget(parent);
+    auto w = createWidget(parent);
     if (!w) {
         if (d->defaultWidgetInUse || !d->defaultWidget)
             return 0;
@@ -226,7 +226,7 @@ bool QWidgetAction::event(QEvent *event)
     if (event->type() == QEvent::ActionChanged) {
         if (d->defaultWidget)
             d->defaultWidget->setEnabled(isEnabled());
-        for (int i = 0; i < d->createdWidgets.count(); ++i)
+        for (auto i = 0; i < d->createdWidgets.count(); ++i)
             d->createdWidgets.at(i)->setEnabled(isEnabled());
     }
     return QAction::event(event);

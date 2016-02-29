@@ -83,7 +83,7 @@ static const char *signalForMember(const char *member)
 {
     QByteArray normalizedMember(QMetaObject::normalizedSignature(member));
 
-    for (int i = 0; i < NumCandidateSignals; ++i)
+    for (auto i = 0; i < NumCandidateSignals; ++i)
         if (QMetaObject::checkConnectArgs(candidateSignal(i), normalizedMember))
             return candidateSignal(i);
 
@@ -338,7 +338,7 @@ void QInputDialogPrivate::ensureDoubleSpinBox()
 void QInputDialogPrivate::ensureEnabledConnection(QAbstractSpinBox *spinBox)
 {
     if (spinBox) {
-        QAbstractButton *okButton = buttonBox->button(QDialogButtonBox::Ok);
+        auto okButton = buttonBox->button(QDialogButtonBox::Ok);
         QObject::connect(spinBox, SIGNAL(textChanged(bool)), okButton, SLOT(setEnabled(bool)), Qt::UniqueConnection);
     }
 }
@@ -357,12 +357,12 @@ void QInputDialogPrivate::setInputWidget(QWidget *widget)
         widget->show();
 
         // disconnect old input widget
-        QAbstractButton *okButton = buttonBox->button(QDialogButtonBox::Ok);
-        if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(inputWidget))
+        auto okButton = buttonBox->button(QDialogButtonBox::Ok);
+        if (auto spinBox = qobject_cast<QAbstractSpinBox *>(inputWidget))
             QObject::disconnect(spinBox, SIGNAL(textChanged(bool)), okButton, SLOT(setEnabled(bool)));
 
         // connect new input widget and update enabled state of OK button
-        QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(widget);
+        auto spinBox = qobject_cast<QAbstractSpinBox *>(widget);
         ensureEnabledConnection(spinBox);
         okButton->setEnabled(!spinBox || spinBox->hasAcceptableInput());
     }
@@ -414,7 +414,7 @@ void QInputDialogPrivate::chooseRightTextInputWidget()
 
 void QInputDialogPrivate::setComboBoxText(const QString &text)
 {
-    int index = comboBox->findText(text);
+    auto index = comboBox->findText(text);
     if (index != -1) {
         comboBox->setCurrentIndex(index);
     } else if (comboBox->isEditable()) {
@@ -424,7 +424,7 @@ void QInputDialogPrivate::setComboBoxText(const QString &text)
 
 void QInputDialogPrivate::setListViewText(const QString &text)
 {
-    int row = comboBox->findText(text);
+    auto row = comboBox->findText(text);
     if (row != -1) {
         QModelIndex index(comboBox->model()->index(row, 0));
         listView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Clear
@@ -435,7 +435,7 @@ void QInputDialogPrivate::setListViewText(const QString &text)
 QString QInputDialogPrivate::listViewText() const
 {
     if (listView->selectionModel()->hasSelection()) {
-        int row = listView->selectionModel()->selectedRows().value(0).row();
+        auto row = listView->selectionModel()->selectedRows().value(0).row();
         return comboBox->itemText(row);
     } else {
         return QString();
@@ -454,7 +454,7 @@ void QInputDialogPrivate::_q_textChanged(const QString &text)
 void QInputDialogPrivate::_q_plainTextEditTextChanged()
 {
     Q_Q(QInputDialog);
-    QString text = plainTextEdit->toPlainText();
+    auto text = plainTextEdit->toPlainText();
     if (textValue != text) {
         textValue = text;
         emit q->textValueChanged(text);
@@ -663,7 +663,7 @@ void QInputDialog::setOptions(InputDialogOptions options)
 {
     Q_D(QInputDialog);
 
-    InputDialogOptions changed = (options ^ d->opts);
+    auto changed = (options ^ d->opts);
     if (!changed)
         return;
 
@@ -796,9 +796,9 @@ QStringList QInputDialog::comboBoxItems() const
     Q_D(const QInputDialog);
     QStringList result;
     if (d->comboBox) {
-        const int count = d->comboBox->count();
+        const auto count = d->comboBox->count();
         result.reserve(count);
-        for (int i = 0; i < count; ++i)
+        for (auto i = 0; i < count; ++i)
             result.append(d->comboBox->itemText(i));
     }
     return result;
@@ -1150,7 +1150,7 @@ void QInputDialog::done(int result)
     Q_D(QInputDialog);
     QDialog::done(result);
     if (result) {
-        InputMode mode = inputMode();
+        auto mode = inputMode();
         switch (mode) {
         case DoubleInput:
             emit doubleValueSelected(doubleValue());
@@ -1212,7 +1212,7 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
     dialog.setTextEchoMode(mode);
     dialog.setInputMethodHints(inputMethodHints);
 
-    int ret = dialog.exec();
+    auto ret = dialog.exec();
     if (ok)
         *ok = !!ret;
     if (ret) {
@@ -1264,7 +1264,7 @@ QString QInputDialog::getMultiLineText(QWidget *parent, const QString &title, co
     dialog.setTextValue(text);
     dialog.setInputMethodHints(inputMethodHints);
 
-    int ret = dialog.exec();
+    auto ret = dialog.exec();
     if (ok)
         *ok = !!ret;
     if (ret) {
@@ -1315,7 +1315,7 @@ int QInputDialog::getInt(QWidget *parent, const QString &title, const QString &l
     dialog.setIntValue(value);
     dialog.setIntStep(step);
 
-    int ret = dialog.exec();
+    auto ret = dialog.exec();
     if (ok)
         *ok = !!ret;
     if (ret) {
@@ -1397,7 +1397,7 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
     dialog.setDoubleRange(min, max);
     dialog.setDoubleValue(value);
 
-    int ret = dialog.exec();
+    auto ret = dialog.exec();
     if (ok)
         *ok = !!ret;
     if (ret) {
@@ -1454,7 +1454,7 @@ QString QInputDialog::getItem(QWidget *parent, const QString &title, const QStri
     dialog.setComboBoxEditable(editable);
     dialog.setInputMethodHints(inputMethodHints);
 
-    int ret = dialog.exec();
+    auto ret = dialog.exec();
     if (ok)
         *ok = !!ret;
     if (ret) {

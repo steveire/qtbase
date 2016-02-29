@@ -60,8 +60,8 @@ QT_BEGIN_NAMESPACE
 static QList<QWidget*> childWidgets(const QWidget *widget)
 {
     QList<QWidget*> widgets;
-    for (QObject *o : widget->children()) {
-        QWidget *w = qobject_cast<QWidget *>(o);
+    for (auto o : widget->children()) {
+        auto w = qobject_cast<QWidget *>(o);
         if (w && !w->isWindow()
             && !qobject_cast<QFocusFrame*>(w)
 #if !defined(QT_NO_MENU)
@@ -78,19 +78,19 @@ static QString buddyString(const QWidget *widget)
 {
     if (!widget)
         return QString();
-    QWidget *parent = widget->parentWidget();
+    auto parent = widget->parentWidget();
     if (!parent)
         return QString();
 #ifndef QT_NO_SHORTCUT
-    for (QObject *o : parent->children()) {
-        QLabel *label = qobject_cast<QLabel*>(o);
+    for (auto o : parent->children()) {
+        auto label = qobject_cast<QLabel*>(o);
         if (label && label->buddy() == widget)
             return label->text();
     }
 #endif
 
 #ifndef QT_NO_GROUPBOX
-    QGroupBox *groupbox = qobject_cast<QGroupBox*>(parent);
+    auto groupbox = qobject_cast<QGroupBox*>(parent);
     if (groupbox)
         return groupbox->title();
 #endif
@@ -107,7 +107,7 @@ static int qt_accAmpIndex(const QString &text)
     if (text.isEmpty())
         return -1;
 
-    int fa = 0;
+    auto fa = 0;
     while ((fa = text.indexOf(QLatin1Char('&'), fa)) != -1) {
         ++fa;
         if (fa < text.length()) {
@@ -133,7 +133,7 @@ static int qt_accAmpIndex(const QString &text)
 QString qt_accStripAmp(const QString &text)
 {
     QString newText(text);
-    int ampIndex = qt_accAmpIndex(newText);
+    auto ampIndex = qt_accAmpIndex(newText);
     if (ampIndex != -1)
         newText.remove(ampIndex, 1);
 
@@ -142,7 +142,7 @@ QString qt_accStripAmp(const QString &text)
 
 QString qt_accHotKey(const QString &text)
 {
-    int ampIndex = qt_accAmpIndex(text);
+    auto ampIndex = qt_accAmpIndex(text);
     if (ampIndex != -1)
         return QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + text.at(ampIndex + 1);
 
@@ -236,7 +236,7 @@ QWidget *QAccessibleWidget::widget() const
 */
 QObject *QAccessibleWidget::parentObject() const
 {
-    QWidget *w = widget();
+    auto w = widget();
     if (!w || w->isWindow() || !w->parentWidget())
         return qApp;
     return w->parent();
@@ -245,10 +245,10 @@ QObject *QAccessibleWidget::parentObject() const
 /*! \reimp */
 QRect QAccessibleWidget::rect() const
 {
-    QWidget *w = widget();
+    auto w = widget();
     if (!w->isVisible())
         return QRect();
-    QPoint wpos = w->mapToGlobal(QPoint(0, 0));
+    auto wpos = w->mapToGlobal(QPoint(0, 0));
 
     return QRect(wpos.x(), wpos.y(), w->width(), w->height());
 }
@@ -277,7 +277,7 @@ public:
 */
 void QAccessibleWidget::addControllingSignal(const QString &signal)
 {
-    QByteArray s = QMetaObject::normalizedSignature(signal.toLatin1());
+    auto s = QMetaObject::normalizedSignature(signal.toLatin1());
     if (Q_UNLIKELY(object()->metaObject()->indexOfSignal(s) < 0))
         qWarning("Signal %s unknown in %s", s.constData(), object()->metaObject()->className());
     d->primarySignals << QLatin1String(s);
@@ -300,25 +300,25 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
     QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels;
     if (match & QAccessible::Label) {
         const QAccessible::Relation rel = QAccessible::Label;
-        if (QWidget *parent = widget()->parentWidget()) {
+        if (auto parent = widget()->parentWidget()) {
 #ifndef QT_NO_SHORTCUT
             // first check for all siblings that are labels to us
             // ideally we would go through all objects and check, but that
             // will be too expensive
-            const QList<QWidget*> kids = childWidgets(parent);
-            for (QWidget *kid : kids) {
-                if (QLabel *labelSibling = qobject_cast<QLabel*>(kid)) {
+            const auto kids = childWidgets(parent);
+            for (auto kid : kids) {
+                if (auto labelSibling = qobject_cast<QLabel*>(kid)) {
                     if (labelSibling->buddy() == widget()) {
-                        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(labelSibling);
+                        auto iface = QAccessible::queryAccessibleInterface(labelSibling);
                         rels.append(qMakePair(iface, rel));
                     }
                 }
             }
 #endif
 #ifndef QT_NO_GROUPBOX
-            QGroupBox *groupbox = qobject_cast<QGroupBox*>(parent);
+            auto groupbox = qobject_cast<QGroupBox*>(parent);
             if (groupbox && !groupbox->title().isEmpty()) {
-                QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupbox);
+                auto iface = QAccessible::queryAccessibleInterface(groupbox);
                 rels.append(qMakePair(iface, rel));
             }
 #endif
@@ -327,17 +327,17 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
 
     if (match & QAccessible::Controlled) {
         QObjectList allReceivers;
-        QACConnectionObject *connectionObject = (QACConnectionObject*)object();
-        for (int sig = 0; sig < d->primarySignals.count(); ++sig) {
-            const QObjectList receivers = connectionObject->receiverList(d->primarySignals.at(sig).toLatin1());
+        auto connectionObject = (QACConnectionObject*)object();
+        for (auto sig = 0; sig < d->primarySignals.count(); ++sig) {
+            const auto receivers = connectionObject->receiverList(d->primarySignals.at(sig).toLatin1());
             allReceivers += receivers;
         }
 
         allReceivers.removeAll(object());  //### The object might connect to itself internally
 
-        for (int i = 0; i < allReceivers.count(); ++i) {
+        for (auto i = 0; i < allReceivers.count(); ++i) {
             const QAccessible::Relation rel = QAccessible::Controlled;
-            QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(allReceivers.at(i));
+            auto iface = QAccessible::queryAccessibleInterface(allReceivers.at(i));
             if (iface)
                 rels.append(qMakePair(iface, rel));
         }
@@ -356,7 +356,7 @@ QAccessibleInterface *QAccessibleWidget::parent() const
 QAccessibleInterface *QAccessibleWidget::child(int index) const
 {
     Q_ASSERT(widget());
-    QWidgetList childList = childWidgets(widget());
+    auto childList = childWidgets(widget());
     if (index >= 0 && index < childList.size())
         return QAccessible::queryAccessibleInterface(childList.at(index));
     return 0;
@@ -368,7 +368,7 @@ QAccessibleInterface *QAccessibleWidget::focusChild() const
     if (widget()->hasFocus())
         return QAccessible::queryAccessibleInterface(object());
 
-    QWidget *fw = widget()->focusWidget();
+    auto fw = widget()->focusWidget();
     if (!fw)
         return 0;
 
@@ -380,7 +380,7 @@ QAccessibleInterface *QAccessibleWidget::focusChild() const
 /*! \reimp */
 int QAccessibleWidget::childCount() const
 {
-    QWidgetList cl = childWidgets(widget());
+    auto cl = childWidgets(widget());
     return cl.size();
 }
 
@@ -389,7 +389,7 @@ int QAccessibleWidget::indexOfChild(const QAccessibleInterface *child) const
 {
     if (!child)
         return -1;
-    QWidgetList cl = childWidgets(widget());
+    auto cl = childWidgets(widget());
     return cl.indexOf(qobject_cast<QWidget *>(child->object()));
 }
 
@@ -480,7 +480,7 @@ QAccessible::State QAccessibleWidget::state() const
 {
     QAccessible::State state;
 
-    QWidget *w = widget();
+    auto w = widget();
     if (w->testAttribute(Qt::WA_WState_Visible) == false)
         state.invisible = true;
     if (w->focusPolicy() != Qt::NoFocus)

@@ -202,7 +202,7 @@ bool QAlphaWidget::eventFilter(QObject *o, QEvent *e)
         render();
         break;
     case QEvent::KeyPress: {
-       QKeyEvent *ke = (QKeyEvent*)e;
+       auto ke = (QKeyEvent*)e;
        if (ke->matches(QKeySequence::Cancel)) {
            showWidget = false;
        } else {
@@ -296,26 +296,26 @@ void QAlphaWidget::render()
 */
 void QAlphaWidget::alphaBlend()
 {
-    const int a = qRound(alpha*256);
-    const int ia = 256 - a;
+    const auto a = qRound(alpha*256);
+    const auto ia = 256 - a;
 
-    const int sw = frontImage.width();
-    const int sh = frontImage.height();
-    const int bpl = frontImage.bytesPerLine();
+    const auto sw = frontImage.width();
+    const auto sh = frontImage.height();
+    const auto bpl = frontImage.bytesPerLine();
     switch(frontImage.depth()) {
     case 32:
         {
-            uchar *mixed_data = mixedImage.bits();
-            const uchar *back_data = backImage.bits();
-            const uchar *front_data = frontImage.bits();
+            auto mixed_data = mixedImage.bits();
+            auto back_data = backImage.bits();
+            auto front_data = frontImage.bits();
 
-            for (int sy = 0; sy < sh; sy++) {
-                quint32* mixed = (quint32*)mixed_data;
-                const quint32* back = (const quint32*)back_data;
-                const quint32* front = (const quint32*)front_data;
-                for (int sx = 0; sx < sw; sx++) {
-                    quint32 bp = back[sx];
-                    quint32 fp = front[sx];
+            for (auto sy = 0; sy < sh; sy++) {
+                auto mixed = (quint32*)mixed_data;
+                auto back = (const quint32*)back_data;
+                auto front = (const quint32*)front_data;
+                for (auto sx = 0; sx < sw; sx++) {
+                    auto bp = back[sx];
+                    auto fp = front[sx];
 
                     mixed[sx] =  qRgb((qRed(bp)*ia + qRed(fp)*a)>>8,
                                       (qGreen(bp)*ia + qGreen(fp)*a)>>8,
@@ -414,8 +414,8 @@ QRollEffect::QRollEffect(QWidget* w, Qt::WindowFlags f, DirFlags orient)
 */
 void QRollEffect::paintEvent(QPaintEvent*)
 {
-    int x = orientation & RightScroll ? qMin(0, currentWidth - totalWidth) : 0;
-    int y = orientation & DownScroll ? qMin(0, currentHeight - totalHeight) : 0;
+    auto x = orientation & RightScroll ? qMin(0, currentWidth - totalWidth) : 0;
+    auto y = orientation & DownScroll ? qMin(0, currentHeight - totalHeight) : 0;
 
     QPainter p(this);
     p.drawPixmap(x, y, pm);
@@ -452,7 +452,7 @@ void QRollEffect::run(int time)
     elapsed = 0;
 
     if (duration < 0) {
-        int dist = 0;
+        auto dist = 0;
         if (orientation & (RightScroll|LeftScroll))
             dist += totalWidth - currentWidth;
         if (orientation & (DownScroll|UpScroll))
@@ -507,10 +507,10 @@ void QRollEffect::scroll()
         done = (currentHeight >= totalHeight) &&
                (currentWidth >= totalWidth);
 
-        int w = totalWidth;
-        int h = totalHeight;
-        int x = widget->geometry().x();
-        int y = widget->geometry().y();
+        auto w = totalWidth;
+        auto h = totalHeight;
+        auto x = widget->geometry().x();
+        auto y = widget->geometry().y();
 
         if (orientation & RightScroll || orientation & LeftScroll)
             w = qMin(currentWidth, totalWidth);

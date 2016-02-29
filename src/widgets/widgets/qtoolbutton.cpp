@@ -237,12 +237,12 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
 
     Q_D(const QToolButton);
     option->initFrom(this);
-    bool forceNoText = false;
+    auto forceNoText = false;
     option->iconSize = iconSize(); //default value
 
 #ifndef QT_NO_TOOLBAR
     if (parentWidget()) {
-        if (QToolBar *toolBar = qobject_cast<QToolBar *>(parentWidget())) {
+        if (auto toolBar = qobject_cast<QToolBar *>(parentWidget())) {
             option->iconSize = toolBar->iconSize();
         }
     }
@@ -330,19 +330,19 @@ QSize QToolButton::sizeHint() const
         return d->sizeHint;
     ensurePolished();
 
-    int w = 0, h = 0;
+    auto w = 0, h = 0;
     QStyleOptionToolButton opt;
     initStyleOption(&opt);
 
-    QFontMetrics fm = fontMetrics();
+    auto fm = fontMetrics();
     if (opt.toolButtonStyle != Qt::ToolButtonTextOnly) {
-        QSize icon = opt.iconSize;
+        auto icon = opt.iconSize;
         w = icon.width();
         h = icon.height();
     }
 
     if (opt.toolButtonStyle != Qt::ToolButtonIconOnly) {
-        QSize textSize = fm.size(Qt::TextShowMnemonic, text());
+        auto textSize = fm.size(Qt::TextShowMnemonic, text());
         textSize.setWidth(textSize.width() + fm.width(QLatin1Char(' '))*2);
         if (opt.toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
             h += 4 + textSize.height();
@@ -459,7 +459,7 @@ void QToolButton::paintEvent(QPaintEvent *)
 void QToolButton::actionEvent(QActionEvent *event)
 {
     Q_D(QToolButton);
-    QAction *action = event->action();
+    auto action = event->action();
     switch (event->type()) {
     case QEvent::ActionChanged:
         if (action == d->defaultAction)
@@ -500,9 +500,9 @@ QStyle::SubControl QToolButtonPrivate::newHoverControl(const QPoint &pos)
 bool QToolButtonPrivate::updateHoverControl(const QPoint &pos)
 {
     Q_Q(QToolButton);
-    QRect lastHoverRect = hoverRect;
-    QStyle::SubControl lastHoverControl = hoverControl;
-    bool doesHover = q->testAttribute(Qt::WA_Hover);
+    auto lastHoverRect = hoverRect;
+    auto lastHoverControl = hoverControl;
+    auto doesHover = q->testAttribute(Qt::WA_Hover);
     if (lastHoverControl != newHoverControl(pos) && doesHover) {
         q->update(lastHoverRect);
         q->update(hoverRect);
@@ -514,7 +514,7 @@ bool QToolButtonPrivate::updateHoverControl(const QPoint &pos)
 void QToolButtonPrivate::_q_actionTriggered()
 {
     Q_Q(QToolButton);
-    if (QAction *action = qobject_cast<QAction *>(q->sender()))
+    if (auto action = qobject_cast<QAction *>(q->sender()))
         emit q->triggered(action);
 }
 
@@ -593,7 +593,7 @@ void QToolButton::mousePressEvent(QMouseEvent *e)
     QStyleOptionToolButton opt;
     initStyleOption(&opt);
     if (e->button() == Qt::LeftButton && (d->popupMode == MenuButtonPopup)) {
-        QRect popupr = style()->subControlRect(QStyle::CC_ToolButton, &opt,
+        auto popupr = style()->subControlRect(QStyle::CC_ToolButton, &opt,
                                                QStyle::SC_ToolButtonMenu, this);
         if (popupr.isValid() && popupr.contains(e->pos())) {
             d->buttonPressed = QToolButtonPrivate::MenuButtonPressed;
@@ -719,7 +719,7 @@ void QToolButtonPrivate::popupTimerDone()
 
     menuButtonDown = true;
     QPointer<QMenu> actualMenu;
-    bool mustDeleteActualMenu = false;
+    auto mustDeleteActualMenu = false;
     if(menuAction) {
         actualMenu = menuAction->menu();
     } else if (defaultAction && defaultAction->menu()) {
@@ -727,21 +727,21 @@ void QToolButtonPrivate::popupTimerDone()
     } else {
         actualMenu = new QMenu(q);
         mustDeleteActualMenu = true;
-        for(int i = 0; i < actions.size(); i++)
+        for(auto i = 0; i < actions.size(); i++)
             actualMenu->addAction(actions.at(i));
     }
     repeat = q->autoRepeat();
     q->setAutoRepeat(false);
-    bool horizontal = true;
+    auto horizontal = true;
 #if !defined(QT_NO_TOOLBAR)
-    QToolBar *tb = qobject_cast<QToolBar*>(parent);
+    auto tb = qobject_cast<QToolBar*>(parent);
     if (tb && tb->orientation() == Qt::Vertical)
         horizontal = false;
 #endif
     QPoint p;
-    const QRect rect = q->rect(); // Find screen via point in case of QGraphicsProxyWidget.
-    QRect screen = QApplication::desktop()->availableGeometry(q->mapToGlobal(rect.center()));
-    QSize sh = ((QToolButton*)(QMenu*)actualMenu)->receivers(SIGNAL(aboutToShow()))? QSize() : actualMenu->sizeHint();
+    const auto rect = q->rect(); // Find screen via point in case of QGraphicsProxyWidget.
+    auto screen = QApplication::desktop()->availableGeometry(q->mapToGlobal(rect.center()));
+    auto sh = ((QToolButton*)(QMenu*)actualMenu)->receivers(SIGNAL(aboutToShow()))? QSize() : actualMenu->sizeHint();
     if (horizontal) {
         if (q->isRightToLeft()) {
             if (q->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height()) {
@@ -895,7 +895,7 @@ void QToolButton::setDefaultAction(QAction *action)
 {
     Q_D(QToolButton);
 #ifndef QT_NO_MENU
-    bool hadMenu = false;
+    auto hadMenu = false;
     hadMenu = d->hasMenu();
 #endif
     d->defaultAction = action;
@@ -903,7 +903,7 @@ void QToolButton::setDefaultAction(QAction *action)
         return;
     if (!actions().contains(action))
         addAction(action);
-    QString buttonText = action->iconText();
+    auto buttonText = action->iconText();
     // If iconText() is generated from text(), we need to escape any '&'s so they
     // don't turn into shortcuts
     if (QActionPrivate::get(action)->iconText.isEmpty())
@@ -967,7 +967,7 @@ bool QToolButton::event(QEvent *event)
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
-        if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
+        if (auto he = static_cast<const QHoverEvent *>(event))
             d_func()->updateHoverControl(he->pos());
         break;
     default:

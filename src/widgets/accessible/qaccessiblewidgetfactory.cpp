@@ -59,7 +59,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     QAccessibleInterface *iface = 0;
     if (!object || !object->isWidgetType())
         return iface;
-    QWidget *widget = static_cast<QWidget*>(object);
+    auto widget = static_cast<QWidget*>(object);
 
     if (false) {
 #ifndef QT_NO_LINEEDIT

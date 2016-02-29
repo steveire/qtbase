@@ -350,7 +350,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
 
     if (dirtyGrowingItemsBoundingRect) {
         if (!hasSceneRect) {
-            const QRectF oldGrowingItemsBoundingRect = growingItemsBoundingRect;
+            const auto oldGrowingItemsBoundingRect = growingItemsBoundingRect;
             growingItemsBoundingRect |= q->itemsBoundingRect();
             if (oldGrowingItemsBoundingRect != growingItemsBoundingRect)
                 emit q->sceneRectChanged(growingItemsBoundingRect);
@@ -363,8 +363,8 @@ void QGraphicsScenePrivate::_q_emitUpdated()
     // needs to happen in order to keep compatibility with the behavior from
     // Qt 4.4 and backward.
     if (isSignalConnected(changedSignalIndex)) {
-        for (int i = 0; i < views.size(); ++i) {
-            QGraphicsView *view = views.at(i);
+        for (auto i = 0; i < views.size(); ++i) {
+            auto view = views.at(i);
             if (!view->d_func()->connectedToScene) {
                 view->d_func()->connectedToScene = true;
                 q->connect(q, SIGNAL(changed(QList<QRectF>)),
@@ -376,10 +376,10 @@ void QGraphicsScenePrivate::_q_emitUpdated()
             updateAll = false;
             return;
         }
-        for (int i = 0; i < views.size(); ++i)
+        for (auto i = 0; i < views.size(); ++i)
             views.at(i)->d_func()->processPendingUpdates();
         // It's important that we update all views before we dispatch, hence two for-loops.
-        for (int i = 0; i < views.size(); ++i)
+        for (auto i = 0; i < views.size(); ++i)
             views.at(i)->d_func()->dispatchPendingUpdateRequests();
         return;
     }
@@ -437,9 +437,9 @@ void QGraphicsScenePrivate::_q_polishItems()
     const QVariant booleanTrueVariant(true);
     QGraphicsItem *item = 0;
     QGraphicsItemPrivate *itemd = 0;
-    const int oldUnpolishedCount = unpolishedItems.count();
+    const auto oldUnpolishedCount = unpolishedItems.count();
 
-    for (int i = 0; i < oldUnpolishedCount; ++i) {
+    for (auto i = 0; i < oldUnpolishedCount; ++i) {
         item = unpolishedItems.at(i);
         if (!item)
             continue;
@@ -474,16 +474,16 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
         Q_ASSERT(calledEmitUpdated);
         // No need for further processing (except resetting the dirty states).
         // The growingItemsBoundingRect is updated in _q_emitUpdated.
-        for (int i = 0; i < topLevelItems.size(); ++i)
+        for (auto i = 0; i < topLevelItems.size(); ++i)
             resetDirtyItem(topLevelItems.at(i), /*recursive=*/true);
         return;
     }
 
     const bool wasPendingSceneUpdate = calledEmitUpdated;
-    const QRectF oldGrowingItemsBoundingRect = growingItemsBoundingRect;
+    const auto oldGrowingItemsBoundingRect = growingItemsBoundingRect;
 
     // Process items recursively.
-    for (int i = 0; i < topLevelItems.size(); ++i)
+    for (auto i = 0; i < topLevelItems.size(); ++i)
         processDirtyItemsRecursive(topLevelItems.at(i));
 
     dirtyGrowingItemsBoundingRect = false;
@@ -493,7 +493,7 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
     if (wasPendingSceneUpdate)
         return;
 
-    for (int i = 0; i < views.size(); ++i)
+    for (auto i = 0; i < views.size(); ++i)
         views.at(i)->d_func()->processPendingUpdates();
 
     if (calledEmitUpdated) {
@@ -504,7 +504,7 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
     }
 
     // Immediately dispatch all pending update requests on the views.
-    for (int i = 0; i < views.size(); ++i)
+    for (auto i = 0; i < views.size(); ++i)
         views.at(i)->d_func()->dispatchPendingUpdateRequests();
 }
 
@@ -513,7 +513,7 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
 */
 void QGraphicsScenePrivate::setScenePosItemEnabled(QGraphicsItem *item, bool enabled)
 {
-    QGraphicsItem *p = item->d_ptr->parent;
+    auto p = item->d_ptr->parent;
     while (p) {
         p->d_ptr->scenePosDescendants = enabled;
         p = p->d_ptr->parent;
@@ -548,7 +548,7 @@ void QGraphicsScenePrivate::unregisterScenePosItem(QGraphicsItem *item)
 void QGraphicsScenePrivate::_q_updateScenePosDescendants()
 {
     foreach (QGraphicsItem *item, scenePosItems) {
-        QGraphicsItem *p = item->d_ptr->parent;
+        auto p = item->d_ptr->parent;
         while (p) {
             p->d_ptr->scenePosDescendants = 1;
             p = p->d_ptr->parent;
@@ -593,19 +593,19 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     if (item->flags() & QGraphicsItem::ItemSendsScenePositionChanges)
         unregisterScenePosItem(item);
 
-    QGraphicsScene *oldScene = item->d_func()->scene;
+    auto oldScene = item->d_func()->scene;
     item->d_func()->scene = 0;
 
     //We need to remove all children first because they might use their parent
     //attributes (e.g. sceneTransform).
     if (!item->d_ptr->inDestructor) {
         // Remove all children recursively
-        for (int i = 0; i < item->d_ptr->children.size(); ++i)
+        for (auto i = 0; i < item->d_ptr->children.size(); ++i)
             q->removeItem(item->d_ptr->children.at(i));
     }
 
     if (!item->d_ptr->inDestructor && !item->parentItem() && item->isWidget()) {
-        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
+        auto widget = static_cast<QGraphicsWidget *>(item);
         widget->d_func()->fixFocusChainBeforeReparenting(0, oldScene, 0);
     }
 
@@ -613,7 +613,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     item->d_ptr->resetFocusProxy();
 
     // Remove from parent, or unregister from toplevels.
-    if (QGraphicsItem *parentItem = item->parentItem()) {
+    if (auto parentItem = item->parentItem()) {
         if (parentItem->scene()) {
             Q_ASSERT_X(parentItem->scene() == q, "QGraphicsScene::removeItem",
                        "Parent item's scene is different from this item's scene");
@@ -639,7 +639,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     // Change tabFocusFirst to the next widget in focus chain if removing the current one.
     if (item == tabFocusFirst) {
-        QGraphicsWidgetPrivate *wd = tabFocusFirst->d_func();
+        auto wd = tabFocusFirst->d_func();
         if (wd->focusNext && wd->focusNext != tabFocusFirst && wd->focusNext->scene() == q)
             tabFocusFirst = wd->focusNext;
         else
@@ -648,7 +648,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     // Cancel active touches
     {
-        QMap<int, QGraphicsItem *>::iterator it = itemForTouchPointId.begin();
+        auto it = itemForTouchPointId.begin();
         while (it != itemForTouchPointId.end()) {
             if (it.value() == item) {
                 sceneCurrentTouchPoints.remove(it.key());
@@ -661,14 +661,14 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     // Disable selectionChanged() for individual items
     ++selectionChanging;
-    int oldSelectedItemsSize = selectedItems.size();
+    auto oldSelectedItemsSize = selectedItems.size();
 
     // Update selected & hovered item bookkeeping
     selectedItems.remove(item);
     hoverItems.removeAll(item);
     cachedItemsUnderMouse.removeAll(item);
     if (item->d_ptr->pendingPolish) {
-        const int unpolishedIndex = unpolishedItems.indexOf(item);
+        const auto unpolishedIndex = unpolishedItems.indexOf(item);
         if (unpolishedIndex != -1)
             unpolishedItems[unpolishedIndex] = 0;
         item->d_ptr->pendingPolish = false;
@@ -676,7 +676,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     resetDirtyItem(item);
 
     //We remove all references of item from the sceneEventFilter arrays
-    QMultiMap<QGraphicsItem*, QGraphicsItem*>::iterator iterator = sceneEventFilters.begin();
+    auto iterator = sceneEventFilters.begin();
     while (iterator != sceneEventFilters.end()) {
         if (iterator.value() == item || iterator.key() == item)
             iterator = sceneEventFilters.erase(iterator);
@@ -717,7 +717,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
             ++it;
     }
 
-    QGraphicsObject *dummy = static_cast<QGraphicsObject *>(item);
+    auto dummy = static_cast<QGraphicsObject *>(item);
     cachedTargetItems.removeOne(dummy);
     cachedItemGestures.remove(dummy);
     cachedAlreadyDeliveredGestures.remove(dummy);
@@ -743,16 +743,16 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
     q->setFocus(Qt::ActiveWindowFocusReason);
 
     // Find the item's panel.
-    QGraphicsItem *panel = item ? item->panel() : 0;
+    auto panel = item ? item->panel() : 0;
     lastActivePanel = panel ? activePanel : 0;
     if (panel == activePanel || (!q->isActive() && !duringActivationEvent))
         return;
 
-    QGraphicsItem *oldFocusItem = focusItem;
+    auto oldFocusItem = focusItem;
 
     // Deactivate the last active panel.
     if (activePanel) {
-        if (QGraphicsItem *fi = activePanel->focusItem()) {
+        if (auto fi = activePanel->focusItem()) {
             // Remove focus from the current focus item.
             if (fi == q->focusItem())
                 setFocusItemHelper(0, Qt::ActiveWindowFocusReason, /* emitFocusChanged = */ false);
@@ -764,7 +764,7 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
         // Deactivate the scene if changing activation to a panel.
         const auto items = q->items();
         QEvent event(QEvent::WindowDeactivate);
-        for (QGraphicsItem *item : items) {
+        for (auto item : items) {
             if (item->isVisible() && !item->isPanel() && !item->parentItem())
                 q->sendEvent(item, &event);
         }
@@ -783,12 +783,12 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
         // Set focus on the panel's focus item, or itself if it's
         // focusable, or on the first focusable item in the panel's
         // focus chain as a last resort.
-        if (QGraphicsItem *focusItem = panel->focusItem()) {
+        if (auto focusItem = panel->focusItem()) {
             setFocusItemHelper(focusItem, Qt::ActiveWindowFocusReason, /* emitFocusChanged = */ false);
         } else if (panel->flags() & QGraphicsItem::ItemIsFocusable) {
             setFocusItemHelper(panel, Qt::ActiveWindowFocusReason, /* emitFocusChanged = */ false);
         } else if (panel->isWidget()) {
-            QGraphicsWidget *fw = static_cast<QGraphicsWidget *>(panel)->d_func()->focusNext;
+            auto fw = static_cast<QGraphicsWidget *>(panel)->d_func()->focusNext;
             do {
                 if (fw->focusPolicy() & Qt::TabFocus) {
                     setFocusItemHelper(fw, Qt::ActiveWindowFocusReason, /* emitFocusChanged = */ false);
@@ -801,7 +801,7 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
         const auto items = q->items();
         // Activate the scene
         QEvent event(QEvent::WindowActivate);
-        for (QGraphicsItem *item : items) {
+        for (auto item : items) {
             if (item->isVisible() && !item->isPanel() && !item->parentItem())
                 q->sendEvent(item, &event);
         }
@@ -845,7 +845,7 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
         }
     }
 
-    QGraphicsItem *oldFocusItem = focusItem;
+    auto oldFocusItem = focusItem;
     if (focusItem) {
         lastFocusItem = focusItem;
 
@@ -891,7 +891,7 @@ void QGraphicsScenePrivate::addPopup(QGraphicsWidget *widget)
     Q_ASSERT(widget);
     Q_ASSERT(!popupWidgets.contains(widget));
     popupWidgets << widget;
-    if (QGraphicsWidget *focusWidget = widget->focusWidget()) {
+    if (auto focusWidget = widget->focusWidget()) {
         focusWidget->setFocus(Qt::PopupFocusReason);
     } else {
         grabKeyboard((QGraphicsItem *)widget);
@@ -915,11 +915,11 @@ void QGraphicsScenePrivate::addPopup(QGraphicsWidget *widget)
 void QGraphicsScenePrivate::removePopup(QGraphicsWidget *widget, bool itemIsDying)
 {
     Q_ASSERT(widget);
-    int index = popupWidgets.indexOf(widget);
+    auto index = popupWidgets.indexOf(widget);
     Q_ASSERT(index != -1);
 
-    for (int i = popupWidgets.size() - 1; i >= index; --i) {
-        QGraphicsWidget *widget = popupWidgets.takeLast();
+    for (auto i = popupWidgets.size() - 1; i >= index; --i) {
+        auto widget = popupWidgets.takeLast();
         ungrabMouse(widget, itemIsDying);
         if (focusItem && popupWidgets.isEmpty()) {
             QFocusEvent event(QEvent::FocusIn, Qt::PopupFocusReason);
@@ -957,7 +957,7 @@ void QGraphicsScenePrivate::grabMouse(QGraphicsItem *item, bool implicit)
 
     // Send ungrab event to the last grabber.
     if (!mouseGrabberItems.isEmpty()) {
-        QGraphicsItem *last = mouseGrabberItems.last();
+        auto last = mouseGrabberItems.last();
         if (lastMouseGrabberItemHasImplicitMouseGrab) {
             // Implicit mouse grab is immediately lost.
             last->ungrabMouse();
@@ -981,7 +981,7 @@ void QGraphicsScenePrivate::grabMouse(QGraphicsItem *item, bool implicit)
 */
 void QGraphicsScenePrivate::ungrabMouse(QGraphicsItem *item, bool itemIsDying)
 {
-    int index = mouseGrabberItems.indexOf(item);
+    auto index = mouseGrabberItems.indexOf(item);
     if (index == -1) {
         qWarning("QGraphicsItem::ungrabMouse: not a mouse grabber");
         return;
@@ -1017,7 +1017,7 @@ void QGraphicsScenePrivate::ungrabMouse(QGraphicsItem *item, bool itemIsDying)
     // items get a GrabMouse event, but this is a rare case with a simple
     // implementation and it does ensure a consistent state.
     if (!itemIsDying && !mouseGrabberItems.isEmpty()) {
-        QGraphicsItem *last = mouseGrabberItems.last();
+        auto last = mouseGrabberItems.last();
         QEvent event(QEvent::GrabMouse);
         sendEvent(last, &event);
     }
@@ -1066,7 +1066,7 @@ void QGraphicsScenePrivate::grabKeyboard(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::ungrabKeyboard(QGraphicsItem *item, bool itemIsDying)
 {
-    int index = keyboardGrabberItems.lastIndexOf(item);
+    auto index = keyboardGrabberItems.lastIndexOf(item);
     if (index == -1) {
         qWarning("QGraphicsItem::ungrabKeyboard: not a keyboard grabber");
         return;
@@ -1088,7 +1088,7 @@ void QGraphicsScenePrivate::ungrabKeyboard(QGraphicsItem *item, bool itemIsDying
 
     // Send notification about mouse regrab.
     if (!itemIsDying && !keyboardGrabberItems.isEmpty()) {
-        QGraphicsItem *last = keyboardGrabberItems.last();
+        auto last = keyboardGrabberItems.last();
         QEvent event(QEvent::GrabKeyboard);
         sendEvent(last, &event);
     }
@@ -1117,7 +1117,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
                                                               QWidget *widget) const
 {
     Q_Q(const QGraphicsScene);
-    QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
+    auto view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
     if (!view)
         return q->items(scenePos, Qt::IntersectsItemShape, Qt::DescendingOrder, QTransform());
 
@@ -1125,7 +1125,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
     if (!view->isTransformed())
         return q->items(pointRect, Qt::IntersectsItemShape, Qt::DescendingOrder);
 
-    const QTransform viewTransform = view->viewportTransform();
+    const auto viewTransform = view->viewportTransform();
     if (viewTransform.type() <= QTransform::TxScale) {
         return q->items(viewTransform.inverted().mapRect(pointRect), Qt::IntersectsItemShape,
                         Qt::DescendingOrder, viewTransform);
@@ -1139,7 +1139,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
 */
 void QGraphicsScenePrivate::storeMouseButtonsForMouseGrabber(QGraphicsSceneMouseEvent *event)
 {
-    for (int i = 0x1; i <= 0x10; i <<= 1) {
+    for (auto i = 0x1; i <= 0x10; i <<= 1) {
         if (event->buttons() & i) {
             mouseGrabberButtonDownPos.insert(Qt::MouseButton(i),
                                              mouseGrabberItems.last()->d_ptr->genericMapFromScene(event->scenePos(),
@@ -1166,8 +1166,8 @@ void QGraphicsScenePrivate::removeSceneEventFilter(QGraphicsItem *watched, QGrap
     if (!sceneEventFilters.contains(watched))
         return;
 
-    QMultiMap<QGraphicsItem *, QGraphicsItem *>::Iterator it = sceneEventFilters.lowerBound(watched);
-    QMultiMap<QGraphicsItem *, QGraphicsItem *>::Iterator end = sceneEventFilters.upperBound(watched);
+    auto it = sceneEventFilters.lowerBound(watched);
+    auto end = sceneEventFilters.upperBound(watched);
     do {
         if (it.value() == filter)
             it = sceneEventFilters.erase(it);
@@ -1182,7 +1182,7 @@ void QGraphicsScenePrivate::removeSceneEventFilter(QGraphicsItem *watched, QGrap
 bool QGraphicsScenePrivate::filterDescendantEvent(QGraphicsItem *item, QEvent *event)
 {
     if (item && (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorFiltersChildEvents)) {
-        QGraphicsItem *parent = item->parentItem();
+        auto parent = item->parentItem();
         while (parent) {
             if (parent->d_ptr->filtersDescendantEvents && parent->sceneEventFilter(item, event))
                 return true;
@@ -1202,8 +1202,8 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
     if (item && !sceneEventFilters.contains(item))
         return false;
 
-    QMultiMap<QGraphicsItem *, QGraphicsItem *>::Iterator it = sceneEventFilters.lowerBound(item);
-    QMultiMap<QGraphicsItem *, QGraphicsItem *>::Iterator end = sceneEventFilters.upperBound(item);
+    auto it = sceneEventFilters.lowerBound(item);
+    auto end = sceneEventFilters.upperBound(item);
     while (it != end) {
         // ### The filterer and filteree might both be deleted.
         if (it.value()->sceneEventFilter(it.key(), event))
@@ -1224,9 +1224,9 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
 */
 bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
-    if (QGraphicsObject *object = item->toGraphicsObject()) {
+    if (auto object = item->toGraphicsObject()) {
 #ifndef QT_NO_GESTURES
-        QGestureManager *gestureManager = QApplicationPrivate::instance()->gestureManager;
+        auto gestureManager = QApplicationPrivate::instance()->gestureManager;
         if (gestureManager) {
             if (gestureManager->filterEvent(object, event))
                 return true;
@@ -1240,8 +1240,8 @@ bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
         return false;
     if (!item || !item->isEnabled())
         return false;
-    if (QGraphicsObject *o = item->toGraphicsObject()) {
-        bool spont = event->spontaneous();
+    if (auto o = item->toGraphicsObject()) {
+        auto spont = event->spontaneous();
         if (spont ? qt_sendSpontaneousEvent(o, event) : QApplication::sendEvent(o, event))
             return true;
         event->spont = spont;
@@ -1308,12 +1308,12 @@ void QGraphicsScenePrivate::sendMouseEvent(QGraphicsSceneMouseEvent *mouseEvent)
         return;
     }
 
-    QGraphicsItem *item = mouseGrabberItems.last();
+    auto item = mouseGrabberItems.last();
     if (item->isBlockedByModalPanel())
         return;
 
-    for (int i = 0x1; i <= 0x10; i <<= 1) {
-        Qt::MouseButton button = Qt::MouseButton(i);
+    for (auto i = 0x1; i <= 0x10; i <<= 1) {
+        auto button = Qt::MouseButton(i);
         mouseEvent->setButtonDownPos(button, mouseGrabberButtonDownPos.value(button, item->d_ptr->genericMapFromScene(mouseEvent->scenePos(), mouseEvent->widget())));
         mouseEvent->setButtonDownScenePos(button, mouseGrabberButtonDownScenePos.value(button, mouseEvent->scenePos()));
         mouseEvent->setButtonDownScreenPos(button, mouseGrabberButtonDownScreenPos.value(button, mouseEvent->screenPos()));
@@ -1352,8 +1352,8 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
     }
 
     // Update window activation.
-    QGraphicsItem *topItem = cachedItemsUnderMouse.value(0);
-    QGraphicsWidget *newActiveWindow = topItem ? topItem->window() : 0;
+    auto topItem = cachedItemsUnderMouse.value(0);
+    auto newActiveWindow = topItem ? topItem->window() : 0;
     if (newActiveWindow && newActiveWindow->isBlockedByModalPanel(&topItem)) {
         // pass activation to the blocking modal window
         newActiveWindow = topItem ? topItem->window() : 0;
@@ -1363,7 +1363,7 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
         q->setActiveWindow(newActiveWindow);
 
     // Set focus on the topmost enabled item that can take focus.
-    bool setFocus = false;
+    auto setFocus = false;
 
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
         if (item->isBlockedByModalPanel()
@@ -1387,8 +1387,8 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
     }
 
     // Check for scene modality.
-    bool sceneModality = false;
-    for (int i = 0; i < modalPanels.size(); ++i) {
+    auto sceneModality = false;
+    for (auto i = 0; i < modalPanels.size(); ++i) {
         if (modalPanels.at(i)->panelModality() == QGraphicsItem::SceneModal) {
             sceneModality = true;
             break;
@@ -1421,8 +1421,8 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
         mouseEvent->accept();
 
         // check if the item we are sending to are disabled (before we send the event)
-        bool disabled = !item->isEnabled();
-        bool isPanel = item->isPanel();
+        auto disabled = !item->isEnabled();
+        auto isPanel = item->isPanel();
         if (mouseEvent->type() == QEvent::GraphicsSceneMouseDoubleClick
             && item != lastMouseGrabberItem && lastMouseGrabberItem) {
             // If this item is different from the item that received the last
@@ -1450,7 +1450,7 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
             sendMouseEvent(mouseEvent);
         }
 
-        bool dontSendUngrabEvents = mouseGrabberItems.isEmpty() || mouseGrabberItems.last() != item;
+        auto dontSendUngrabEvents = mouseGrabberItems.isEmpty() || mouseGrabberItems.last() != item;
         if (disabled) {
             ungrabMouse(item, /* itemIsDying = */ dontSendUngrabEvents);
             break;
@@ -1475,9 +1475,9 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
     if (!mouseEvent->isAccepted()) {
         clearMouseGrabber();
 
-        QGraphicsView *view = mouseEvent->widget() ? qobject_cast<QGraphicsView *>(mouseEvent->widget()->parentWidget()) : 0;
-        bool dontClearSelection = view && view->dragMode() == QGraphicsView::ScrollHandDrag;
-        bool extendSelection = (mouseEvent->modifiers() & Qt::ControlModifier) != 0;
+        auto view = mouseEvent->widget() ? qobject_cast<QGraphicsView *>(mouseEvent->widget()->parentWidget()) : 0;
+        auto dontClearSelection = view && view->dragMode() == QGraphicsView::ScrollHandDrag;
+        auto extendSelection = (mouseEvent->modifiers() & Qt::ControlModifier) != 0;
         dontClearSelection |= extendSelection;
         if (!dontClearSelection) {
             // Clear the selection if the originating view isn't in scroll
@@ -1506,7 +1506,7 @@ void QGraphicsScenePrivate::ensureSequentialTopLevelSiblingIndexes()
     }
     if (holesInTopLevelSiblingIndex) {
         holesInTopLevelSiblingIndex = 0;
-        for (int i = 0; i < topLevelItems.size(); ++i)
+        for (auto i = 0; i < topLevelItems.size(); ++i)
             topLevelItems[i]->d_ptr->siblingIndex = i;
     }
 }
@@ -1532,9 +1532,9 @@ void QGraphicsScenePrivate::setFont_helper(const QFont &font)
 */
 void QGraphicsScenePrivate::resolveFont()
 {
-    QFont naturalFont = QApplication::font();
+    auto naturalFont = QApplication::font();
     naturalFont.resolve(0);
-    QFont resolvedFont = font.resolve(naturalFont);
+    auto resolvedFont = font.resolve(naturalFont);
     updateFont(resolvedFont);
 }
 
@@ -1554,7 +1554,7 @@ void QGraphicsScenePrivate::updateFont(const QFont &font)
     // Resolve the fonts of all top-level widget items, or widget items
     // whose parent is not a widget.
     const auto items = q->items();
-    for (QGraphicsItem *item : items) {
+    for (auto item : items) {
         if (!item->parentItem()) {
             // Resolvefont for an item is a noop operation, but
             // every item can be a widget, or can have a widget
@@ -1589,9 +1589,9 @@ void QGraphicsScenePrivate::setPalette_helper(const QPalette &palette)
 */
 void QGraphicsScenePrivate::resolvePalette()
 {
-    QPalette naturalPalette = QApplication::palette();
+    auto naturalPalette = QApplication::palette();
     naturalPalette.resolve(0);
-    QPalette resolvedPalette = palette.resolve(naturalPalette);
+    auto resolvedPalette = palette.resolve(naturalPalette);
     updatePalette(resolvedPalette);
 }
 
@@ -1611,7 +1611,7 @@ void QGraphicsScenePrivate::updatePalette(const QPalette &palette)
     // Resolve the palettes of all top-level widget items, or widget items
     // whose parent is not a widget.
     const auto items = q->items();
-    for (QGraphicsItem *item : items) {
+    for (auto item : items) {
         if (!item->parentItem()) {
             // ResolvePalette for an item is a noop operation, but
             // every item can be a widget, or can have a widget
@@ -1681,7 +1681,7 @@ QGraphicsScene::~QGraphicsScene()
     clear();
 
     // Remove this scene from all associated views.
-    for (int j = 0; j < d->views.size(); ++j)
+    for (auto j = 0; j < d->views.size(); ++j)
         d->views.at(j)->setScene(0);
 }
 
@@ -1708,8 +1708,8 @@ QRectF QGraphicsScene::sceneRect() const
 
     if (d->dirtyGrowingItemsBoundingRect) {
         // Lazily update the growing items bounding rect
-        QGraphicsScenePrivate *thatd = const_cast<QGraphicsScenePrivate *>(d);
-        QRectF oldGrowingBoundingRect = thatd->growingItemsBoundingRect;
+        auto thatd = const_cast<QGraphicsScenePrivate *>(d);
+        auto oldGrowingBoundingRect = thatd->growingItemsBoundingRect;
         thatd->growingItemsBoundingRect |= itemsBoundingRect();
         thatd->dirtyGrowingItemsBoundingRect = false;
         if (oldGrowingBoundingRect != thatd->growingItemsBoundingRect)
@@ -1767,12 +1767,12 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
     // ### Switch to using the recursive rendering algorithm instead.
 
     // Default source rect = scene rect
-    QRectF sourceRect = source;
+    auto sourceRect = source;
     if (sourceRect.isNull())
         sourceRect = sceneRect();
 
     // Default target rect = device rect
-    QRectF targetRect = target;
+    auto targetRect = target;
     if (targetRect.isNull()) {
         if (painter->device()->devType() == QInternal::Picture)
             targetRect = sourceRect;
@@ -1781,8 +1781,8 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
     }
 
     // Find the ideal x / y scaling ratio to fit \a source into \a target.
-    qreal xratio = targetRect.width() / sourceRect.width();
-    qreal yratio = targetRect.height() / sourceRect.height();
+    auto xratio = targetRect.width() / sourceRect.width();
+    auto yratio = targetRect.height() / sourceRect.height();
 
     // Scale according to the aspect ratio mode.
     switch (aspectRatioMode) {
@@ -1798,10 +1798,10 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
 
     // Find all items to draw, and reverse the list (we want to draw
     // in reverse order).
-    QList<QGraphicsItem *> itemList = items(sourceRect, Qt::IntersectsItemBoundingRect);
-    QGraphicsItem **itemArray = new QGraphicsItem *[itemList.size()];
-    int numItems = itemList.size();
-    for (int i = 0; i < numItems; ++i)
+    auto itemList = items(sourceRect, Qt::IntersectsItemBoundingRect);
+    auto itemArray = new QGraphicsItem *[itemList.size()];
+    auto numItems = itemList.size();
+    for (auto i = 0; i < numItems; ++i)
         itemArray[numItems - i - 1] = itemList.at(i);
     itemList.clear();
 
@@ -1817,8 +1817,8 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
     painter->setWorldTransform(painterTransform, true);
 
     // Generate the style options
-    QStyleOptionGraphicsItem *styleOptionArray = new QStyleOptionGraphicsItem[numItems];
-    for (int i = 0; i < numItems; ++i)
+    auto styleOptionArray = new QStyleOptionGraphicsItem[numItems];
+    for (auto i = 0; i < numItems; ++i)
         itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], painterTransform, targetRect.toRect());
 
     // Render the scene.
@@ -1861,13 +1861,13 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 
     d->indexMethod = method;
 
-    QList<QGraphicsItem *> oldItems = d->index->items(Qt::DescendingOrder);
+    auto oldItems = d->index->items(Qt::DescendingOrder);
     delete d->index;
     if (method == BspTreeIndex)
         d->index = new QGraphicsSceneBspTreeIndex(this);
     else
         d->index = new QGraphicsSceneLinearIndex(this);
-    for (int i = oldItems.size() - 1; i >= 0; --i)
+    for (auto i = oldItems.size() - 1; i >= 0; --i)
         d->index->addItem(oldItems.at(i));
 }
 
@@ -1906,7 +1906,7 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 int QGraphicsScene::bspTreeDepth() const
 {
     Q_D(const QGraphicsScene);
-    QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex *>(d->index);
+    auto bspTree = qobject_cast<QGraphicsSceneBspTreeIndex *>(d->index);
     return bspTree ? bspTree->bspTreeDepth() : 0;
 }
 void QGraphicsScene::setBspTreeDepth(int depth)
@@ -1917,7 +1917,7 @@ void QGraphicsScene::setBspTreeDepth(int depth)
         return;
     }
 
-    QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex *>(d->index);
+    auto bspTree = qobject_cast<QGraphicsSceneBspTreeIndex *>(d->index);
     if (!bspTree) {
         qWarning("QGraphicsScene::setBspTreeDepth: can not apply if indexing method is not BSP");
         return;
@@ -1958,7 +1958,7 @@ QRectF QGraphicsScene::itemsBoundingRect() const
     // Does not take untransformable items into account.
     QRectF boundingRect;
     const auto items_ = items();
-    for (QGraphicsItem *item : items_)
+    for (auto item : items_)
         boundingRect |= item->sceneBoundingRect();
     return boundingRect;
 }
@@ -2128,7 +2128,7 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
     // Does not support ItemIgnoresTransformations.
     QList<QGraphicsItem *> tmp;
     const auto itemsInVicinity = d->index->estimateItems(item->sceneBoundingRect(), Qt::DescendingOrder);
-    for (QGraphicsItem *itemInVicinity : itemsInVicinity) {
+    for (auto itemInVicinity : itemsInVicinity) {
         if (item != itemInVicinity && item->collidesWithItem(itemInVicinity, mode))
             tmp << itemInVicinity;
     }
@@ -2167,7 +2167,7 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 */
 QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform &deviceTransform) const
 {
-    QList<QGraphicsItem *> itemsAtPoint = items(position, Qt::IntersectsItemShape,
+    auto itemsAtPoint = items(position, Qt::IntersectsItemShape,
                                                 Qt::DescendingOrder, deviceTransform);
     return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
 }
@@ -2218,7 +2218,7 @@ QList<QGraphicsItem *> QGraphicsScene::selectedItems() const
     Q_D(const QGraphicsScene);
 
     // Optimization: Lazily removes items that are not selected.
-    QGraphicsScene *that = const_cast<QGraphicsScene *>(this);
+    auto that = const_cast<QGraphicsScene *>(this);
     QSet<QGraphicsItem *> actuallySelectedSet;
     foreach (QGraphicsItem *item, that->d_func()->selectedItems) {
         if (item->isSelected())
@@ -2308,15 +2308,15 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path,
     // reevaluating the whole path over again.
     d->selectionArea = path;
 
-    QSet<QGraphicsItem *> unselectItems = d->selectedItems;
+    auto unselectItems = d->selectedItems;
 
     // Disable emitting selectionChanged() for individual items.
     ++d->selectionChanging;
-    bool changed = false;
+    auto changed = false;
 
     // Set all items in path to selected.
     const auto items = this->items(path, mode, Qt::DescendingOrder, deviceTransform);
-    for (QGraphicsItem *item : items) {
+    for (auto item : items) {
         if (item->flags() & QGraphicsItem::ItemIsSelectable) {
             if (!item->isSelected())
                 changed = true;
@@ -2355,7 +2355,7 @@ void QGraphicsScene::clearSelection()
 
     // Disable emitting selectionChanged
     ++d->selectionChanging;
-    bool changed = !d->selectedItems.isEmpty();
+    auto changed = !d->selectedItems.isEmpty();
 
     foreach (QGraphicsItem *item, d->selectedItems)
         item->setSelected(false);
@@ -2409,9 +2409,9 @@ QGraphicsItemGroup *QGraphicsScene::createItemGroup(const QList<QGraphicsItem *>
 {
     // Build a list of the first item's ancestors
     QList<QGraphicsItem *> ancestors;
-    int n = 0;
+    auto n = 0;
     if (!items.isEmpty()) {
-        QGraphicsItem *parent = items.at(n++);
+        auto parent = items.at(n++);
         while ((parent = parent->parentItem()))
             ancestors.append(parent);
     }
@@ -2420,10 +2420,10 @@ QGraphicsItemGroup *QGraphicsScene::createItemGroup(const QList<QGraphicsItem *>
     QGraphicsItem *commonAncestor = 0;
     if (!ancestors.isEmpty()) {
         while (n < items.size()) {
-            int commonIndex = -1;
-            QGraphicsItem *parent = items.at(n++);
+            auto commonIndex = -1;
+            auto parent = items.at(n++);
             do {
-                int index = ancestors.indexOf(parent, qMax(0, commonIndex));
+                auto index = ancestors.indexOf(parent, qMax(0, commonIndex));
                 if (index != -1) {
                     commonIndex = index;
                     break;
@@ -2440,10 +2440,10 @@ QGraphicsItemGroup *QGraphicsScene::createItemGroup(const QList<QGraphicsItem *>
     }
 
     // Create a new group at that level
-    QGraphicsItemGroup *group = new QGraphicsItemGroup(commonAncestor);
+    auto group = new QGraphicsItemGroup(commonAncestor);
     if (!commonAncestor)
         addItem(group);
-    for (QGraphicsItem *item : items)
+    for (auto item : items)
         group->addToGroup(item);
     return group;
 }
@@ -2458,7 +2458,7 @@ QGraphicsItemGroup *QGraphicsScene::createItemGroup(const QList<QGraphicsItem *>
 void QGraphicsScene::destroyItemGroup(QGraphicsItemGroup *group)
 {
     const auto items = group->childItems();
-    for (QGraphicsItem *item : items)
+    for (auto item : items)
         group->removeFromGroup(item);
     removeItem(group);
     delete group;
@@ -2501,14 +2501,14 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         return;
     }
     // Remove this item from its existing scene
-    if (QGraphicsScene *oldScene = item->d_ptr->scene)
+    if (auto oldScene = item->d_ptr->scene)
         oldScene->removeItem(item);
 
     // Notify the item that its scene is changing, and allow the item to
     // react.
     const QVariant newSceneVariant(item->itemChange(QGraphicsItem::ItemSceneChange,
                                                     QVariant::fromValue<QGraphicsScene *>(this)));
-    QGraphicsScene *targetScene = qvariant_cast<QGraphicsScene *>(newSceneVariant);
+    auto targetScene = qvariant_cast<QGraphicsScene *>(newSceneVariant);
     if (targetScene != this) {
         if (targetScene && item->d_ptr->scene != targetScene)
             targetScene->addItem(item);
@@ -2519,7 +2519,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // function allows far more opportunity for delayed-construction optimization.
     if (!item->d_ptr->isDeclarativeItem) {
         if (d->unpolishedItems.isEmpty()) {
-            QMetaMethod method = metaObject()->method(d->polishItemsIndex);
+            auto method = metaObject()->method(d->polishItemsIndex);
             method.invoke(this, Qt::QueuedConnection);
         }
         d->unpolishedItems.append(item);
@@ -2528,7 +2528,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Detach this item from its parent if the parent's scene is different
     // from this scene.
-    if (QGraphicsItem *itemParent = item->d_ptr->parent) {
+    if (auto itemParent = item->d_ptr->parent) {
         if (itemParent->d_ptr->scene != this)
             item->setParentItem(0);
     }
@@ -2551,7 +2551,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Disable selectionChanged() for individual items
     ++d->selectionChanging;
-    int oldSelectedItemSize = d->selectedItems.size();
+    auto oldSelectedItemSize = d->selectedItems.size();
 
     // Enable mouse tracking if the item accepts hover events or has a cursor set.
     if (d->allItemsIgnoreHoverEvents && d->itemAcceptsHoverEvents_helper(item)) {
@@ -2574,7 +2574,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
 #ifndef QT_NO_GESTURES
     const auto gestures = item->d_ptr->gestureContext.keys(); // FIXME: iterate over hash directly?
-    for (Qt::GestureType gesture : gestures)
+    for (auto gesture : gestures)
         d->grabGesture(item, gesture);
 #endif
 
@@ -2589,14 +2589,14 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Update creation order focus chain. Make sure to leave the widget's
     // internal tab order intact.
     if (item->isWidget()) {
-        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
+        auto widget = static_cast<QGraphicsWidget *>(item);
         if (!d->tabFocusFirst) {
             // No first tab focus widget - make this the first tab focus
             // widget.
             d->tabFocusFirst = widget;
         } else if (!widget->parentWidget() && !widget->isPanel()) {
             // Adding a widget that is not part of a tab focus chain.
-            QGraphicsWidget *myNewPrev = d->tabFocusFirst->d_func()->focusPrev;
+            auto myNewPrev = d->tabFocusFirst->d_func()->focusPrev;
             myNewPrev->d_func()->focusNext = widget;
             widget->d_func()->focusPrev->d_func()->focusNext = d->tabFocusFirst;
             d->tabFocusFirst->d_func()->focusPrev = widget->d_func()->focusPrev;
@@ -2606,7 +2606,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Add all children recursively
     item->d_ptr->ensureSortedChildren();
-    for (int i = 0; i < item->d_ptr->children.size(); ++i)
+    for (auto i = 0; i < item->d_ptr->children.size(); ++i)
         addItem(item->d_ptr->children.at(i));
 
     // Resolve font and palette.
@@ -2623,7 +2623,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
 
     // Update explicit activation
-    bool autoActivate = true;
+    auto autoActivate = true;
     if (!d->childExplicitActivation && item->d_ptr->explicitActivate)
         d->childExplicitActivation = item->d_ptr->wantsActive ? 1 : 2;
     if (d->childExplicitActivation && item->isPanel()) {
@@ -2674,7 +2674,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 */
 QGraphicsEllipseItem *QGraphicsScene::addEllipse(const QRectF &rect, const QPen &pen, const QBrush &brush)
 {
-    QGraphicsEllipseItem *item = new QGraphicsEllipseItem(rect);
+    auto item = new QGraphicsEllipseItem(rect);
     item->setPen(pen);
     item->setBrush(brush);
     addItem(item);
@@ -2706,7 +2706,7 @@ QGraphicsEllipseItem *QGraphicsScene::addEllipse(const QRectF &rect, const QPen 
 */
 QGraphicsLineItem *QGraphicsScene::addLine(const QLineF &line, const QPen &pen)
 {
-    QGraphicsLineItem *item = new QGraphicsLineItem(line);
+    auto item = new QGraphicsLineItem(line);
     item->setPen(pen);
     addItem(item);
     return item;
@@ -2737,7 +2737,7 @@ QGraphicsLineItem *QGraphicsScene::addLine(const QLineF &line, const QPen &pen)
 */
 QGraphicsPathItem *QGraphicsScene::addPath(const QPainterPath &path, const QPen &pen, const QBrush &brush)
 {
-    QGraphicsPathItem *item = new QGraphicsPathItem(path);
+    auto item = new QGraphicsPathItem(path);
     item->setPen(pen);
     item->setBrush(brush);
     addItem(item);
@@ -2760,7 +2760,7 @@ QGraphicsPathItem *QGraphicsScene::addPath(const QPainterPath &path, const QPen 
 */
 QGraphicsPixmapItem *QGraphicsScene::addPixmap(const QPixmap &pixmap)
 {
-    QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
+    auto item = new QGraphicsPixmapItem(pixmap);
     addItem(item);
     return item;
 }
@@ -2783,7 +2783,7 @@ QGraphicsPixmapItem *QGraphicsScene::addPixmap(const QPixmap &pixmap)
 QGraphicsPolygonItem *QGraphicsScene::addPolygon(const QPolygonF &polygon,
                                                  const QPen &pen, const QBrush &brush)
 {
-    QGraphicsPolygonItem *item = new QGraphicsPolygonItem(polygon);
+    auto item = new QGraphicsPolygonItem(polygon);
     item->setPen(pen);
     item->setBrush(brush);
     addItem(item);
@@ -2809,7 +2809,7 @@ QGraphicsPolygonItem *QGraphicsScene::addPolygon(const QPolygonF &polygon,
 */
 QGraphicsRectItem *QGraphicsScene::addRect(const QRectF &rect, const QPen &pen, const QBrush &brush)
 {
-    QGraphicsRectItem *item = new QGraphicsRectItem(rect);
+    auto item = new QGraphicsRectItem(rect);
     item->setPen(pen);
     item->setBrush(brush);
     addItem(item);
@@ -2840,7 +2840,7 @@ QGraphicsRectItem *QGraphicsScene::addRect(const QRectF &rect, const QPen &pen, 
 */
 QGraphicsTextItem *QGraphicsScene::addText(const QString &text, const QFont &font)
 {
-    QGraphicsTextItem *item = new QGraphicsTextItem(text);
+    auto item = new QGraphicsTextItem(text);
     item->setFont(font);
     addItem(item);
     return item;
@@ -2862,7 +2862,7 @@ QGraphicsTextItem *QGraphicsScene::addText(const QString &text, const QFont &fon
 */
 QGraphicsSimpleTextItem *QGraphicsScene::addSimpleText(const QString &text, const QFont &font)
 {
-    QGraphicsSimpleTextItem *item = new QGraphicsSimpleTextItem(text);
+    auto item = new QGraphicsSimpleTextItem(text);
     item->setFont(font);
     addItem(item);
     return item;
@@ -2888,7 +2888,7 @@ QGraphicsSimpleTextItem *QGraphicsScene::addSimpleText(const QString &text, cons
 */
 QGraphicsProxyWidget *QGraphicsScene::addWidget(QWidget *widget, Qt::WindowFlags wFlags)
 {
-    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(0, wFlags);
+    auto proxy = new QGraphicsProxyWidget(0, wFlags);
     proxy->setWidget(widget);
     addItem(proxy);
     return proxy;
@@ -2920,7 +2920,7 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
     // react.
     const QVariant newSceneVariant(item->itemChange(QGraphicsItem::ItemSceneChange,
                                                     QVariant::fromValue<QGraphicsScene *>(0)));
-    QGraphicsScene *targetScene = qvariant_cast<QGraphicsScene *>(newSceneVariant);
+    auto targetScene = qvariant_cast<QGraphicsScene *>(newSceneVariant);
     if (targetScene != 0 && targetScene != this) {
         targetScene->addItem(item);
         return;
@@ -3146,7 +3146,7 @@ void QGraphicsScene::setForegroundBrush(const QBrush &brush)
     Q_D(QGraphicsScene);
     d->foregroundBrush = brush;
     const auto views_ = views();
-    for (QGraphicsView *view : views_)
+    for (auto view : views_)
         view->viewport()->update();
     update();
 }
@@ -3165,8 +3165,8 @@ QVariant QGraphicsScene::inputMethodQuery(Qt::InputMethodQuery query) const
     Q_D(const QGraphicsScene);
     if (!d->focusItem || !(d->focusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod))
         return QVariant();
-    const QTransform matrix = d->focusItem->sceneTransform();
-    QVariant value = d->focusItem->inputMethodQuery(query);
+    const auto matrix = d->focusItem->sceneTransform();
+    auto value = d->focusItem->inputMethodQuery(query);
     if (value.type() == QVariant::RectF)
         value = matrix.mapRect(value.toRectF());
     else if (value.type() == QVariant::PointF)
@@ -3192,20 +3192,20 @@ void QGraphicsScene::update(const QRectF &rect)
 
     // Check if anyone's connected; if not, we can send updates directly to
     // the views. Otherwise or if there are no views, use old behavior.
-    bool directUpdates = !(d->isSignalConnected(d->changedSignalIndex)) && !d->views.isEmpty();
+    auto directUpdates = !(d->isSignalConnected(d->changedSignalIndex)) && !d->views.isEmpty();
     if (rect.isNull()) {
         d->updateAll = true;
         d->updatedRects.clear();
         if (directUpdates) {
             // Update all views.
-            for (int i = 0; i < d->views.size(); ++i)
+            for (auto i = 0; i < d->views.size(); ++i)
                 d->views.at(i)->d_func()->fullUpdatePending = true;
         }
     } else {
         if (directUpdates) {
             // Update all views.
-            for (int i = 0; i < d->views.size(); ++i) {
-                QGraphicsView *view = d->views.at(i);
+            for (auto i = 0; i < d->views.size(); ++i) {
+                auto view = d->views.at(i);
                 if (view->isTransformed())
                     view->d_func()->updateRectF(view->viewportTransform().mapRect(rect));
                 else
@@ -3255,7 +3255,7 @@ void QGraphicsScene::update(const QRectF &rect)
 void QGraphicsScene::invalidate(const QRectF &rect, SceneLayers layers)
 {
     const auto views_ = views();
-    for (QGraphicsView *view : views_)
+    for (auto view : views_)
         view->invalidateScene(rect, layers);
     update(rect);
 }
@@ -3295,9 +3295,9 @@ QList <QGraphicsView *> QGraphicsScene::views() const
 */
 void QGraphicsScene::advance()
 {
-    for (int i = 0; i < 2; ++i) {
+    for (auto i = 0; i < 2; ++i) {
         const auto items_ = items();
-        for (QGraphicsItem *item : items_)
+        for (auto item : items_)
             item->advance(i);
     }
 }
@@ -3365,10 +3365,10 @@ bool QGraphicsScene::event(QEvent *event)
         break;
     case QEvent::KeyPress:
         if (!d->focusItem) {
-            QKeyEvent *k = static_cast<QKeyEvent *>(event);
+            auto k = static_cast<QKeyEvent *>(event);
             if (k->key() == Qt::Key_Tab || k->key() == Qt::Key_Backtab) {
                 if (!(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {  //### Add MetaModifier?
-                    bool res = false;
+                    auto res = false;
                     if (k->key() == Qt::Key_Backtab
                         || (k->key() == Qt::Key_Tab && (k->modifiers() & Qt::ShiftModifier))) {
                         res = focusNextPrevChild(false);
@@ -3387,7 +3387,7 @@ bool QGraphicsScene::event(QEvent *event)
         keyReleaseEvent(static_cast<QKeyEvent *>(event));
         break;
     case QEvent::ShortcutOverride: {
-            QGraphicsItem *parent = focusItem();
+            auto parent = focusItem();
             while (parent) {
                 d->sendEvent(parent, event);
                 if (event->isAccepted())
@@ -3398,7 +3398,7 @@ bool QGraphicsScene::event(QEvent *event)
         return false;
     case QEvent::GraphicsSceneMouseMove:
     {
-        QGraphicsSceneMouseEvent *mouseEvent = static_cast<QGraphicsSceneMouseEvent *>(event);
+        auto mouseEvent = static_cast<QGraphicsSceneMouseEvent *>(event);
         d->lastSceneMousePos = mouseEvent->scenePos();
         mouseMoveEvent(mouseEvent);
         break;
@@ -3425,7 +3425,7 @@ bool QGraphicsScene::event(QEvent *event)
     case QEvent::GraphicsSceneHoverLeave:
     case QEvent::GraphicsSceneHoverMove:
     {
-        QGraphicsSceneHoverEvent *hoverEvent = static_cast<QGraphicsSceneHoverEvent *>(event);
+        auto hoverEvent = static_cast<QGraphicsSceneHoverEvent *>(event);
         d->lastSceneMousePos = hoverEvent->scenePos();
         d->dispatchHoverEvent(hoverEvent);
         break;
@@ -3453,7 +3453,7 @@ bool QGraphicsScene::event(QEvent *event)
                 // Activate all toplevel items.
                 QEvent event(QEvent::WindowActivate);
                 const auto items_ = items();
-                for (QGraphicsItem *item : items_) {
+                for (auto item : items_) {
                     if (item->isVisible() && !item->isPanel() && !item->parentItem())
                         sendEvent(item, &event);
                 }
@@ -3465,14 +3465,14 @@ bool QGraphicsScene::event(QEvent *event)
             if (d->activePanel) {
                 // Deactivate the active panel (but keep it so we can
                 // reactivate it later).
-                QGraphicsItem *lastActivePanel = d->activePanel;
+                auto lastActivePanel = d->activePanel;
                 d->setActivePanelHelper(0, true);
                 d->lastActivePanel = lastActivePanel;
             } else {
                 // Activate all toplevel items.
                 QEvent event(QEvent::WindowDeactivate);
                 const auto items_ = items();
-                for (QGraphicsItem *item : items_) {
+                for (auto item : items_) {
                     if (item->isVisible() && !item->isPanel() && !item->parentItem())
                         sendEvent(item, &event);
                 }
@@ -3570,7 +3570,7 @@ void QGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *contextMen
     const auto items = d->itemsAtPosition(contextMenuEvent->screenPos(),
                                           contextMenuEvent->scenePos(),
                                           contextMenuEvent->widget());
-    for (QGraphicsItem *item : items) {
+    for (auto item : items) {
         contextMenuEvent->setPos(item->d_ptr->genericMapFromScene(contextMenuEvent->scenePos(),
                                                                   contextMenuEvent->widget()));
         contextMenuEvent->accept();
@@ -3622,14 +3622,14 @@ void QGraphicsScene::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
         d->mouseGrabberButtonDownScreenPos.clear();
     }
 
-    bool eventDelivered = false;
+    auto eventDelivered = false;
 
     // Find the topmost enabled items under the cursor. They are all
     // candidates for accepting drag & drop events.
     const auto items = d->itemsAtPosition(event->screenPos(),
                                           event->scenePos(),
                                           event->widget());
-    for (QGraphicsItem *item : items) {
+    for (auto item : items) {
         if (!item->isEnabled() || !item->acceptDrops())
             continue;
 
@@ -3796,12 +3796,12 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
 #else
     // Find the first item that does tooltips
     Q_D(QGraphicsScene);
-    QList<QGraphicsItem *> itemsAtPos = d->itemsAtPosition(helpEvent->screenPos(),
+    auto itemsAtPos = d->itemsAtPosition(helpEvent->screenPos(),
                                                            helpEvent->scenePos(),
                                                            helpEvent->widget());
     QGraphicsItem *toolTipItem = 0;
-    for (int i = 0; i < itemsAtPos.size(); ++i) {
-        QGraphicsItem *tmp = itemsAtPos.at(i);
+    for (auto i = 0; i < itemsAtPos.size(); ++i) {
+        auto tmp = itemsAtPos.at(i);
         if (tmp->d_func()->isProxyWidget()) {
             // if the item is a proxy widget, the event is forwarded to it
             sendEvent(tmp, helpEvent);
@@ -3858,8 +3858,8 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
     }
 
     QGraphicsItem *item = 0;
-    for (int i = 0; i < cachedItemsUnderMouse.size(); ++i) {
-        QGraphicsItem *tmp = cachedItemsUnderMouse.at(i);
+    for (auto i = 0; i < cachedItemsUnderMouse.size(); ++i) {
+        auto tmp = cachedItemsUnderMouse.at(i);
         if (itemAcceptsHoverEvents_helper(tmp)) {
             item = tmp;
             break;
@@ -3868,7 +3868,7 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
 
     // Find the common ancestor item for the new topmost hoverItem and the
     // last item in the hoverItem list.
-    QGraphicsItem *commonAncestorItem = (item && !hoverItems.isEmpty()) ? item->commonAncestorItem(hoverItems.last()) : 0;
+    auto commonAncestorItem = (item && !hoverItems.isEmpty()) ? item->commonAncestorItem(hoverItems.last()) : 0;
     while (commonAncestorItem && !itemAcceptsHoverEvents_helper(commonAncestorItem))
         commonAncestorItem = commonAncestorItem->parentItem();
     if (commonAncestorItem && commonAncestorItem->panel() != item->panel()) {
@@ -3878,11 +3878,11 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
     }
 
     // Check if the common ancestor item is known.
-    int index = commonAncestorItem ? hoverItems.indexOf(commonAncestorItem) : -1;
+    auto index = commonAncestorItem ? hoverItems.indexOf(commonAncestorItem) : -1;
     // Send hover leaves to any existing hovered children of the common
     // ancestor item.
-    for (int i = hoverItems.size() - 1; i > index; --i) {
-        QGraphicsItem *lastItem = hoverItems.takeLast();
+    for (auto i = hoverItems.size() - 1; i > index; --i) {
+        auto lastItem = hoverItems.takeLast();
         if (itemAcceptsHoverEvents_helper(lastItem))
             sendHoverEvent(QEvent::GraphicsSceneHoverLeave, lastItem, hoverEvent);
     }
@@ -3890,7 +3890,7 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
     // Item is a child of a known item. Generate enter events for the
     // missing links.
     QList<QGraphicsItem *> parents;
-    QGraphicsItem *parent = item;
+    auto parent = item;
     while (parent && parent != commonAncestorItem) {
         parents.append(parent);
         if (parent->isPanel()) {
@@ -3900,7 +3900,7 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
         parent = parent->parentItem();
     }
     for (auto it = parents.crbegin(), end = parents.crend(); it != end; ++it) {
-        QGraphicsItem *parent = *it;
+        auto parent = *it;
         hoverItems << parent;
         if (itemAcceptsHoverEvents_helper(parent))
             sendHoverEvent(QEvent::GraphicsSceneHoverEnter, parent, hoverEvent);
@@ -3927,13 +3927,13 @@ void QGraphicsScenePrivate::leaveScene(QWidget *viewport)
 #ifndef QT_NO_TOOLTIP
     QToolTip::hideText();
 #endif
-    QGraphicsView *view = qobject_cast<QGraphicsView *>(viewport->parent());
+    auto view = qobject_cast<QGraphicsView *>(viewport->parent());
     // Send HoverLeave events to all existing hover items, topmost first.
     QGraphicsSceneHoverEvent hoverEvent;
     hoverEvent.setWidget(viewport);
 
     if (view) {
-        QPoint cursorPos = QCursor::pos();
+        auto cursorPos = QCursor::pos();
         hoverEvent.setScenePos(view->mapToScene(viewport->mapFromGlobal(cursorPos)));
         hoverEvent.setLastScenePos(hoverEvent.scenePos());
         hoverEvent.setScreenPos(cursorPos);
@@ -3941,7 +3941,7 @@ void QGraphicsScenePrivate::leaveScene(QWidget *viewport)
     }
 
     while (!hoverItems.isEmpty()) {
-        QGraphicsItem *lastItem = hoverItems.takeLast();
+        auto lastItem = hoverItems.takeLast();
         if (itemAcceptsHoverEvents_helper(lastItem))
             sendHoverEvent(QEvent::GraphicsSceneHoverLeave, lastItem, &hoverEvent);
     }
@@ -3959,11 +3959,11 @@ void QGraphicsScene::keyPressEvent(QKeyEvent *keyEvent)
     // ### Merge this function with keyReleaseEvent; they are identical
     // ### (except this comment).
     Q_D(QGraphicsScene);
-    QGraphicsItem *item = !d->keyboardGrabberItems.isEmpty() ? d->keyboardGrabberItems.last() : 0;
+    auto item = !d->keyboardGrabberItems.isEmpty() ? d->keyboardGrabberItems.last() : 0;
     if (!item)
         item = focusItem();
     if (item) {
-        QGraphicsItem *p = item;
+        auto p = item;
         do {
             // Accept the event by default
             keyEvent->accept();
@@ -3991,11 +3991,11 @@ void QGraphicsScene::keyReleaseEvent(QKeyEvent *keyEvent)
     // ### Merge this function with keyPressEvent; they are identical (except
     // ### this comment).
     Q_D(QGraphicsScene);
-    QGraphicsItem *item = !d->keyboardGrabberItems.isEmpty() ? d->keyboardGrabberItems.last() : 0;
+    auto item = !d->keyboardGrabberItems.isEmpty() ? d->keyboardGrabberItems.last() : 0;
     if (!item)
         item = focusItem();
     if (item) {
-        QGraphicsItem *p = item;
+        auto p = item;
         do {
             // Accept the event by default
             keyEvent->accept();
@@ -4155,7 +4155,7 @@ void QGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
 void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
 {
     Q_D(QGraphicsScene);
-    const QList<QGraphicsItem *> wheelCandidates = d->itemsAtPosition(wheelEvent->screenPos(),
+    const auto wheelCandidates = d->itemsAtPosition(wheelEvent->screenPos(),
                                                                       wheelEvent->scenePos(),
                                                                       wheelEvent->widget());
 
@@ -4170,7 +4170,7 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
     // Find the first popup under the mouse (including the popup's descendants) starting from the last.
     // Remove all popups after the one found, or all or them if no popup is under the mouse.
     // Then continue with the event.
-    QList<QGraphicsWidget *>::const_iterator iter = d->popupWidgets.constEnd();
+    auto iter = d->popupWidgets.constEnd();
     while (--iter >= d->popupWidgets.constBegin() && !wheelCandidates.isEmpty()) {
         if (wheelCandidates.first() == *iter || (*iter)->isAncestorOf(wheelCandidates.first()))
             break;
@@ -4178,8 +4178,8 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
     }
 #endif
 
-    bool hasSetFocus = false;
-    for (QGraphicsItem *item : wheelCandidates) {
+    auto hasSetFocus = false;
+    for (auto item : wheelCandidates) {
         if (!hasSetFocus && item->isEnabled()
             && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
             if (item->isWidget() && static_cast<QGraphicsWidget *>(item)->focusPolicy() == Qt::WheelFocus) {
@@ -4192,8 +4192,8 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
         wheelEvent->setPos(item->d_ptr->genericMapFromScene(wheelEvent->scenePos(),
                                                             wheelEvent->widget()));
         wheelEvent->accept();
-        bool isPanel = item->isPanel();
-        bool ret = d->sendEvent(item, wheelEvent);
+        auto isPanel = item->isPanel();
+        auto ret = d->sendEvent(item, wheelEvent);
 
         if (ret && (isPanel || wheelEvent->isAccepted()))
             break;
@@ -4279,11 +4279,11 @@ static void _q_paintItem(QGraphicsItem *item, QPainter *painter,
         item->paint(painter, option, widget);
         return;
     }
-    QGraphicsWidget *widgetItem = static_cast<QGraphicsWidget *>(item);
-    QGraphicsProxyWidget *proxy = qobject_cast<QGraphicsProxyWidget *>(widgetItem);
-    const qreal windowOpacity = (proxy && proxy->widget() && useWindowOpacity)
+    auto widgetItem = static_cast<QGraphicsWidget *>(item);
+    auto proxy = qobject_cast<QGraphicsProxyWidget *>(widgetItem);
+    const auto windowOpacity = (proxy && proxy->widget() && useWindowOpacity)
                                 ? proxy->widget()->windowOpacity() : 1.0;
-    const qreal oldPainterOpacity = painter->opacity();
+    const auto oldPainterOpacity = painter->opacity();
 
     if (qFuzzyIsNull(windowOpacity))
         return;
@@ -4292,7 +4292,7 @@ static void _q_paintItem(QGraphicsItem *item, QPainter *painter,
         painter->setOpacity(oldPainterOpacity * windowOpacity);
 
     // set layoutdirection on the painter
-    Qt::LayoutDirection oldLayoutDirection = painter->layoutDirection();
+    auto oldLayoutDirection = painter->layoutDirection();
     painter->setLayoutDirection(widgetItem->layoutDirection());
 
     if (widgetItem->isWindow() && widgetItem->windowType() != Qt::Popup && widgetItem->windowType() != Qt::ToolTip
@@ -4321,7 +4321,7 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
 {
     QPixmap subPix;
     QPainter pixmapPainter;
-    QRect br = pixmapExposed.boundingRect();
+    auto br = pixmapExposed.boundingRect();
 
     // Don't use subpixmap if we get a full update.
     if (pixmapExposed.isEmpty() || (pixmapExposed.rectCount() == 1 && br.contains(pix->rect()))) {
@@ -4361,15 +4361,15 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
 // Returns \c true for 90, 180, and 270 degree rotations.
 static inline bool transformIsSimple(const QTransform& transform)
 {
-    QTransform::TransformationType type = transform.type();
+    auto type = transform.type();
     if (type <= QTransform::TxScale) {
         return true;
     } else if (type == QTransform::TxRotate) {
         // Check for 90, and 270 degree rotations.
-        qreal m11 = transform.m11();
-        qreal m12 = transform.m12();
-        qreal m21 = transform.m21();
-        qreal m22 = transform.m22();
+        auto m11 = transform.m11();
+        auto m12 = transform.m12();
+        auto m21 = transform.m21();
+        auto m22 = transform.m22();
         if (m11 == 0.0f && m22 == 0.0f) {
             if (m12 == 1.0f && m21 == -1.0f)
                 return true; // 90 degrees.
@@ -4393,8 +4393,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
                                            const QStyleOptionGraphicsItem *option, QWidget *widget,
                                            bool painterStateProtection)
 {
-    QGraphicsItemPrivate *itemd = item->d_ptr.data();
-    QGraphicsItem::CacheMode cacheMode = QGraphicsItem::CacheMode(itemd->cacheMode);
+    auto itemd = item->d_ptr.data();
+    auto cacheMode = QGraphicsItem::CacheMode(itemd->cacheMode);
 
     // Render directly, using no cache.
     if (cacheMode == QGraphicsItem::NoCache
@@ -4406,17 +4406,17 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         return;
     }
 
-    const qreal oldPainterOpacity = painter->opacity();
-    qreal newPainterOpacity = oldPainterOpacity;
-    QGraphicsProxyWidget *proxy = item->isWidget() ? qobject_cast<QGraphicsProxyWidget *>(static_cast<QGraphicsWidget *>(item)) : 0;
+    const auto oldPainterOpacity = painter->opacity();
+    auto newPainterOpacity = oldPainterOpacity;
+    auto proxy = item->isWidget() ? qobject_cast<QGraphicsProxyWidget *>(static_cast<QGraphicsWidget *>(item)) : 0;
     if (proxy && proxy->widget()) {
-        const qreal windowOpacity = proxy->widget()->windowOpacity();
+        const auto windowOpacity = proxy->widget()->windowOpacity();
         if (windowOpacity < 1.0)
             newPainterOpacity *= windowOpacity;
     }
 
     // Item's (local) bounding rect
-    QRectF brect = item->boundingRect();
+    auto brect = item->boundingRect();
     QRectF adjustedBrect(brect);
     _q_adjustRect(&adjustedBrect);
     if (adjustedBrect.isEmpty())
@@ -4426,7 +4426,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     QPixmapCache::Key pixmapKey;
     QPixmap pix;
     bool pixmapFound;
-    QGraphicsItemCache *itemCache = itemd->extraItemCache();
+    auto itemCache = itemd->extraItemCache();
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
         pixmapKey = itemCache->key;
     } else {
@@ -4439,8 +4439,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     // Render using item coordinate cache mode.
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
         QSize pixmapSize;
-        bool fixedCacheSize = false;
-        QRect br = brect.toAlignedRect();
+        auto fixedCacheSize = false;
+        auto br = brect.toAlignedRect();
         if ((fixedCacheSize = itemCache->fixedSize.isValid())) {
             pixmapSize = itemCache->fixedSize;
         } else {
@@ -4448,7 +4448,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         }
 
         // Create or recreate the pixmap.
-        int adjust = itemCache->fixedSize.isValid() ? 0 : 2;
+        auto adjust = itemCache->fixedSize.isValid() ? 0 : 2;
         QSize adjustSize(adjust*2, adjust*2);
         br.adjust(-adjust, -adjust, adjust, adjust);
         if (pix.isNull() || (!fixedCacheSize && (pixmapSize + adjustSize) != pix.size())) {
@@ -4484,8 +4484,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             QRegion pixmapExposed;
             QRectF exposedRect;
             if (!itemCache->allExposed) {
-                for (int i = 0; i < itemCache->exposed.size(); ++i) {
-                    QRectF r = itemCache->exposed.at(i);
+                for (auto i = 0; i < itemCache->exposed.size(); ++i) {
+                    auto r = itemCache->exposed.at(i);
                     exposedRect |= r;
                     pixmapExposed += itemToPixmap.mapRect(r).toAlignedRect();
                 }
@@ -4522,17 +4522,17 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     // Render using device coordinate cache mode.
     if (cacheMode == QGraphicsItem::DeviceCoordinateCache) {
         // Find the item's bounds in device coordinates.
-        QRectF deviceBounds = painter->worldTransform().mapRect(brect);
-        QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
+        auto deviceBounds = painter->worldTransform().mapRect(brect);
+        auto deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
         if (deviceRect.isEmpty())
             return;
-        QRect viewRect = widget ? widget->rect() : QRect();
+        auto viewRect = widget ? widget->rect() : QRect();
         if (widget && !viewRect.intersects(deviceRect))
             return;
 
         // Resort to direct rendering if the device rect exceeds the
         // (optional) maximum bounds. (QGraphicsSvgItem uses this).
-        QSize maximumCacheSize =
+        auto maximumCacheSize =
             itemd->extra(QGraphicsItemPrivate::ExtraMaxDeviceCoordCacheSize).toSize();
         if (!maximumCacheSize.isEmpty()
             && (deviceRect.width() > maximumCacheSize.width()
@@ -4545,15 +4545,15 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         // Create or reuse offscreen pixmap, possibly scroll/blit from the old one.
         // If the world transform is rotated we always recreate the cache to avoid
         // wrong blending.
-        bool pixModified = false;
-        QGraphicsItemCache::DeviceData *deviceData = &itemCache->deviceData[widget];
-        bool invertable = true;
-        QTransform diff = deviceData->lastTransform.inverted(&invertable);
+        auto pixModified = false;
+        auto deviceData = &itemCache->deviceData[widget];
+        auto invertable = true;
+        auto diff = deviceData->lastTransform.inverted(&invertable);
         if (invertable)
             diff *= painter->worldTransform();
         deviceData->lastTransform = painter->worldTransform();
-        bool allowPartialCacheExposure = false;
-        bool simpleTransform = invertable && diff.type() <= QTransform::TxTranslate
+        auto allowPartialCacheExposure = false;
+        auto simpleTransform = invertable && diff.type() <= QTransform::TxTranslate
                                && transformIsSimple(painter->worldTransform());
         if (!simpleTransform) {
             pixModified = true;
@@ -4578,8 +4578,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             // item covers whole screen) or parts of device are outside the
             // viewport. In either case the device rect must be the intersect
             // between the two.
-            int dx = deviceRect.left() < viewRect.left() ? viewRect.left() - deviceRect.left() : 0;
-            int dy = deviceRect.top() < viewRect.top() ? viewRect.top() - deviceRect.top() : 0;
+            auto dx = deviceRect.left() < viewRect.left() ? viewRect.left() - deviceRect.left() : 0;
+            auto dy = deviceRect.top() < viewRect.top() ? viewRect.top() - deviceRect.top() : 0;
             QPoint newCacheIndent(dx, dy);
             deviceRect &= viewRect;
 
@@ -4593,7 +4593,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             // Copy / "scroll" the old pixmap onto the new ole and calculate
             // scrolled exposure.
             if (newCacheIndent != deviceData->cacheIndent || deviceRect.size() != pix.size()) {
-                QPoint diff = newCacheIndent - deviceData->cacheIndent;
+                auto diff = newCacheIndent - deviceData->cacheIndent;
                 QPixmap newPix(deviceRect.size());
                 // ### Investigate removing this fill (test with Plasma and
                 // graphicssystem raster).
@@ -4636,15 +4636,15 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
             // Construct an item-to-pixmap transform.
             QPointF p = deviceRect.topLeft();
-            QTransform itemToPixmap = painter->worldTransform();
+            auto itemToPixmap = painter->worldTransform();
             if (!p.isNull())
                 itemToPixmap *= QTransform::fromTranslate(-p.x(), -p.y());
 
             // Map the item's logical expose to pixmap coordinates.
-            QRegion pixmapExposed = scrollExposure;
+            auto pixmapExposed = scrollExposure;
             if (!itemCache->allExposed) {
                 const QVector<QRectF> &exposed = itemCache->exposed;
-                for (int i = 0; i < exposed.size(); ++i)
+                for (auto i = 0; i < exposed.size(); ++i)
                     pixmapExposed += itemToPixmap.mapRect(exposed.at(i)).toRect().adjusted(-1, -1, 1, 1);
             }
 
@@ -4654,9 +4654,9 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
                 br = item->boundingRect();
             } else {
                 const QVector<QRectF> &exposed = itemCache->exposed;
-                for (int i = 0; i < exposed.size(); ++i)
+                for (auto i = 0; i < exposed.size(); ++i)
                     br |= exposed.at(i);
-                QTransform pixmapToItem = itemToPixmap.inverted();
+                auto pixmapToItem = itemToPixmap.inverted();
                 const auto rects = scrollExposure.rects();
                 for (const QRect &r : rects)
                     br |= pixmapToItem.mapRect(r);
@@ -4681,7 +4681,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
         // Redraw the exposed area using an untransformed painter. This
         // effectively becomes a bitblit that does not transform the cache.
-        QTransform restoreTransform = painter->worldTransform();
+        auto restoreTransform = painter->worldTransform();
         painter->setWorldTransform(QTransform());
         if (newPainterOpacity != oldPainterOpacity) {
             painter->setOpacity(newPainterOpacity);
@@ -4709,8 +4709,8 @@ void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const
         if (viewTransform)
             exposedSceneRect = viewTransform->inverted().mapRect(exposedSceneRect);
     }
-    const QList<QGraphicsItem *> tli = index->estimateTopLevelItems(exposedSceneRect, Qt::AscendingOrder);
-    for (int i = 0; i < tli.size(); ++i)
+    const auto tli = index->estimateTopLevelItems(exposedSceneRect, Qt::AscendingOrder);
+    for (auto i = 0; i < tli.size(); ++i)
         drawSubtreeRecursive(tli.at(i), painter, viewTransform, exposedRegion, widget);
 }
 
@@ -4724,19 +4724,19 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (!item->d_ptr->visible)
         return;
 
-    const bool itemHasContents = !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
-    const bool itemHasChildren = !item->d_ptr->children.isEmpty();
+    const auto itemHasContents = !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
+    const auto itemHasChildren = !item->d_ptr->children.isEmpty();
     if (!itemHasContents && !itemHasChildren)
         return; // Item has neither contents nor children!(?)
 
-    const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
-    const bool itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
+    const auto opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
+    const auto itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
     if (itemIsFullyTransparent && (!itemHasChildren || item->d_ptr->childrenCombineOpacity()))
         return;
 
     QTransform transform(Qt::Uninitialized);
     QTransform *transformPtr = 0;
-    bool translateOnlyTransform = false;
+    auto translateOnlyTransform = false;
 #define ENSURE_TRANSFORM_PTR \
     if (!transformPtr) { \
         Q_ASSERT(!itemIsUntransformable); \
@@ -4752,8 +4752,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
     // Update the item's scene transform if the item is transformable;
     // otherwise calculate the full transform,
-    bool wasDirtyParentSceneTransform = false;
-    const bool itemIsUntransformable = item->d_ptr->itemIsUntransformable();
+    auto wasDirtyParentSceneTransform = false;
+    const auto itemIsUntransformable = item->d_ptr->itemIsUntransformable();
     if (itemIsUntransformable) {
         transform = item->deviceTransform(viewTransform ? *viewTransform : QTransform());
         transformPtr = &transform;
@@ -4763,16 +4763,16 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         wasDirtyParentSceneTransform = true;
     }
 
-    const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape
+    const auto itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape
                                            || item->d_ptr->flags & QGraphicsItem::ItemContainsChildrenInShape);
-    bool drawItem = itemHasContents && !itemIsFullyTransparent;
+    auto drawItem = itemHasContents && !itemIsFullyTransparent;
     if (drawItem || minimumRenderSize > 0.0) {
-        const QRectF brect = adjustedItemEffectiveBoundingRect(item);
+        const auto brect = adjustedItemEffectiveBoundingRect(item);
         ENSURE_TRANSFORM_PTR
-        QRectF preciseViewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy())
+        auto preciseViewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy())
                                                                 : transformPtr->mapRect(brect);
 
-        bool itemIsTooSmallToRender = false;
+        auto itemIsTooSmallToRender = false;
         if (minimumRenderSize > 0.0
             && (preciseViewBoundingRect.width() < minimumRenderSize
                 || preciseViewBoundingRect.height() < minimumRenderSize)) {
@@ -4780,9 +4780,9 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
            drawItem = false;
         }
 
-        bool itemIsOutsideVisibleRect = false;
+        auto itemIsOutsideVisibleRect = false;
         if (drawItem) {
-            QRect viewBoundingRect = preciseViewBoundingRect.toAlignedRect();
+            auto viewBoundingRect = preciseViewBoundingRect.toAlignedRect();
             viewBoundingRect.adjust(-int(rectAdjust), -int(rectAdjust), rectAdjust, rectAdjust);
             if (widget)
                 item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
@@ -4815,11 +4815,11 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         ENSURE_TRANSFORM_PTR;
         QGraphicsItemPaintInfo info(viewTransform, transformPtr, effectTransform, exposedRegion, widget, &styleOptionTmp,
                                     painter, opacity, wasDirtyParentSceneTransform, itemHasContents && !itemIsFullyTransparent);
-        QGraphicsEffectSource *source = item->d_ptr->graphicsEffect->d_func()->source;
-        QGraphicsItemEffectSourcePrivate *sourced = static_cast<QGraphicsItemEffectSourcePrivate *>
+        auto source = item->d_ptr->graphicsEffect->d_func()->source;
+        auto sourced = static_cast<QGraphicsItemEffectSourcePrivate *>
                                                     (source->d_func());
         sourced->info = &info;
-        const QTransform restoreTransform = painter->worldTransform();
+        const auto restoreTransform = painter->worldTransform();
         if (effectTransform)
             painter->setWorldTransform(*transformPtr * *effectTransform);
         else
@@ -4832,8 +4832,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             if (sourced->lastEffectTransform.type() <= QTransform::TxTranslate
                 && painter->worldTransform().type() <= QTransform::TxTranslate)
             {
-                QRectF sourceRect = sourced->boundingRect(Qt::DeviceCoordinates);
-                QRect effectRect = sourced->paddedEffectRect(Qt::DeviceCoordinates, sourced->currentCachedMode(), sourceRect);
+                auto sourceRect = sourced->boundingRect(Qt::DeviceCoordinates);
+                auto effectRect = sourced->paddedEffectRect(Qt::DeviceCoordinates, sourced->currentCachedMode(), sourceRect);
 
                 sourced->setCachedOffset(effectRect.topLeft());
             } else {
@@ -4880,13 +4880,13 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                                  qreal opacity, const QTransform *effectTransform,
                                  bool wasDirtyParentSceneTransform, bool drawItem)
 {
-    const bool itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
+    const auto itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
-    const bool itemHasChildren = !item->d_ptr->children.isEmpty();
-    bool setChildClip = itemClipsChildrenToShape;
-    bool itemHasChildrenStackedBehind = false;
+    const auto itemHasChildren = !item->d_ptr->children.isEmpty();
+    auto setChildClip = itemClipsChildrenToShape;
+    auto itemHasChildrenStackedBehind = false;
 
-    int i = 0;
+    auto i = 0;
     if (itemHasChildren) {
         if (itemClipsChildrenToShape)
             setWorldTransform(painter, transformPtr, effectTransform);
@@ -4905,7 +4905,7 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
 
             // Draw children behind
             for (i = 0; i < item->d_ptr->children.size(); ++i) {
-                QGraphicsItem *child = item->d_ptr->children.at(i);
+                auto child = item->d_ptr->children.at(i);
                 if (wasDirtyParentSceneTransform)
                     child->d_ptr->dirtySceneTransform = 1;
                 if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
@@ -4926,7 +4926,7 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                                      ? *exposedRegion : QRegion(), exposedRegion == 0);
 
         const bool itemClipsToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsToShape;
-        bool restorePainterClip = false;
+        auto restorePainterClip = false;
 
         if (!itemHasChildren || !itemClipsChildrenToShape) {
             // Item does not have children or clip children to shape.
@@ -4964,12 +4964,12 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
         if (painterStateProtection || restorePainterClip)
             painter->restore();
 
-        static int drawRect = qEnvironmentVariableIntValue("QT_DRAW_SCENE_ITEM_RECTS");
+        static auto drawRect = qEnvironmentVariableIntValue("QT_DRAW_SCENE_ITEM_RECTS");
         if (drawRect) {
-            QPen oldPen = painter->pen();
-            QBrush oldBrush = painter->brush();
-            quintptr ptr = reinterpret_cast<quintptr>(item);
-            const QColor color = QColor::fromHsv(ptr % 255, 255, 255);
+            auto oldPen = painter->pen();
+            auto oldBrush = painter->brush();
+            auto ptr = reinterpret_cast<quintptr>(item);
+            const auto color = QColor::fromHsv(ptr % 255, 255, 255);
             painter->setPen(color);
             painter->setBrush(Qt::NoBrush);
             painter->drawRect(adjustedItemBoundingRect(item));
@@ -4984,7 +4984,7 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
             setClip(painter, item);
 
         for (; i < item->d_ptr->children.size(); ++i) {
-            QGraphicsItem *child = item->d_ptr->children.at(i);
+            auto child = item->d_ptr->children.at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
@@ -5014,7 +5014,7 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         // Note that we only do this when removing items from the scene. In all other
         // cases the ignoreOpacity bit propagates properly in processDirtyItems, but
         // since the item is removed immediately it won't be processed there.
-        QGraphicsItem *p = item->d_ptr->parent;
+        auto p = item->d_ptr->parent;
         while (p) {
             if (p->d_ptr->ignoreOpacity) {
                 item->d_ptr->ignoreOpacity = true;
@@ -5040,12 +5040,12 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
     }
 
-    const bool fullItemUpdate = rect.isNull();
+    const auto fullItemUpdate = rect.isNull();
     if (!fullItemUpdate && rect.isEmpty())
         return;
 
     if (!processDirtyItemsEmitted) {
-        QMetaMethod method = q_ptr->metaObject()->method(processDirtyItemsIndex);
+        auto method = q_ptr->metaObject()->method(processDirtyItemsIndex);
         method.invoke(q_ptr, Qt::QueuedConnection);
 //        QMetaObject::invokeMethod(q_ptr, "_q_processDirtyItems", Qt::QueuedConnection);
         processDirtyItemsEmitted = true;
@@ -5062,9 +5062,9 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
             return;
         }
 
-        for (int i = 0; i < views.size(); ++i) {
-            QGraphicsViewPrivate *viewPrivate = views.at(i)->d_func();
-            QRect rect = item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport);
+        for (auto i = 0; i < views.size(); ++i) {
+            auto viewPrivate = views.at(i)->d_func();
+            auto rect = item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport);
             rect.translate(viewPrivate->dirtyScrollOffset);
             viewPrivate->updateRect(rect);
         }
@@ -5102,19 +5102,19 @@ static inline bool updateHelper(QGraphicsViewPrivate *view, QGraphicsItemPrivate
     Q_ASSERT(view);
     Q_ASSERT(item);
 
-    QGraphicsItem *itemq = static_cast<QGraphicsItem *>(item->q_ptr);
-    QGraphicsView *viewq = static_cast<QGraphicsView *>(view->q_ptr);
+    auto itemq = static_cast<QGraphicsItem *>(item->q_ptr);
+    auto viewq = static_cast<QGraphicsView *>(view->q_ptr);
 
     if (itemIsUntransformable) {
-        const QTransform xform = itemq->deviceTransform(viewq->viewportTransform());
+        const auto xform = itemq->deviceTransform(viewq->viewportTransform());
         if (!item->hasBoundingRegionGranularity)
             return view->updateRectF(xform.mapRect(rect));
         return view->updateRegion(rect, xform);
     }
 
     if (item->sceneTransformTranslateOnly && view->identityMatrix) {
-        const qreal dx = item->sceneTransform.dx();
-        const qreal dy = item->sceneTransform.dy();
+        const auto dx = item->sceneTransform.dx();
+        const auto dy = item->sceneTransform.dy();
         QRectF r(rect);
         r.translate(dx - view->horizontalScroll(), dy - view->verticalScroll());
         return view->updateRectF(r);
@@ -5126,7 +5126,7 @@ static inline bool updateHelper(QGraphicsViewPrivate *view, QGraphicsItemPrivate
         return view->updateRegion(rect, item->sceneTransform);
     }
 
-    QTransform xform = item->sceneTransform;
+    auto xform = item->sceneTransform;
     xform *= viewq->viewportTransform();
     if (!item->hasBoundingRegionGranularity)
         return view->updateRectF(xform.mapRect(rect));
@@ -5145,14 +5145,14 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
         return;
     }
 
-    const bool itemIsHidden = !item->d_ptr->ignoreVisible && !item->d_ptr->visible;
+    const auto itemIsHidden = !item->d_ptr->ignoreVisible && !item->d_ptr->visible;
     if (itemIsHidden) {
         resetDirtyItem(item, /*recursive=*/true);
         return;
     }
 
-    bool itemHasContents = !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
-    const bool itemHasChildren = !item->d_ptr->children.isEmpty();
+    auto itemHasContents = !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
+    const auto itemHasChildren = !item->d_ptr->children.isEmpty();
     if (!itemHasContents) {
         if (!itemHasChildren) {
             resetDirtyItem(item);
@@ -5162,8 +5162,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
             itemHasContents = true;
     }
 
-    const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
-    const bool itemIsFullyTransparent = !item->d_ptr->ignoreOpacity
+    const auto opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
+    const auto itemIsFullyTransparent = !item->d_ptr->ignoreOpacity
                                         && QGraphicsItemPrivate::isOpacityNull(opacity);
     if (itemIsFullyTransparent && (!itemHasChildren || item->d_ptr->childrenCombineOpacity())) {
         resetDirtyItem(item, /*recursive=*/itemHasChildren);
@@ -5171,7 +5171,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     }
 
     bool wasDirtyParentSceneTransform = item->d_ptr->dirtySceneTransform;
-    const bool itemIsUntransformable = item->d_ptr->itemIsUntransformable();
+    const auto itemIsUntransformable = item->d_ptr->itemIsUntransformable();
     if (wasDirtyParentSceneTransform && !itemIsUntransformable) {
         item->d_ptr->updateSceneTransformFromParent();
         Q_ASSERT(!item->d_ptr->dirtySceneTransform);
@@ -5199,8 +5199,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process item.
     if (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
-        const bool useCompatUpdate = views.isEmpty() || isSignalConnected(changedSignalIndex);
-        const QRectF itemBoundingRect = adjustedItemEffectiveBoundingRect(item);
+        const auto useCompatUpdate = views.isEmpty() || isSignalConnected(changedSignalIndex);
+        const auto itemBoundingRect = adjustedItemEffectiveBoundingRect(item);
 
         if (useCompatUpdate && !itemIsUntransformable && qFuzzyIsNull(item->boundingRegionGranularity())) {
             // This block of code is kept for compatibility. Since 4.5, by default
@@ -5210,17 +5210,17 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 q->update(itemBoundingRect.translated(item->d_ptr->sceneTransform.dx(),
                                                       item->d_ptr->sceneTransform.dy()));
             } else {
-                QRectF rect = item->d_ptr->sceneTransform.mapRect(itemBoundingRect);
+                auto rect = item->d_ptr->sceneTransform.mapRect(itemBoundingRect);
                 if (!rect.isEmpty())
                     q->update(rect);
             }
         } else {
             QRectF dirtyRect;
-            bool uninitializedDirtyRect = true;
+            auto uninitializedDirtyRect = true;
 
-            for (int j = 0; j < views.size(); ++j) {
-                QGraphicsView *view = views.at(j);
-                QGraphicsViewPrivate *viewPrivate = view->d_func();
+            for (auto j = 0; j < views.size(); ++j) {
+                auto view = views.at(j);
+                auto viewPrivate = view->d_func();
                 QRect &paintedViewBoundingRect = item->d_ptr->paintedViewBoundingRects[viewPrivate->viewport];
                 if (viewPrivate->fullUpdatePending
                     || viewPrivate->viewportUpdateMode == QGraphicsView::NoViewportUpdate) {
@@ -5268,16 +5268,16 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process children.
     if (itemHasChildren && item->d_ptr->dirtyChildren) {
-        const bool itemClipsChildrenToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape
+        const auto itemClipsChildrenToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape
                                               || item->d_ptr->flags & QGraphicsItem::ItemContainsChildrenInShape;
         // Items with no content are threated as 'dummy' items which means they are never drawn and
         // 'processed', so the painted view bounding rect is never up-to-date. This means that whenever
         // such an item changes geometry, its children have to take care of the update regardless
         // of whether the item clips children to shape or not.
-        const bool bypassUpdateClip = !itemHasContents && wasDirtyParentViewBoundingRects;
+        const auto bypassUpdateClip = !itemHasContents && wasDirtyParentViewBoundingRects;
         if (itemClipsChildrenToShape && !bypassUpdateClip) {
             // Make sure child updates are clipped to the item's bounding rect.
-            for (int i = 0; i < views.size(); ++i)
+            for (auto i = 0; i < views.size(); ++i)
                 views.at(i)->d_func()->setUpdateClip(item);
         }
         if (!dirtyAncestorContainsChildren) {
@@ -5287,8 +5287,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
         const bool allChildrenDirty = item->d_ptr->allChildrenDirty;
         const bool parentIgnoresVisible = item->d_ptr->ignoreVisible;
         const bool parentIgnoresOpacity = item->d_ptr->ignoreOpacity;
-        for (int i = 0; i < item->d_ptr->children.size(); ++i) {
-            QGraphicsItem *child = item->d_ptr->children.at(i);
+        for (auto i = 0; i < item->d_ptr->children.size(); ++i) {
+            auto child = item->d_ptr->children.at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
             if (wasDirtyParentViewBoundingRects)
@@ -5308,7 +5308,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
         if (itemClipsChildrenToShape) {
             // Reset updateClip.
-            for (int i = 0; i < views.size(); ++i)
+            for (auto i = 0; i < views.size(); ++i)
                 views.at(i)->d_func()->setUpdateClip(0);
         }
     } else if (wasDirtyParentSceneTransform) {
@@ -5359,14 +5359,14 @@ void QGraphicsScene::drawItems(QPainter *painter,
     if (!d->unpolishedItems.isEmpty())
         d->_q_polishItems();
 
-    const qreal opacity = painter->opacity();
-    QTransform viewTransform = painter->worldTransform();
+    const auto opacity = painter->opacity();
+    auto viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 
     // Determine view, expose and flags.
-    QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
+    auto view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
     QRegion *expose = 0;
-    const quint32 oldRectAdjust = d->rectAdjust;
+    const auto oldRectAdjust = d->rectAdjust;
     if (view) {
         d->updateAll = false;
         expose = &view->d_func()->exposedRegion;
@@ -5378,8 +5378,8 @@ void QGraphicsScene::drawItems(QPainter *painter,
 
     // Find all toplevels, they are already sorted.
     QList<QGraphicsItem *> topLevelItems;
-    for (int i = 0; i < numItems; ++i) {
-        QGraphicsItem *item = items[i]->topLevelItem();
+    for (auto i = 0; i < numItems; ++i) {
+        auto item = items[i]->topLevelItem();
         if (!item->d_ptr->itemDiscovered) {
             topLevelItems << item;
             item->d_ptr->itemDiscovered = 1;
@@ -5389,7 +5389,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
 
     d->rectAdjust = oldRectAdjust;
     // Reset discovery bits.
-    for (int i = 0; i < topLevelItems.size(); ++i)
+    for (auto i = 0; i < topLevelItems.size(); ++i)
         topLevelItems.at(i)->d_ptr->itemDiscovered = 0;
 
     painter->setWorldTransform(viewTransform);
@@ -5413,7 +5413,7 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
 {
     Q_D(QGraphicsScene);
 
-    QGraphicsItem *item = focusItem();
+    auto item = focusItem();
     if (item && !item->isWidget()) {
         // Tab out of the scene.
         return false;
@@ -5431,7 +5431,7 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
                 return true;
             }
             if (d->activePanel->isWidget()) {
-                QGraphicsWidget *fw = static_cast<QGraphicsWidget *>(d->activePanel)->d_func()->focusNext;
+                auto fw = static_cast<QGraphicsWidget *>(d->activePanel)->d_func()->focusNext;
                 do {
                     if (fw->focusPolicy() & Qt::TabFocus) {
                         setFocusItem(fw, next ? Qt::TabFocusReason : Qt::BacktabFocusReason);
@@ -5451,14 +5451,14 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
     if (!item) {
         widget = next ? d->tabFocusFirst : d->tabFocusFirst->d_func()->focusPrev;
     } else {
-        QGraphicsWidget *test = static_cast<QGraphicsWidget *>(item);
+        auto test = static_cast<QGraphicsWidget *>(item);
         widget = next ? test->d_func()->focusNext : test->d_func()->focusPrev;
         if (!widget->panel() && ((next && widget == d->tabFocusFirst) || (!next && widget == d->tabFocusFirst->d_func()->focusPrev))) {
             // Tab out of the scene.
             return false;
         }
     }
-    QGraphicsWidget *widgetThatHadFocus = widget;
+    auto widgetThatHadFocus = widget;
 
     // Run around the focus chain until we find a widget that can take tab focus.
     do {
@@ -5588,9 +5588,9 @@ void QGraphicsScene::setStyle(QStyle *style)
 
     // Notify all widgets that don't have a style explicitly set.
     const auto items_ = items();
-    for (QGraphicsItem *item : items_) {
+    for (auto item : items_) {
         if (item->isWidget()) {
-            QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
+            auto widget = static_cast<QGraphicsWidget *>(item);
             if (!widget->testAttribute(Qt::WA_SetStyle))
                 QApplication::sendEvent(widget, &event);
         }
@@ -5628,9 +5628,9 @@ QFont QGraphicsScene::font() const
 void QGraphicsScene::setFont(const QFont &font)
 {
     Q_D(QGraphicsScene);
-    QFont naturalFont = QApplication::font();
+    auto naturalFont = QApplication::font();
     naturalFont.resolve(0);
-    QFont resolvedFont = font.resolve(naturalFont);
+    auto resolvedFont = font.resolve(naturalFont);
     d->setFont_helper(resolvedFont);
 }
 
@@ -5665,9 +5665,9 @@ QPalette QGraphicsScene::palette() const
 void QGraphicsScene::setPalette(const QPalette &palette)
 {
     Q_D(QGraphicsScene);
-    QPalette naturalPalette = QApplication::palette();
+    auto naturalPalette = QApplication::palette();
     naturalPalette.resolve(0);
-    QPalette resolvedPalette = palette.resolve(naturalPalette);
+    auto resolvedPalette = palette.resolve(naturalPalette);
     d->setPalette_helper(resolvedPalette);
 }
 
@@ -5747,24 +5747,24 @@ void QGraphicsScene::setActiveWindow(QGraphicsWidget *widget)
     }
 
     // Activate the widget's panel (all windows are panels).
-    QGraphicsItem *panel = widget ? widget->panel() : 0;
+    auto panel = widget ? widget->panel() : 0;
     setActivePanel(panel);
 
     // Raise
     if (panel) {
-        QGraphicsItem *parent = panel->parentItem();
+        auto parent = panel->parentItem();
         // Raise ### inefficient for toplevels
 
         // Find the highest z value.
-        qreal z = panel->zValue();
+        auto z = panel->zValue();
         const auto siblings = parent ? parent->childItems() : items();
-        for (QGraphicsItem *sibling : siblings) {
+        for (auto sibling : siblings) {
             if (sibling != panel && sibling->isWindow())
                 z = qMax(z, sibling->zValue());
         }
 
         // This will probably never overflow.
-        const qreal litt = qreal(0.001);
+        const auto litt = qreal(0.001);
         panel->setZValue(z + litt);
     }
 }
@@ -5845,7 +5845,7 @@ void QGraphicsScenePrivate::addView(QGraphicsView *view)
     views << view;
 #ifndef QT_NO_GESTURES
     const auto gestures = grabbedGestures.keys();
-    for (Qt::GestureType gesture : gestures)
+    for (auto gesture : gestures)
         view->viewport()->grabGesture(gesture);
 #endif
 }
@@ -5866,10 +5866,10 @@ void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouch
 
 int QGraphicsScenePrivate::findClosestTouchPointId(const QPointF &scenePos)
 {
-    int closestTouchPointId = -1;
-    qreal closestDistance = qreal(0.);
+    auto closestTouchPointId = -1;
+    auto closestDistance = qreal(0.);
     foreach (const QTouchEvent::TouchPoint &touchPoint, sceneCurrentTouchPoints) {
-        qreal distance = QLineF(scenePos, touchPoint.scenePos()).length();
+        auto distance = QLineF(scenePos, touchPoint.scenePos()).length();
         if (closestTouchPointId == -1|| distance < closestDistance) {
             closestTouchPointId = touchPoint.id();
             closestDistance = distance;
@@ -5883,7 +5883,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QGraphicsItem *, StatesAndTouchPoints> itemsNeedingEvents;
 
-    for (int i = 0; i < sceneTouchEvent->touchPoints().count(); ++i) {
+    for (auto i = 0; i < sceneTouchEvent->touchPoints().count(); ++i) {
         const QTouchEvent::TouchPoint &touchPoint = sceneTouchEvent->touchPoints().at(i);
 
         // update state
@@ -5906,8 +5906,8 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
 
             if (sceneTouchEvent->device()->type() == QTouchDevice::TouchScreen) {
                 // on touch-screens, combine this touch point with the closest one we find
-                int closestTouchPointId = findClosestTouchPointId(touchPoint.scenePos());
-                QGraphicsItem *closestItem = itemForTouchPointId.value(closestTouchPointId);
+                auto closestTouchPointId = findClosestTouchPointId(touchPoint.scenePos());
+                auto closestItem = itemForTouchPointId.value(closestTouchPointId);
                 if (!item || (closestItem && cachedItemsUnderMouse.contains(closestItem)))
                     item = closestItem;
             }
@@ -5940,11 +5940,11 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
         return;
     }
 
-    bool ignoreSceneTouchEvent = true;
-    QHash<QGraphicsItem *, StatesAndTouchPoints>::ConstIterator it = itemsNeedingEvents.constBegin();
-    const QHash<QGraphicsItem *, StatesAndTouchPoints>::ConstIterator end = itemsNeedingEvents.constEnd();
+    auto ignoreSceneTouchEvent = true;
+    auto it = itemsNeedingEvents.constBegin();
+    const auto end = itemsNeedingEvents.constEnd();
     for (; it != end; ++it) {
-        QGraphicsItem *item = it.key();
+        auto item = it.key();
 
         (void) item->isBlockedByModalPanel(&item);
 
@@ -5983,11 +5983,11 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             // if the TouchBegin handler recurses, we assume that means the event
             // has been implicitly accepted and continue to send touch events
             item->d_ptr->acceptedTouchBeginEvent = true;
-            bool res = sendTouchBeginEvent(item, &touchEvent)
+            auto res = sendTouchBeginEvent(item, &touchEvent)
                        && touchEvent.isAccepted();
             if (!res) {
                 // forget about these touch points, we didn't handle them
-                for (int i = 0; i < touchEvent.touchPoints().count(); ++i) {
+                for (auto i = 0; i < touchEvent.touchPoints().count(); ++i) {
                     const QTouchEvent::TouchPoint &touchPoint = touchEvent.touchPoints().at(i);
                     itemForTouchPointId.remove(touchPoint.id());
                     sceneCurrentTouchPoints.remove(touchPoint.id());
@@ -6020,7 +6020,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
     }
 
     // Set focus on the topmost enabled item that can take focus.
-    bool setFocus = false;
+    auto setFocus = false;
 
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
         if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
@@ -6046,12 +6046,12 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
     if (!stickyFocus && !setFocus)
         q->setFocusItem(0, Qt::MouseFocusReason);
 
-    bool res = false;
-    bool eventAccepted = touchEvent->isAccepted();
+    auto res = false;
+    auto eventAccepted = touchEvent->isAccepted();
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
         // first, try to deliver the touch event
         updateTouchPointsForItem(item, touchEvent);
-        bool acceptTouchEvents = item->acceptTouchEvents();
+        auto acceptTouchEvents = item->acceptTouchEvents();
         touchEvent->setAccepted(acceptTouchEvents);
         res = acceptTouchEvents && sendEvent(item, touchEvent);
         eventAccepted = touchEvent->isAccepted();
@@ -6064,7 +6064,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         touchEvent->spont = false;
         if (res && eventAccepted) {
             // the first item to accept the TouchBegin gets an implicit grab.
-            for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
+            for (auto i = 0; i < touchEvent->touchPoints().count(); ++i) {
                 const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
                 itemForTouchPointId[touchPoint.id()] = item; // can be zero
             }
@@ -6086,7 +6086,7 @@ void QGraphicsScenePrivate::enableTouchEventsOnViews()
 
 void QGraphicsScenePrivate::updateInputMethodSensitivityInViews()
 {
-    for (int i = 0; i < views.size(); ++i)
+    for (auto i = 0; i < views.size(); ++i)
         views.at(i)->d_func()->updateInputMethodSensitivity();
 }
 
@@ -6095,7 +6095,7 @@ void QGraphicsScenePrivate::enterModal(QGraphicsItem *panel, QGraphicsItem::Pane
     Q_Q(QGraphicsScene);
     Q_ASSERT(panel && panel->isPanel());
 
-    QGraphicsItem::PanelModality panelModality = panel->d_ptr->panelModality;
+    auto panelModality = panel->d_ptr->panelModality;
     if (previousModality != QGraphicsItem::NonModal) {
         // the panel is changing from one modality type to another... temporarily set it back so
         // that blockedPanels is populated correctly
@@ -6103,9 +6103,9 @@ void QGraphicsScenePrivate::enterModal(QGraphicsItem *panel, QGraphicsItem::Pane
     }
 
     QSet<QGraphicsItem *> blockedPanels;
-    QList<QGraphicsItem *> items = q->items(); // ### store panels separately
-    for (int i = 0; i < items.count(); ++i) {
-        QGraphicsItem *item = items.at(i);
+    auto items = q->items(); // ### store panels separately
+    for (auto i = 0; i < items.count(); ++i) {
+        auto item = items.at(i);
         if (item->isPanel() && item->isBlockedByModalPanel())
             blockedPanels.insert(item);
     }
@@ -6128,15 +6128,15 @@ void QGraphicsScenePrivate::enterModal(QGraphicsItem *panel, QGraphicsItem::Pane
     }
 
     if (!mouseGrabberItems.isEmpty() && lastMouseGrabberItemHasImplicitMouseGrab) {
-        QGraphicsItem *item = mouseGrabberItems.last();
+        auto item = mouseGrabberItems.last();
         if (item->isBlockedByModalPanel())
             ungrabMouse(item, /*itemIsDying =*/ false);
     }
 
     QEvent windowBlockedEvent(QEvent::WindowBlocked);
     QEvent windowUnblockedEvent(QEvent::WindowUnblocked);
-    for (int i = 0; i < items.count(); ++i) {
-        QGraphicsItem *item = items.at(i);
+    for (auto i = 0; i < items.count(); ++i) {
+        auto item = items.at(i);
         if (item->isPanel()) {
             if (!blockedPanels.contains(item) && item->isBlockedByModalPanel()) {
                 // send QEvent::WindowBlocked to newly blocked panels
@@ -6156,9 +6156,9 @@ void QGraphicsScenePrivate::leaveModal(QGraphicsItem *panel)
     Q_ASSERT(panel && panel->isPanel());
 
     QSet<QGraphicsItem *> blockedPanels;
-    QList<QGraphicsItem *> items = q->items(); // ### same as above
-    for (int i = 0; i < items.count(); ++i) {
-        QGraphicsItem *item = items.at(i);
+    auto items = q->items(); // ### same as above
+    for (auto i = 0; i < items.count(); ++i) {
+        auto item = items.at(i);
         if (item->isPanel() && item->isBlockedByModalPanel())
             blockedPanels.insert(item);
     }
@@ -6166,8 +6166,8 @@ void QGraphicsScenePrivate::leaveModal(QGraphicsItem *panel)
     modalPanels.removeAll(panel);
 
     QEvent e(QEvent::WindowUnblocked);
-    for (int i = 0; i < items.count(); ++i) {
-        QGraphicsItem *item = items.at(i);
+    for (auto i = 0; i < items.count(); ++i) {
+        auto item = items.at(i);
         if (item->isPanel() && blockedPanels.contains(item) && !item->isBlockedByModalPanel())
             sendEvent(item, &e);
     }
@@ -6187,21 +6187,21 @@ void QGraphicsScenePrivate::gestureTargetsAtHotSpots(const QSet<QGesture *> &ges
                                               QSet<QGesture *> *conflicts)
 {
     QSet<QGesture *> normalGestures; // that are not in conflicted state.
-    for (QGesture *gesture : gestures) {
+    for (auto gesture : gestures) {
         if (!gesture->hasHotSpot())
             continue;
-        const Qt::GestureType gestureType = gesture->gestureType();
-        QList<QGraphicsItem *> items = itemsAtPosition(QPoint(), gesture->d_func()->sceneHotSpot, 0);
-        for (int j = 0; j < items.size(); ++j) {
-            QGraphicsItem *item = items.at(j);
+        const auto gestureType = gesture->gestureType();
+        auto items = itemsAtPosition(QPoint(), gesture->d_func()->sceneHotSpot, 0);
+        for (auto j = 0; j < items.size(); ++j) {
+            auto item = items.at(j);
 
             // Check if the item is blocked by a modal panel and use it as
             // a target instead of this item.
             (void) item->isBlockedByModalPanel(&item);
 
-            if (QGraphicsObject *itemobj = item->toGraphicsObject()) {
-                QGraphicsItemPrivate *d = item->QGraphicsItem::d_func();
-                QMap<Qt::GestureType, Qt::GestureFlags>::const_iterator it =
+            if (auto itemobj = item->toGraphicsObject()) {
+                auto d = item->QGraphicsItem::d_func();
+                auto it =
                         d->gestureContext.constFind(gestureType);
                 if (it != d->gestureContext.constEnd() && (!flag || (it.value() & flag))) {
                     if (normalGestures.contains(gesture)) {
@@ -6228,22 +6228,22 @@ void QGraphicsScenePrivate::gestureTargetsAtHotSpots(const QSet<QGesture *> &ges
 
 void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
 {
-    QWidget *viewport = event->widget();
+    auto viewport = event->widget();
     if (!viewport)
         return;
-    QGraphicsView *graphicsView = qobject_cast<QGraphicsView *>(viewport->parent());
+    auto graphicsView = qobject_cast<QGraphicsView *>(viewport->parent());
     if (!graphicsView)
         return;
 
-    const QList<QGesture *> allGestures = event->gestures();
+    const auto allGestures = event->gestures();
     DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
             << "Gestures:" <<  allGestures;
 
     QSet<QGesture *> startedGestures;
-    QPoint delta = viewport->mapFromGlobal(QPoint());
-    QTransform toScene = QTransform::fromTranslate(delta.x(), delta.y())
+    auto delta = viewport->mapFromGlobal(QPoint());
+    auto toScene = QTransform::fromTranslate(delta.x(), delta.y())
                          * graphicsView->viewportTransform().inverted();
-    for (QGesture *gesture : allGestures) {
+    for (auto gesture : allGestures) {
         // cache scene coordinates of the hot spot
         if (gesture->hasHotSpot()) {
             gesture->d_func()->sceneHotSpot = toScene.map(gesture->hotSpot());
@@ -6251,7 +6251,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             gesture->d_func()->sceneHotSpot = QPointF();
         }
 
-        QGraphicsObject *target = gestureTargets.value(gesture, 0);
+        auto target = gestureTargets.value(gesture, 0);
         if (!target) {
             // when we are not in started mode but don't have a target
             // then the only one interested in gesture is the view/scene
@@ -6274,11 +6274,11 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         // deliver conflicted gestures as override events AND remember
         // initial gesture targets
         if (!conflictedGestures.isEmpty()) {
-            for (int i = 0; i < cachedTargetItems.size(); ++i) {
+            for (auto i = 0; i < cachedTargetItems.size(); ++i) {
                 QPointer<QGraphicsObject> item = cachedTargetItems.at(i);
 
                 // get gestures to deliver to the current item
-                const QSet<QGesture *> gestures = conflictedGestures & cachedItemGestures.value(item.data());
+                const auto gestures = conflictedGestures & cachedItemGestures.value(item.data());
                 if (gestures.isEmpty())
                     continue;
 
@@ -6291,11 +6291,11 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                 ev.setWidget(event->widget());
                 // mark event and individual gestures as ignored
                 ev.ignore();
-                for (QGesture *g : gestures)
+                for (auto g : gestures)
                     ev.setAccepted(g, false);
                 sendEvent(item.data(), &ev);
                 // mark all accepted gestures to deliver them as normal gesture events
-                for (QGesture *g : gestures) {
+                for (auto g : gestures) {
                     if (ev.isAccepted() || ev.isAccepted(g)) {
                         conflictedGestures.remove(g);
                         // mark the item as a gesture target
@@ -6326,12 +6326,12 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         // remember the initial target item for each gesture that was not in
         // the conflicted state.
         if (!normalGestures.isEmpty()) {
-            for (int i = 0; i < cachedTargetItems.size() && !normalGestures.isEmpty(); ++i) {
-                QGraphicsObject *item = cachedTargetItems.at(i);
+            for (auto i = 0; i < cachedTargetItems.size() && !normalGestures.isEmpty(); ++i) {
+                auto item = cachedTargetItems.at(i);
 
                 // get gestures to deliver to the current item
                 const auto gestures = cachedItemGestures.value(item);
-                for (QGesture *g : gestures) {
+                for (auto g : gestures) {
                     if (!gestureTargets.contains(g)) {
                         gestureTargets.insert(g, item);
                         normalGestures.remove(g);
@@ -6345,13 +6345,13 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     // deliver all gesture events
     QSet<QGesture *> undeliveredGestures;
     QSet<QGesture *> parentPropagatedGestures;
-    for (QGesture *gesture : allGestures) {
-        if (QGraphicsObject *target = gestureTargets.value(gesture, 0)) {
+    for (auto gesture : allGestures) {
+        if (auto target = gestureTargets.value(gesture, 0)) {
             cachedItemGestures[target].insert(gesture);
             cachedTargetItems.append(target);
             undeliveredGestures.insert(gesture);
-            QGraphicsItemPrivate *d = target->QGraphicsItem::d_func();
-            const Qt::GestureFlags flags = d->gestureContext.value(gesture->gestureType());
+            auto d = target->QGraphicsItem::d_func();
+            const auto flags = d->gestureContext.value(gesture->gestureType());
             if (flags & Qt::IgnoredGesturesPropagateToParent)
                 parentPropagatedGestures.insert(gesture);
         } else {
@@ -6361,9 +6361,9 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         }
     }
     std::sort(cachedTargetItems.begin(), cachedTargetItems.end(), qt_closestItemFirst);
-    for (int i = 0; i < cachedTargetItems.size(); ++i) {
+    for (auto i = 0; i < cachedTargetItems.size(); ++i) {
         QPointer<QGraphicsObject> receiver = cachedTargetItems.at(i);
-        QSet<QGesture *> gestures =
+        auto gestures =
                 undeliveredGestures & cachedItemGestures.value(receiver.data());
         gestures -= cachedAlreadyDeliveredGestures.value(receiver.data());
 
@@ -6371,7 +6371,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             continue;
 
         cachedAlreadyDeliveredGestures[receiver.data()] += gestures;
-        const bool isPanel = receiver.data()->isPanel();
+        const auto isPanel = receiver.data()->isPanel();
 
         DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
                 << "delivering to"
@@ -6407,18 +6407,18 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             // look for new potential targets for gestures that were ignored
             // and should be propagated.
 
-            QSet<QGraphicsObject *> targetsSet = cachedTargetItems.toSet();
+            auto targetsSet = cachedTargetItems.toSet();
 
             if (receiver) {
                 // first if the gesture should be propagated to parents only
-                for (QSet<QGesture *>::iterator it = ignoredGestures.begin();
+                for (auto it = ignoredGestures.begin();
                      it != ignoredGestures.end();) {
                     if (parentPropagatedGestures.contains(*it)) {
-                        QGesture *gesture = *it;
-                        const Qt::GestureType gestureType = gesture->gestureType();
+                        auto gesture = *it;
+                        const auto gestureType = gesture->gestureType();
                         auto item = static_cast<QGraphicsItem*>(receiver.data());
                         while (item) {
-                            if (QGraphicsObject *obj = item->toGraphicsObject()) {
+                            if (auto obj = item->toGraphicsObject()) {
                                 if (item->d_func()->gestureContext.contains(gestureType)) {
                                     targetsSet.insert(obj);
                                     cachedItemGestures[obj].insert(gesture);
@@ -6457,7 +6457,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     }
 
     // forget about targets for gestures that have ended
-    for (QGesture *g : allGestures) {
+    for (auto g : allGestures) {
         switch (g->state()) {
         case Qt::GestureFinished:
         case Qt::GestureCanceled:
@@ -6476,7 +6476,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
 void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
 {
     Q_ASSERT(original);
-    QGraphicsItem *originalItem = gestureTargets.value(original);
+    auto originalItem = gestureTargets.value(original);
     if (originalItem == 0) // we only act on accepted gestures, which implies it has a target.
         return;
 
@@ -6484,9 +6484,9 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
     // if the owner is part of our sub-hierarchy, cancel it.
 
     QSet<QGesture *> canceledGestures;
-    QHash<QGesture *, QGraphicsObject *>::Iterator iter = gestureTargets.begin();
+    auto iter = gestureTargets.begin();
     while (iter != gestureTargets.end()) {
-        QGraphicsObject *item = iter.value();
+        auto item = iter.value();
         // note that we don't touch the gestures for our originalItem
         if (item != originalItem && originalItem->isAncestorOf(item)) {
             DEBUG() << "  found a gesture to cancel" << iter.key();
@@ -6497,7 +6497,7 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
     }
 
     // sort them per target item by cherry picking from almostCanceledGestures and delivering
-    QSet<QGesture *> almostCanceledGestures = canceledGestures;
+    auto almostCanceledGestures = canceledGestures;
     QSet<QGesture *>::Iterator setIter;
     while (!almostCanceledGestures.isEmpty()) {
         QGraphicsObject *target = 0;
@@ -6505,7 +6505,7 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
         setIter = almostCanceledGestures.begin();
         // sort per target item
         while (setIter != almostCanceledGestures.end()) {
-            QGraphicsObject *item = gestureTargets.value(*setIter);
+            auto item = gestureTargets.value(*setIter);
             if (target == 0)
                 target = item;
             if (target == item) {
@@ -6517,12 +6517,12 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
         }
         Q_ASSERT(target);
 
-        const QList<QGesture *> list = gestures.toList();
+        const auto list = gestures.toList();
         QGestureEvent ev(list);
         sendEvent(target, &ev);
 
         if (!ev.isAccepted()) {
-            for (QGesture *g : list) {
+            for (auto g : list) {
 
                 if (ev.isAccepted(g))
                     continue;
@@ -6530,12 +6530,12 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
                 if (!g->hasHotSpot())
                     continue;
 
-                QList<QGraphicsItem *> items = itemsAtPosition(QPoint(), g->d_func()->sceneHotSpot, 0);
-                for (int j = 0; j < items.size(); ++j) {
-                    QGraphicsObject *item = items.at(j)->toGraphicsObject();
+                auto items = itemsAtPosition(QPoint(), g->d_func()->sceneHotSpot, 0);
+                for (auto j = 0; j < items.size(); ++j) {
+                    auto item = items.at(j)->toGraphicsObject();
                     if (!item)
                         continue;
-                    QGraphicsItemPrivate *d = item->QGraphicsItem::d_func();
+                    auto d = item->QGraphicsItem::d_func();
                     if (d->gestureContext.contains(g->gestureType())) {
                         QList<QGesture *> list;
                         list << g;
@@ -6549,7 +6549,7 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
         }
     }
 
-    QGestureManager *gestureManager = QApplicationPrivate::instance()->gestureManager;
+    auto gestureManager = QApplicationPrivate::instance()->gestureManager;
     Q_ASSERT(gestureManager); // it would be very odd if we got called without a manager.
     for (setIter = canceledGestures.begin(); setIter != canceledGestures.end(); ++setIter) {
         gestureManager->recycle(*setIter);
@@ -6570,7 +6570,7 @@ void QGraphicsScenePrivate::ungrabGesture(QGraphicsItem *item, Qt::GestureType g
 {
     // we know this can only be an object
     Q_ASSERT(item->d_ptr->isObject);
-    QGraphicsObject *obj = static_cast<QGraphicsObject *>(item);
+    auto obj = static_cast<QGraphicsObject *>(item);
     QGestureManager::instance()->cleanupCachedGestures(obj, gesture);
     if (!--grabbedGestures[gesture]) {
         foreach (QGraphicsView *view, views)

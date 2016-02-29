@@ -154,8 +154,8 @@ void QAbstractItemViewPrivate::setHoverIndex(const QPersistentModelIndex &index)
         q->update(hover); //update the old one
         q->update(index); //update the new one
     } else {
-        QRect oldHoverRect = q->visualRect(hover);
-        QRect newHoverRect = q->visualRect(index);
+        auto oldHoverRect = q->visualRect(hover);
+        auto newHoverRect = q->visualRect(index);
         viewport->update(QRect(0, newHoverRect.y(), viewport->width(), newHoverRect.height()));
         viewport->update(QRect(0, oldHoverRect.y(), viewport->width(), oldHoverRect.height()));
     }
@@ -173,7 +173,7 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
         if (index.isValid()) {
             emit q->entered(index);
 #ifndef QT_NO_STATUSTIP
-            QString statustip = model->data(index, Qt::StatusTipRole).toString();
+            auto statustip = model->data(index, Qt::StatusTipRole).toString();
             if (parent && (shouldClearStatusTip || !statustip.isEmpty())) {
                 QStatusTipEvent tip(statustip);
                 QApplication::sendEvent(parent, &tip);
@@ -201,7 +201,7 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
 {
     Q_Q(QAbstractItemView);
 
-    if (QScroller *scroller = QScroller::scroller(viewport)) {
+    if (auto scroller = QScroller::scroller(viewport)) {
         switch (scroller->state()) {
         case QScroller::Pressed:
             // store the current selection in case we start scrolling
@@ -739,7 +739,7 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
         connect(d->model, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
     }
 
-    QItemSelectionModel *selection_model = new QItemSelectionModel(d->model, this);
+    auto selection_model = new QItemSelectionModel(d->model, this);
     connect(d->model, SIGNAL(destroyed()), selection_model, SLOT(deleteLater()));
     setSelectionModel(selection_model);
 
@@ -869,7 +869,7 @@ QAbstractItemDelegate *QAbstractItemView::itemDelegate() const
 */
 QVariant QAbstractItemView::inputMethodQuery(Qt::InputMethodQuery query) const
 {
-    const QModelIndex current = currentIndex();
+    const auto current = currentIndex();
     if (!current.isValid() || query != Qt::ImCursorRectangle)
         return QAbstractScrollArea::inputMethodQuery(query);
     return visualRect(current);
@@ -1068,7 +1068,7 @@ void QAbstractItemView::setCurrentIndex(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
     if (d->selectionModel && (!index.isValid() || d->isIndexEnabled(index))) {
-        QItemSelectionModel::SelectionFlags command = selectionCommand(index, 0);
+        auto command = selectionCommand(index, 0);
         d->selectionModel->setCurrentIndex(index, command);
         d->currentIndexSet = true;
         if ((command & QItemSelectionModel::Current) == 0)
@@ -1160,7 +1160,7 @@ QModelIndex QAbstractItemView::rootIndex() const
 void QAbstractItemView::selectAll()
 {
     Q_D(QAbstractItemView);
-    SelectionMode mode = d->selectionMode;
+    auto mode = d->selectionMode;
     if (mode == MultiSelection || mode == ExtendedSelection)
         d->selectAll(QItemSelectionModel::ClearAndSelect
                      |d->selectionBehaviorFlags());
@@ -1252,7 +1252,7 @@ void QAbstractItemView::setVerticalScrollMode(ScrollMode mode)
     d->verticalScrollModeSet = true;
     if (mode == d->verticalScrollMode)
         return;
-    QModelIndex topLeft = indexAt(QPoint(0, 0));
+    auto topLeft = indexAt(QPoint(0, 0));
     d->verticalScrollMode = mode;
     if (mode == ScrollPerItem)
         verticalScrollBar()->d_func()->itemviewChangeSingleStep(1); // setSingleStep(-1) => step with 1
@@ -1496,7 +1496,7 @@ void QAbstractItemView::setDragDropMode(DragDropMode behavior)
 QAbstractItemView::DragDropMode QAbstractItemView::dragDropMode() const
 {
     Q_D(const QAbstractItemView);
-    DragDropMode setBehavior = d->dragDropMode;
+    auto setBehavior = d->dragDropMode;
     if (!dragEnabled() && !acceptDrops())
         return NoDragDrop;
 
@@ -1636,7 +1636,7 @@ bool QAbstractItemView::event(QEvent *event)
         d->executePostedLayout(); //make sure we set the layout properly
         if (d->shouldScrollToCurrentOnShow) {
             d->shouldScrollToCurrentOnShow = false;
-            const QModelIndex current = currentIndex();
+            const auto current = currentIndex();
             if (current.isValid() && (d->state == QAbstractItemView::EditingState || d->autoScroll))
                 scrollTo(current);
         }
@@ -1703,13 +1703,13 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
     case QEvent::ToolTip:
     case QEvent::QueryWhatsThis:
     case QEvent::WhatsThis: {
-        QHelpEvent *he = static_cast<QHelpEvent*>(event);
-        const QModelIndex index = indexAt(he->pos());
-        QStyleOptionViewItem option = d->viewOptionsV1();
+        auto he = static_cast<QHelpEvent*>(event);
+        const auto index = indexAt(he->pos());
+        auto option = d->viewOptionsV1();
         option.rect = visualRect(index);
         option.state |= (index == currentIndex() ? QStyle::State_HasFocus : QStyle::State_None);
 
-        QAbstractItemDelegate *delegate = d->delegateForIndex(index);
+        auto delegate = d->delegateForIndex(index);
         if (!delegate)
             return false;
         return delegate->helpEvent(he, this, option, index);
@@ -1743,7 +1743,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
     d->delayedAutoScroll.stop(); //any interaction with the view cancel the auto scrolling
-    QPoint pos = event->pos();
+    auto pos = event->pos();
     QPersistentModelIndex index = indexAt(pos);
 
     if (!d->selectionModel
@@ -1753,9 +1753,9 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     d->pressedAlreadySelected = d->selectionModel->isSelected(index);
     d->pressedIndex = index;
     d->pressedModifiers = event->modifiers();
-    QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
+    auto command = selectionCommand(index, event);
     d->noSelectionOnMousePress = command == QItemSelectionModel::NoUpdate || !index.isValid();
-    QPoint offset = d->offset();
+    auto offset = d->offset();
     if ((command & QItemSelectionModel::Current) == 0) {
         d->pressedPosition = pos + offset;
         d->currentSelectionStartIndex = index;
@@ -1769,7 +1769,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     if (index.isValid() && d->isIndexEnabled(index)) {
         // we disable scrollTo for mouse press so the item doesn't change position
         // when the user is interacting with it (ie. clicking on it)
-        bool autoScroll = d->autoScroll;
+        auto autoScroll = d->autoScroll;
         d->autoScroll = false;
         d->selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         d->autoScroll = autoScroll;
@@ -1804,7 +1804,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
     QPoint topLeft;
-    QPoint bottomRight = event->pos();
+    auto bottomRight = event->pos();
 
     if (state() == ExpandingState || state() == CollapsingState)
         return;
@@ -1823,7 +1823,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
 #endif // QT_NO_DRAGANDDROP
 
     QPersistentModelIndex index = indexAt(bottomRight);
-    QModelIndex buddy = d->model->buddy(d->pressedIndex);
+    auto buddy = d->model->buddy(d->pressedIndex);
     if ((state() == EditingState && d->hasEditor(buddy))
         || edit(index, NoEditTriggers, event))
         return;
@@ -1848,14 +1848,14 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
 
     if ((event->buttons() & Qt::LeftButton) && d->selectionAllowed(index) && d->selectionModel) {
         setState(DragSelectingState);
-        QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
+        auto command = selectionCommand(index, event);
         if (d->ctrlDragSelectionFlag != QItemSelectionModel::NoUpdate && command.testFlag(QItemSelectionModel::Toggle)) {
             command &= ~QItemSelectionModel::Toggle;
             command |= d->ctrlDragSelectionFlag;
         }
 
         // Do the normalize ourselves, since QRect::normalized() is flawed
-        QRect selectionRect = QRect(topLeft, bottomRight);
+        auto selectionRect = QRect(topLeft, bottomRight);
         setSelection(selectionRect, command);
 
         // set at the end because it might scroll the view
@@ -1877,7 +1877,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
 
-    QPoint pos = event->pos();
+    auto pos = event->pos();
     QPersistentModelIndex index = indexAt(pos);
 
     if (state() == EditingState) {
@@ -1888,10 +1888,10 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
         return;
     }
 
-    bool click = (index == d->pressedIndex && index.isValid());
-    bool selectedClicked = click && (event->button() == Qt::LeftButton) && d->pressedAlreadySelected;
-    EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
-    bool edited = edit(index, trigger, event);
+    auto click = (index == d->pressedIndex && index.isValid());
+    auto selectedClicked = click && (event->button() == Qt::LeftButton) && d->pressedAlreadySelected;
+    auto trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
+    auto edited = edit(index, trigger, event);
 
     d->ctrlDragSelectionFlag = QItemSelectionModel::NoUpdate;
 
@@ -1907,7 +1907,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
             emit clicked(index);
         if (edited)
             return;
-        QStyleOptionViewItem option = d->viewOptionsV1();
+        auto option = d->viewOptionsV1();
         if (d->pressedAlreadySelected)
             option.state |= QStyle::State_Selected;
         if ((model()->flags(index) & Qt::ItemIsEnabled)
@@ -1925,7 +1925,7 @@ void QAbstractItemView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
 
-    QModelIndex index = indexAt(event->pos());
+    auto index = indexAt(event->pos());
     if (!index.isValid()
         || !d->isIndexEnabled(index)
         || (d->pressedIndex != index)) {
@@ -1984,13 +1984,13 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
     // ignore by default
     event->ignore();
 
-    QModelIndex index = indexAt(event->pos());
+    auto index = indexAt(event->pos());
     d->hover = index;
     if (!d->droppingOnItself(event, index)
         && d->canDrop(event)) {
 
         if (index.isValid() && d->showDropIndicator) {
-            QRect rect = visualRect(index);
+            auto rect = visualRect(index);
             d->dropIndicatorPosition = d->position(event->pos(), rect, index);
             switch (d->dropIndicatorPosition) {
             case AboveItem:
@@ -2046,14 +2046,14 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
 bool QAbstractItemViewPrivate::droppingOnItself(QDropEvent *event, const QModelIndex &index)
 {
     Q_Q(QAbstractItemView);
-    Qt::DropAction dropAction = event->dropAction();
+    auto dropAction = event->dropAction();
     if (q->dragDropMode() == QAbstractItemView::InternalMove)
         dropAction = Qt::MoveAction;
     if (event->source() == q
         && event->possibleActions() & Qt::MoveAction
         && dropAction == Qt::MoveAction) {
-        QModelIndexList selectedIndexes = q->selectedIndexes();
-        QModelIndex child = index;
+        auto selectedIndexes = q->selectedIndexes();
+        auto child = index;
         while (child.isValid() && child != root) {
             if (selectedIndexes.contains(child))
                 return true;
@@ -2094,10 +2094,10 @@ void QAbstractItemView::dropEvent(QDropEvent *event)
     }
 
     QModelIndex index;
-    int col = -1;
-    int row = -1;
+    auto col = -1;
+    auto row = -1;
     if (d->dropOn(event, &row, &col, &index)) {
-        const Qt::DropAction action = dragDropMode() == InternalMove ? Qt::MoveAction : event->dropAction();
+        const auto action = dragDropMode() == InternalMove ? Qt::MoveAction : event->dropAction();
         if (d->model->dropMimeData(event->mimeData(), action, row, col, index)) {
             if (action != event->dropAction()) {
                 event->setDropAction(action);
@@ -2139,8 +2139,8 @@ bool QAbstractItemViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *drop
 
     // If we are allowed to do the drop
     if (model->supportedDropActions() & event->dropAction()) {
-        int row = -1;
-        int col = -1;
+        auto row = -1;
+        auto col = -1;
         if (index != root) {
             dropIndicatorPosition = position(event->pos(), q->visualRect(index), index);
             switch (dropIndicatorPosition) {
@@ -2173,9 +2173,9 @@ bool QAbstractItemViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *drop
 QAbstractItemView::DropIndicatorPosition
 QAbstractItemViewPrivate::position(const QPoint &pos, const QRect &rect, const QModelIndex &index) const
 {
-    QAbstractItemView::DropIndicatorPosition r = QAbstractItemView::OnViewport;
+    auto r = QAbstractItemView::OnViewport;
     if (!overwrite) {
-        const int margin = 2;
+        const auto margin = 2;
         if (pos.y() - rect.top() < margin) {
             r = QAbstractItemView::AboveItem;
         } else if (rect.bottom() - pos.y() < margin) {
@@ -2184,7 +2184,7 @@ QAbstractItemViewPrivate::position(const QPoint &pos, const QRect &rect, const Q
             r = QAbstractItemView::OnItem;
         }
     } else {
-        QRect touchingRect = rect;
+        auto touchingRect = rect;
         touchingRect.adjust(-1, -1, 1, 1);
         if (touchingRect.contains(pos, false)) {
             r = QAbstractItemView::OnItem;
@@ -2210,15 +2210,15 @@ void QAbstractItemView::focusInEvent(QFocusEvent *event)
     Q_D(QAbstractItemView);
     QAbstractScrollArea::focusInEvent(event);
 
-    const QItemSelectionModel* model = selectionModel();
-    const bool currentIndexValid = currentIndex().isValid();
+    auto model = selectionModel();
+    const auto currentIndexValid = currentIndex().isValid();
 
     if (model
         && !d->currentIndexSet
         && !currentIndexValid) {
-        bool autoScroll = d->autoScroll;
+        auto autoScroll = d->autoScroll;
         d->autoScroll = false;
-        QModelIndex index = moveCursor(MoveNext, Qt::NoModifier); // first visible index
+        auto index = moveCursor(MoveNext, Qt::NoModifier); // first visible index
         if (index.isValid() && d->isIndexEnabled(index) && event->reason() != Qt::MouseFocusReason)
             selectionModel()->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         d->autoScroll = autoScroll;
@@ -2363,7 +2363,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     if (newCurrent != oldCurrent && newCurrent.isValid() && d->isIndexEnabled(newCurrent)) {
         if (!hasFocus() && QApplication::focusWidget() == indexWidget(oldCurrent))
             setFocus();
-        QItemSelectionModel::SelectionFlags command = selectionCommand(newCurrent, event);
+        auto command = selectionCommand(newCurrent, event);
         if (command != QItemSelectionModel::NoUpdate
              || style()->styleHint(QStyle::SH_ItemView_MovementWithoutUpdatingSelection, 0, this)) {
             // note that we don't check if the new current index is enabled because moveCursor() makes sure it is
@@ -2520,7 +2520,7 @@ void QAbstractItemView::timerEvent(QTimerEvent *event)
         if (isVisible()) {
             d->interruptDelayedItemsLayout();
             doItemsLayout();
-            const QModelIndex current = currentIndex();
+            const auto current = currentIndex();
             if (current.isValid() && d->state == QAbstractItemView::EditingState)
                 scrollTo(current);
         }
@@ -2593,7 +2593,7 @@ QModelIndexList QAbstractItemView::selectedIndexes() const
     QModelIndexList indexes;
     if (d->selectionModel) {
         indexes = d->selectionModel->selectedIndexes();
-        QList<QModelIndex>::iterator it = indexes.begin();
+        auto it = indexes.begin();
         while (it != indexes.end())
             if (isIndexHidden(*it))
                 it = indexes.erase(it);
@@ -2623,7 +2623,7 @@ bool QAbstractItemView::edit(const QModelIndex &index, EditTrigger trigger, QEve
     if (!d->isIndexValid(index))
         return false;
 
-    if (QWidget *w = (d->persistent.isEmpty() ? static_cast<QWidget*>(0) : d->editorForIndex(index).widget.data())) {
+    if (auto w = (d->persistent.isEmpty() ? static_cast<QWidget*>(0) : d->editorForIndex(index).widget.data())) {
         if (w->focusPolicy() == Qt::NoFocus)
             return false;
         w->setFocus();
@@ -2690,18 +2690,18 @@ void QAbstractItemView::updateEditorGeometries()
         d->executePostedLayout();
         return;
     }
-    QStyleOptionViewItem option = d->viewOptionsV1();
-    QEditorIndexHash::iterator it = d->editorIndexHash.begin();
+    auto option = d->viewOptionsV1();
+    auto it = d->editorIndexHash.begin();
     QWidgetList editorsToRelease;
     QWidgetList editorsToHide;
     while (it != d->editorIndexHash.end()) {
         QModelIndex index = it.value();
-        QWidget *editor = it.key();
+        auto editor = it.key();
         if (index.isValid() && editor) {
             option.rect = visualRect(index);
             if (option.rect.isValid()) {
                 editor->show();
-                QAbstractItemDelegate *delegate = d->delegateForIndex(index);
+                auto delegate = d->delegateForIndex(index);
                 if (delegate)
                     delegate->updateEditorGeometry(editor, option, index);
             } else {
@@ -2717,10 +2717,10 @@ void QAbstractItemView::updateEditorGeometries()
 
     //we hide and release the editor outside of the loop because it might change the focus and try
     //to change the editors hashes.
-    for (int i = 0; i < editorsToHide.count(); ++i) {
+    for (auto i = 0; i < editorsToHide.count(); ++i) {
         editorsToHide.at(i)->hide();
     }
-    for (int i = 0; i < editorsToRelease.count(); ++i) {
+    for (auto i = 0; i < editorsToRelease.count(); ++i) {
         d->releaseEditor(editorsToRelease.at(i));
     }
 }
@@ -2746,7 +2746,7 @@ void QAbstractItemView::verticalScrollbarValueChanged(int value)
     Q_D(QAbstractItemView);
     if (verticalScrollBar()->maximum() == value && d->model->canFetchMore(d->root))
         d->model->fetchMore(d->root);
-    QPoint posInVp = viewport()->mapFromGlobal(QCursor::pos());
+    auto posInVp = viewport()->mapFromGlobal(QCursor::pos());
     if (viewport()->rect().contains(posInVp))
         d->checkMouseMove(posInVp);
 }
@@ -2759,7 +2759,7 @@ void QAbstractItemView::horizontalScrollbarValueChanged(int value)
     Q_D(QAbstractItemView);
     if (horizontalScrollBar()->maximum() == value && d->model->canFetchMore(d->root))
         d->model->fetchMore(d->root);
-    QPoint posInVp = viewport()->mapFromGlobal(QCursor::pos());
+    auto posInVp = viewport()->mapFromGlobal(QCursor::pos());
     if (viewport()->rect().contains(posInVp))
         d->checkMouseMove(posInVp);
 }
@@ -2795,15 +2795,15 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
 
     // Close the editor
     if (editor) {
-        bool isPersistent = d->persistent.contains(editor);
-        bool hadFocus = editor->hasFocus();
-        QModelIndex index = d->indexForEditor(editor);
+        auto isPersistent = d->persistent.contains(editor);
+        auto hadFocus = editor->hasFocus();
+        auto index = d->indexForEditor(editor);
         if (!index.isValid())
             return; // the editor was not registered
 
         if (!isPersistent) {
             setState(NoState);
-            QModelIndex index = d->indexForEditor(editor);
+            auto index = d->indexForEditor(editor);
             editor->removeEventFilter(d->delegateForIndex(index));
             d->removeEditor(editor);
         }
@@ -2830,7 +2830,7 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
         flags = QItemSelectionModel::ClearAndSelect | d->selectionBehaviorFlags();
     switch (hint) {
     case QAbstractItemDelegate::EditNextItem: {
-        QModelIndex index = moveCursor(MoveNext, Qt::NoModifier);
+        auto index = moveCursor(MoveNext, Qt::NoModifier);
         if (index.isValid()) {
             QPersistentModelIndex persistent(index);
             d->selectionModel->setCurrentIndex(persistent, flags);
@@ -2840,7 +2840,7 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
                 edit(persistent);
         } break; }
     case QAbstractItemDelegate::EditPreviousItem: {
-        QModelIndex index = moveCursor(MovePrevious, Qt::NoModifier);
+        auto index = moveCursor(MovePrevious, Qt::NoModifier);
         if (index.isValid()) {
             QPersistentModelIndex persistent(index);
             d->selectionModel->setCurrentIndex(persistent, flags);
@@ -2870,11 +2870,11 @@ void QAbstractItemView::commitData(QWidget *editor)
     Q_D(QAbstractItemView);
     if (!editor || !d->itemDelegate || d->currentlyCommittingEditor)
         return;
-    QModelIndex index = d->indexForEditor(editor);
+    auto index = d->indexForEditor(editor);
     if (!index.isValid())
         return;
     d->currentlyCommittingEditor = editor;
-    QAbstractItemDelegate *delegate = d->delegateForIndex(index);
+    auto delegate = d->delegateForIndex(index);
     editor->removeEventFilter(delegate);
     delegate->setModelData(editor, d->model, index);
     editor->installEventFilter(delegate);
@@ -2889,7 +2889,7 @@ void QAbstractItemView::commitData(QWidget *editor)
 void QAbstractItemView::editorDestroyed(QObject *editor)
 {
     Q_D(QAbstractItemView);
-    QWidget *w = qobject_cast<QWidget*>(editor);
+    auto w = qobject_cast<QWidget*>(editor);
     d->removeEditor(w);
     d->persistent.remove(w);
     if (state() == EditingState)
@@ -2968,11 +2968,11 @@ void QAbstractItemView::keyboardSearch(const QString &search)
     if (!d->model->rowCount(d->root) || !d->model->columnCount(d->root))
         return;
 
-    QModelIndex start = currentIndex().isValid() ? currentIndex()
+    auto start = currentIndex().isValid() ? currentIndex()
                         : d->model->index(0, 0, d->root);
-    bool skipRow = false;
-    bool keyboardTimeWasValid = d->keyboardInputTime.isValid();
-    qint64 keyboardInputTimeElapsed = d->keyboardInputTime.restart();
+    auto skipRow = false;
+    auto keyboardTimeWasValid = d->keyboardInputTime.isValid();
+    auto keyboardInputTimeElapsed = d->keyboardInputTime.restart();
     if (search.isEmpty() || !keyboardTimeWasValid
         || keyboardInputTimeElapsed > QApplication::keyboardInputInterval()) {
         d->keyboardInput = search;
@@ -2982,9 +2982,9 @@ void QAbstractItemView::keyboardSearch(const QString &search)
     }
 
     // special case for searches with same key like 'aaaaa'
-    bool sameKey = false;
+    auto sameKey = false;
     if (d->keyboardInput.length() > 1) {
-        int c = d->keyboardInput.count(d->keyboardInput.at(d->keyboardInput.length() - 1));
+        auto c = d->keyboardInput.count(d->keyboardInput.at(d->keyboardInput.length() - 1));
         sameKey = (c == d->keyboardInput.length());
         if (sameKey)
             skipRow = true;
@@ -2992,13 +2992,13 @@ void QAbstractItemView::keyboardSearch(const QString &search)
 
     // skip if we are searching for the same key or a new search started
     if (skipRow) {
-        QModelIndex parent = start.parent();
-        int newRow = (start.row() < d->model->rowCount(parent) - 1) ? start.row() + 1 : 0;
+        auto parent = start.parent();
+        auto newRow = (start.row() < d->model->rowCount(parent) - 1) ? start.row() + 1 : 0;
         start = d->model->index(newRow, start.column(), parent);
     }
 
     // search from start with wraparound
-    QModelIndex current = start;
+    auto current = start;
     QModelIndexList match;
     QModelIndex firstMatch;
     QModelIndex startMatch;
@@ -3014,7 +3014,7 @@ void QAbstractItemView::keyboardSearch(const QString &search)
                 setCurrentIndex(firstMatch);
                 break;
             }
-            int row = firstMatch.row() + 1;
+            auto row = firstMatch.row() + 1;
             if (row >= d->model->rowCount(firstMatch.parent()))
                 row = 0;
             current = firstMatch.sibling(row, firstMatch.column());
@@ -3067,14 +3067,14 @@ int QAbstractItemView::sizeHintForRow(int row) const
 
     ensurePolished();
 
-    QStyleOptionViewItem option = d->viewOptionsV1();
-    int height = 0;
-    int colCount = d->model->columnCount(d->root);
-    for (int c = 0; c < colCount; ++c) {
-        const QModelIndex index = d->model->index(row, c, d->root);
-        if (QWidget *editor = d->editorForIndex(index).widget.data())
+    auto option = d->viewOptionsV1();
+    auto height = 0;
+    auto colCount = d->model->columnCount(d->root);
+    for (auto c = 0; c < colCount; ++c) {
+        const auto index = d->model->index(row, c, d->root);
+        if (auto editor = d->editorForIndex(index).widget.data())
             height = qMax(height, editor->height());
-        if (const QAbstractItemDelegate *delegate = d->delegateForIndex(index))
+        if (auto delegate = d->delegateForIndex(index))
             height = qMax(height, delegate->sizeHint(option, index).height());
     }
     return height;
@@ -3097,14 +3097,14 @@ int QAbstractItemView::sizeHintForColumn(int column) const
 
     ensurePolished();
 
-    QStyleOptionViewItem option = d->viewOptionsV1();
-    int width = 0;
-    int rows = d->model->rowCount(d->root);
-    for (int r = 0; r < rows; ++r) {
-        const QModelIndex index = d->model->index(r, column, d->root);
-        if (QWidget *editor = d->editorForIndex(index).widget.data())
+    auto option = d->viewOptionsV1();
+    auto width = 0;
+    auto rows = d->model->rowCount(d->root);
+    for (auto r = 0; r < rows; ++r) {
+        const auto index = d->model->index(r, column, d->root);
+        if (auto editor = d->editorForIndex(index).widget.data())
             width = qMax(width, editor->sizeHint().width());
-        if (const QAbstractItemDelegate *delegate = d->delegateForIndex(index))
+        if (auto delegate = d->delegateForIndex(index))
             width = qMax(width, delegate->sizeHint(option, index).width());
     }
     return width;
@@ -3119,11 +3119,11 @@ int QAbstractItemView::sizeHintForColumn(int column) const
 void QAbstractItemView::openPersistentEditor(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
-    QStyleOptionViewItem options = d->viewOptionsV1();
+    auto options = d->viewOptionsV1();
     options.rect = visualRect(index);
     options.state |= (index == currentIndex() ? QStyle::State_HasFocus : QStyle::State_None);
 
-    QWidget *editor = d->editor(index, options);
+    auto editor = d->editor(index, options);
     if (editor) {
         editor->show();
         d->persistent.insert(editor);
@@ -3138,7 +3138,7 @@ void QAbstractItemView::openPersistentEditor(const QModelIndex &index)
 void QAbstractItemView::closePersistentEditor(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
-    if (QWidget *editor = d->editorForIndex(index).widget.data()) {
+    if (auto editor = d->editorForIndex(index).widget.data()) {
         if (index == selectionModel()->currentIndex())
             closeEditor(editor, QAbstractItemDelegate::RevertModelCache);
         d->persistent.remove(editor);
@@ -3180,7 +3180,7 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
         return;
     if (indexWidget(index) == widget)
         return;
-    if (QWidget *oldWidget = indexWidget(index)) {
+    if (auto oldWidget = indexWidget(index)) {
         d->persistent.remove(oldWidget);
         d->removeEditor(oldWidget);
         oldWidget->deleteLater();
@@ -3205,7 +3205,7 @@ QWidget* QAbstractItemView::indexWidget(const QModelIndex &index) const
 {
     Q_D(const QAbstractItemView);
     if (d->isIndexValid(index))
-        if (QWidget *editor = d->editorForIndex(index).widget.data())
+        if (auto editor = d->editorForIndex(index).widget.data())
             return editor;
 
     return 0;
@@ -3250,7 +3250,7 @@ void QAbstractItemView::update(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
     if (index.isValid()) {
-        const QRect rect = visualRect(index);
+        const auto rect = visualRect(index);
         //this test is important for peformance reason
         //For example in dataChanged we simply update all the cells without checking
         //it can be a major bottleneck to update rects that aren't even part of the viewport
@@ -3276,7 +3276,7 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
         const QEditorInfo &editorInfo = d->editorForIndex(topLeft);
         //we don't update the edit data if it is static
         if (!editorInfo.isStatic && editorInfo.widget) {
-            QAbstractItemDelegate *delegate = d->delegateForIndex(topLeft);
+            auto delegate = d->delegateForIndex(topLeft);
             if (delegate) {
                 delegate->setEditorData(editorInfo.widget.data(), topLeft);
             }
@@ -3333,21 +3333,21 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
     setState(CollapsingState);
 
     // Ensure one selected item in single selection mode.
-    QModelIndex current = currentIndex();
+    auto current = currentIndex();
     if (d->selectionMode == SingleSelection
         && current.isValid()
         && current.row() >= start
         && current.row() <= end
         && current.parent() == parent) {
-        int totalToRemove = end - start + 1;
+        auto totalToRemove = end - start + 1;
         if (d->model->rowCount(parent) <= totalToRemove) { // no more children
-            QModelIndex index = parent;
+            auto index = parent;
             while (index != d->root && !d->isIndexEnabled(index))
                 index = index.parent();
             if (index != d->root)
                 setCurrentIndex(index);
         } else {
-            int row = end + 1;
+            auto row = end + 1;
             QModelIndex next;
             do { // find the next visible and enabled item
                 next = d->model->index(row++, current.column(), current.parent());
@@ -3363,12 +3363,12 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
     }
 
     // Remove all affected editors; this is more efficient than waiting for updateGeometries() to clean out editors for invalid indexes
-    QEditorIndexHash::iterator i = d->editorIndexHash.begin();
+    auto i = d->editorIndexHash.begin();
     while (i != d->editorIndexHash.end()) {
         const QModelIndex index = i.value();
         if (index.row() >= start && index.row() <= end && d->model->parent(index) == parent) {
-            QWidget *editor = i.key();
-            QEditorInfo info = d->indexEditorHash.take(index);
+            auto editor = i.key();
+            auto info = d->indexEditorHash.take(index);
             i = d->editorIndexHash.erase(i);
             if (info.widget)
                 d->releaseEditor(editor, index);
@@ -3420,20 +3420,20 @@ void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &par
     q->setState(QAbstractItemView::CollapsingState);
 
     // Ensure one selected item in single selection mode.
-    QModelIndex current = q->currentIndex();
+    auto current = q->currentIndex();
     if (current.isValid()
         && selectionMode == QAbstractItemView::SingleSelection
         && current.column() >= start
         && current.column() <= end) {
-        int totalToRemove = end - start + 1;
+        auto totalToRemove = end - start + 1;
         if (model->columnCount(parent) < totalToRemove) { // no more columns
-            QModelIndex index = parent;
+            auto index = parent;
             while (index.isValid() && !isIndexEnabled(index))
                 index = index.parent();
             if (index.isValid())
                 q->setCurrentIndex(index);
         } else {
-            int column = end;
+            auto column = end;
             QModelIndex next;
             do { // find the next visible and enabled item
                 next = model->index(current.row(), column++, current.parent());
@@ -3443,12 +3443,12 @@ void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &par
     }
 
     // Remove all affected editors; this is more efficient than waiting for updateGeometries() to clean out editors for invalid indexes
-    QEditorIndexHash::iterator it = editorIndexHash.begin();
+    auto it = editorIndexHash.begin();
     while (it != editorIndexHash.end()) {
         QModelIndex index = it.value();
         if (index.column() <= start && index.column() >= end && model->parent(index) == parent) {
-            QWidget *editor = it.key();
-            QEditorInfo info = indexEditorHash.take(it.value());
+            auto editor = it.key();
+            auto info = indexEditorHash.take(it.value());
             it = editorIndexHash.erase(it);
             if (info.widget)
                 releaseEditor(editor, index);
@@ -3602,8 +3602,8 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
     Q_ASSERT(d->model);
 
     if (previous.isValid()) {
-        QModelIndex buddy = d->model->buddy(previous);
-        QWidget *editor = d->editorForIndex(buddy).widget.data();
+        auto buddy = d->model->buddy(previous);
+        auto editor = d->editorForIndex(buddy).widget.data();
         if (editor && !d->persistent.contains(editor)) {
             commitData(editor);
             if (current.row() != previous.row())
@@ -3637,19 +3637,19 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
 void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
 {
     Q_D(QAbstractItemView);
-    QModelIndexList indexes = d->selectedDraggableIndexes();
+    auto indexes = d->selectedDraggableIndexes();
     if (indexes.count() > 0) {
-        QMimeData *data = d->model->mimeData(indexes);
+        auto data = d->model->mimeData(indexes);
         if (!data)
             return;
         QRect rect;
-        QPixmap pixmap = d->renderToPixmap(indexes, &rect);
+        auto pixmap = d->renderToPixmap(indexes, &rect);
         rect.adjust(horizontalOffset(), verticalOffset(), 0, 0);
-        QDrag *drag = new QDrag(this);
+        auto drag = new QDrag(this);
         drag->setPixmap(pixmap);
         drag->setMimeData(data);
         drag->setHotSpot(d->pressedPosition - rect.topLeft());
-        Qt::DropAction defaultDropAction = Qt::IgnoreAction;
+        auto defaultDropAction = Qt::IgnoreAction;
         if (d->defaultDropAction != Qt::IgnoreAction && (supportedActions & d->defaultDropAction))
             defaultDropAction = d->defaultDropAction;
         else if (supportedActions & Qt::CopyAction && dragDropMode() != QAbstractItemView::InternalMove)
@@ -3683,7 +3683,7 @@ QStyleOptionViewItem QAbstractItemView::viewOptions() const
     if (d->iconSize.isValid()) {
         option.decorationSize = d->iconSize;
     } else {
-        int pm = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
+        auto pm = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
         option.decorationSize = QSize(pm, pm);
     }
     option.decorationPosition = QStyleOptionViewItem::Left;
@@ -3825,14 +3825,14 @@ void QAbstractItemView::doAutoScroll()
 {
     // find how much we should scroll with
     Q_D(QAbstractItemView);
-    QScrollBar *verticalScroll = verticalScrollBar();
-    QScrollBar *horizontalScroll = horizontalScrollBar();
+    auto verticalScroll = verticalScrollBar();
+    auto horizontalScroll = horizontalScrollBar();
 
     // QHeaderView does not (normally) have scrollbars
     // It needs to use its parents scroll instead
-    QHeaderView *hv = qobject_cast<QHeaderView*>(this);
+    auto hv = qobject_cast<QHeaderView*>(this);
     if (hv) {
-        QAbstractScrollArea *parent = qobject_cast<QAbstractScrollArea*>(parentWidget());
+        auto parent = qobject_cast<QAbstractScrollArea*>(parentWidget());
         if (parent) {
             if (hv->orientation() == Qt::Horizontal) {
                 if (!hv->horizontalScrollBar() || !hv->horizontalScrollBar()->isVisible())
@@ -3844,17 +3844,17 @@ void QAbstractItemView::doAutoScroll()
         }
     }
 
-    int verticalStep = verticalScroll->pageStep();
-    int horizontalStep = horizontalScroll->pageStep();
+    auto verticalStep = verticalScroll->pageStep();
+    auto horizontalStep = horizontalScroll->pageStep();
     if (d->autoScrollCount < qMax(verticalStep, horizontalStep))
         ++d->autoScrollCount;
 
-    int margin = d->autoScrollMargin;
-    int verticalValue = verticalScroll->value();
-    int horizontalValue = horizontalScroll->value();
+    auto margin = d->autoScrollMargin;
+    auto verticalValue = verticalScroll->value();
+    auto horizontalValue = horizontalScroll->value();
 
-    QPoint pos = d->viewport->mapFromGlobal(QCursor::pos());
-    QRect area = static_cast<QAbstractItemView*>(d->viewport)->d_func()->clipRect(); // access QWidget private by bending C++ rules
+    auto pos = d->viewport->mapFromGlobal(QCursor::pos());
+    auto area = static_cast<QAbstractItemView*>(d->viewport)->d_func()->clipRect(); // access QWidget private by bending C++ rules
 
     // do the scrolling if we are in the scroll margins
     if (pos.y() - area.top() < margin)
@@ -3866,8 +3866,8 @@ void QAbstractItemView::doAutoScroll()
     else if (area.right() - pos.x() < margin)
         horizontalScroll->setValue(horizontalValue + d->autoScrollCount);
     // if nothing changed, stop scrolling
-    bool verticalUnchanged = (verticalValue == verticalScroll->value());
-    bool horizontalUnchanged = (horizontalValue == horizontalScroll->value());
+    auto verticalUnchanged = (verticalValue == verticalScroll->value());
+    auto horizontalUnchanged = (horizontalValue == horizontalScroll->value());
     if (verticalUnchanged && horizontalUnchanged) {
         stopAutoScroll();
     } else {
@@ -3962,7 +3962,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::multiSelectionComm
 QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionCommand(
     const QModelIndex &index, const QEvent *event) const
 {
-    Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
+    auto modifiers = QApplication::keyboardModifiers();
     if (event) {
         switch (event->type()) {
         case QEvent::MouseMove: {
@@ -3974,11 +3974,11 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
         }
         case QEvent::MouseButtonPress: {
             modifiers = static_cast<const QMouseEvent*>(event)->modifiers();
-            const Qt::MouseButton button = static_cast<const QMouseEvent*>(event)->button();
+            const auto button = static_cast<const QMouseEvent*>(event)->button();
             const bool rightButtonPressed = button & Qt::RightButton;
             const bool shiftKeyPressed = modifiers & Qt::ShiftModifier;
             const bool controlKeyPressed = modifiers & Qt::ControlModifier;
-            const bool indexIsSelected = selectionModel->isSelected(index);
+            const auto indexIsSelected = selectionModel->isSelected(index);
             if ((shiftKeyPressed || controlKeyPressed) && rightButtonPressed)
                 return QItemSelectionModel::NoUpdate;
             if (!shiftKeyPressed && !controlKeyPressed && indexIsSelected)
@@ -3992,7 +3992,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
         case QEvent::MouseButtonRelease: {
             // ClearAndSelect on MouseButtonRelease if MouseButtonPress on selected item or empty area
             modifiers = static_cast<const QMouseEvent*>(event)->modifiers();
-            const Qt::MouseButton button = static_cast<const QMouseEvent*>(event)->button();
+            const auto button = static_cast<const QMouseEvent*>(event)->button();
             const bool rightButtonPressed = button & Qt::RightButton;
             const bool shiftKeyPressed = modifiers & Qt::ShiftModifier;
             const bool controlKeyPressed = modifiers & Qt::ControlModifier;
@@ -4056,7 +4056,7 @@ QItemSelectionModel::SelectionFlags
 QAbstractItemViewPrivate::contiguousSelectionCommand(const QModelIndex &index,
                                                      const QEvent *event) const
 {
-    QItemSelectionModel::SelectionFlags flags = extendedSelectionCommand(index, event);
+    auto flags = extendedSelectionCommand(index, event);
     const int Mask = QItemSelectionModel::Clear | QItemSelectionModel::Select
                      | QItemSelectionModel::Deselect | QItemSelectionModel::Toggle
                      | QItemSelectionModel::Current;
@@ -4082,14 +4082,14 @@ void QAbstractItemViewPrivate::fetchMore()
     fetchMoreTimer.stop();
     if (!model->canFetchMore(root))
         return;
-    int last = model->rowCount(root) - 1;
+    auto last = model->rowCount(root) - 1;
     if (last < 0) {
         model->fetchMore(root);
         return;
     }
 
-    QModelIndex index = model->index(last, 0, root);
-    QRect rect = q_func()->visualRect(index);
+    auto index = model->index(last, 0, root);
+    auto rect = q_func()->visualRect(index);
     if (viewport->rect().intersects(rect))
         model->fetchMore(root);
 }
@@ -4099,7 +4099,7 @@ bool QAbstractItemViewPrivate::shouldEdit(QAbstractItemView::EditTrigger trigger
 {
     if (!index.isValid())
         return false;
-    Qt::ItemFlags flags = model->flags(index);
+    auto flags = model->flags(index);
     if (((flags & Qt::ItemIsEditable) == 0) || ((flags & Qt::ItemIsEnabled) == 0))
         return false;
     if (state == QAbstractItemView::EditingState)
@@ -4138,7 +4138,7 @@ bool QAbstractItemViewPrivate::shouldAutoScroll(const QPoint &pos) const
 {
     if (!autoScroll)
         return false;
-    QRect area = static_cast<QAbstractItemView*>(viewport)->d_func()->clipRect(); // access QWidget private by bending C++ rules
+    auto area = static_cast<QAbstractItemView*>(viewport)->d_func()->clipRect(); // access QWidget private by bending C++ rules
     return (pos.y() - area.top() < autoScrollMargin)
         || (area.bottom() - pos.y() < autoScrollMargin)
         || (pos.x() - area.left() < autoScrollMargin)
@@ -4172,9 +4172,9 @@ QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
                                           const QStyleOptionViewItem &options)
 {
     Q_Q(QAbstractItemView);
-    QWidget *w = editorForIndex(index).widget.data();
+    auto w = editorForIndex(index).widget.data();
     if (!w) {
-        QAbstractItemDelegate *delegate = delegateForIndex(index);
+        auto delegate = delegateForIndex(index);
         if (!delegate)
             return 0;
         w = delegate->createEditor(viewport, options, index);
@@ -4188,17 +4188,17 @@ QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
                 QWidget::setTabOrder(q, w);
 
             // Special cases for some editors containing QLineEdit
-            QWidget *focusWidget = w;
-            while (QWidget *fp = focusWidget->focusProxy())
+            auto focusWidget = w;
+            while (auto fp = focusWidget->focusProxy())
                 focusWidget = fp;
 #ifndef QT_NO_LINEEDIT
-            if (QLineEdit *le = qobject_cast<QLineEdit*>(focusWidget))
+            if (auto le = qobject_cast<QLineEdit*>(focusWidget))
                 le->selectAll();
 #endif
 #ifndef QT_NO_SPINBOX
-            if (QSpinBox *sb = qobject_cast<QSpinBox*>(focusWidget))
+            if (auto sb = qobject_cast<QSpinBox*>(focusWidget))
                 sb->selectAll();
-            else if (QDoubleSpinBox *dsb = qobject_cast<QDoubleSpinBox*>(focusWidget))
+            else if (auto dsb = qobject_cast<QDoubleSpinBox*>(focusWidget))
                 dsb->selectAll();
 #endif
         }
@@ -4210,15 +4210,15 @@ QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
 void QAbstractItemViewPrivate::updateEditorData(const QModelIndex &tl, const QModelIndex &br)
 {
     // we are counting on having relatively few editors
-    const bool checkIndexes = tl.isValid() && br.isValid();
-    const QModelIndex parent = tl.parent();
+    const auto checkIndexes = tl.isValid() && br.isValid();
+    const auto parent = tl.parent();
     // QTBUG-25370: We need to copy the indexEditorHash, because while we're
     // iterating over it, we are calling methods which can allow user code to
     // call a method on *this which can modify the member indexEditorHash.
-    const QIndexEditorHash indexEditorHashCopy = indexEditorHash;
-    QIndexEditorHash::const_iterator it = indexEditorHashCopy.constBegin();
+    const auto indexEditorHashCopy = indexEditorHash;
+    auto it = indexEditorHashCopy.constBegin();
     for (; it != indexEditorHashCopy.constEnd(); ++it) {
-        QWidget *editor = it.value().widget.data();
+        auto editor = it.value().widget.data();
         const QModelIndex index = it.key();
         if (it.value().isStatic || !editor || !index.isValid() ||
             (checkIndexes
@@ -4227,7 +4227,7 @@ void QAbstractItemViewPrivate::updateEditorData(const QModelIndex &tl, const QMo
                     || index.parent() != parent)))
             continue;
 
-        QAbstractItemDelegate *delegate = delegateForIndex(index);
+        auto delegate = delegateForIndex(index);
         if (delegate) {
             delegate->setEditorData(editor, index);
         }
@@ -4246,26 +4246,26 @@ void QAbstractItemViewPrivate::updateEditorData(const QModelIndex &tl, const QMo
 void QAbstractItemViewPrivate::clearOrRemove()
 {
 #ifndef QT_NO_DRAGANDDROP
-    const QItemSelection selection = selectionModel->selection();
-    QList<QItemSelectionRange>::const_iterator it = selection.constBegin();
+    const auto selection = selectionModel->selection();
+    auto it = selection.constBegin();
 
     if (!overwrite) {
         for (; it != selection.constEnd(); ++it) {
-            QModelIndex parent = (*it).parent();
+            auto parent = (*it).parent();
             if ((*it).left() != 0)
                 continue;
             if ((*it).right() != (model->columnCount(parent) - 1))
                 continue;
-            int count = (*it).bottom() - (*it).top() + 1;
+            auto count = (*it).bottom() - (*it).top() + 1;
             model->removeRows((*it).top(), count, parent);
         }
     } else {
         // we can't remove the rows so reset the items (i.e. the view is like a table)
-        QModelIndexList list = selection.indexes();
-        for (int i=0; i < list.size(); ++i) {
-            QModelIndex index = list.at(i);
-            QMap<int, QVariant> roles = model->itemData(index);
-            for (QMap<int, QVariant>::Iterator it = roles.begin(); it != roles.end(); ++it)
+        auto list = selection.indexes();
+        for (auto i=0; i < list.size(); ++i) {
+            auto index = list.at(i);
+            auto roles = model->itemData(index);
+            for (auto it = roles.begin(); it != roles.end(); ++it)
                 it.value() = QVariant();
             model->setItemData(index, roles);
         }
@@ -4282,10 +4282,10 @@ void QAbstractItemViewPrivate::clearOrRemove()
 void QAbstractItemViewPrivate::checkPersistentEditorFocus()
 {
     Q_Q(QAbstractItemView);
-    if (QWidget *widget = QApplication::focusWidget()) {
+    if (auto widget = QApplication::focusWidget()) {
         if (persistent.contains(widget)) {
             //a persistent editor has gained the focus
-            QModelIndex index = indexForEditor(widget);
+            auto index = indexForEditor(widget);
             if (selectionModel->currentIndex() != index)
                 q->setCurrentIndex(index);
         }
@@ -4301,7 +4301,7 @@ const QEditorInfo & QAbstractItemViewPrivate::editorForIndex(const QModelIndex &
     if (indexEditorHash.isEmpty())
         return nullInfo;
 
-    QIndexEditorHash::const_iterator it = indexEditorHash.find(index);
+    auto it = indexEditorHash.find(index);
     if (it == indexEditorHash.end())
         return nullInfo;
 
@@ -4314,7 +4314,7 @@ QModelIndex QAbstractItemViewPrivate::indexForEditor(QWidget *editor) const
     if (indexEditorHash.isEmpty())
         return QModelIndex();
 
-   QEditorIndexHash::const_iterator it = editorIndexHash.find(editor);
+   auto it = editorIndexHash.find(editor);
     if (it == editorIndexHash.end())
         return QModelIndex();
 
@@ -4339,11 +4339,11 @@ void QAbstractItemViewPrivate::addEditor(const QModelIndex &index, QWidget *edit
 bool QAbstractItemViewPrivate::sendDelegateEvent(const QModelIndex &index, QEvent *event) const
 {
     Q_Q(const QAbstractItemView);
-    QModelIndex buddy = model->buddy(index);
-    QStyleOptionViewItem options = viewOptionsV1();
+    auto buddy = model->buddy(index);
+    auto options = viewOptionsV1();
     options.rect = q->visualRect(buddy);
     options.state |= (buddy == q->currentIndex() ? QStyle::State_HasFocus : QStyle::State_None);
-    QAbstractItemDelegate *delegate = delegateForIndex(index);
+    auto delegate = delegateForIndex(index);
     return (event && delegate && delegate->editorEvent(event, model, options, buddy));
 }
 
@@ -4351,12 +4351,12 @@ bool QAbstractItemViewPrivate::openEditor(const QModelIndex &index, QEvent *even
 {
     Q_Q(QAbstractItemView);
 
-    QModelIndex buddy = model->buddy(index);
-    QStyleOptionViewItem options = viewOptionsV1();
+    auto buddy = model->buddy(index);
+    auto options = viewOptionsV1();
     options.rect = q->visualRect(buddy);
     options.state |= (buddy == q->currentIndex() ? QStyle::State_HasFocus : QStyle::State_None);
 
-    QWidget *w = editor(buddy, options);
+    auto w = editor(buddy, options);
     if (!w)
         return false;
 
@@ -4381,10 +4381,10 @@ QItemViewPaintPairs QAbstractItemViewPrivate::draggablePaintPairs(const QModelIn
     Q_ASSERT(r);
     Q_Q(const QAbstractItemView);
     QRect &rect = *r;
-    const QRect viewportRect = viewport->rect();
+    const auto viewportRect = viewport->rect();
     QItemViewPaintPairs ret;
     for (const auto &index : indexes) {
-        const QRect current = q->visualRect(index);
+        const auto current = q->visualRect(index);
         if (current.intersects(viewportRect)) {
             QItemViewPaintPair p = { current, index };
             ret += p;
@@ -4398,15 +4398,15 @@ QItemViewPaintPairs QAbstractItemViewPrivate::draggablePaintPairs(const QModelIn
 QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes, QRect *r) const
 {
     Q_ASSERT(r);
-    QItemViewPaintPairs paintPairs = draggablePaintPairs(indexes, r);
+    auto paintPairs = draggablePaintPairs(indexes, r);
     if (paintPairs.isEmpty())
         return QPixmap();
     QPixmap pixmap(r->size());
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
-    QStyleOptionViewItem option = viewOptionsV1();
+    auto option = viewOptionsV1();
     option.state |= QStyle::State_Selected;
-    for (int j = 0; j < paintPairs.count(); ++j) {
+    for (auto j = 0; j < paintPairs.count(); ++j) {
         option.rect = paintPairs.at(j).rect.translated(-r->topLeft());
         const QModelIndex &current = paintPairs.at(j).index;
         adjustViewOptionsForIndex(&option, current);
@@ -4421,8 +4421,8 @@ void QAbstractItemViewPrivate::selectAll(QItemSelectionModel::SelectionFlags com
         return;
 
     QItemSelection selection;
-    QModelIndex tl = model->index(0, 0, root);
-    QModelIndex br = model->index(model->rowCount(root) - 1,
+    auto tl = model->index(0, 0, root);
+    auto br = model->index(model->rowCount(root) - 1,
                                   model->columnCount(root) - 1,
                                   root);
     selection.append(QItemSelectionRange(tl, br));
@@ -4432,8 +4432,8 @@ void QAbstractItemViewPrivate::selectAll(QItemSelectionModel::SelectionFlags com
 QModelIndexList QAbstractItemViewPrivate::selectedDraggableIndexes() const
 {
     Q_Q(const QAbstractItemView);
-    QModelIndexList indexes = q->selectedIndexes();
-    for(int i = indexes.count() - 1 ; i >= 0; --i) {
+    auto indexes = q->selectedIndexes();
+    for(auto i = indexes.count() - 1 ; i >= 0; --i) {
         if (!isIndexDragEnabled(indexes.at(i)))
             indexes.removeAt(i);
     }

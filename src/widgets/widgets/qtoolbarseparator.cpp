@@ -72,7 +72,7 @@ QSize QToolBarSeparator::sizeHint() const
 {
     QStyleOption opt;
     initStyleOption(&opt);
-    const int extent = style()->pixelMetric(QStyle::PM_ToolBarSeparatorExtent, &opt, parentWidget());
+    const auto extent = style()->pixelMetric(QStyle::PM_ToolBarSeparatorExtent, &opt, parentWidget());
     return QSize(extent, extent);
 }
 

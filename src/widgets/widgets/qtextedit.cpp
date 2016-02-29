@@ -84,19 +84,19 @@ public:
     inline QTextEditControl(QObject *parent) : QWidgetTextControl(parent) {}
 
     virtual QMimeData *createMimeDataFromSelection() const Q_DECL_OVERRIDE {
-        QTextEdit *ed = qobject_cast<QTextEdit *>(parent());
+        auto ed = qobject_cast<QTextEdit *>(parent());
         if (!ed)
             return QWidgetTextControl::createMimeDataFromSelection();
         return ed->createMimeDataFromSelection();
     }
     virtual bool canInsertFromMimeData(const QMimeData *source) const Q_DECL_OVERRIDE {
-        QTextEdit *ed = qobject_cast<QTextEdit *>(parent());
+        auto ed = qobject_cast<QTextEdit *>(parent());
         if (!ed)
             return QWidgetTextControl::canInsertFromMimeData(source);
         return ed->canInsertFromMimeData(source);
     }
     virtual void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE {
-        QTextEdit *ed = qobject_cast<QTextEdit *>(parent());
+        auto ed = qobject_cast<QTextEdit *>(parent());
         if (!ed)
             QWidgetTextControl::insertFromMimeData(source);
         else
@@ -119,10 +119,10 @@ QTextEditPrivate::QTextEditPrivate()
 
 void QTextEditPrivate::createAutoBulletList()
 {
-    QTextCursor cursor = control->textCursor();
+    auto cursor = control->textCursor();
     cursor.beginEditBlock();
 
-    QTextBlockFormat blockFmt = cursor.blockFormat();
+    auto blockFmt = cursor.blockFormat();
 
     QTextListFormat listFmt;
     listFmt.setStyle(QTextListFormat::ListDisc);
@@ -159,7 +159,7 @@ void QTextEditPrivate::init(const QString &html)
 
     QObject::connect(control, SIGNAL(textChanged()), q, SLOT(updateMicroFocus()));
 
-    QTextDocument *doc = control->document();
+    auto doc = control->document();
     // set a null page size initially to avoid any relayouting until the textedit
     // is shown. relayoutDocument() will take care of setting the page size to the
     // viewport dimensions later.
@@ -195,11 +195,11 @@ void QTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
         viewport->update();
         return;
     }
-    const int xOffset = horizontalOffset();
-    const int yOffset = verticalOffset();
+    const auto xOffset = horizontalOffset();
+    const auto yOffset = verticalOffset();
     const QRectF visibleRect(xOffset, yOffset, viewport->width(), viewport->height());
 
-    QRect r = contentsRect.intersected(visibleRect).toAlignedRect();
+    auto r = contentsRect.intersected(visibleRect).toAlignedRect();
     if (r.isEmpty())
         return;
 
@@ -219,13 +219,13 @@ void QTextEditPrivate::_q_cursorPositionChanged()
 
 void QTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCursor::MoveMode moveMode)
 {
-    QTextCursor cursor = control->textCursor();
-    bool moved = false;
-    qreal lastY = control->cursorRect(cursor).top();
+    auto cursor = control->textCursor();
+    auto moved = false;
+    auto lastY = control->cursorRect(cursor).top();
     qreal distance = 0;
     // move using movePosition to keep the cursor's x
     do {
-        qreal y = control->cursorRect(cursor).top();
+        auto y = control->cursorRect(cursor).top();
         distance += qAbs(y - lastY);
         lastY = y;
         moved = cursor.movePosition(op, moveMode);
@@ -246,14 +246,14 @@ void QTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCursor::Mo
 #ifndef QT_NO_SCROLLBAR
 static QSize documentSize(QWidgetTextControl *control)
 {
-    QTextDocument *doc = control->document();
-    QAbstractTextDocumentLayout *layout = doc->documentLayout();
+    auto doc = control->document();
+    auto layout = doc->documentLayout();
 
     QSize docSize;
 
-    if (QTextDocumentLayout *tlayout = qobject_cast<QTextDocumentLayout *>(layout)) {
+    if (auto tlayout = qobject_cast<QTextDocumentLayout *>(layout)) {
         docSize = tlayout->dynamicDocumentSize().toSize();
-        int percentageDone = tlayout->layoutStatus();
+        auto percentageDone = tlayout->layoutStatus();
         // extrapolate height
         if (percentageDone > 0)
             docSize.setHeight(docSize.height() * 100 / percentageDone);
@@ -270,8 +270,8 @@ void QTextEditPrivate::_q_adjustScrollbars()
         return;
     ignoreAutomaticScrollbarAdjustment = true; // avoid recursion, #106108
 
-    QSize viewportSize = viewport->size();
-    QSize docSize = documentSize(control);
+    auto viewportSize = viewport->size();
+    auto docSize = documentSize(control);
 
     // due to the recursion guard we have to repeat this step a few times,
     // as adding/removing a scroll bar will cause the document or viewport
@@ -279,7 +279,7 @@ void QTextEditPrivate::_q_adjustScrollbars()
     // ideally we should loop until the viewport size and doc size stabilize,
     // but in corner cases they might fluctuate, so we need to limit the
     // number of iterations
-    for (int i = 0; i < 4; ++i) {
+    for (auto i = 0; i < 4; ++i) {
         hbar->setRange(0, docSize.width() - viewportSize.width());
         hbar->setPageStep(viewportSize.width());
 
@@ -297,8 +297,8 @@ void QTextEditPrivate::_q_adjustScrollbars()
 
         _q_showOrHideScrollBars();
 
-        const QSize oldViewportSize = viewportSize;
-        const QSize oldDocSize = docSize;
+        const auto oldViewportSize = viewportSize;
+        const auto oldDocSize = docSize;
 
         // make sure the document is layouted if the viewport width changes
         viewportSize = viewport->size();
@@ -316,13 +316,13 @@ void QTextEditPrivate::_q_adjustScrollbars()
 // rect is in content coordinates
 void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
 {
-    const QRect rect = _rect.toRect();
+    const auto rect = _rect.toRect();
     if ((vbar->isVisible() && vbar->maximum() < rect.bottom())
         || (hbar->isVisible() && hbar->maximum() < rect.right()))
         _q_adjustScrollbars();
-    const int visibleWidth = viewport->width();
-    const int visibleHeight = viewport->height();
-    const bool rtl = q_func()->isRightToLeft();
+    const auto visibleWidth = viewport->width();
+    const auto visibleHeight = viewport->height();
+    const auto rtl = q_func()->isRightToLeft();
 
     if (rect.x() < horizontalOffset()) {
         if (rtl)
@@ -731,7 +731,7 @@ void QTextEdit::setAlignment(Qt::Alignment a)
     Q_D(QTextEdit);
     QTextBlockFormat fmt;
     fmt.setAlignment(a);
-    QTextCursor cursor = d->control->textCursor();
+    auto cursor = d->control->textCursor();
     cursor.mergeBlockFormat(fmt);
     d->control->setTextCursor(cursor);
 }
@@ -1056,10 +1056,10 @@ bool QTextEdit::event(QEvent *e)
         && static_cast<QContextMenuEvent *>(e)->reason() == QContextMenuEvent::Keyboard) {
         Q_D(QTextEdit);
         ensureCursorVisible();
-        const QPoint cursorPos = cursorRect().center();
+        const auto cursorPos = cursorRect().center();
         QContextMenuEvent ce(QContextMenuEvent::Keyboard, cursorPos, d->viewport->mapToGlobal(cursorPos));
         ce.setAccepted(e->isAccepted());
-        const bool result = QAbstractScrollArea::event(&ce);
+        const auto result = QAbstractScrollArea::event(&ce);
         e->setAccepted(ce.isAccepted());
         return result;
     } else if (e->type() == QEvent::ShortcutOverride
@@ -1085,25 +1085,25 @@ void QTextEdit::timerEvent(QTimerEvent *e)
 {
     Q_D(QTextEdit);
     if (e->timerId() == d->autoScrollTimer.timerId()) {
-        QRect visible = d->viewport->rect();
+        auto visible = d->viewport->rect();
         QPoint pos;
         if (d->inDrag) {
             pos = d->autoScrollDragPos;
             visible.adjust(qMin(visible.width()/3,20), qMin(visible.height()/3,20),
                            -qMin(visible.width()/3,20), -qMin(visible.height()/3,20));
         } else {
-            const QPoint globalPos = QCursor::pos();
+            const auto globalPos = QCursor::pos();
             pos = d->viewport->mapFromGlobal(globalPos);
             QMouseEvent ev(QEvent::MouseMove, pos, mapTo(topLevelWidget(), pos), globalPos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
             mouseMoveEvent(&ev);
         }
-        int deltaY = qMax(pos.y() - visible.top(), visible.bottom() - pos.y()) - visible.height();
-        int deltaX = qMax(pos.x() - visible.left(), visible.right() - pos.x()) - visible.width();
-        int delta = qMax(deltaX, deltaY);
+        auto deltaY = qMax(pos.y() - visible.top(), visible.bottom() - pos.y()) - visible.height();
+        auto deltaX = qMax(pos.x() - visible.left(), visible.right() - pos.x()) - visible.width();
+        auto delta = qMax(deltaX, deltaY);
         if (delta >= 0) {
             if (delta < 7)
                 delta = 7;
-            int timeout = 4900 / (delta * delta);
+            auto timeout = 4900 / (delta * delta);
             d->autoScrollTimer.start(timeout, this);
 
             if (deltaY > 0)
@@ -1244,7 +1244,7 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
 #endif
 #ifndef QT_NO_SHORTCUT
 
-    Qt::TextInteractionFlags tif = d->control->textInteractionFlags();
+    auto tif = d->control->textInteractionFlags();
 
     if (tif & Qt::TextSelectableByKeyboard){
         if (e == QKeySequence::SelectPreviousPage) {
@@ -1298,8 +1298,8 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
 #endif // QT_NO_SHORTCUT
 
     {
-        QTextCursor cursor = d->control->textCursor();
-        const QString text = e->text();
+        auto cursor = d->control->textCursor();
+        const auto text = e->text();
         if (cursor.atBlockStart()
             && (d->autoFormatting & AutoBulletList)
             && (text.length() == 1)
@@ -1399,8 +1399,8 @@ void QTextEdit::resizeEvent(QResizeEvent *e)
     Q_D(QTextEdit);
 
     if (d->lineWrap == NoWrap) {
-        QTextDocument *doc = d->control->document();
-        QVariant alignmentProperty = doc->documentLayout()->property("contentHasAlignment");
+        auto doc = d->control->document();
+        auto alignmentProperty = doc->documentLayout()->property("contentHasAlignment");
 
         if (!doc->pageSize().isNull()
             && alignmentProperty.type() == QVariant::Bool
@@ -1420,17 +1420,17 @@ void QTextEdit::resizeEvent(QResizeEvent *e)
 
 void QTextEditPrivate::relayoutDocument()
 {
-    QTextDocument *doc = control->document();
-    QAbstractTextDocumentLayout *layout = doc->documentLayout();
+    auto doc = control->document();
+    auto layout = doc->documentLayout();
 
-    if (QTextDocumentLayout *tlayout = qobject_cast<QTextDocumentLayout *>(layout)) {
+    if (auto tlayout = qobject_cast<QTextDocumentLayout *>(layout)) {
         if (lineWrap == QTextEdit::FixedColumnWidth)
             tlayout->setFixedColumnWidth(lineWrapColumnOrWidth);
         else
             tlayout->setFixedColumnWidth(-1);
     }
 
-    QTextDocumentLayout *tlayout = qobject_cast<QTextDocumentLayout *>(layout);
+    auto tlayout = qobject_cast<QTextDocumentLayout *>(layout);
     QSize lastUsedSize;
     if (tlayout)
         lastUsedSize = tlayout->dynamicDocumentSize().toSize();
@@ -1443,11 +1443,11 @@ void QTextEditPrivate::relayoutDocument()
     const bool oldIgnoreScrollbarAdjustment = ignoreAutomaticScrollbarAdjustment;
     ignoreAutomaticScrollbarAdjustment = true;
 
-    int width = viewport->width();
+    auto width = viewport->width();
     if (lineWrap == QTextEdit::FixedPixelWidth)
         width = lineWrapColumnOrWidth;
     else if (lineWrap == QTextEdit::NoWrap) {
-        QVariant alignmentProperty = doc->documentLayout()->property("contentHasAlignment");
+        auto alignmentProperty = doc->documentLayout()->property("contentHasAlignment");
         if (alignmentProperty.type() == QVariant::Bool && !alignmentProperty.toBool()) {
 
             width = 0;
@@ -1494,15 +1494,15 @@ void QTextEditPrivate::relayoutDocument()
 
 void QTextEditPrivate::paint(QPainter *p, QPaintEvent *e)
 {
-    const int xOffset = horizontalOffset();
-    const int yOffset = verticalOffset();
+    const auto xOffset = horizontalOffset();
+    const auto yOffset = verticalOffset();
 
-    QRect r = e->rect();
+    auto r = e->rect();
     p->translate(-xOffset, -yOffset);
     r.translate(xOffset, yOffset);
 
-    QTextDocument *doc = control->document();
-    QTextDocumentLayout *layout = qobject_cast<QTextDocumentLayout *>(doc->documentLayout());
+    auto doc = control->document();
+    auto layout = qobject_cast<QTextDocumentLayout *>(doc->documentLayout());
 
     // the layout might need to expand the root frame to
     // the viewport if NoWrap is set
@@ -1515,10 +1515,10 @@ void QTextEditPrivate::paint(QPainter *p, QPaintEvent *e)
         layout->setViewport(QRect());
 
     if (!placeholderText.isEmpty() && doc->isEmpty()) {
-        QColor col = control->palette().text().color();
+        auto col = control->palette().text().color();
         col.setAlpha(128);
         p->setPen(col);
-        const int margin = int(doc->documentMargin());
+        const auto margin = int(doc->documentMargin());
         p->drawText(viewport->rect().adjusted(margin, margin, -margin, -margin), Qt::AlignTop | Qt::TextWordWrap, placeholderText);
     }
 }
@@ -1546,10 +1546,10 @@ void QTextEditPrivate::_q_currentCharFormatChanged(const QTextCharFormat &fmt)
 
 void QTextEditPrivate::updateDefaultTextOption()
 {
-    QTextDocument *doc = control->document();
+    auto doc = control->document();
 
-    QTextOption opt = doc->defaultTextOption();
-    QTextOption::WrapMode oldWrapMode = opt.wrapMode();
+    auto opt = doc->defaultTextOption();
+    auto oldWrapMode = opt.wrapMode();
 
     if (lineWrap == QTextEdit::NoWrap)
         opt.setWrapMode(QTextOption::NoWrap);
@@ -1578,12 +1578,12 @@ void QTextEdit::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QTextEdit);
     d->inDrag = false; // paranoia
-    const QPoint pos = e->pos();
+    const auto pos = e->pos();
     d->sendControlEvent(e);
     if (!(e->buttons() & Qt::LeftButton))
         return;
     if (e->source() == Qt::MouseEventNotSynthesized) {
-        const QRect visible = d->viewport->rect();
+        const auto visible = d->viewport->rect();
         if (visible.contains(pos))
             d->autoScrollTimer.stop();
         else if (!d->autoScrollTimer.isActive())
@@ -1815,7 +1815,7 @@ void QTextEdit::wheelEvent(QWheelEvent *e)
     Q_D(QTextEdit);
     if (!(d->control->textInteractionFlags() & Qt::TextEditable)) {
         if (e->modifiers() & Qt::ControlModifier) {
-            float delta = e->angleDelta().y() / 120.f;
+            auto delta = e->angleDelta().y() / 120.f;
             zoomInF(delta);
             return;
         }
@@ -1877,7 +1877,7 @@ QRect QTextEdit::cursorRect(const QTextCursor &cursor) const
     if (cursor.isNull())
         return QRect();
 
-    QRect r = d->control->cursorRect(cursor).toRect();
+    auto r = d->control->cursorRect(cursor).toRect();
     r.translate(-d->horizontalOffset(),-d->verticalOffset());
     return r;
 }
@@ -1889,7 +1889,7 @@ QRect QTextEdit::cursorRect(const QTextCursor &cursor) const
 QRect QTextEdit::cursorRect() const
 {
     Q_D(const QTextEdit);
-    QRect r = d->control->cursorRect().toRect();
+    auto r = d->control->cursorRect().toRect();
     r.translate(-d->horizontalOffset(),-d->verticalOffset());
     return r;
 }
@@ -1949,7 +1949,7 @@ int QTextEdit::tabStopWidth() const
 void QTextEdit::setTabStopWidth(int width)
 {
     Q_D(QTextEdit);
-    QTextOption opt = d->control->document()->defaultTextOption();
+    auto opt = d->control->document()->defaultTextOption();
     if (opt.tabStop() == width || width < 0)
         return;
     opt.setTabStop(width);
@@ -2257,8 +2257,8 @@ void QTextEdit::scrollToAnchor(const QString &name)
         return;
     }
 
-    QPointF p = d->control->anchorPosition(name);
-    const int newPosition = qRound(p.y());
+    auto p = d->control->anchorPosition(name);
+    const auto newPosition = qRound(p.y());
     if ( d->vbar->maximum() < newPosition )
         d->_q_adjustScrollbars();
     d->vbar->setValue(newPosition);
@@ -2301,7 +2301,7 @@ void QTextEdit::zoomInF(float range)
 {
     if (range == 0.f)
         return;
-    QFont f = font();
+    auto f = font();
     const float newSize = f.pointSizeF() + range;
     if (newSize <= 0)
         return;
@@ -2549,7 +2549,7 @@ bool QTextEdit::find(const QRegExp &exp, QTextDocument::FindFlags options)
 void QTextEdit::setText(const QString &text)
 {
     Q_D(QTextEdit);
-    Qt::TextFormat format = d->textFormat;
+    auto format = d->textFormat;
     if (d->textFormat == Qt::AutoText)
         format = Qt::mightBeRichText(text) ? Qt::RichText : Qt::PlainText;
 #ifndef QT_NO_TEXTHTMLPARSER
@@ -2573,7 +2573,7 @@ void QTextEdit::setText(const QString &text)
 void QTextEdit::append(const QString &text)
 {
     Q_D(QTextEdit);
-    const bool atBottom = isReadOnly() ?  d->verticalOffset() >= d->vbar->maximum() :
+    const auto atBottom = isReadOnly() ?  d->verticalOffset() >= d->vbar->maximum() :
             d->control->textCursor().atEnd();
     d->control->append(text);
     if (atBottom)

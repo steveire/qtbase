@@ -300,7 +300,7 @@ QDialog *QPushButtonPrivate::dialogParent() const
     auto p = static_cast<const QWidget*>(q);
     while (p && !p->isWindow()) {
         p = p->parentWidget();
-        if (const QDialog *dialog = qobject_cast<const QDialog *>(p))
+        if (auto dialog = qobject_cast<const QDialog *>(p))
             return const_cast<QDialog *>(dialog);
     }
     return 0;
@@ -369,7 +369,7 @@ void QPushButton::setDefault(bool enable)
         return;
     d->defaultButton = enable;
     if (d->defaultButton) {
-        if (QDialog *dlg = d->dialogParent())
+        if (auto dlg = d->dialogParent())
             dlg->d_func()->setMainDefault(this);
     }
     update();
@@ -398,7 +398,7 @@ QSize QPushButton::sizeHint() const
     d->lastAutoDefault = autoDefault();
     ensurePolished();
 
-    int w = 0, h = 0;
+    auto w = 0, h = 0;
 
     QStyleOptionButton opt;
     initStyleOption(&opt);
@@ -406,22 +406,22 @@ QSize QPushButton::sizeHint() const
     // calculate contents size...
 #ifndef QT_NO_ICON
 
-    bool showButtonBoxIcons = qobject_cast<QDialogButtonBox*>(parentWidget())
+    auto showButtonBoxIcons = qobject_cast<QDialogButtonBox*>(parentWidget())
                           && style()->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons);
 
     if (!icon().isNull() || showButtonBoxIcons) {
-        int ih = opt.iconSize.height();
-        int iw = opt.iconSize.width() + 4;
+        auto ih = opt.iconSize.height();
+        auto iw = opt.iconSize.width() + 4;
         w += iw;
         h = qMax(h, ih);
     }
 #endif
     QString s(text());
-    bool empty = s.isEmpty();
+    auto empty = s.isEmpty();
     if (empty)
         s = QString::fromLatin1("XXXX");
-    QFontMetrics fm = fontMetrics();
-    QSize sz = fm.size(Qt::TextShowMnemonic, s);
+    auto fm = fontMetrics();
+    auto sz = fm.size(Qt::TextShowMnemonic, s);
     if(!empty || !w)
         w += sz.width();
     if(!empty || !h)
@@ -481,7 +481,7 @@ void QPushButton::focusInEvent(QFocusEvent *e)
     Q_D(QPushButton);
     if (e->reason() != Qt::PopupFocusReason && autoDefault() && !d->defaultButton) {
         d->defaultButton = true;
-        QDialog *dlg = qobject_cast<QDialog*>(window());
+        auto dlg = qobject_cast<QDialog*>(window());
         if (dlg)
             dlg->d_func()->setDefault(this);
     }
@@ -495,7 +495,7 @@ void QPushButton::focusOutEvent(QFocusEvent *e)
 {
     Q_D(QPushButton);
     if (e->reason() != Qt::PopupFocusReason && autoDefault() && d->defaultButton) {
-        QDialog *dlg = qobject_cast<QDialog*>(window());
+        auto dlg = qobject_cast<QDialog*>(window());
         if (dlg)
             dlg->d_func()->setDefault(0);
         else
@@ -577,7 +577,7 @@ void QPushButtonPrivate::_q_popupPressed()
 
     menu->setNoReplayFor(q);
 
-    QPoint menuPos = adjustedMenuPosition();
+    auto menuPos = adjustedMenuPosition();
 
     QPointer<QPushButton> guard(q);
     QMenuPrivate::get(menu)->causedPopup.widget = guard;
@@ -596,21 +596,21 @@ QPoint QPushButtonPrivate::adjustedMenuPosition()
 {
     Q_Q(QPushButton);
 
-    bool horizontal = true;
+    auto horizontal = true;
 #if !defined(QT_NO_TOOLBAR)
-    QToolBar *tb = qobject_cast<QToolBar*>(parent);
+    auto tb = qobject_cast<QToolBar*>(parent);
     if (tb && tb->orientation() == Qt::Vertical)
         horizontal = false;
 #endif
 
     QWidgetItem item(q);
-    QRect rect = item.geometry();
+    auto rect = item.geometry();
     rect.setRect(rect.x() - q->x(), rect.y() - q->y(), rect.width(), rect.height());
 
-    QSize menuSize = menu->sizeHint();
-    QPoint globalPos = q->mapToGlobal(rect.topLeft());
-    int x = globalPos.x();
-    int y = globalPos.y();
+    auto menuSize = menu->sizeHint();
+    auto globalPos = q->mapToGlobal(rect.topLeft());
+    auto x = globalPos.x();
+    auto y = globalPos.y();
     if (horizontal) {
         if (globalPos.y() + rect.height() + menuSize.height() <= QApplication::desktop()->availableGeometry(q).height()) {
             y += rect.height();
@@ -662,7 +662,7 @@ bool QPushButton::event(QEvent *e)
 {
     Q_D(QPushButton);
     if (e->type() == QEvent::ParentChange) {
-        if (QDialog *dialog = d->dialogParent()) {
+        if (auto dialog = d->dialogParent()) {
             if (d->defaultButton)
                 dialog->d_func()->setMainDefault(this);
         }

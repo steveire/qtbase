@@ -173,7 +173,7 @@ int QCompletionModel::columnCount(const QModelIndex &) const
 
 void QCompletionModel::setSourceModel(QAbstractItemModel *source)
 {
-    bool hadModel = (sourceModel() != 0);
+    auto hadModel = (sourceModel() != 0);
 
     if (hadModel)
         QObject::disconnect(sourceModel(), 0, this, 0);
@@ -197,7 +197,7 @@ void QCompletionModel::setSourceModel(QAbstractItemModel *source)
 
 void QCompletionModel::createEngine()
 {
-    bool sortedEngine = false;
+    auto sortedEngine = false;
     if (c->filterMode == Qt::MatchStartsWith) {
         switch (c->sorting) {
         case QCompleter::UnsortedModel:
@@ -225,7 +225,7 @@ QModelIndex QCompletionModel::mapToSource(const QModelIndex& index) const
         return engine->curParent;
 
     int row;
-    QModelIndex parent = engine->curParent;
+    auto parent = engine->curParent;
     if (!showAll) {
         if (!engine->matchCount())
             return QModelIndex();
@@ -249,7 +249,7 @@ QModelIndex QCompletionModel::mapFromSource(const QModelIndex& idx) const
     if (!idx.isValid())
         return QModelIndex();
 
-    int row = -1;
+    auto row = -1;
     if (!showAll) {
         if (!engine->matchCount())
             return QModelIndex();
@@ -301,11 +301,11 @@ QModelIndex QCompletionModel::currentIndex(bool sourceIndex) const
     if (!engine->matchCount())
         return QModelIndex();
 
-    int row = engine->curRow;
+    auto row = engine->curRow;
     if (showAll)
         row = engine->curMatch.indices[engine->curRow];
 
-    QModelIndex idx = createIndex(row, c->column);
+    auto idx = createIndex(row, c->column);
     if (!sourceIndex)
         return idx;
     return mapToSource(idx);
@@ -321,7 +321,7 @@ QModelIndex QCompletionModel::index(int row, int column, const QModelIndex& pare
         if (!engine->matchCount())
             return QModelIndex();
         if (row >= engine->historyMatch.indices.count()) {
-            int want = row + 1 - engine->matchCount();
+            auto want = row + 1 - engine->matchCount();
             if (want > 0)
                 engine->filterOnDemand(want);
             if (row >= engine->matchCount())
@@ -423,7 +423,7 @@ void QCompletionModel::filter(const QStringList& parts)
 //////////////////////////////////////////////////////////////////////////////
 void QCompletionEngine::filter(const QStringList& parts)
 {
-    const QAbstractItemModel *model = c->proxy->sourceModel();
+    auto model = c->proxy->sourceModel();
     curParts = parts;
     if (curParts.isEmpty())
         curParts.append(QString());
@@ -437,9 +437,9 @@ void QCompletionEngine::filter(const QStringList& parts)
         return;
 
     QModelIndex parent;
-    for (int i = 0; i < curParts.count() - 1; i++) {
-        QString part = curParts.at(i);
-        int emi = filter(part, parent, -1).exactMatchIndex;
+    for (auto i = 0; i < curParts.count() - 1; i++) {
+        auto part = curParts.at(i);
+        auto emi = filter(part, parent, -1).exactMatchIndex;
         if (emi == -1)
             return;
         parent = model->index(emi, c->column, parent);
@@ -457,18 +457,18 @@ void QCompletionEngine::filter(const QStringList& parts)
 
 QMatchData QCompletionEngine::filterHistory()
 {
-    QAbstractItemModel *source = c->proxy->sourceModel();
+    auto source = c->proxy->sourceModel();
     if (curParts.count() <= 1 || c->proxy->showAll || !source)
         return QMatchData();
 
 #ifndef QT_NO_DIRMODEL
-    const bool isDirModel = (qobject_cast<QDirModel *>(source) != 0);
+    const auto isDirModel = (qobject_cast<QDirModel *>(source) != 0);
 #else
     const bool isDirModel = false;
 #endif
     Q_UNUSED(isDirModel)
 #ifndef QT_NO_FILESYSTEMMODEL
-    const bool isFsModel = (qobject_cast<QFileSystemModel *>(source) != 0);
+    const auto isFsModel = (qobject_cast<QFileSystemModel *>(source) != 0);
 #else
     const bool isFsModel = false;
 #endif
@@ -477,8 +477,8 @@ QMatchData QCompletionEngine::filterHistory()
     QIndexMapper im(v);
     QMatchData m(im, -1, true);
 
-    for (int i = 0; i < source->rowCount(); i++) {
-        QString str = source->index(i, c->column).data().toString();
+    for (auto i = 0; i < source->rowCount(); i++) {
+        auto str = source->index(i, c->column).data().toString();
         if (str.startsWith(c->prefix, c->cs)
 #if !defined(Q_OS_WIN) || defined(Q_OS_WINCE)
             && ((!isFsModel && !isDirModel) || QDir::toNativeSeparators(str) != QDir::separator())
@@ -497,7 +497,7 @@ bool QCompletionEngine::matchHint(QString part, const QModelIndex& parent, QMatc
 
     const CacheItem& map = cache[parent];
 
-    QString key = part;
+    auto key = part;
     while (!key.isEmpty()) {
         key.chop(1);
         if (map.contains(key)) {
@@ -525,15 +525,15 @@ void QCompletionEngine::saveInCache(QString part, const QModelIndex& parent, con
 {
     if (c->filterMode == Qt::MatchEndsWith)
         return;
-    QMatchData old = cache[parent].take(part);
+    auto old = cache[parent].take(part);
     cost = cost + m.indices.cost() - old.indices.cost();
     if (cost * sizeof(int) > 1024 * 1024) {
-        QMap<QModelIndex, CacheItem>::iterator it1 = cache.begin();
+        auto it1 = cache.begin();
         while (it1 != cache.end()) {
             CacheItem& ci = it1.value();
-            int sz = ci.count()/2;
-            QMap<QString, QMatchData>::iterator it2 = ci.begin();
-            int i = 0;
+            auto sz = ci.count()/2;
+            auto it2 = ci.begin();
+            auto i = 0;
             while (it2 != ci.end() && i < sz) {
                 cost -= it2.value().indices.cost();
                 it2 = ci.erase(it2);
@@ -555,7 +555,7 @@ void QCompletionEngine::saveInCache(QString part, const QModelIndex& parent, con
 ///////////////////////////////////////////////////////////////////////////////////
 QIndexMapper QSortedModelEngine::indexHint(QString part, const QModelIndex& parent, Qt::SortOrder order)
 {
-    const QAbstractItemModel *model = c->proxy->sourceModel();
+    auto model = c->proxy->sourceModel();
 
     if (c->cs == Qt::CaseInsensitive)
         part = part.toLower();
@@ -563,12 +563,12 @@ QIndexMapper QSortedModelEngine::indexHint(QString part, const QModelIndex& pare
     const CacheItem& map = cache[parent];
 
     // Try to find a lower and upper bound for the search from previous results
-    int to = model->rowCount(parent) - 1;
-    int from = 0;
-    const CacheItem::const_iterator it = map.lowerBound(part);
+    auto to = model->rowCount(parent) - 1;
+    auto from = 0;
+    const auto it = map.lowerBound(part);
 
     // look backward for first valid hint
-    for(CacheItem::const_iterator it1 = it; it1-- != map.constBegin();) {
+    for(auto it1 = it; it1-- != map.constBegin();) {
         const QMatchData& value = it1.value();
         if (value.isValid()) {
             if (order == Qt::AscendingOrder) {
@@ -581,7 +581,7 @@ QIndexMapper QSortedModelEngine::indexHint(QString part, const QModelIndex& pare
     }
 
     // look forward for first valid hint
-    for(CacheItem::const_iterator it2 = it; it2 != map.constEnd(); ++it2) {
+    for(auto it2 = it; it2 != map.constEnd(); ++it2) {
         const QMatchData& value = it2.value();
         if (value.isValid() && !it2.key().startsWith(part)) {
             if (order == Qt::AscendingOrder) {
@@ -598,26 +598,26 @@ QIndexMapper QSortedModelEngine::indexHint(QString part, const QModelIndex& pare
 
 Qt::SortOrder QSortedModelEngine::sortOrder(const QModelIndex &parent) const
 {
-    const QAbstractItemModel *model = c->proxy->sourceModel();
+    auto model = c->proxy->sourceModel();
 
-    int rowCount = model->rowCount(parent);
+    auto rowCount = model->rowCount(parent);
     if (rowCount < 2)
         return Qt::AscendingOrder;
-    QString first = model->data(model->index(0, c->column, parent), c->role).toString();
-    QString last = model->data(model->index(rowCount - 1, c->column, parent), c->role).toString();
+    auto first = model->data(model->index(0, c->column, parent), c->role).toString();
+    auto last = model->data(model->index(rowCount - 1, c->column, parent), c->role).toString();
     return QString::compare(first, last, c->cs) <= 0 ? Qt::AscendingOrder : Qt::DescendingOrder;
 }
 
 QMatchData QSortedModelEngine::filter(const QString& part, const QModelIndex& parent, int)
 {
-    const QAbstractItemModel *model = c->proxy->sourceModel();
+    auto model = c->proxy->sourceModel();
 
     QMatchData hint;
     if (lookupCache(part, parent, &hint))
         return hint;
 
     QIndexMapper indices;
-    Qt::SortOrder order = sortOrder(parent);
+    auto order = sortOrder(parent);
 
     if (matchHint(part, parent, &hint)) {
         if (!hint.isValid())
@@ -628,8 +628,8 @@ QMatchData QSortedModelEngine::filter(const QString& part, const QModelIndex& pa
     }
 
     // binary search the model within 'indices' for 'part' under 'parent'
-    int high = indices.to() + 1;
-    int low = indices.from() - 1;
+    auto high = indices.to() + 1;
+    auto low = indices.from() - 1;
     int probe;
     QModelIndex probeIndex;
     QString probeData;
@@ -639,7 +639,7 @@ QMatchData QSortedModelEngine::filter(const QString& part, const QModelIndex& pa
         probe = (high + low) / 2;
         probeIndex = model->index(probe, c->column, parent);
         probeData = model->data(probeIndex, c->role).toString();
-        const int cmp = QString::compare(probeData, part, c->cs);
+        const auto cmp = QString::compare(probeData, part, c->cs);
         if ((order == Qt::AscendingOrder && cmp >= 0)
             || (order == Qt::DescendingOrder && cmp < 0)) {
             high = probe;
@@ -661,11 +661,11 @@ QMatchData QSortedModelEngine::filter(const QString& part, const QModelIndex& pa
         return QMatchData();
     }
 
-    const bool exactMatch = QString::compare(probeData, part, c->cs) == 0;
-    int emi =  exactMatch ? (order == Qt::AscendingOrder ? low+1 : high-1) : -1;
+    const auto exactMatch = QString::compare(probeData, part, c->cs) == 0;
+    auto emi =  exactMatch ? (order == Qt::AscendingOrder ? low+1 : high-1) : -1;
 
-    int from = 0;
-    int to = 0;
+    auto from = 0;
+    auto to = 0;
     if (order == Qt::AscendingOrder) {
         from = low + 1;
         high = indices.to() + 1;
@@ -681,7 +681,7 @@ QMatchData QSortedModelEngine::filter(const QString& part, const QModelIndex& pa
         probe = (high + low) / 2;
         probeIndex = model->index(probe, c->column, parent);
         probeData = model->data(probeIndex, c->role).toString();
-        const bool startsWith = probeData.startsWith(part, c->cs);
+        const auto startsWith = probeData.startsWith(part, c->cs);
         if ((order == Qt::AscendingOrder && startsWith)
             || (order == Qt::DescendingOrder && !startsWith)) {
             low = probe;
@@ -701,16 +701,16 @@ int QUnsortedModelEngine::buildIndices(const QString& str, const QModelIndex& pa
 {
     Q_ASSERT(m->partial);
     Q_ASSERT(n != -1 || m->exactMatchIndex == -1);
-    const QAbstractItemModel *model = c->proxy->sourceModel();
+    auto model = c->proxy->sourceModel();
     int i, count = 0;
 
     for (i = 0; i < indices.count() && count != n; ++i) {
-        QModelIndex idx = model->index(indices[i], c->column, parent);
+        auto idx = model->index(indices[i], c->column, parent);
 
         if (!(model->flags(idx) & Qt::ItemIsSelectable))
             continue;
 
-        QString data = model->data(idx, c->role).toString();
+        auto data = model->data(idx, c->role).toString();
 
         switch (c->filterMode) {
         case Qt::MatchStartsWith:
@@ -752,10 +752,10 @@ void QUnsortedModelEngine::filterOnDemand(int n)
     if (!curMatch.partial)
         return;
     Q_ASSERT(n >= -1);
-    const QAbstractItemModel *model = c->proxy->sourceModel();
-    int lastRow = model->rowCount(curParent) - 1;
+    auto model = c->proxy->sourceModel();
+    auto lastRow = model->rowCount(curParent) - 1;
     QIndexMapper im(curMatch.indices.last() + 1, lastRow);
-    int lastIndex = buildIndices(curParts.last(), curParent, n, im, &curMatch);
+    auto lastIndex = buildIndices(curParts.last(), curParent, n, im, &curMatch);
     curMatch.partial = (lastRow != lastIndex);
     saveInCache(curParts.last(), curParent, curMatch);
 }
@@ -768,8 +768,8 @@ QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& 
     QIndexMapper im(v);
     QMatchData m(im, -1, true);
 
-    const QAbstractItemModel *model = c->proxy->sourceModel();
-    bool foundInCache = lookupCache(part, parent, &m);
+    auto model = c->proxy->sourceModel();
+    auto foundInCache = lookupCache(part, parent, &m);
 
     if (!foundInCache) {
         if (matchHint(part, parent, &hint) && !hint.isValid())
@@ -777,9 +777,9 @@ QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& 
     }
 
     if (!foundInCache && !hint.isValid()) {
-        const int lastRow = model->rowCount(parent) - 1;
+        const auto lastRow = model->rowCount(parent) - 1;
         QIndexMapper all(0, lastRow);
-        int lastIndex = buildIndices(part, parent, n, all, &m);
+        auto lastIndex = buildIndices(part, parent, n, all, &m);
         m.partial = (lastIndex != lastRow);
     } else {
         if (!foundInCache) { // build from hint as much as we can
@@ -788,10 +788,10 @@ QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& 
         }
         if (m.partial && ((n == -1 && m.exactMatchIndex == -1) || (m.indices.count() < n))) {
             // need more and have more
-            const int lastRow = model->rowCount(parent) - 1;
+            const auto lastRow = model->rowCount(parent) - 1;
             QIndexMapper rest(hint.indices.last() + 1, lastRow);
-            int want = n == -1 ? -1 : n - m.indices.count();
-            int lastIndex = buildIndices(part, parent, want, rest, &m);
+            auto want = n == -1 ? -1 : n - m.indices.count();
+            auto lastIndex = buildIndices(part, parent, want, rest, &m);
             m.partial = (lastRow != lastIndex);
         }
     }
@@ -862,7 +862,7 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
     } else {
         if (!(index.flags() & Qt::ItemIsEnabled))
             return;
-        QModelIndex si = proxy->mapToSource(index);
+        auto si = proxy->mapToSource(index);
         si = si.sibling(si.row(), column); // for clicked()
         completion = q->pathFromIndex(si);
 #ifndef QT_NO_DIRMODEL
@@ -899,12 +899,12 @@ void QCompleterPrivate::_q_autoResizePopup()
 
 void QCompleterPrivate::showPopup(const QRect& rect)
 {
-    const QRect screen = QApplication::desktop()->availableGeometry(widget);
-    Qt::LayoutDirection dir = widget->layoutDirection();
+    const auto screen = QApplication::desktop()->availableGeometry(widget);
+    auto dir = widget->layoutDirection();
     QPoint pos;
     int rh, w;
-    int h = (popup->sizeHintForRow(0) * qMin(maxVisibleItems, popup->model()->rowCount()) + 3) + 3;
-    QScrollBar *hsb = popup->horizontalScrollBar();
+    auto h = (popup->sizeHintForRow(0) * qMin(maxVisibleItems, popup->model()->rowCount()) + 3) + 3;
+    auto hsb = popup->horizontalScrollBar();
     if (hsb && hsb->isVisible())
         h += popup->horizontalScrollBar()->sizeHint().height();
 
@@ -925,8 +925,8 @@ void QCompleterPrivate::showPopup(const QRect& rect)
     if (pos.x() < screen.x())
         pos.setX(screen.x());
 
-    int top = pos.y() - rh - screen.top() + 2;
-    int bottom = screen.bottom() - pos.y();
+    auto top = pos.y() - rh - screen.top() + 2;
+    auto bottom = screen.bottom() - pos.y();
     h = qMax(h, popup->minimumHeight());
     if (h > bottom) {
         h = qMin(qMax(top, bottom), h);
@@ -1043,7 +1043,7 @@ QWidget *QCompleter::widget() const
 void QCompleter::setModel(QAbstractItemModel *model)
 {
     Q_D(QCompleter);
-    QAbstractItemModel *oldModel = d->proxy->sourceModel();
+    auto oldModel = d->proxy->sourceModel();
     d->proxy->setSourceModel(model);
     if (d->popup)
         setPopup(d->popup); // set the model and make new connections
@@ -1059,7 +1059,7 @@ void QCompleter::setModel(QAbstractItemModel *model)
     }
 #endif // QT_NO_DIRMODEL
 #ifndef QT_NO_FILESYSTEMMODEL
-    QFileSystemModel *fsModel = qobject_cast<QFileSystemModel *>(model);
+    auto fsModel = qobject_cast<QFileSystemModel *>(model);
     if (fsModel) {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
         setCaseSensitivity(Qt::CaseInsensitive);
@@ -1197,7 +1197,7 @@ void QCompleter::setPopup(QAbstractItemView *popup)
         popup->setModel(d->proxy);
      popup->hide();
 
-    Qt::FocusPolicy origPolicy = Qt::NoFocus;
+    auto origPolicy = Qt::NoFocus;
     if (d->widget)
         origPolicy = d->widget->focusPolicy();
     popup->setParent(0, Qt::Popup);
@@ -1209,7 +1209,7 @@ void QCompleter::setPopup(QAbstractItemView *popup)
     popup->installEventFilter(this);
     popup->setItemDelegate(new QCompleterItemDelegate(popup));
 #ifndef QT_NO_LISTVIEW
-    if (QListView *listView = qobject_cast<QListView *>(popup)) {
+    if (auto listView = qobject_cast<QListView *>(popup)) {
         listView->setModelColumn(d->column);
     }
 #endif
@@ -1234,13 +1234,13 @@ QAbstractItemView *QCompleter::popup() const
     Q_D(const QCompleter);
 #ifndef QT_NO_LISTVIEW
     if (!d->popup && completionMode() != QCompleter::InlineCompletion) {
-        QListView *listView = new QListView;
+        auto listView = new QListView;
         listView->setEditTriggers(QAbstractItemView::NoEditTriggers);
         listView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         listView->setSelectionBehavior(QAbstractItemView::SelectRows);
         listView->setSelectionMode(QAbstractItemView::SingleSelection);
         listView->setModelColumn(d->column);
-        QCompleter *that = const_cast<QCompleter*>(this);
+        auto that = const_cast<QCompleter*>(this);
         that->setPopup(listView);
     }
 #endif // QT_NO_LISTVIEW
@@ -1273,12 +1273,12 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 
     switch (e->type()) {
     case QEvent::KeyPress: {
-        QKeyEvent *ke = static_cast<QKeyEvent *>(e);
+        auto ke = static_cast<QKeyEvent *>(e);
 
-        QModelIndex curIndex = d->popup->currentIndex();
-        QModelIndexList selList = d->popup->selectionModel()->selectedIndexes();
+        auto curIndex = d->popup->currentIndex();
+        auto selList = d->popup->selectionModel()->selectedIndexes();
 
-        const int key = ke->key();
+        const auto key = ke->key();
         // In UnFilteredPopup mode, select the current item
         if ((key == Qt::Key_Up || key == Qt::Key_Down) && selList.isEmpty() && curIndex.isValid()
             && d->mode == QCompleter::UnfilteredPopupCompletion) {
@@ -1297,8 +1297,8 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 
         case Qt::Key_Up:
             if (!curIndex.isValid()) {
-                int rowCount = d->proxy->rowCount();
-                QModelIndex lastIndex = d->proxy->index(rowCount - 1, d->column);
+                auto rowCount = d->proxy->rowCount();
+                auto lastIndex = d->proxy->index(rowCount - 1, d->column);
                 d->setCurrentIndex(lastIndex);
                 return true;
             } else if (curIndex.row() == 0) {
@@ -1310,7 +1310,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 
         case Qt::Key_Down:
             if (!curIndex.isValid()) {
-                QModelIndex firstIndex = d->proxy->index(0, d->column);
+                auto firstIndex = d->proxy->index(0, d->column);
                 d->setCurrentIndex(firstIndex);
                 return true;
             } else if (curIndex.row() == d->proxy->rowCount() - 1) {
@@ -1445,7 +1445,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 void QCompleter::complete(const QRect& rect)
 {
     Q_D(QCompleter);
-    QModelIndex idx = d->proxy->currentIndex(false);
+    auto idx = d->proxy->currentIndex(false);
     d->hiddenBecauseNoMatch = false;
     if (d->mode == QCompleter::InlineCompletion) {
         if (idx.isValid())
@@ -1574,7 +1574,7 @@ void QCompleter::setCompletionColumn(int column)
     if (d->column == column)
         return;
 #ifndef QT_NO_LISTVIEW
-    if (QListView *listView = qobject_cast<QListView *>(d->popup))
+    if (auto listView = qobject_cast<QListView *>(d->popup))
         listView->setModelColumn(column);
 #endif
     d->column = column;
@@ -1757,11 +1757,11 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
     if (!index.isValid())
         return QString();
 
-    QAbstractItemModel *sourceModel = d->proxy->sourceModel();
+    auto sourceModel = d->proxy->sourceModel();
     if (!sourceModel)
         return QString();
-    bool isDirModel = false;
-    bool isFsModel = false;
+    auto isDirModel = false;
+    auto isFsModel = false;
 #ifndef QT_NO_DIRMODEL
     isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != 0;
 #endif
@@ -1771,7 +1771,7 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
     if (!isDirModel && !isFsModel)
         return sourceModel->data(index, d->role).toString();
 
-    QModelIndex idx = index;
+    auto idx = index;
     QStringList list;
     do {
         QString t;
@@ -1782,7 +1782,7 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
             t = sourceModel->data(idx, QFileSystemModel::FileNameRole).toString();
 #endif
         list.prepend(t);
-        QModelIndex parent = idx.parent();
+        auto parent = idx.parent();
         idx = parent.sibling(parent.row(), index.column());
     } while (idx.isValid());
 
@@ -1809,8 +1809,8 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
 */
 QStringList QCompleter::splitPath(const QString& path) const
 {
-    bool isDirModel = false;
-    bool isFsModel = false;
+    auto isDirModel = false;
+    auto isFsModel = false;
 #ifndef QT_NO_DIRMODEL
     Q_D(const QCompleter);
     isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != 0;
@@ -1825,7 +1825,7 @@ QStringList QCompleter::splitPath(const QString& path) const
     if ((!isDirModel && !isFsModel) || path.isEmpty())
         return QStringList(completionPrefix());
 
-    QString pathCopy = QDir::toNativeSeparators(path);
+    auto pathCopy = QDir::toNativeSeparators(path);
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (pathCopy == QLatin1String("\\") || pathCopy == QLatin1String("\\\\"))
         return QStringList(pathCopy);
@@ -1834,8 +1834,8 @@ QStringList QCompleter::splitPath(const QString& path) const
         pathCopy = pathCopy.mid(2);
 #endif
 
-    const QChar sep = QDir::separator();
-    QStringList parts = pathCopy.split(sep);
+    const auto sep = QDir::separator();
+    auto parts = pathCopy.split(sep);
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (startsWithDoubleSlash)

@@ -93,9 +93,9 @@ public:
 
     int indexToLastNonPermanentWidget() const
     {
-        int i = items.size() - 1;
+        auto i = items.size() - 1;
         for (; i >= 0; --i) {
-            SBItem *item = items.at(i);
+            auto item = items.at(i);
             if (!(item && item->p))
                 break;
         }
@@ -123,10 +123,10 @@ public:
 QRect QStatusBarPrivate::messageRect() const
 {
     Q_Q(const QStatusBar);
-    bool rtl = q->layoutDirection() == Qt::RightToLeft;
+    auto rtl = q->layoutDirection() == Qt::RightToLeft;
 
-    int left = 6;
-    int right = q->width() - 12;
+    auto left = 6;
+    auto right = q->width() - 12;
 
 #ifndef QT_NO_SIZEGRIP
     if (resizer && resizer->isVisible()) {
@@ -137,8 +137,8 @@ QRect QStatusBarPrivate::messageRect() const
     }
 #endif
 
-    for (int i=0; i<items.size(); ++i) {
-        QStatusBarPrivate::SBItem* item = items.at(i);
+    for (auto i=0; i<items.size(); ++i) {
+        auto item = items.at(i);
         if (!item)
             break;
         if (item->p && item->w->isVisible()) {
@@ -299,9 +299,9 @@ int QStatusBar::insertWidget(int index, QWidget *widget, int stretch)
         return -1;
 
     Q_D(QStatusBar);
-    QStatusBarPrivate::SBItem* item = new QStatusBarPrivate::SBItem(widget, stretch, false);
+    auto item = new QStatusBarPrivate::SBItem(widget, stretch, false);
 
-    int idx = d->indexToLastNonPermanentWidget();
+    auto idx = d->indexToLastNonPermanentWidget();
     if (Q_UNLIKELY(index < 0 || index > d->items.size() || (idx >= 0 && index > idx + 1))) {
         qWarning("QStatusBar::insertWidget: Index out of range (%d), appending widget", index);
         index = idx + 1;
@@ -364,9 +364,9 @@ int QStatusBar::insertPermanentWidget(int index, QWidget *widget, int stretch)
         return -1;
 
     Q_D(QStatusBar);
-    QStatusBarPrivate::SBItem* item = new QStatusBarPrivate::SBItem(widget, stretch, true);
+    auto item = new QStatusBarPrivate::SBItem(widget, stretch, true);
 
-    int idx = d->indexToLastNonPermanentWidget();
+    auto idx = d->indexToLastNonPermanentWidget();
     if (Q_UNLIKELY(index < 0 || index > d->items.size() || (idx >= 0 && index <= idx))) {
         qWarning("QStatusBar::insertPermanentWidget: Index out of range (%d), appending widget", index);
         index = d->items.size();
@@ -396,9 +396,9 @@ void QStatusBar::removeWidget(QWidget *widget)
         return;
 
     Q_D(QStatusBar);
-    bool found = false;
+    auto found = false;
     QStatusBarPrivate::SBItem* item;
-    for (int i=0; i<d->items.size(); ++i) {
+    for (auto i=0; i<d->items.size(); ++i) {
         item = d->items.at(i);
         if (!item)
             break;
@@ -489,12 +489,12 @@ void QStatusBar::reformat()
         d->box->setMargin(0);
     }
     vbox->addSpacing(3);
-    QBoxLayout* l = new QHBoxLayout;
+    auto l = new QHBoxLayout;
     vbox->addLayout(l);
     l->addSpacing(2);
     l->setSpacing(6);
 
-    int maxH = fontMetrics().height();
+    auto maxH = fontMetrics().height();
 
     int i;
     QStatusBarPrivate::SBItem* item;
@@ -503,7 +503,7 @@ void QStatusBar::reformat()
         if (!item || item->p)
             break;
         l->addWidget(item->w, item->s);
-        int itemH = qMin(qSmartMinSize(item->w).height(), item->w->maximumHeight());
+        auto itemH = qMin(qSmartMinSize(item->w).height(), item->w->maximumHeight());
         maxH = qMax(maxH, itemH);
     }
 
@@ -514,7 +514,7 @@ void QStatusBar::reformat()
         if (!item)
             break;
         l->addWidget(item->w, item->s);
-        int itemH = qMin(qSmartMinSize(item->w).height(), item->w->maximumHeight());
+        auto itemH = qMin(qSmartMinSize(item->w).height(), item->w->maximumHeight());
         maxH = qMax(maxH, itemH);
     }
 #ifndef QT_NO_SIZEGRIP
@@ -616,10 +616,10 @@ QString QStatusBar::currentMessage() const
 void QStatusBar::hideOrShow()
 {
     Q_D(QStatusBar);
-    bool haveMessage = !d->tempItem.isEmpty();
+    auto haveMessage = !d->tempItem.isEmpty();
 
     QStatusBarPrivate::SBItem* item = 0;
-    for (int i=0; i<d->items.size(); ++i) {
+    for (auto i=0; i<d->items.size(); ++i) {
         item = d->items.at(i);
         if (!item || item->p)
             break;
@@ -665,17 +665,17 @@ void QStatusBar::showEvent(QShowEvent *)
 void QStatusBar::paintEvent(QPaintEvent *event)
 {
     Q_D(QStatusBar);
-    bool haveMessage = !d->tempItem.isEmpty();
+    auto haveMessage = !d->tempItem.isEmpty();
 
     QPainter p(this);
     QStyleOption opt;
     opt.initFrom(this);
     style()->drawPrimitive(QStyle::PE_PanelStatusBar, &opt, &p, this);
 
-    for (int i=0; i<d->items.size(); ++i) {
-        QStatusBarPrivate::SBItem* item = d->items.at(i);
+    for (auto i=0; i<d->items.size(); ++i) {
+        auto item = d->items.at(i);
         if (item && item->w->isVisible() && (!haveMessage || item->p)) {
-            QRect ir = item->w->geometry().adjusted(-2, -1, 2, 1);
+            auto ir = item->w->geometry().adjusted(-2, -1, 2, 1);
             if (event->rect().intersects(ir)) {
                 QStyleOption opt(0);
                 opt.rect = ir;
@@ -710,14 +710,14 @@ bool QStatusBar::event(QEvent *e)
     if (e->type() == QEvent::LayoutRequest
         ) {
         // Calculate new strut height and call reformat() if it has changed
-        int maxH = fontMetrics().height();
+        auto maxH = fontMetrics().height();
 
         QStatusBarPrivate::SBItem* item = 0;
-        for (int i=0; i<d->items.size(); ++i) {
+        for (auto i=0; i<d->items.size(); ++i) {
             item = d->items.at(i);
             if (!item)
                 break;
-            int itemH = qMin(qSmartMinSize(item->w).height(), item->w->maximumHeight());
+            auto itemH = qMin(qSmartMinSize(item->w).height(), item->w->maximumHeight());
             maxH = qMax(maxH, itemH);
         }
 
@@ -733,7 +733,7 @@ bool QStatusBar::event(QEvent *e)
     }
     if (e->type() == QEvent::ChildRemoved) {
         QStatusBarPrivate::SBItem* item = 0;
-        for (int i=0; i<d->items.size(); ++i) {
+        for (auto i=0; i<d->items.size(); ++i) {
             item = d->items.at(i);
             if (!item)
                 break;

@@ -108,7 +108,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 QStyle *QStyleFactory::create(const QString& key)
 {
     QStyle *ret = 0;
-    QString style = key.toLower();
+    auto style = key.toLower();
 #ifndef QT_NO_STYLE_WINDOWS
     if (style == QLatin1String("windows"))
         ret = new QWindowsStyle;
@@ -172,9 +172,9 @@ QStringList QStyleFactory::keys()
     QStringList list;
     typedef QMultiMap<int, QString> PluginKeyMap;
 
-    const PluginKeyMap keyMap = loader()->keyMap();
-    const PluginKeyMap::const_iterator cend = keyMap.constEnd();
-    for (PluginKeyMap::const_iterator it = keyMap.constBegin(); it != cend; ++it)
+    const auto keyMap = loader()->keyMap();
+    const auto cend = keyMap.constEnd();
+    for (auto it = keyMap.constBegin(); it != cend; ++it)
         list.append(it.value());
 #ifndef QT_NO_STYLE_WINDOWS
     if (!list.contains(QLatin1String("Windows")))

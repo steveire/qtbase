@@ -142,15 +142,15 @@ void QDial::initStyleOption(QStyleOptionSlider *option) const
 int QDialPrivate::valueFromPoint(const QPoint &p) const
 {
     Q_Q(const QDial);
-    double yy = q->height()/2.0 - p.y();
-    double xx = p.x() - q->width()/2.0;
-    double a = (xx || yy) ? std::atan2(yy, xx) : 0;
+    auto yy = q->height()/2.0 - p.y();
+    auto xx = p.x() - q->width()/2.0;
+    auto a = (xx || yy) ? std::atan2(yy, xx) : 0;
 
     if (a < Q_PI / -2)
         a = a + Q_PI * 2;
 
-    int dist = 0;
-    int minv = minimum, maxv = maximum;
+    auto dist = 0;
+    auto minv = minimum, maxv = maximum;
 
     if (minimum < 0) {
         dist = -minimum;
@@ -158,7 +158,7 @@ int QDialPrivate::valueFromPoint(const QPoint &p) const
         maxv = maximum + dist;
     }
 
-    int r = maxv - minv;
+    auto r = maxv - minv;
     int v;
     if (wrapping)
         v =  (int)(0.5 + minv + r * (Q_PI * 3 / 2 - a) / (2 * Q_PI));
@@ -393,9 +393,9 @@ int QDial::notchSize() const
 {
     Q_D(const QDial);
     // radius of the arc
-    int r = qMin(width(), height())/2;
+    auto r = qMin(width(), height())/2;
     // length of the whole arc
-    int l = (int)(r * (d->wrapping ? 6 : 5) * Q_PI / 6);
+    auto l = (int)(r * (d->wrapping ? 6 : 5) * Q_PI / 6);
     // length of the arc from minValue() to minValue()+pageStep()
     if (d->maximum > d->minimum + d->pageStep)
         l = (int)(0.5 + l * d->pageStep / (d->maximum - d->minimum));

@@ -177,9 +177,9 @@ static QString int2string(int num, int base, int ndigits, bool *oflow)
         case QLCDNumber::Bin:
             {
                 char buf[42];
-                char *p = &buf[41];
+                auto p = &buf[41];
                 uint n = num;
-                int len = 0;
+                auto len = 0;
                 *p = '\0';
                 do {
                     *--p = (char)((n&1)+'0');
@@ -194,7 +194,7 @@ static QString int2string(int num, int base, int ndigits, bool *oflow)
             break;
     }
     if (negative) {
-        for (int i=0; i<(int)s.length(); i++) {
+        for (auto i=0; i<(int)s.length(); i++) {
             if (s[i] != QLatin1Char(' ')) {
                 if (i != 0) {
                     s[i-1] = QLatin1Char('-');
@@ -215,7 +215,7 @@ static QString double2string(double num, int base, int ndigits, bool *oflow)
 {
     QString s;
     if (base != QLCDNumber::Dec) {
-        bool of = num >= 2147483648.0 || num < -2147483648.0;
+        auto of = num >= 2147483648.0 || num < -2147483648.0;
         if (of) {                             // oops, integer overflow
             if (oflow)
                 *oflow = true;
@@ -223,10 +223,10 @@ static QString double2string(double num, int base, int ndigits, bool *oflow)
         }
         s = int2string((int)num, base, ndigits, 0);
     } else {                                    // decimal base
-        int nd = ndigits;
+        auto nd = ndigits;
         do {
             s = QString::asprintf("%*.*g", ndigits, nd, num);
-            int i = s.indexOf(QLatin1Char('e'));
+            auto i = s.indexOf(QLatin1Char('e'));
             if (i > 0 && s[i+1]==QLatin1Char('+')) {
                 s[i] = QLatin1Char(' ');
                 s[i+1] = QLatin1Char('e');
@@ -424,7 +424,7 @@ void QLCDNumber::setDigitCount(int numDigits)
         d->points.fill(0, d->ndigits);
         d->digitStr[d->ndigits - 1] = QLatin1Char('0'); // "0" is the default number
     } else {
-        bool doDisplay = d->ndigits == 0;
+        auto doDisplay = d->ndigits == 0;
         if (numDigits == d->ndigits)             // no change
             return;
         int i;
@@ -442,7 +442,7 @@ void QLCDNumber::setDigitCount(int numDigits)
         } else {                                        // shrink
             dif = d->ndigits - numDigits;
             d->digitStr = d->digitStr.right(numDigits);
-            QBitArray tmpPoints = d->points;
+            auto tmpPoints = d->points;
             d->points.resize(numDigits);
             for (i=0; i<(int)numDigits; i++)
                 d->points.setBit(i, tmpPoints.testBit(i+dif));
@@ -552,7 +552,7 @@ void QLCDNumber::display(double num)
     Q_D(QLCDNumber);
     d->val = num;
     bool of;
-    QString s = double2string(d->val, d->base, d->ndigits, &of);
+    auto s = double2string(d->val, d->base, d->ndigits, &of);
     if (of)
         emit overflow();
     else
@@ -589,7 +589,7 @@ void QLCDNumber::display(int num)
     Q_D(QLCDNumber);
     d->val = (double)num;
     bool of;
-    QString s = int2string(num, d->base, d->ndigits, &of);
+    auto s = int2string(num, d->base, d->ndigits, &of);
     if (of)
         emit overflow();
     else
@@ -614,8 +614,8 @@ void QLCDNumber::display(const QString &s)
 {
     Q_D(QLCDNumber);
     d->val = 0;
-    bool ok = false;
-    double v = s.toDouble(&ok);
+    auto ok = false;
+    auto v = s.toDouble(&ok);
     if (ok)
         d->val = v;
     d->internalSetString(s);
@@ -727,7 +727,7 @@ void QLCDNumberPrivate::internalSetString(const QString& s)
     Q_Q(QLCDNumber);
     QString buffer;
     int i;
-    int len = s.length();
+    auto len = s.length();
     QBitArray newPoints(ndigits);
 
     if (!smallPoint) {
@@ -736,8 +736,8 @@ void QLCDNumberPrivate::internalSetString(const QString& s)
         else
             buffer = s.right(ndigits).rightJustified(ndigits, QLatin1Char(' '));
     } else {
-        int  index = -1;
-        bool lastWasPoint = true;
+        auto index = -1;
+        auto lastWasPoint = true;
         newPoints.clearBit(0);
         for (i=0; i<len; i++) {
             if (s[i] == QLatin1Char('.')) {
@@ -790,24 +790,24 @@ void QLCDNumberPrivate::drawString(const QString &s, QPainter &p,
     Q_Q(QLCDNumber);
     QPoint  pos;
 
-    int digitSpace = smallPoint ? 2 : 1;
-    int xSegLen    = q->width()*5/(ndigits*(5 + digitSpace) + digitSpace);
-    int ySegLen    = q->height()*5/12;
-    int segLen     = ySegLen > xSegLen ? xSegLen : ySegLen;
-    int xAdvance   = segLen*(5 + digitSpace)/5;
-    int xOffset    = (q->width() - ndigits*xAdvance + segLen/5)/2;
-    int yOffset    = (q->height() - segLen*2)/2;
+    auto digitSpace = smallPoint ? 2 : 1;
+    auto xSegLen    = q->width()*5/(ndigits*(5 + digitSpace) + digitSpace);
+    auto ySegLen    = q->height()*5/12;
+    auto segLen     = ySegLen > xSegLen ? xSegLen : ySegLen;
+    auto xAdvance   = segLen*(5 + digitSpace)/5;
+    auto xOffset    = (q->width() - ndigits*xAdvance + segLen/5)/2;
+    auto yOffset    = (q->height() - segLen*2)/2;
 
-    for (int i=0;  i<ndigits; i++) {
+    for (auto i=0;  i<ndigits; i++) {
         pos = QPoint(xOffset + xAdvance*i, yOffset);
         if (newString)
             drawDigit(pos, p, segLen, s[i].toLatin1(), digitStr[i].toLatin1());
         else
             drawDigit(pos, p, segLen, s[i].toLatin1());
         if (newPoints) {
-            char newPoint = newPoints->testBit(i) ? '.' : ' ';
+            auto newPoint = newPoints->testBit(i) ? '.' : ' ';
             if (newString) {
-                char oldPoint = points.testBit(i) ? '.' : ' ';
+                auto oldPoint = points.testBit(i) ? '.' : ' ';
                 drawDigit(pos, p, segLen, newPoint, oldPoint);
             } else {
                 drawDigit(pos, p, segLen, newPoint);
@@ -888,8 +888,8 @@ void QLCDNumberPrivate::drawSegment(const QPoint &pos, char segmentNo, QPainter 
 {
     Q_Q(QLCDNumber);
     QPoint ppt;
-    QPoint pt = pos;
-    int width = segLen/5;
+    auto pt = pos;
+    auto width = segLen/5;
 
     const QPalette &pal = q->palette();
     QColor lightColor,darkColor,fgColor;

@@ -62,12 +62,12 @@ QLayoutItem* QStackedLayoutPrivate::replaceAt(int idx, QLayoutItem *newitem)
     Q_Q(QStackedLayout);
     if (idx < 0 || idx >= list.size() || !newitem)
         return 0;
-    QWidget *wdg = newitem->widget();
+    auto wdg = newitem->widget();
     if (Q_UNLIKELY(!wdg)) {
         qWarning("QStackedLayout::replaceAt: Only widgets can be added");
         return 0;
     }
-    QLayoutItem *orgitem = list.at(idx);
+    auto orgitem = list.at(idx);
     list.replace(idx, newitem);
     if (idx == index)
         q->setCurrentIndex(index);
@@ -224,7 +224,7 @@ int QStackedLayout::insertWidget(int index, QWidget *widget)
     index = qMin(index, d->list.count());
     if (index < 0)
         index = d->list.count();
-    QWidgetItem *wi = QLayoutPrivate::createWidgetItem(this, widget);
+    auto wi = QLayoutPrivate::createWidgetItem(this, widget);
     d->list.insert(index, wi);
     invalidate();
     if (d->index < 0) {
@@ -269,11 +269,11 @@ QLayoutItem *QStackedLayout::takeAt(int index)
     Q_D(QStackedLayout);
     if (index <0 || index >= d->list.size())
         return 0;
-    QLayoutItem *item = d->list.takeAt(index);
+    auto item = d->list.takeAt(index);
     if (index == d->index) {
         d->index = -1;
         if ( d->list.count() > 0 ) {
-            int newIndex = (index == d->list.count()) ? index-1 : index;
+            auto newIndex = (index == d->list.count()) ? index-1 : index;
             setCurrentIndex(newIndex);
         } else {
             emit currentChanged(-1);
@@ -298,13 +298,13 @@ QLayoutItem *QStackedLayout::takeAt(int index)
 void QStackedLayout::setCurrentIndex(int index)
 {
     Q_D(QStackedLayout);
-    QWidget *prev = currentWidget();
-    QWidget *next = widget(index);
+    auto prev = currentWidget();
+    auto next = widget(index);
     if (!next || next == prev)
         return;
 
-    bool reenableUpdates = false;
-    QWidget *parent = parentWidget();
+    auto reenableUpdates = false;
+    auto parent = parentWidget();
 
     if (parent && parent->updatesEnabled()) {
         reenableUpdates = true;
@@ -312,7 +312,7 @@ void QStackedLayout::setCurrentIndex(int index)
     }
 
     QPointer<QWidget> fw = parent ? parent->window()->focusWidget() : 0;
-    const bool focusWasOnOldPage = fw && (prev && prev->isAncestorOf(fw));
+    const auto focusWasOnOldPage = fw && (prev && prev->isAncestorOf(fw));
 
     if (prev) {
         prev->clearFocus();
@@ -330,7 +330,7 @@ void QStackedLayout::setCurrentIndex(int index)
     if (parent) {
         if (focusWasOnOldPage) {
             // look for the best focus widget we can find
-            if (QWidget *nfw = next->focusWidget())
+            if (auto nfw = next->focusWidget())
                 nfw->setFocus();
             else {
                 // second best: first child widget in the focus chain
@@ -372,7 +372,7 @@ int QStackedLayout::currentIndex() const
  */
 void QStackedLayout::setCurrentWidget(QWidget *widget)
 {
-    int index = indexOf(widget);
+    auto index = indexOf(widget);
     if (Q_UNLIKELY(index == -1)) {
         qWarning("QStackedLayout::setCurrentWidget: Widget %p not contained in stack", widget);
         return;
@@ -425,7 +425,7 @@ int QStackedLayout::count() const
 */
 void QStackedLayout::addItem(QLayoutItem *item)
 {
-    QWidget *widget = item->widget();
+    auto widget = item->widget();
     if (Q_UNLIKELY(!widget)) {
         qWarning("QStackedLayout::addItem: Only widgets can be added");
         return;
@@ -441,10 +441,10 @@ QSize QStackedLayout::sizeHint() const
 {
     Q_D(const QStackedLayout);
     QSize s(0, 0);
-    int n = d->list.count();
+    auto n = d->list.count();
 
-    for (int i = 0; i < n; ++i)
-        if (QWidget *widget = d->list.at(i)->widget()) {
+    for (auto i = 0; i < n; ++i)
+        if (auto widget = d->list.at(i)->widget()) {
             QSize ws(widget->sizeHint());
             if (widget->sizePolicy().horizontalPolicy() == QSizePolicy::Ignored)
                 ws.setWidth(0);
@@ -462,10 +462,10 @@ QSize QStackedLayout::minimumSize() const
 {
     Q_D(const QStackedLayout);
     QSize s(0, 0);
-    int n = d->list.count();
+    auto n = d->list.count();
 
-    for (int i = 0; i < n; ++i)
-        if (QWidget *widget = d->list.at(i)->widget())
+    for (auto i = 0; i < n; ++i)
+        if (auto widget = d->list.at(i)->widget())
             s = s.expandedTo(qSmartMinSize(widget));
     return s;
 }
@@ -478,13 +478,13 @@ void QStackedLayout::setGeometry(const QRect &rect)
     Q_D(QStackedLayout);
     switch (d->stackingMode) {
     case StackOne:
-        if (QWidget *widget = currentWidget())
+        if (auto widget = currentWidget())
             widget->setGeometry(rect);
         break;
     case StackAll:
-        if (const int n = d->list.count())
-            for (int i = 0; i < n; ++i)
-                if (QWidget *widget = d->list.at(i)->widget())
+        if (const auto n = d->list.count())
+            for (auto i = 0; i < n; ++i)
+                if (auto widget = d->list.at(i)->widget())
                     widget->setGeometry(rect);
         break;
     }
@@ -495,10 +495,10 @@ void QStackedLayout::setGeometry(const QRect &rect)
 */
 bool QStackedLayout::hasHeightForWidth() const
 {
-    const int n = count();
+    const auto n = count();
 
-    for (int i = 0; i < n; ++i) {
-        if (QLayoutItem *item = itemAt(i)) {
+    for (auto i = 0; i < n; ++i) {
+        if (auto item = itemAt(i)) {
             if (item->hasHeightForWidth())
                 return true;
         }
@@ -511,12 +511,12 @@ bool QStackedLayout::hasHeightForWidth() const
 */
 int QStackedLayout::heightForWidth(int width) const
 {
-    const int n = count();
+    const auto n = count();
 
-    int hfw = 0;
-    for (int i = 0; i < n; ++i) {
-        if (QLayoutItem *item = itemAt(i)) {
-            if (QWidget *w = item->widget())
+    auto hfw = 0;
+    for (auto i = 0; i < n; ++i) {
+        if (auto item = itemAt(i)) {
+            if (auto w = item->widget())
                 /*
                 Note: Does not query the layout item, but bypasses it and asks the widget
                 directly. This is consistent with how QStackedLayout::sizeHint() is
@@ -569,23 +569,23 @@ void QStackedLayout::setStackingMode(StackingMode stackingMode)
         return;
     d->stackingMode = stackingMode;
 
-    const int n = d->list.count();
+    const auto n = d->list.count();
     if (n == 0)
         return;
 
     switch (d->stackingMode) {
     case StackOne:
-        if (const int idx = currentIndex())
-            for (int i = 0; i < n; ++i)
-                if (QWidget *widget = d->list.at(i)->widget())
+        if (const auto idx = currentIndex())
+            for (auto i = 0; i < n; ++i)
+                if (auto widget = d->list.at(i)->widget())
                     widget->setVisible(i == idx);
         break;
     case StackAll: { // Turn overlay on: Make sure all widgets are the same size
         QRect geometry;
-        if (const QWidget *widget = currentWidget())
+        if (auto widget = currentWidget())
             geometry = widget->geometry();
-        for (int i = 0; i < n; ++i)
-            if (QWidget *widget = d->list.at(i)->widget()) {
+        for (auto i = 0; i < n; ++i)
+            if (auto widget = d->list.at(i)->widget()) {
                 if (!geometry.isNull())
                     widget->setGeometry(geometry);
                 widget->setVisible(true);

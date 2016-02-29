@@ -185,7 +185,7 @@ QStyleOption::~QStyleOption()
 */
 void QStyleOption::init(const QWidget *widget)
 {
-    QWidget *window = widget->window();
+    auto window = widget->window();
     state = QStyle::State_None;
     if (widget->isEnabled())
         state |= QStyle::State_Enabled;

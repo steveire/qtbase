@@ -293,8 +293,8 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseRelease:
     case QEvent::GraphicsSceneMouseDoubleClick: {
-        QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent*>(e);
-        QGraphicsSceneMouseEvent *me2 = new QGraphicsSceneMouseEvent(me->type());
+        auto me = static_cast<QGraphicsSceneMouseEvent*>(e);
+        auto me2 = new QGraphicsSceneMouseEvent(me->type());
         me2->setWidget(me->widget());
         me2->setPos(me->pos());
         me2->setScenePos(me->scenePos());
@@ -316,8 +316,8 @@ static QEvent *cloneEvent(QEvent *e)
     }
 
     case QEvent::GraphicsSceneContextMenu: {
-        QGraphicsSceneContextMenuEvent *me = static_cast<QGraphicsSceneContextMenuEvent*>(e);
-        QGraphicsSceneContextMenuEvent *me2 = new QGraphicsSceneContextMenuEvent(me->type());
+        auto me = static_cast<QGraphicsSceneContextMenuEvent*>(e);
+        auto me2 = new QGraphicsSceneContextMenuEvent(me->type());
         me2->setWidget(me->widget());
         me2->setPos(me->pos());
         me2->setScenePos(me->scenePos());
@@ -330,8 +330,8 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::GraphicsSceneHoverEnter:
     case QEvent::GraphicsSceneHoverMove:
     case QEvent::GraphicsSceneHoverLeave: {
-        QGraphicsSceneHoverEvent *he = static_cast<QGraphicsSceneHoverEvent*>(e);
-        QGraphicsSceneHoverEvent *he2 = new QGraphicsSceneHoverEvent(he->type());
+        auto he = static_cast<QGraphicsSceneHoverEvent*>(e);
+        auto he2 = new QGraphicsSceneHoverEvent(he->type());
         he2->setPos(he->pos());
         he2->setScenePos(he->scenePos());
         he2->setScreenPos(he->screenPos());
@@ -347,8 +347,8 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::GraphicsSceneDragMove:
     case QEvent::GraphicsSceneDragLeave:
     case QEvent::GraphicsSceneDrop: {
-        QGraphicsSceneDragDropEvent *dde = static_cast<QGraphicsSceneDragDropEvent*>(e);
-        QGraphicsSceneDragDropEvent *dde2 = new QGraphicsSceneDragDropEvent(dde->type());
+        auto dde = static_cast<QGraphicsSceneDragDropEvent*>(e);
+        auto dde2 = new QGraphicsSceneDragDropEvent(dde->type());
         dde2->setPos(dde->pos());
         dde2->setScenePos(dde->scenePos());
         dde2->setScreenPos(dde->screenPos());
@@ -357,8 +357,8 @@ static QEvent *cloneEvent(QEvent *e)
         return dde2;
     }
     case QEvent::GraphicsSceneWheel: {
-        QGraphicsSceneWheelEvent *we = static_cast<QGraphicsSceneWheelEvent*>(e);
-        QGraphicsSceneWheelEvent *we2 = new QGraphicsSceneWheelEvent(we->type());
+        auto we = static_cast<QGraphicsSceneWheelEvent*>(e);
+        auto we2 = new QGraphicsSceneWheelEvent(we->type());
         we2->setPos(we->pos());
         we2->setScenePos(we->scenePos());
         we2->setScreenPos(we->screenPos());
@@ -401,15 +401,15 @@ static QEvent *cloneEvent(QEvent *e)
         break;
 #ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneResize: {
-        QGraphicsSceneResizeEvent *re = static_cast<QGraphicsSceneResizeEvent*>(e);
-        QGraphicsSceneResizeEvent *re2 = new QGraphicsSceneResizeEvent();
+        auto re = static_cast<QGraphicsSceneResizeEvent*>(e);
+        auto re2 = new QGraphicsSceneResizeEvent();
         re2->setOldSize(re->oldSize());
         re2->setNewSize(re->newSize());
         return re2;
     }
     case QEvent::GraphicsSceneMove: {
-        QGraphicsSceneMoveEvent *me = static_cast<QGraphicsSceneMoveEvent*>(e);
-        QGraphicsSceneMoveEvent *me2 = new QGraphicsSceneMoveEvent();
+        auto me = static_cast<QGraphicsSceneMoveEvent*>(e);
+        auto me2 = new QGraphicsSceneMoveEvent();
         me2->setWidget(me->widget());
         me2->setNewPos(me->newPos());
         me2->setOldPos(me->oldPos());

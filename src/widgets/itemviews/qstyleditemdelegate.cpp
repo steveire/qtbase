@@ -289,7 +289,7 @@ QString QStyledItemDelegate::displayText(const QVariant &value, const QLocale& l
     default:
         // convert new lines into line separators
         text = value.toString();
-        for (int i = 0; i < text.count(); ++i) {
+        for (auto i = 0; i < text.count(); ++i) {
             if (text.at(i) == QLatin1Char('\n'))
                 text[i] = QChar::LineSeparator;
         }
@@ -308,7 +308,7 @@ QString QStyledItemDelegate::displayText(const QVariant &value, const QLocale& l
 void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
                                          const QModelIndex &index) const
 {
-    QVariant value = index.data(Qt::FontRole);
+    auto value = index.data(Qt::FontRole);
     if (value.isValid() && !value.isNull()) {
         option->font = qvariant_cast<QFont>(value).resolve(option->font);
         option->fontMetrics = QFontMetrics(option->font);
@@ -342,8 +342,8 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
                 mode = QIcon::Selected;
             else
                 mode = QIcon::Normal;
-            QIcon::State state = option->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
-            QSize actualSize = option->icon.actualSize(option->decorationSize, mode, state);
+            auto state = option->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
+            auto actualSize = option->icon.actualSize(option->decorationSize, mode, state);
             // For highdpi icons actualSize might be larger than decorationSize, which we don't want. Clamp it to decorationSize.
             option->decorationSize = QSize(qMin(option->decorationSize.width(), actualSize.width()),
                                            qMin(option->decorationSize.height(), actualSize.height()));
@@ -356,13 +356,13 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
             break;
         }
         case QVariant::Image: {
-            QImage image = qvariant_cast<QImage>(value);
+            auto image = qvariant_cast<QImage>(value);
             option->icon = QIcon(QPixmap::fromImage(image));
             option->decorationSize = image.size() / image.devicePixelRatio();
             break;
         }
         case QVariant::Pixmap: {
-            QPixmap pixmap = qvariant_cast<QPixmap>(value);
+            auto pixmap = qvariant_cast<QPixmap>(value);
             option->icon = QIcon(pixmap);
             option->decorationSize = pixmap.size() / pixmap.devicePixelRatio();
             break;
@@ -411,11 +411,11 @@ void QStyledItemDelegate::paint(QPainter *painter,
 {
     Q_ASSERT(index.isValid());
 
-    QStyleOptionViewItem opt = option;
+    auto opt = option;
     initStyleOption(&opt, index);
 
-    const QWidget *widget = QStyledItemDelegatePrivate::widget(option);
-    QStyle *style = widget ? widget->style() : QApplication::style();
+    auto widget = QStyledItemDelegatePrivate::widget(option);
+    auto style = widget ? widget->style() : QApplication::style();
     style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, widget);
 }
 
@@ -432,14 +432,14 @@ void QStyledItemDelegate::paint(QPainter *painter,
 QSize QStyledItemDelegate::sizeHint(const QStyleOptionViewItem &option,
                                    const QModelIndex &index) const
 {
-    QVariant value = index.data(Qt::SizeHintRole);
+    auto value = index.data(Qt::SizeHintRole);
     if (value.isValid())
         return qvariant_cast<QSize>(value);
 
-    QStyleOptionViewItem opt = option;
+    auto opt = option;
     initStyleOption(&opt, index);
-    const QWidget *widget = QStyledItemDelegatePrivate::widget(option);
-    QStyle *style = widget ? widget->style() : QApplication::style();
+    auto widget = QStyledItemDelegatePrivate::widget(option);
+    auto style = widget ? widget->style() : QApplication::style();
     return style->sizeFromContents(QStyle::CT_ItemViewItem, &opt, QSize(), widget);
 }
 
@@ -475,7 +475,7 @@ void QStyledItemDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
     Q_UNUSED(editor);
     Q_UNUSED(index);
 #else
-    QVariant v = index.data(Qt::EditRole);
+    auto v = index.data(Qt::EditRole);
     QByteArray n = editor->metaObject()->userProperty().name();
 
     if (!n.isEmpty()) {
@@ -528,9 +528,9 @@ void QStyledItemDelegate::updateEditorGeometry(QWidget *editor,
     if (!editor)
         return;
     Q_ASSERT(index.isValid());
-    const QWidget *widget = QStyledItemDelegatePrivate::widget(option);
+    auto widget = QStyledItemDelegatePrivate::widget(option);
 
-    QStyleOptionViewItem opt = option;
+    auto opt = option;
     initStyleOption(&opt, index);
     // let the editor take up all available space
     //if the editor is not a QLineEdit
@@ -542,10 +542,10 @@ void QStyledItemDelegate::updateEditorGeometry(QWidget *editor,
 #endif
         opt.showDecorationSelected = true;
 
-    QStyle *style = widget ? widget->style() : QApplication::style();
-    QRect geom = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, widget);
+    auto style = widget ? widget->style() : QApplication::style();
+    auto geom = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, widget);
     if ( editor->layoutDirection() == Qt::RightToLeft) {
-        const int delta = qSmartMinSize(editor).width() - geom.width();
+        const auto delta = qSmartMinSize(editor).width() - geom.width();
         if (delta > 0) {
             //we need to widen the geometry
             geom.adjust(-delta, 0, 0, 0);
@@ -629,18 +629,18 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
     Q_ASSERT(model);
 
     // make sure that the item is checkable
-    Qt::ItemFlags flags = model->flags(index);
+    auto flags = model->flags(index);
     if (!(flags & Qt::ItemIsUserCheckable) || !(option.state & QStyle::State_Enabled)
         || !(flags & Qt::ItemIsEnabled))
         return false;
 
     // make sure that we have a check state
-    QVariant value = index.data(Qt::CheckStateRole);
+    auto value = index.data(Qt::CheckStateRole);
     if (!value.isValid())
         return false;
 
-    const QWidget *widget = QStyledItemDelegatePrivate::widget(option);
-    QStyle *style = widget ? widget->style() : QApplication::style();
+    auto widget = QStyledItemDelegatePrivate::widget(option);
+    auto style = widget ? widget->style() : QApplication::style();
 
     // make sure that we have the right event type
     if ((event->type() == QEvent::MouseButtonRelease)
@@ -648,8 +648,8 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
         || (event->type() == QEvent::MouseButtonPress)) {
         QStyleOptionViewItem viewOpt(option);
         initStyleOption(&viewOpt, index);
-        QRect checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &viewOpt, widget);
-        QMouseEvent *me = static_cast<QMouseEvent*>(event);
+        auto checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &viewOpt, widget);
+        auto me = static_cast<QMouseEvent*>(event);
         if (me->button() != Qt::LeftButton || !checkRect.contains(me->pos()))
             return false;
 
@@ -665,7 +665,7 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
         return false;
     }
 
-    Qt::CheckState state = static_cast<Qt::CheckState>(value.toInt());
+    auto state = static_cast<Qt::CheckState>(value.toInt());
     if (flags & Qt::ItemIsUserTristate)
         state = ((Qt::CheckState)((state + 1) % 3));
     else

@@ -233,15 +233,15 @@ QGraphicsWidget::~QGraphicsWidget()
     Q_D(QGraphicsWidget);
 #ifndef QT_NO_ACTION
     // Remove all actions from this widget
-    for (int i = 0; i < d->actions.size(); ++i) {
-        QActionPrivate *apriv = d->actions.at(i)->d_func();
+    for (auto i = 0; i < d->actions.size(); ++i) {
+        auto apriv = d->actions.at(i)->d_func();
         apriv->graphicsWidgets.removeAll(this);
     }
     d->actions.clear();
 #endif
 
-    if (QGraphicsScene *scn = scene()) {
-        QGraphicsScenePrivate *sceneD = scn->d_func();
+    if (auto scn = scene()) {
+        auto sceneD = scn->d_func();
         if (sceneD->tabFocusFirst == this)
             sceneD->tabFocusFirst = (d->focusNext == this ? 0 : d->focusNext);
     }
@@ -256,14 +256,14 @@ QGraphicsWidget::~QGraphicsWidget()
 
     //we check if we have a layout previously
     if (d->layout) {
-        QGraphicsLayout *temp = d->layout;
+        auto temp = d->layout;
         const auto items = childItems();
-        for (QGraphicsItem *item : items) {
+        for (auto item : items) {
             // In case of a custom layout which doesn't remove and delete items, we ensure that
             // the parent layout item does not point to the deleted layout. This code is here to
             // avoid regression from 4.4 to 4.5, because according to 4.5 docs it is not really needed.
             if (item->isWidget()) {
-                QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
+                auto widget = static_cast<QGraphicsWidget *>(item);
                 if (widget->parentLayoutItem() == d->layout)
                     widget->setParentLayoutItem(0);
             }
@@ -347,10 +347,10 @@ void QGraphicsWidget::resize(const QSizeF &size)
 */
 void QGraphicsWidget::setGeometry(const QRectF &rect)
 {
-    QGraphicsWidgetPrivate *wd = QGraphicsWidget::d_func();
-    QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr.data();
+    auto wd = QGraphicsWidget::d_func();
+    auto d = QGraphicsLayoutItem::d_ptr.data();
     QRectF newGeom;
-    QPointF oldPos = d->geom.topLeft();
+    auto oldPos = d->geom.topLeft();
     if (!wd->inSetPos) {
         setAttribute(Qt::WA_Resized);
         newGeom = rect;
@@ -381,7 +381,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
 
     // Update the layout item geometry
     {
-        bool moved = oldPos != pos();
+        auto moved = oldPos != pos();
         if (moved) {
             // Send move event.
             QGraphicsSceneMoveEvent event;
@@ -395,10 +395,10 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
                 goto relayoutChildrenAndReturn;
             }
         }
-        QSizeF oldSize = size();
+        auto oldSize = size();
         QGraphicsLayoutItem::setGeometry(newGeom);
         // Send resize event
-        bool resized = newGeom.size() != oldSize;
+        auto resized = newGeom.size() != oldSize;
         if (resized) {
             QGraphicsSceneResizeEvent re;
             re.setOldSize(oldSize);
@@ -407,7 +407,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
                 emit widthChanged();
             if (oldSize.height() != newGeom.size().height())
                 emit heightChanged();
-            QGraphicsLayout *lay = wd->layout;
+            auto lay = wd->layout;
             if (QGraphicsLayout::instantInvalidatePropagation()) {
                 if (!lay || lay->isActivated()) {
                     QApplication::sendEvent(this, &re);
@@ -421,7 +421,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
     emit geometryChanged();
 relayoutChildrenAndReturn:
     if (QGraphicsLayout::instantInvalidatePropagation()) {
-        if (QGraphicsLayout *lay = wd->layout) {
+        if (auto lay = wd->layout) {
             if (!lay->isActivated()) {
                 QEvent layoutRequest(QEvent::LayoutRequest);
                 QApplication::sendEvent(this, &layoutRequest);
@@ -503,7 +503,7 @@ void QGraphicsWidget::setContentsMargins(qreal left, qreal top, qreal right, qre
     d->margins[d->Right] = right;
     d->margins[d->Bottom] = bottom;
 
-    if (QGraphicsLayout *l = d->layout)
+    if (auto l = d->layout)
         l->invalidate();
     else
         updateGeometry();
@@ -551,7 +551,7 @@ void QGraphicsWidget::setWindowFrameMargins(qreal left, qreal top, qreal right, 
     if (!d->windowFrameMargins && left == 0 && top == 0 && right == 0 && bottom == 0)
         return;
     d->ensureWindowFrameMargins();
-    bool unchanged =
+    auto unchanged =
         d->windowFrameMargins[d->Left] == left
         && d->windowFrameMargins[d->Top] == top
         && d->windowFrameMargins[d->Right] == right
@@ -601,9 +601,9 @@ void QGraphicsWidget::unsetWindowFrameMargins()
          (d->windowFlags & Qt::WindowType_Mask) != Qt::ToolTip && !(d->windowFlags & Qt::FramelessWindowHint)) {
         QStyleOptionTitleBar bar;
         d->initStyleOptionTitleBar(&bar);
-        QStyle *style = this->style();
+        auto style = this->style();
         qreal margin = style->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth);
-        qreal titleBarHeight  = d->titleBarHeight(bar);
+        auto titleBarHeight  = d->titleBarHeight(bar);
         setWindowFrameMargins(margin, titleBarHeight, margin, margin);
     } else {
         setWindowFrameMargins(0, 0, 0, 0);
@@ -695,7 +695,7 @@ void QGraphicsWidget::initStyleOption(QStyleOption *option) const
     //     option->state |= QStyle::State_KeyboardFocusChange;
     if (isUnderMouse())
         option->state |= QStyle::State_MouseOver;
-    if (QGraphicsWidget *w = window()) {
+    if (auto w = window()) {
         if (w->isActiveWindow())
             option->state |= QStyle::State_Active;
     }
@@ -840,7 +840,7 @@ void QGraphicsWidget::setLayout(QGraphicsLayout *l)
         return;
 
     // Prevent assigning a layout that is already assigned to another widget.
-    QGraphicsLayoutItem *oldParent = l->parentLayoutItem();
+    auto oldParent = l->parentLayoutItem();
     if (oldParent && oldParent != this) {
         qWarning("QGraphicsWidget::setLayout: Attempting to set a layout on %s"
                  " \"%s\", when the layout already has a parent",
@@ -865,7 +865,7 @@ void QGraphicsWidget::setLayout(QGraphicsLayout *l)
 */
 void QGraphicsWidget::adjustSize()
 {
-    QSizeF sz = effectiveSizeHint(Qt::PreferredSize);
+    auto sz = effectiveSizeHint(Qt::PreferredSize);
     // What if sz is not valid?!
     if (sz.isValid())
         resize(sz);
@@ -924,7 +924,7 @@ void QGraphicsWidget::unsetLayoutDirection()
 */
 QStyle *QGraphicsWidget::style() const
 {
-    if (QStyle *style = widgetStyles()->styleForWidget(this))
+    if (auto style = widgetStyles()->styleForWidget(this))
         return style;
     // ### This is not thread-safe. QApplication::style() is not thread-safe.
     return scene() ? scene()->style() : QApplication::style();
@@ -978,7 +978,7 @@ void QGraphicsWidget::setStyle(QStyle *style)
 QFont QGraphicsWidget::font() const
 {
     Q_D(const QGraphicsWidget);
-    QFont fnt = d->font;
+    auto fnt = d->font;
     fnt.resolve(fnt.resolve() | d->inheritedFontResolveMask);
     return fnt;
 }
@@ -987,8 +987,8 @@ void QGraphicsWidget::setFont(const QFont &font)
     Q_D(QGraphicsWidget);
     setAttribute(Qt::WA_SetFont, font.resolve() != 0);
 
-    QFont naturalFont = d->naturalWidgetFont();
-    QFont resolvedFont = font.resolve(naturalFont);
+    auto naturalFont = d->naturalWidgetFont();
+    auto resolvedFont = font.resolve(naturalFont);
     d->setFont_helper(resolvedFont);
 }
 
@@ -1027,8 +1027,8 @@ void QGraphicsWidget::setPalette(const QPalette &palette)
     Q_D(QGraphicsWidget);
     setAttribute(Qt::WA_SetPalette, palette.resolve() != 0);
 
-    QPalette naturalPalette = d->naturalWidgetPalette();
-    QPalette resolvedPalette = palette.resolve(naturalPalette);
+    auto naturalPalette = d->naturalWidgetPalette();
+    auto resolvedPalette = palette.resolve(naturalPalette);
     d->setPalette_helper(resolvedPalette);
 }
 
@@ -1074,7 +1074,7 @@ void QGraphicsWidget::setAutoFillBackground(bool enabled)
 void QGraphicsWidget::updateGeometry()
 {
     QGraphicsLayoutItem::updateGeometry();
-    QGraphicsLayoutItem *parentItem = parentLayoutItem();
+    auto parentItem = parentLayoutItem();
 
     if (parentItem && parentItem->isLayout()) {
         if (QGraphicsLayout::instantInvalidatePropagation()) {
@@ -1085,7 +1085,7 @@ void QGraphicsWidget::updateGeometry()
     } else {
         if (parentItem) {
             // This is for custom layouting
-            QGraphicsWidget *parentWid = parentWidget();    //###
+            auto parentWid = parentWidget();    //###
             if (parentWid->isVisible())
                 QApplication::postEvent(parentWid, new QEvent(QEvent::LayoutRequest));
         } else {
@@ -1098,7 +1098,7 @@ void QGraphicsWidget::updateGeometry()
                 QApplication::postEvent(static_cast<QGraphicsWidget *>(this), new QEvent(QEvent::LayoutRequest));
         }
         if (!QGraphicsLayout::instantInvalidatePropagation()) {
-            bool wasResized = testAttribute(Qt::WA_Resized);
+            auto wasResized = testAttribute(Qt::WA_Resized);
             resize(size()); // this will restrict the size
             setAttribute(Qt::WA_Resized, wasResized);
         }
@@ -1140,7 +1140,7 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
             // Send Show event before the item has been shown.
             QShowEvent event;
             QApplication::sendEvent(this, &event);
-            bool resized = testAttribute(Qt::WA_Resized);
+            auto resized = testAttribute(Qt::WA_Resized);
             if (!resized) {
                 adjustSize();
                 setAttribute(Qt::WA_Resized, false);
@@ -1300,23 +1300,23 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
 {
     Q_D(const QGraphicsWidget);
 
-    const QRectF r = windowFrameRect();
+    const auto r = windowFrameRect();
     if (!r.contains(pos))
         return Qt::NoSection;
 
-    const qreal left = r.left();
-    const qreal top = r.top();
-    const qreal right = r.right();
-    const qreal bottom = r.bottom();
-    const qreal x = pos.x();
-    const qreal y = pos.y();
+    const auto left = r.left();
+    const auto top = r.top();
+    const auto right = r.right();
+    const auto bottom = r.bottom();
+    const auto x = pos.x();
+    const auto y = pos.y();
 
     const qreal cornerMargin = 20;
     //### Not sure of this one, it should be the same value for all edges.
-    const qreal windowFrameWidth = d->windowFrameMargins
+    const auto windowFrameWidth = d->windowFrameMargins
         ? d->windowFrameMargins[d->Left] : 0;
 
-    Qt::WindowFrameSection s = Qt::NoSection;
+    auto s = Qt::NoSection;
     if (x <= left + cornerMargin) {
         if (y <= top + windowFrameWidth || (x <= left + windowFrameWidth && y <= top + cornerMargin)) {
             s = Qt::TopLeftSection;
@@ -1339,7 +1339,7 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
         s = Qt::BottomSection;
     }
     if (s == Qt::NoSection) {
-        QRectF r1 = r;
+        auto r1 = r;
         r1.setHeight(d->windowFrameMargins
                      ? d->windowFrameMargins[d->Top] : 0);
         if (r1.contains(pos))
@@ -1767,7 +1767,7 @@ void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
     Q_D(QGraphicsWidget);
     if (d->windowFlags == wFlags)
         return;
-    bool wasPopup = (d->windowFlags & Qt::WindowType_Mask) == Qt::Popup;
+    auto wasPopup = (d->windowFlags & Qt::WindowType_Mask) == Qt::Popup;
 
     d->adjustWindowFlags(&wFlags);
     d->windowFlags = wFlags;
@@ -1776,7 +1776,7 @@ void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
 
     setFlag(ItemIsPanel, d->windowFlags & Qt::Window);
 
-    bool isPopup = (d->windowFlags & Qt::WindowType_Mask) == Qt::Popup;
+    auto isPopup = (d->windowFlags & Qt::WindowType_Mask) == Qt::Popup;
     if (d->scene && isVisible() && wasPopup != isPopup) {
         // Popup state changed; update implicit mouse grab.
         if (!isPopup)
@@ -2009,7 +2009,7 @@ void QGraphicsWidget::addActions(const QList<QAction *> &actions)
 void QGraphicsWidget::addActions(QList<QAction *> actions)
 #endif
 {
-    for (int i = 0; i < actions.count(); ++i)
+    for (auto i = 0; i < actions.count(); ++i)
         insertAction(0, actions.at(i));
 }
 
@@ -2033,11 +2033,11 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
     }
 
     Q_D(QGraphicsWidget);
-    int index = d->actions.indexOf(action);
+    auto index = d->actions.indexOf(action);
     if (index != -1)
         d->actions.removeAt(index);
 
-    int pos = d->actions.indexOf(before);
+    auto pos = d->actions.indexOf(before);
     if (pos < 0) {
         before = 0;
         pos = d->actions.size();
@@ -2045,7 +2045,7 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
     d->actions.insert(pos, action);
 
     if (index == -1) {
-        QActionPrivate *apriv = action->d_func();
+        auto apriv = action->d_func();
         apriv->graphicsWidgets.append(this);
     }
 
@@ -2070,7 +2070,7 @@ void QGraphicsWidget::insertActions(QAction *before, const QList<QAction *> &act
 void QGraphicsWidget::insertActions(QAction *before, QList<QAction *> actions)
 #endif
 {
-    for (int i = 0; i < actions.count(); ++i)
+    for (auto i = 0; i < actions.count(); ++i)
         insertAction(before, actions.at(i));
 }
 
@@ -2088,7 +2088,7 @@ void QGraphicsWidget::removeAction(QAction *action)
 
     Q_D(QGraphicsWidget);
 
-    QActionPrivate *apriv = action->d_func();
+    auto apriv = action->d_func();
     apriv->graphicsWidgets.removeAll(this);
 
     if (d->actions.removeAll(action)) {
@@ -2147,7 +2147,7 @@ void QGraphicsWidget::setTabOrder(QGraphicsWidget *first, QGraphicsWidget *secon
                  first->scene(), second->scene());
         return;
     }
-    QGraphicsScene *scene = first ? first->scene() : second->scene();
+    auto scene = first ? first->scene() : second->scene();
     if (!scene && (!first || !second)) {
         qWarning("QGraphicsWidget::setTabOrder: assigning tab order from/to the"
                  " scene requires the item to be in a scene.");
@@ -2157,7 +2157,7 @@ void QGraphicsWidget::setTabOrder(QGraphicsWidget *first, QGraphicsWidget *secon
     // If either first or second are 0, the scene's tabFocusFirst is updated
     // to point to the first item in the scene's focus chain. Then first or
     // second are set to point to tabFocusFirst.
-    QGraphicsScenePrivate *sceneD = scene->d_func();
+    auto sceneD = scene->d_func();
     if (!first) {
         sceneD->tabFocusFirst = second;
         return;
@@ -2168,15 +2168,15 @@ void QGraphicsWidget::setTabOrder(QGraphicsWidget *first, QGraphicsWidget *secon
     }
 
     // Both first and second are != 0.
-    QGraphicsWidget *firstFocusNext = first->d_func()->focusNext;
+    auto firstFocusNext = first->d_func()->focusNext;
     if (firstFocusNext == second) {
         // Nothing to do.
         return;
     }
 
     // Update the focus chain.
-    QGraphicsWidget *secondFocusPrev = second->d_func()->focusPrev;
-    QGraphicsWidget *secondFocusNext = second->d_func()->focusNext;
+    auto secondFocusPrev = second->d_func()->focusPrev;
+    auto secondFocusNext = second->d_func()->focusNext;
     firstFocusNext->d_func()->focusPrev = second;
     first->d_func()->focusNext = second;
     second->d_func()->focusNext = firstFocusNext;
@@ -2254,10 +2254,10 @@ void QGraphicsWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
 void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option,
                                        QWidget *widget)
 {
-    const bool fillBackground = !testAttribute(Qt::WA_OpaquePaintEvent)
+    const auto fillBackground = !testAttribute(Qt::WA_OpaquePaintEvent)
                                 && !testAttribute(Qt::WA_NoSystemBackground);
-    QGraphicsProxyWidget *proxy = qobject_cast<QGraphicsProxyWidget *>(this);
-    const bool embeddedWidgetFillsOwnBackground = proxy && proxy->widget();
+    auto proxy = qobject_cast<QGraphicsProxyWidget *>(this);
+    const auto embeddedWidgetFillsOwnBackground = proxy && proxy->widget();
 
     if (rect().contains(option->exposedRect)) {
         if (fillBackground && !embeddedWidgetFillsOwnBackground)
@@ -2267,7 +2267,7 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
 
     Q_D(QGraphicsWidget);
 
-    QRect windowFrameRect = QRect(QPoint(), windowFrameGeometry().size().toSize());
+    auto windowFrameRect = QRect(QPoint(), windowFrameGeometry().size().toSize());
     QStyleOptionTitleBar bar;
     bar.QStyleOption::operator=(*option);
     d->initStyleOptionTitleBar(&bar);   // this clear flags in bar.state
@@ -2277,7 +2277,7 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     bar.rect = windowFrameRect;
 
     // translate painter to make the style happy
-    const QPointF styleOrigin = this->windowFrameRect().topLeft();
+    const auto styleOrigin = this->windowFrameRect().topLeft();
     painter->translate(styleOrigin);
 
 #ifdef Q_OS_MAC
@@ -2291,9 +2291,9 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
 
     // Fill background
     QStyleHintReturnMask mask;
-    bool setMask = style()->styleHint(QStyle::SH_WindowFrame_Mask, &bar, widget, &mask) && !mask.region.isEmpty();
-    bool hasBorder = !style()->styleHint(QStyle::SH_TitleBar_NoBorder, &bar, widget);
-    int frameWidth = style()->pixelMetric(QStyle::PM_MDIFrameWidth, &bar, widget);
+    auto setMask = style()->styleHint(QStyle::SH_WindowFrame_Mask, &bar, widget, &mask) && !mask.region.isEmpty();
+    auto hasBorder = !style()->styleHint(QStyle::SH_TitleBar_NoBorder, &bar, widget);
+    auto frameWidth = style()->pixelMetric(QStyle::PM_MDIFrameWidth, &bar, widget);
     if (setMask) {
         painter->save();
         painter->setClipRegion(mask.region, Qt::IntersectClip);
@@ -2313,7 +2313,7 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     }
 
     // Draw title
-    int height = (int)d->titleBarHeight(bar);
+    auto height = (int)d->titleBarHeight(bar);
     bar.rect.setHeight(height);
     if (hasBorder) // Frame is painted by PE_FrameWindow
         bar.rect.adjust(frameWidth, frameWidth, -frameWidth, 0);
@@ -2331,7 +2331,7 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     if (!hasBorder)
         painter->setClipRect(windowFrameRect.adjusted(0, +height, 0, 0), Qt::IntersectClip);
     frameOptions.state.setFlag(QStyle::State_HasFocus, hasFocus());
-    bool isActive = isActiveWindow();
+    auto isActive = isActiveWindow();
     frameOptions.state.setFlag(QStyle::State_Active, isActive);
 
     frameOptions.palette.setCurrentColorGroup(isActive ? QPalette::Active : QPalette::Normal);

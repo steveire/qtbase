@@ -904,7 +904,7 @@ QList<QGesture *> QGestureEvent::gestures() const
 */
 QGesture *QGestureEvent::gesture(Qt::GestureType type) const
 {
-    for (int i = 0; i < m_gestures.size(); ++i)
+    for (auto i = 0; i < m_gestures.size(); ++i)
         if (m_gestures.at(i)->gestureType() == type)
             return m_gestures.at(i);
     return 0;
@@ -1082,10 +1082,10 @@ QWidget *QGestureEvent::widget() const
 */
 QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
 {
-    QWidget *w = widget();
+    auto w = widget();
     if (w) // we get the viewport as widget, not the graphics view
         w = w->parentWidget();
-    QGraphicsView *view = qobject_cast<QGraphicsView*>(w);
+    auto view = qobject_cast<QGraphicsView*>(w);
     if (view) {
         return view->mapToScene(view->mapFromGlobal(gesturePoint.toPoint()));
     }
@@ -1117,7 +1117,7 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QGesture *gesture)
         d << ')';
         break;
     case Qt::TapAndHoldGesture: {
-        const QTapAndHoldGesture *tap = static_cast<const QTapAndHoldGesture*>(gesture);
+        auto tap = static_cast<const QTapAndHoldGesture*>(gesture);
         formatGestureHeader(d, "QTapAndHoldGesture", tap);
         d << ",position=";
         QtDebugUtils::formatQPoint(d, tap->position());
@@ -1125,7 +1125,7 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QGesture *gesture)
     }
         break;
     case Qt::PanGesture: {
-        const QPanGesture *pan = static_cast<const QPanGesture*>(gesture);
+        auto pan = static_cast<const QPanGesture*>(gesture);
         formatGestureHeader(d, "QPanGesture", pan);
         d << ",lastOffset=";
         QtDebugUtils::formatQPoint(d, pan->lastOffset());
@@ -1138,7 +1138,7 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QGesture *gesture)
     }
         break;
     case Qt::PinchGesture: {
-        const QPinchGesture *pinch = static_cast<const QPinchGesture*>(gesture);
+        auto pinch = static_cast<const QPinchGesture*>(gesture);
         formatGestureHeader(d, "QPinchGesture", pinch);
         d << ",totalChangeFlags=" << pinch->totalChangeFlags()
           << ",changeFlags=" << pinch->changeFlags() << ",startCenterPoint=";
@@ -1156,7 +1156,7 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QGesture *gesture)
     }
         break;
     case Qt::SwipeGesture: {
-        const QSwipeGesture *swipe = static_cast<const QSwipeGesture*>(gesture);
+        auto swipe = static_cast<const QSwipeGesture*>(gesture);
         formatGestureHeader(d, "QSwipeGesture", swipe);
         d << ",horizontalDirection=";
         QtDebugUtils::formatQEnum(d, swipe->horizontalDirection());

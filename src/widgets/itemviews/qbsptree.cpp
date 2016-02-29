@@ -82,10 +82,10 @@ void QBspTree::climbTree(const QRect &area, callback *function, QBspTreeData dat
         return;
     }
 
-    Node::Type t = (Node::Type) nodes.at(index).type;
+    auto t = (Node::Type) nodes.at(index).type;
 
-    int pos = nodes.at(index).pos;
-    int idx = firstChildIndex(index);
+    auto pos = nodes.at(index).pos;
+    auto idx = firstChildIndex(index);
     if (t == Node::VerticalPlane) {
         if (area.left() < pos)
             climbTree(area, function, data, idx); // back
@@ -101,17 +101,17 @@ void QBspTree::climbTree(const QRect &area, callback *function, QBspTreeData dat
 
 void QBspTree::init(const QRect &area, int depth, NodeType type, int index)
 {
-    Node::Type t = Node::None; // t should never have this value
+    auto t = Node::None; // t should never have this value
     if (type == Node::Both) // if both planes are specified, use 2d bsp
         t = (depth & 1) ? Node::HorizontalPlane : Node::VerticalPlane;
     else
         t = type;
-    QPoint center = area.center();
+    auto center = area.center();
     nodes[index].pos = (t == Node::VerticalPlane ? center.x() : center.y());
     nodes[index].type = t;
 
-    QRect front = area;
-    QRect back = area;
+    auto front = area;
+    auto back = area;
 
     if (t == Node::VerticalPlane) {
         front.setLeft(center.x());
@@ -121,7 +121,7 @@ void QBspTree::init(const QRect &area, int depth, NodeType type, int index)
         back.setBottom(center.y() - 1);
     }
 
-    int idx = firstChildIndex(index);
+    auto idx = firstChildIndex(index);
     if (--depth) {
         init(back, depth, type, idx);
         init(front, depth, type, idx + 1);
@@ -135,7 +135,7 @@ void QBspTree::insert(QVector<int> &leaf, const QRect &, uint, QBspTreeData data
 
 void QBspTree::remove(QVector<int> &leaf, const QRect &, uint, QBspTreeData data)
 {
-    int i = leaf.indexOf(data.i);
+    auto i = leaf.indexOf(data.i);
     if (i != -1)
         leaf.remove(i);
 }
