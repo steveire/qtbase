@@ -235,9 +235,9 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QAbstractPrintDialog *parent)
     : QDialog(parent)
 {
     setWindowTitle(tr("Printer Properties"));
-    QVBoxLayout *lay = new QVBoxLayout(this);
+    auto lay = new QVBoxLayout(this);
     this->setLayout(lay);
-    QWidget *content = new QWidget(this);
+    auto content = new QWidget(this);
     widget.setupUi(content);
     m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
     lay->addWidget(content);
@@ -324,11 +324,11 @@ void QPrintDialogPrivate::init()
     buttons->addButton(collapseButton, QDialogButtonBox::ResetRole);
     bottom->setVisible(false);
 
-    QPushButton *printButton = buttons->button(QDialogButtonBox::Ok);
+    auto printButton = buttons->button(QDialogButtonBox::Ok);
     printButton->setText(QPrintDialog::tr("&Print"));
     printButton->setDefault(true);
 
-    QVBoxLayout *lay = new QVBoxLayout(q);
+    auto lay = new QVBoxLayout(q);
     q->setLayout(lay);
     lay->addWidget(top);
     lay->addWidget(bottom);
@@ -354,7 +354,7 @@ void QPrintDialogPrivate::init()
 void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputFormat)
 {
         Q_Q(QPrintDialog);
-        QPrinter *p = q->printer();
+        auto p = q->printer();
         printerOutputFormat = outputFormat;
 
         if (p->colorMode() == QPrinter::Color)
@@ -396,7 +396,7 @@ void QPrintDialogPrivate::setupPrinter()
 
     // Then setup Print Job options
     Q_Q(QPrintDialog);
-    QPrinter* p = q->printer();
+    auto p = q->printer();
 
     if (options.duplex->isEnabled()) {
         if (options.noDuplex->isChecked())
@@ -477,9 +477,9 @@ void QPrintDialogPrivate::_q_togglePageSetCombo(bool checked)
 
 void QPrintDialogPrivate::_q_collapseOrExpandDialog()
 {
-    int collapseHeight = 0;
+    auto collapseHeight = 0;
     Q_Q(QPrintDialog);
-    QWidget *widgetToHide = bottom;
+    auto widgetToHide = bottom;
     if (widgetToHide->isVisible()) {
         collapseButton->setText(QPrintDialog::tr("&Options >>"));
         collapseHeight = widgetToHide->y() + widgetToHide->height() - (top->y() + top->height());
@@ -556,8 +556,8 @@ void QPrintDialogPrivate::updateWidgets()
     default:
         break;
     }
-    const int minPage = qMax(1, qMin(q->minPage() , q->maxPage()));
-    const int maxPage = qMax(1, q->maxPage() == INT_MAX ? 9999 : q->maxPage());
+    const auto minPage = qMax(1, qMin(q->minPage() , q->maxPage()));
+    const auto maxPage = qMax(1, q->maxPage() == INT_MAX ? 9999 : q->maxPage());
 
     options.from->setMinimum(minPage);
     options.to->setMinimum(minPage);
@@ -571,9 +571,9 @@ void QPrintDialogPrivate::updateWidgets()
 
 void QPrintDialogPrivate::setTabs(const QList<QWidget*> &tabWidgets)
 {
-    QList<QWidget*>::ConstIterator iter = tabWidgets.begin();
+    auto iter = tabWidgets.begin();
     while(iter != tabWidgets.constEnd()) {
-        QWidget *tab = *iter;
+        auto tab = *iter;
         options.tabs->addTab(tab, tab->windowTitle());
         ++iter;
     }
@@ -658,22 +658,22 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
 
     widget.setupUi(parent);
 
-    int currentPrinterIndex = 0;
-    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    auto currentPrinterIndex = 0;
+    auto ps = QPlatformPrinterSupportPlugin::get();
     if (ps) {
-        const QStringList printers = ps->availablePrintDeviceIds();
-        const QString defaultPrinter = ps->defaultPrintDeviceId();
+        const auto printers = ps->availablePrintDeviceIds();
+        const auto defaultPrinter = ps->defaultPrintDeviceId();
 
         widget.printers->addItems(printers);
 
-        const int idx = printers.indexOf(defaultPrinter);
+        const auto idx = printers.indexOf(defaultPrinter);
         if (idx >= 0)
             currentPrinterIndex = idx;
     }
     widget.properties->setEnabled(true);
 
 #if !defined(QT_NO_FILESYSTEMMODEL) && !defined(QT_NO_COMPLETER)
-    QFileSystemModel *fsm = new QFileSystemModel(widget.filename);
+    auto fsm = new QFileSystemModel(widget.filename);
     fsm->setRootPath(QDir::homePath());
     widget.filename->setCompleter(new QCompleter(fsm, widget.filename));
 #endif
@@ -690,7 +690,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
 
 void QUnixPrintWidgetPrivate::updateWidget()
 {
-    const bool printToFile = q == 0 || q->isOptionEnabled(QPrintDialog::PrintToFile);
+    const auto printToFile = q == 0 || q->isOptionEnabled(QPrintDialog::PrintToFile);
     if (printToFile && !filePrintersAdded) {
         if (widget.printers->count())
             widget.printers->insertSeparator(widget.printers->count());
@@ -728,7 +728,7 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
 {
     if (index < 0)
         return;
-    const int printerCount = widget.printers->count();
+    const auto printerCount = widget.printers->count();
     widget.filename->setEnabled(false);
     widget.lOutput->setEnabled(false);
 
@@ -746,7 +746,7 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
             widget.type->setText(QPrintDialog::tr("Write PDF file"));
             widget.properties->setEnabled(true);
             widget.filename->setEnabled(true);
-            QString filename = widget.filename->text();
+            auto filename = widget.filename->text();
             widget.filename->setText(filename);
             widget.lOutput->setEnabled(true);
             if (optionsPane)
@@ -756,7 +756,7 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
     }
 
     if (printer) {
-        QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+        auto ps = QPlatformPrinterSupportPlugin::get();
         if (ps)
             m_currentPrintDevice = ps->createPrintDevice(widget.printers->itemText(index));
 
@@ -778,7 +778,7 @@ void QUnixPrintWidgetPrivate::setOptionsPane(QPrintDialogPrivate *pane)
 
 void QUnixPrintWidgetPrivate::_q_btnBrowseClicked()
 {
-    QString filename = widget.filename->text();
+    auto filename = widget.filename->text();
 #ifndef QT_NO_FILEDIALOG
     filename = QFileDialog::getSaveFileName(parent, QPrintDialog::tr("Print To File ..."), filename,
                                             QString(), 0, QFileDialog::DontConfirmOverwrite);
@@ -796,8 +796,8 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties()
     if (printer == 0)
         return;
     if (printer->outputFileName().isEmpty()) {
-        QString home = QDir::homePath();
-        QString cur = QDir::currentPath();
+        auto home = QDir::homePath();
+        auto cur = QDir::currentPath();
         if (home.at(home.length()-1) != QLatin1Char('/'))
             home += QLatin1Char('/');
         if (!cur.isEmpty() && cur.at(cur.length()-1) != QLatin1Char('/'))
@@ -821,9 +821,9 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties()
     }
     else
         widget.filename->setText( printer->outputFileName() );
-    QString printerName = printer->printerName();
+    auto printerName = printer->printerName();
     if (!printerName.isEmpty()) {
-        const int i = widget.printers->findText(printerName);
+        const auto i = widget.printers->findText(printerName);
         if (i >= 0)
             widget.printers->setCurrentIndex(i);
     }
@@ -837,11 +837,11 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties()
 bool QUnixPrintWidgetPrivate::checkFields()
 {
     if (widget.filename->isEnabled()) {
-        QString file = widget.filename->text();
+        auto file = widget.filename->text();
         QFile f(file);
         QFileInfo fi(f);
-        bool exists = fi.exists();
-        bool opened = false;
+        auto exists = fi.exists();
+        auto opened = false;
         if (exists && fi.isDir()) {
             QMessageBox::warning(q, q->windowTitle(),
                             QPrintDialog::tr("%1 is a directory.\nPlease choose a different file name.").arg(file));
@@ -923,14 +923,14 @@ void QUnixPrintWidgetPrivate::_q_btnPropertiesClicked()
 
 void QUnixPrintWidgetPrivate::setupPrinter()
 {
-    const int printerCount = widget.printers->count();
-    const int index = widget.printers->currentIndex();
+    const auto printerCount = widget.printers->count();
+    const auto index = widget.printers->currentIndex();
 
     if (filePrintersAdded && index == printerCount - 1) { // PDF
         printer->setPrinterName(QString());
         Q_ASSERT(index != printerCount - 2); // separator
         printer->setOutputFormat(QPrinter::PdfFormat);
-        QString path = widget.filename->text();
+        auto path = widget.filename->text();
         if (QDir::isRelativePath(path))
             path = QDir::homePath() + QDir::separator() + path;
         printer->setOutputFileName(path);

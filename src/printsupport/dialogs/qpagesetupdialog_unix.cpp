@@ -118,23 +118,23 @@ public:
 protected:
     void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE
     {
-        QSize pageSize = m_pageLayout.fullRectPoints().size();
+        auto pageSize = m_pageLayout.fullRectPoints().size();
         QSizeF scaledSize = pageSize.scaled(width() - 10, height() - 10, Qt::KeepAspectRatio);
-        QRect pageRect = QRect(QPoint(0,0), scaledSize.toSize());
+        auto pageRect = QRect(QPoint(0,0), scaledSize.toSize());
         pageRect.moveCenter(rect().center());
-        qreal width_factor = scaledSize.width() / pageSize.width();
-        qreal height_factor = scaledSize.height() / pageSize.height();
-        QMarginsF margins = m_pageLayout.margins(QPageLayout::Point);
-        int left = qRound(margins.left() * width_factor);
-        int top = qRound(margins.top() * height_factor);
-        int right = qRound(margins.right() * width_factor);
-        int bottom = qRound(margins.bottom() * height_factor);
+        auto width_factor = scaledSize.width() / pageSize.width();
+        auto height_factor = scaledSize.height() / pageSize.height();
+        auto margins = m_pageLayout.margins(QPageLayout::Point);
+        auto left = qRound(margins.left() * width_factor);
+        auto top = qRound(margins.top() * height_factor);
+        auto right = qRound(margins.right() * width_factor);
+        auto bottom = qRound(margins.bottom() * height_factor);
         QRect marginRect(pageRect.x() + left, pageRect.y() + top,
                          pageRect.width() - (left + right + 1), pageRect.height() - (top + bottom + 1));
 
         QPainter p(this);
         QColor shadow(palette().mid().color());
-        for (int i=1; i<6; ++i) {
+        for (auto i=1; i<6; ++i) {
             shadow.setAlpha(180-i*30);
             QRect offset(pageRect.adjusted(i, i, i, i));
             p.setPen(shadow);
@@ -154,15 +154,15 @@ protected:
             p.setFont(font);
             p.setPen(palette().color(QPalette::Dark));
             QString text(QLatin1String("Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi."));
-            for (int i=0; i<3; ++i)
+            for (auto i=0; i<3; ++i)
                 text += text;
 
             const int spacing = pageRect.width() * 0.1;
-            const int textWidth = (marginRect.width() - (spacing * (m_pagePreviewColumns-1))) / m_pagePreviewColumns;
-            const int textHeight = (marginRect.height() - (spacing * (m_pagePreviewRows-1))) / m_pagePreviewRows;
+            const auto textWidth = (marginRect.width() - (spacing * (m_pagePreviewColumns-1))) / m_pagePreviewColumns;
+            const auto textHeight = (marginRect.height() - (spacing * (m_pagePreviewRows-1))) / m_pagePreviewRows;
 
-            for (int x = 0 ; x < m_pagePreviewColumns; ++x) {
-                for (int y = 0 ; y < m_pagePreviewRows; ++y) {
+            for (auto x = 0 ; x < m_pagePreviewColumns; ++x) {
+                for (auto y = 0 ; y < m_pagePreviewRows; ++y) {
                     QRect textRect(marginRect.left() + x * (textWidth + spacing),
                                    marginRect.top() + y * (textHeight + spacing),
                                    textWidth, textHeight);
@@ -211,13 +211,13 @@ void QUnixPageSetupDialogPrivate::init()
     widget = new QPageSetupWidget(q);
     widget->setPrinter(printer);
 
-    QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok
+    auto buttons = new QDialogButtonBox(QDialogButtonBox::Ok
                                                      | QDialogButtonBox::Cancel,
                                                      Qt::Horizontal, q);
     QObject::connect(buttons, SIGNAL(accepted()), q, SLOT(accept()));
     QObject::connect(buttons, SIGNAL(rejected()), q, SLOT(reject()));
 
-    QVBoxLayout *lay = new QVBoxLayout(q);
+    auto lay = new QVBoxLayout(q);
     lay->addWidget(widget);
     lay->addWidget(buttons);
 }
@@ -237,7 +237,7 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
 {
     m_ui.setupUi(this);
 
-    QVBoxLayout *lay = new QVBoxLayout(m_ui.preview);
+    auto lay = new QVBoxLayout(m_ui.preview);
     m_ui.preview->setLayout(lay);
     m_pagePreview = new QPagePreview(m_ui.preview);
     m_pagePreview->setPagePreviewLayout(1, 1);
@@ -342,9 +342,9 @@ void QPageSetupWidget::initPageSizes()
     m_ui.pageSizeCombo->clear();
 
     if (m_outputFormat == QPrinter::NativeFormat && !m_printerName.isEmpty()) {
-        QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+        auto ps = QPlatformPrinterSupportPlugin::get();
         if (ps) {
-            QPrintDevice printDevice = ps->createPrintDevice(m_printerName);
+            auto printDevice = ps->createPrintDevice(m_printerName);
             const auto pageSizes = printDevice.supportedPageSizes();
             for (const QPageSize &pageSize : pageSizes)
                 m_ui.pageSizeCombo->addItem(pageSize.name(), QVariant::fromValue(pageSize.id()));
@@ -357,11 +357,11 @@ void QPageSetupWidget::initPageSizes()
     }
 
     // If PdfFormat or no available printer page sizes, populate with all page sizes
-    for (int id = 0; id < QPageSize::LastPageSize; ++id) {
+    for (auto id = 0; id < QPageSize::LastPageSize; ++id) {
         if (QPageSize::PageSizeId(id) == QPageSize::Custom) {
             m_ui.pageSizeCombo->addItem(tr("Custom"), QVariant::fromValue(QPageSize::Custom));
         } else {
-            QPageSize pageSize = QPageSize(QPageSize::PageSizeId(id));
+            auto pageSize = QPageSize(QPageSize::PageSizeId(id));
             m_ui.pageSizeCombo->addItem(pageSize.name(), QVariant::fromValue(pageSize.id()));
         }
     }
@@ -470,7 +470,7 @@ void QPageSetupWidget::updateWidget()
     m_ui.bottomMargin->setMaximum(max.bottom());
     m_ui.bottomMargin->setValue(m_pageLayout.margins().bottom());
 
-    bool isCustom = m_ui.pageSizeCombo->currentData().value<QPageSize::PageSizeId>() == QPageSize::Custom;
+    auto isCustom = m_ui.pageSizeCombo->currentData().value<QPageSize::PageSizeId>() == QPageSize::Custom;
 
     m_ui.pageWidth->setSuffix(suffix);
     m_ui.pageWidth->setValue(m_pageLayout.fullRect(m_units).width());
@@ -516,7 +516,7 @@ void QPageSetupWidget::pageSizeChanged()
     if (m_blockSignals)
         return;
 
-    QPageSize::PageSizeId id = m_ui.pageSizeCombo->currentData().value<QPageSize::PageSizeId>();
+    auto id = m_ui.pageSizeCombo->currentData().value<QPageSize::PageSizeId>();
     if (id != QPageSize::Custom) {
         // TODO Set layout margin min/max to printer custom min/max
         m_pageLayout.setPageSize(QPageSize(id));
@@ -633,7 +633,7 @@ int QPageSetupDialog::exec()
 {
     Q_D(QPageSetupDialog);
 
-    int ret = QDialog::exec();
+    auto ret = QDialog::exec();
     if (ret == Accepted)
         static_cast <QUnixPageSetupDialogPrivate*>(d)->widget->setupPrinter();
     return ret;

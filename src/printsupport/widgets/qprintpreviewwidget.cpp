@@ -99,7 +99,7 @@ void PageItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
     // Draw shadow
     painter->setClipRect(option->exposedRect);
-    qreal shWidth = paperRect.width()/100;
+    auto shWidth = paperRect.width()/100;
     QRectF rshadow(paperRect.topRight() + QPointF(0, shWidth),
                    paperRect.bottomRight() + QPointF(shWidth, 0));
     QLinearGradient rgrad(rshadow.topLeft(), rshadow.topRight());
@@ -227,22 +227,22 @@ void QPrintPreviewWidgetPrivate::_q_fit(bool doFitting)
         return;
 
     if (doFitting && fitting) {
-        QRect viewRect = graphicsView->viewport()->rect();
+        auto viewRect = graphicsView->viewport()->rect();
         if (zoomMode == QPrintPreviewWidget::FitInView) {
-            const QList<QGraphicsItem*> containedItems = graphicsView->items(viewRect, Qt::ContainsItemBoundingRect);
-            for (QGraphicsItem* item : containedItems) {
-                PageItem* pg = static_cast<PageItem*>(item);
+            const auto containedItems = graphicsView->items(viewRect, Qt::ContainsItemBoundingRect);
+            for (auto item : containedItems) {
+                auto pg = static_cast<PageItem*>(item);
                 if (pg->pageNumber() == curPage)
                     return;
             }
         }
 
-        int newPage = calcCurrentPage();
+        auto newPage = calcCurrentPage();
         if (newPage != curPage)
             curPage = newPage;
     }
 
-    QRectF target = pages.at(curPage-1)->sceneBoundingRect();
+    auto target = pages.at(curPage-1)->sceneBoundingRect();
     if (viewMode == QPrintPreviewWidget::FacingPagesView) {
         // fit two pages
         if (curPage % 2)
@@ -255,7 +255,7 @@ void QPrintPreviewWidgetPrivate::_q_fit(bool doFitting)
 
     if (zoomMode == QPrintPreviewWidget::FitToWidth) {
         QTransform t;
-        qreal scale = graphicsView->viewport()->width() / target.width();
+        auto scale = graphicsView->viewport()->width() / target.width();
         t.scale(scale, scale);
         graphicsView->setTransform(t);
         if (doFitting && fitting) {
@@ -266,7 +266,7 @@ void QPrintPreviewWidgetPrivate::_q_fit(bool doFitting)
     } else {
         graphicsView->fitInView(target, Qt::KeepAspectRatio);
         if (zoomMode == QPrintPreviewWidget::FitInView) {
-            int step = qRound(graphicsView->matrix().mapRect(target).height());
+            auto step = qRound(graphicsView->matrix().mapRect(target).height());
             graphicsView->verticalScrollBar()->setSingleStep(step);
             graphicsView->verticalScrollBar()->setPageStep(step);
         }
@@ -283,7 +283,7 @@ void QPrintPreviewWidgetPrivate::_q_updateCurrentPage()
     if (viewMode == QPrintPreviewWidget::AllPagesView)
         return;
 
-    int newPage = calcCurrentPage();
+    auto newPage = calcCurrentPage();
     if (newPage != curPage) {
         curPage = newPage;
         emit q->previewChanged();
@@ -292,14 +292,14 @@ void QPrintPreviewWidgetPrivate::_q_updateCurrentPage()
 
 int QPrintPreviewWidgetPrivate::calcCurrentPage()
 {
-    int maxArea = 0;
-    int newPage = curPage;
-    QRect viewRect = graphicsView->viewport()->rect();
-    const QList<QGraphicsItem*> items = graphicsView->items(viewRect);
+    auto maxArea = 0;
+    auto newPage = curPage;
+    auto viewRect = graphicsView->viewport()->rect();
+    const auto items = graphicsView->items(viewRect);
     for (auto *item : items) {
-        PageItem* pg = static_cast<PageItem*>(item);
-        QRect overlap = graphicsView->mapFromScene(pg->sceneBoundingRect()).boundingRect() & viewRect;
-        int area = overlap.width() * overlap.height();
+        auto pg = static_cast<PageItem*>(item);
+        auto overlap = graphicsView->mapFromScene(pg->sceneBoundingRect()).boundingRect() & viewRect;
+        auto area = overlap.width() * overlap.height();
         if (area > maxArea) {
             maxArea = area;
             newPage = pg->pageNumber();
@@ -326,7 +326,7 @@ void QPrintPreviewWidgetPrivate::init()
     scene->setBackgroundBrush(Qt::gray);
     graphicsView->setScene(scene);
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    auto layout = new QVBoxLayout;
     q->setLayout(layout);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(graphicsView);
@@ -340,12 +340,12 @@ void QPrintPreviewWidgetPrivate::populateScene()
     qDeleteAll(pages);
     pages.clear();
 
-    QSize paperSize = printer->pageLayout().fullRectPixels(printer->resolution()).size();
-    QRect pageRect = printer->pageLayout().paintRectPixels(printer->resolution());
+    auto paperSize = printer->pageLayout().fullRectPixels(printer->resolution()).size();
+    auto pageRect = printer->pageLayout().paintRectPixels(printer->resolution());
 
-    int page = 1;
+    auto page = 1;
     for (auto *picture : qAsConst(pictures)) {
-        PageItem* item = new PageItem(page++, picture, paperSize, pageRect);
+        auto item = new PageItem(page++, picture, paperSize, pageRect);
         scene->addItem(item);
         pages.append(item);
     }
@@ -353,12 +353,12 @@ void QPrintPreviewWidgetPrivate::populateScene()
 
 void QPrintPreviewWidgetPrivate::layoutPages()
 {
-    int numPages = pages.count();
+    auto numPages = pages.count();
     if (numPages < 1)
         return;
 
-    int numPagePlaces = numPages;
-    int cols = 1; // singleMode and default
+    auto numPagePlaces = numPages;
+    auto cols = 1; // singleMode and default
     if (viewMode == QPrintPreviewWidget::AllPagesView) {
         if (printer->orientation() == QPrinter::Portrait)
             cols = qCeil(qSqrt((float) numPages));
@@ -370,13 +370,13 @@ void QPrintPreviewWidgetPrivate::layoutPages()
         cols = 2;
         numPagePlaces += 1;
     }
-    int rows = qCeil(qreal(numPagePlaces) / cols);
+    auto rows = qCeil(qreal(numPagePlaces) / cols);
 
-    qreal itemWidth = pages.at(0)->boundingRect().width();
-    qreal itemHeight = pages.at(0)->boundingRect().height();
-    int pageNum = 1;
-    for (int i = 0; i < rows && pageNum <= numPages; i++) {
-        for (int j = 0; j < cols && pageNum <= numPages; j++) {
+    auto itemWidth = pages.at(0)->boundingRect().width();
+    auto itemHeight = pages.at(0)->boundingRect().height();
+    auto pageNum = 1;
+    for (auto i = 0; i < rows && pageNum <= numPages; i++) {
+        for (auto j = 0; j < cols && pageNum <= numPages; j++) {
             if (!i && !j && viewMode == QPrintPreviewWidget::FacingPagesView) {
                 // Front page doesn't have a facing page
                 continue;
@@ -415,14 +415,14 @@ void QPrintPreviewWidgetPrivate::setCurrentPage(int pageNumber)
     if (pageNumber < 1 || pageNumber > pages.count())
         return;
 
-    int lastPage = curPage;
+    auto lastPage = curPage;
     curPage = pageNumber;
 
     if (lastPage != curPage && lastPage > 0 && lastPage <= pages.count()) {
         if (zoomMode != QPrintPreviewWidget::FitInView) {
-            QScrollBar *hsc = graphicsView->horizontalScrollBar();
-            QScrollBar *vsc = graphicsView->verticalScrollBar();
-            QPointF pt = graphicsView->transform().map(pages.at(curPage-1)->pos());
+            auto hsc = graphicsView->horizontalScrollBar();
+            auto vsc = graphicsView->verticalScrollBar();
+            auto pt = graphicsView->transform().map(pages.at(curPage-1)->pos());
             vsc->setValue(int(pt.y()) - 10);
             hsc->setValue(int(pt.x()) - 10);
         } else {
@@ -442,8 +442,8 @@ void QPrintPreviewWidgetPrivate::setZoomFactor(qreal _zoomFactor)
     Q_Q(QPrintPreviewWidget);
     zoomFactor = _zoomFactor;
     graphicsView->resetTransform();
-    int dpi_y = q->logicalDpiY();
-    int printer_dpi_y = printer->logicalDpiY();
+    auto dpi_y = q->logicalDpiY();
+    auto printer_dpi_y = printer->logicalDpiY();
     graphicsView->scale(zoomFactor*(dpi_y/float(printer_dpi_y)),
                         zoomFactor*(dpi_y/float(printer_dpi_y)));
 }

@@ -102,7 +102,7 @@ Q_PRINTSUPPORT_EXPORT QSizeF qt_printerPaperSize(QPrinter::Orientation orientati
                            QPrinter::Unit unit,
                            int resolution)
 {
-    QPageSize pageSize = QPageSize(QPageSize::PageSizeId(paperSize));
+    auto pageSize = QPageSize(QPageSize::PageSizeId(paperSize));
     QSizeF sizef;
     if (unit == QPrinter::DevicePixel)
         sizef = pageSize.size(QPageSize::Point) * qt_multiplierForUnit(unit, resolution);
@@ -114,11 +114,11 @@ Q_PRINTSUPPORT_EXPORT QSizeF qt_printerPaperSize(QPrinter::Orientation orientati
 QPrinterInfo QPrinterPrivate::findValidPrinter(const QPrinterInfo &printer)
 {
     // Try find a valid printer to use, either the one given, the default or the first available
-    QPrinterInfo printerToUse = printer;
+    auto printerToUse = printer;
     if (printerToUse.isNull()) {
         printerToUse = QPrinterInfo::defaultPrinter();
         if (printerToUse.isNull()) {
-            QStringList availablePrinterNames = QPrinterInfo::availablePrinterNames();
+            auto availablePrinterNames = QPrinterInfo::availablePrinterNames();
             if (!availablePrinterNames.isEmpty())
                 printerToUse = QPrinterInfo::printerInfo(availablePrinterNames.at(0));
         }
@@ -136,7 +136,7 @@ void QPrinterPrivate::initEngines(QPrinter::OutputFormat format, const QPrinterI
     // Only set NativeFormat if we have a valid plugin and printer to use
     if (format == QPrinter::NativeFormat) {
         ps = QPlatformPrinterSupportPlugin::get();
-        QPrinterInfo printerToUse = findValidPrinter(printer);
+        auto printerToUse = findValidPrinter(printer);
         if (ps && !printerToUse.isNull()) {
             outputFormat = QPrinter::NativeFormat;
             printerName = printerToUse.printerName();
@@ -147,7 +147,7 @@ void QPrinterPrivate::initEngines(QPrinter::OutputFormat format, const QPrinterI
         printEngine = ps->createNativePrintEngine(printerMode);
         paintEngine = ps->createPaintEngine(printEngine, printerMode);
     } else {
-        QPdfPrintEngine *pdfEngine = new QPdfPrintEngine(printerMode);
+        auto pdfEngine = new QPdfPrintEngine(printerMode);
         paintEngine = pdfEngine;
         printEngine = pdfEngine;
     }
@@ -160,7 +160,7 @@ void QPrinterPrivate::initEngines(QPrinter::OutputFormat format, const QPrinterI
 
 void QPrinterPrivate::changeEngines(QPrinter::OutputFormat format, const QPrinterInfo &printer)
 {
-    QPrintEngine *oldPrintEngine = printEngine;
+    auto oldPrintEngine = printEngine;
     const bool def_engine = use_default_engine;
 
     initEngines(format, printer);
@@ -283,7 +283,7 @@ public:
     bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) Q_DECL_OVERRIDE
     {
         // Try to set print engine margins
-        QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(margins, units);
+        auto pair = qMakePair(margins, units);
         pd->setProperty(QPrintEngine::PPK_QPageMargins, QVariant::fromValue(pair));
 
         // Set QPagedPaintDevice layout to match the current print engine value
@@ -792,7 +792,7 @@ void QPrinter::setOutputFormat(OutputFormat format)
         return;
 
     if (format == QPrinter::NativeFormat) {
-        QPrinterInfo printerToUse = d->findValidPrinter();
+        auto printerToUse = d->findValidPrinter();
         if (!printerToUse.isNull())
             d->changeEngines(format, printerToUse);
     } else {
@@ -856,7 +856,7 @@ void QPrinter::setPrinterName(const QString &name)
         return;
     }
 
-    QPrinterInfo printerToUse = QPrinterInfo::printerInfo(name);
+    auto printerToUse = QPrinterInfo::printerInfo(name);
     if (printerToUse.isNull())
         return;
 
@@ -1825,7 +1825,7 @@ QRect QPrinter::paperRect() const
 void QPrinter::setPageMargins(qreal left, qreal top, qreal right, qreal bottom, QPrinter::Unit unit)
 {
     if (unit == QPrinter::DevicePixel) {
-        QMarginsF margins = QMarginsF(left, top, right, bottom);
+        auto margins = QMarginsF(left, top, right, bottom);
         margins *= qt_pixelMultiplier(resolution());
         margins = qt_convertMargins(margins, QPageLayout::Point, pageLayout().units());
         setPageMargins(margins, pageLayout().units());
@@ -1861,7 +1861,7 @@ void QPrinter::getPageMargins(qreal *left, qreal *top, qreal *right, qreal *bott
 {
     QMarginsF margins;
     if (unit == QPrinter::DevicePixel) {
-        QMargins tmp = pageLayout().marginsPixels(resolution());
+        auto tmp = pageLayout().marginsPixels(resolution());
         margins = QMarginsF(tmp.left(), tmp.top(), tmp.right(), tmp.bottom());
     } else {
         margins = pageLayout().margins(QPageLayout::Unit(unit));
@@ -1946,7 +1946,7 @@ int QPrinter::winPageSize() const
 QList<int> QPrinter::supportedResolutions() const
 {
     Q_D(const QPrinter);
-    const QList<QVariant> varlist
+    const auto varlist
         = d->printEngine->property(QPrintEngine::PPK_SupportedResolutions).toList();
     QList<int> intlist;
     intlist.reserve(varlist.size());

@@ -88,7 +88,7 @@ bool QPreviewPaintEngine::begin(QPaintDevice *)
     qDeleteAll(d->pages);
     d->pages.clear();
 
-    QPicture *page = new QPicture;
+    auto page = new QPicture;
     page->d_func()->in_memory_only = true;
     d->painter = new QPainter(page);
     d->engine = d->painter->paintEngine();
@@ -149,10 +149,10 @@ bool QPreviewPaintEngine::newPage()
 {
     Q_D(QPreviewPaintEngine);
 
-    QPicture *page = new QPicture;
+    auto page = new QPicture;
     page->d_func()->in_memory_only = true;
-    QPainter *tmp_painter = new QPainter(page);
-    QPaintEngine *tmp_engine = tmp_painter->paintEngine();
+    auto tmp_painter = new QPainter(page);
+    auto tmp_engine = tmp_painter->paintEngine();
 
     // copy the painter state from the original painter
     Q_ASSERT(painter()->d_func()->state && tmp_painter->d_func()->state);

@@ -123,8 +123,8 @@ bool QPlatformPrintDevice::isValidPageLayout(const QPageLayout &layout, int reso
         return false;
 
     // Check the margins are valid
-    QMarginsF pointMargins = layout.margins(QPageLayout::Point);
-    QMarginsF printMargins = printableMargins(layout.pageSize(), layout.orientation(), resolution);
+    auto pointMargins = layout.margins(QPageLayout::Point);
+    auto printMargins = printableMargins(layout.pageSize(), layout.orientation(), resolution);
     return pointMargins.left() >= printMargins.left()
            && pointMargins.right() >= printMargins.right()
            && pointMargins.top() >= printMargins.top()

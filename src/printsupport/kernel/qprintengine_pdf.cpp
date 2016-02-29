@@ -164,15 +164,15 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->pageOrder = QPrinter::PageOrder(value.toInt());
         break;
     case PPK_PageSize: {
-        QPageSize pageSize = QPageSize(QPageSize::PageSizeId(value.toInt()));
+        auto pageSize = QPageSize(QPageSize::PageSizeId(value.toInt()));
         if (pageSize.isValid())
             d->m_pageLayout.setPageSize(pageSize);
         break;
     }
     case PPK_PaperName: {
-        QString name = value.toString();
-        for (int i = 0; i <= QPageSize::LastPageSize; ++i) {
-            QPageSize pageSize = QPageSize(QPageSize::PageSizeId(i));
+        auto name = value.toString();
+        for (auto i = 0; i <= QPageSize::LastPageSize; ++i) {
+            auto pageSize = QPageSize(QPageSize::PageSizeId(i));
             if (name == pageSize.name()) {
                 d->m_pageLayout.setPageSize(pageSize);
                 break;
@@ -216,19 +216,19 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         break;
     }
     case PPK_QPageSize: {
-        QPageSize pageSize = value.value<QPageSize>();
+        auto pageSize = value.value<QPageSize>();
         if (pageSize.isValid())
             d->m_pageLayout.setPageSize(pageSize);
         break;
     }
     case PPK_QPageMargins: {
-        QPair<QMarginsF, QPageLayout::Unit> pair = value.value<QPair<QMarginsF, QPageLayout::Unit> >();
+        auto pair = value.value<QPair<QMarginsF, QPageLayout::Unit> >();
         d->m_pageLayout.setUnits(pair.second);
         d->m_pageLayout.setMargins(pair.first);
         break;
     }
     case PPK_QPageLayout: {
-        QPageLayout pageLayout = value.value<QPageLayout>();
+        auto pageLayout = value.value<QPageLayout>();
         if (pageLayout.isValid())
             d->m_pageLayout = pageLayout;
         break;
@@ -328,7 +328,7 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         break;
     case PPK_PageMargins: {
         QList<QVariant> list;
-        QMarginsF margins = d->m_pageLayout.margins(QPageLayout::Point);
+        auto margins = d->m_pageLayout.margins(QPageLayout::Point);
         list << margins.left() << margins.top() << margins.right() << margins.bottom();
         ret = list;
         break;
@@ -337,7 +337,7 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret.setValue(d->m_pageLayout.pageSize());
         break;
     case PPK_QPageMargins: {
-        QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(d->m_pageLayout.margins(), d->m_pageLayout.units());
+        auto pair = qMakePair(d->m_pageLayout.margins(), d->m_pageLayout.units());
         ret.setValue(pair);
         break;
     }
@@ -356,7 +356,7 @@ bool QPdfPrintEnginePrivate::openPrintDevice()
         return false;
 
     if (!outputFileName.isEmpty()) {
-        QFile *file = new QFile(outputFileName);
+        auto file = new QFile(outputFileName);
         if (! file->open(QFile::WriteOnly|QFile::Truncate)) {
             delete file;
             return false;

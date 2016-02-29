@@ -112,7 +112,7 @@ QAbstractPrintDialog::QAbstractPrintDialog(QPrinter *printer, QWidget *parent)
     setWindowTitle(QCoreApplication::translate("QPrintDialog", "Print"));
     d->setPrinter(printer);
     d->minPage = printer->fromPage();
-    int to = printer->toPage();
+    auto to = printer->toPage();
     d->maxPage = to > 0 ? to : INT_MAX;
 }
 
@@ -181,7 +181,7 @@ void QPrintDialog::setOptions(PrintDialogOptions options)
 {
     Q_D(QPrintDialog);
 
-    PrintDialogOptions changed = (options ^ d->options);
+    auto changed = (options ^ d->options);
     if (!changed)
         return;
 

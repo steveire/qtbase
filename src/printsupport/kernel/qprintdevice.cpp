@@ -259,8 +259,8 @@ void QPrintDevice::format(QDebug debug) const
     debug.noquote();
     debug.nospace();
     if (isValid()) {
-        const QString deviceId = id();
-        const QString deviceName = name();
+        const auto deviceId = id();
+        const auto deviceName = name();
         debug << "id=\"" << deviceId << "\", state=" << state();
         if (!deviceName.isEmpty() && deviceName != deviceId)
             debug << ", name=\"" << deviceName << '"';
@@ -282,7 +282,7 @@ void QPrintDevice::format(QDebug debug) const
               << ", defaultDuplexMode=" << defaultDuplexMode()
               << ", defaultColorMode="<< defaultColorMode();
 #    ifndef QT_NO_MIMETYPE
-        const QList<QMimeType> mimeTypes = supportedMimeTypes();
+        const auto mimeTypes = supportedMimeTypes();
         if (!mimeTypes.isEmpty()) {
             debug << ", supportedMimeTypes=(";
             for (const auto &mimeType : mimeTypes)

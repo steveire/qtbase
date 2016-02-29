@@ -110,7 +110,7 @@ void QAlphaPaintEngine::updateState(const QPaintEngineState &state)
 {
     Q_D(QAlphaPaintEngine);
 
-    DirtyFlags flags = state.state();
+    auto flags = state.state();
     if (flags & QPaintEngine::DirtyTransform) {
         d->m_transform = state.transform();
         d->m_complexTransform = (d->m_transform.type() > QTransform::TxScale);
@@ -153,7 +153,7 @@ void QAlphaPaintEngine::updateState(const QPaintEngineState &state)
     d->m_hasalpha = d->m_alphaOpacity || d->m_alphaBrush || d->m_alphaPen;
 
     if (d->m_picengine) {
-        const QPainter *p = painter();
+        auto p = painter();
         d->m_picpainter->setPen(p->pen());
         d->m_picpainter->setBrush(p->brush());
         d->m_picpainter->setBrushOrigin(p->brushOrigin());
@@ -168,7 +168,7 @@ void QAlphaPaintEngine::drawPath(const QPainterPath &path)
 {
     Q_D(QAlphaPaintEngine);
 
-    QRectF tr = d->addPenWidth(path);
+    auto tr = d->addPenWidth(path);
 
     if (d->m_pass == 0) {
         d->m_continueCall = false;
@@ -193,12 +193,12 @@ void QAlphaPaintEngine::drawPolygon(const QPointF *points, int pointCount, Polyg
 
     QPolygonF poly;
     poly.reserve(pointCount);
-    for (int i = 0; i < pointCount; ++i)
+    for (auto i = 0; i < pointCount; ++i)
         poly.append(points[i]);
 
     QPainterPath path;
     path.addPolygon(poly);
-    QRectF tr = d->addPenWidth(path);
+    auto tr = d->addPenWidth(path);
 
     if (d->m_pass == 0) {
         d->m_continueCall = false;
@@ -221,7 +221,7 @@ void QAlphaPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRe
 {
     Q_D(QAlphaPaintEngine);
 
-    QRectF tr = d->m_transform.mapRect(r);
+    auto tr = d->m_transform.mapRect(r);
     if (d->m_pass == 0) {
         d->m_continueCall = false;
         if (d->canSeeTroughBackground(pm.hasAlpha() || d->m_alphaOpacity, tr) || d->m_complexTransform || pm.isQBitmap()) {
@@ -265,7 +265,7 @@ void QAlphaPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, 
 {
     Q_D(QAlphaPaintEngine);
 
-    QRectF brect = d->m_transform.mapRect(r);
+    auto brect = d->m_transform.mapRect(r);
 
     if (d->m_pass == 0) {
         d->m_continueCall = false;
@@ -306,9 +306,9 @@ void QAlphaPaintEngine::flushAndInit(bool init)
         d->m_alphargn = d->m_alphargn.intersected(QRect(0, 0, d->m_pdev->width(), d->m_pdev->height()));
 
         // just use the bounding rect if it's a complex region..
-        QVector<QRect> rects = d->m_alphargn.rects();
+        auto rects = d->m_alphargn.rects();
         if (rects.size() > 10) {
-            QRect br = d->m_alphargn.boundingRect();
+            auto br = d->m_alphargn.boundingRect();
             d->m_alphargn = QRegion(br);
             rects.clear();
             rects.append(br);
@@ -367,7 +367,7 @@ void QAlphaPaintEngine::flushAndInit(bool init)
         d->m_picpainter->setTransform(painter()->combinedTransform());
         d->m_picengine->syncState();
         QPainterState &state = *d->m_picpainter->d_func()->state;
-        QPainter *oldPainter = state.painter;
+        auto oldPainter = state.painter;
         state = *painter()->d_func()->state;
         state.painter = oldPainter;
     }
@@ -412,11 +412,11 @@ QRectF QAlphaPaintEnginePrivate::addPenWidth(const QPainterPath &path)
 {
     Q_Q(QAlphaPaintEngine);
 
-    QPainterPath tmp = path;
+    auto tmp = path;
 
     if (m_pen.style() == Qt::NoPen)
         return (path.controlPointRect() * m_transform).boundingRect();
-    bool cosmetic = qt_pen_is_cosmetic(m_pen, q->state->renderHints());
+    auto cosmetic = qt_pen_is_cosmetic(m_pen, q->state->renderHints());
     if (cosmetic)
         tmp = path * m_transform;
 
@@ -457,29 +457,29 @@ void QAlphaPaintEnginePrivate::drawAlphaImage(const QRectF &rect)
 
     qreal dpiX = qMax(m_pdev->logicalDpiX(), 300);
     qreal dpiY = qMax(m_pdev->logicalDpiY(), 300);
-    qreal xscale = (dpiX / m_pdev->logicalDpiX());
-    qreal yscale = (dpiY / m_pdev->logicalDpiY());
+    auto xscale = (dpiX / m_pdev->logicalDpiX());
+    auto yscale = (dpiY / m_pdev->logicalDpiY());
 
     QTransform picscale;
     picscale.scale(xscale, yscale);
 
-    const int tileSize = 2048;
+    const auto tileSize = 2048;
     QSize size((int(rect.width() * xscale)), int(rect.height() * yscale));
-    int divw = (size.width() / tileSize);
-    int divh = (size.height() / tileSize);
+    auto divw = (size.width() / tileSize);
+    auto divh = (size.height() / tileSize);
     divw += 1;
     divh += 1;
 
-    int incx = int(rect.width() / divw);
-    int incy = int(rect.height() / divh);
+    auto incx = int(rect.width() / divw);
+    auto incy = int(rect.height() / divh);
 
-    for (int y=0; y<divh; ++y) {
-        int ypos = int((incy * y) + rect.y());
-        int height = int((y == (divh - 1)) ? (rect.height() - (incy * y)) : incy) + 1;
+    for (auto y=0; y<divh; ++y) {
+        auto ypos = int((incy * y) + rect.y());
+        auto height = int((y == (divh - 1)) ? (rect.height() - (incy * y)) : incy) + 1;
 
-        for (int x=0; x<divw; ++x) {
-            int xpos = int((incx * x) + rect.x());
-            int width = int((x == (divw - 1)) ? (rect.width() - (incx * x)) : incx) + 1;
+        for (auto x=0; x<divw; ++x) {
+            auto xpos = int((incx * x) + rect.x());
+            auto width = int((x == (divw - 1)) ? (rect.width() - (incx * x)) : incx) + 1;
 
             QSize imgsize((int)(width * xscale), (int)(height * yscale));
             QImage img(imgsize, QImage::Format_RGB32);

@@ -63,7 +63,7 @@
 
 static void initResources()
 {
-    static bool resourcesInitialized = false;
+    static auto resourcesInitialized = false;
     if (!resourcesInitialized) {
         Q_INIT_RESOURCE(qprintdialog);
         resourcesInitialized = true;
@@ -90,17 +90,17 @@ public:
 
     State validate(QString &input, int &pos) const Q_DECL_OVERRIDE
     {
-        bool replacePercent = false;
+        auto replacePercent = false;
         if (input.endsWith(QLatin1Char('%'))) {
             input = input.left(input.length() - 1);
             replacePercent = true;
         }
-        State state = QDoubleValidator::validate(input, pos);
+        auto state = QDoubleValidator::validate(input, pos);
         if (replacePercent)
             input += QLatin1Char('%');
-        const int num_size = 4;
+        const auto num_size = 4;
         if (state == Intermediate) {
-            int i = input.indexOf(QLocale::system().decimalPoint());
+            auto i = input.indexOf(QLocale::system().decimalPoint());
             if ((i == -1 && input.size() > num_size)
                 || (i != -1 && i > num_size))
                 return Invalid;
@@ -246,7 +246,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     zoomFactor->setEditable(true);
     zoomFactor->setMinimumContentsLength(7);
     zoomFactor->setInsertPolicy(QComboBox::NoInsert);
-    LineEdit *zoomEditor = new LineEdit;
+    auto zoomEditor = new LineEdit;
     zoomEditor->setValidator(new ZoomFactorValidator(1, 1000, 1, zoomEditor));
     zoomFactor->setLineEdit(zoomEditor);
     static const short factorsX2[] = { 25, 50, 100, 200, 250, 300, 400, 800, 1600 };
@@ -257,8 +257,8 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     QObject::connect(zoomFactor, SIGNAL(currentIndexChanged(int)),
                      q, SLOT(_q_zoomFactorChanged()));
 
-    QPrintPreviewMainWindow *mw = new QPrintPreviewMainWindow(q);
-    QToolBar *toolbar = new QToolBar(mw);
+    auto mw = new QPrintPreviewMainWindow(q);
+    auto toolbar = new QToolBar(mw);
     toolbar->addAction(fitWidthAction);
     toolbar->addAction(fitPageAction);
     toolbar->addSeparator();
@@ -275,8 +275,8 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     // this is to ensure the label text and the editor text are
     // aligned in all styles - the extra QVBoxLayout is a workaround
     // for bug in QFormLayout
-    QWidget *pageEdit = new QWidget(toolbar);
-    QVBoxLayout *vboxLayout = new QVBoxLayout;
+    auto pageEdit = new QWidget(toolbar);
+    auto vboxLayout = new QVBoxLayout;
     vboxLayout->setContentsMargins(0, 0, 0, 0);
 #ifdef Q_OS_MAC
     // We query the widgets about their size and then we fix the size.
@@ -287,7 +287,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     pageNumEdit->resize(pageNumEditSize);
     pageNumLabel->resize(pageNumLabelSize);
 #endif
-    QFormLayout *formLayout = new QFormLayout;
+    auto formLayout = new QFormLayout;
 #ifdef Q_OS_MAC
     // We have to change the growth policy in Mac.
     formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
@@ -310,8 +310,8 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     toolbar->addAction(printAction);
 
     // Cannot use the actions' triggered signal here, since it doesn't autorepeat
-    QToolButton *zoomInButton = static_cast<QToolButton *>(toolbar->widgetForAction(zoomInAction));
-    QToolButton *zoomOutButton = static_cast<QToolButton *>(toolbar->widgetForAction(zoomOutAction));
+    auto zoomInButton = static_cast<QToolButton *>(toolbar->widgetForAction(zoomInAction));
+    auto zoomOutButton = static_cast<QToolButton *>(toolbar->widgetForAction(zoomOutAction));
     zoomInButton->setAutoRepeat(true);
     zoomInButton->setAutoRepeatInterval(200);
     zoomInButton->setAutoRepeatDelay(200);
@@ -327,12 +327,12 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     // plain widget
     mw->setParent(q, Qt::Widget);
 
-    QVBoxLayout *topLayout = new QVBoxLayout;
+    auto topLayout = new QVBoxLayout;
     topLayout->addWidget(mw);
     topLayout->setMargin(0);
     q->setLayout(topLayout);
 
-    QString caption = QCoreApplication::translate("QPrintPreviewDialog", "Print Preview");
+    auto caption = QCoreApplication::translate("QPrintPreviewDialog", "Print Preview");
     if (!printer->docName().isEmpty())
         caption += QString::fromLatin1(": ") + printer->docName();
     q->setWindowTitle(caption);
@@ -451,7 +451,7 @@ void QPrintPreviewDialogPrivate::setFitting(bool on)
         return;
     fitGroup->setExclusive(on);
     if (on) {
-        QAction* action = fitWidthAction->isChecked() ? fitWidthAction : fitPageAction;
+        auto action = fitWidthAction->isChecked() ? fitWidthAction : fitPageAction;
         action->setChecked(true);
         if (fitGroup->checkedAction() != action) {
             // work around exclusitivity problem
@@ -466,8 +466,8 @@ void QPrintPreviewDialogPrivate::setFitting(bool on)
 
 void QPrintPreviewDialogPrivate::updateNavActions()
 {
-    int curPage = preview->currentPage();
-    int numPages = preview->pageCount();
+    auto curPage = preview->currentPage();
+    auto numPages = preview->pageCount();
     nextPageAction->setEnabled(curPage < numPages);
     prevPageAction->setEnabled(curPage > 1);
     firstPageAction->setEnabled(curPage > 1);
@@ -479,11 +479,11 @@ void QPrintPreviewDialogPrivate::updatePageNumLabel()
 {
     Q_Q(QPrintPreviewDialog);
 
-    int numPages = preview->pageCount();
-    int maxChars = QString::number(numPages).length();
+    auto numPages = preview->pageCount();
+    auto maxChars = QString::number(numPages).length();
     pageNumLabel->setText(QString::fromLatin1("/ %1").arg(numPages));
-    int cyphersWidth = q->fontMetrics().width(QString().fill(QLatin1Char('8'), maxChars));
-    int maxWidth = pageNumEdit->minimumSizeHint().width() + cyphersWidth;
+    auto cyphersWidth = q->fontMetrics().width(QString().fill(QLatin1Char('8'), maxChars));
+    auto maxWidth = pageNumEdit->minimumSizeHint().width() + cyphersWidth;
     pageNumEdit->setMinimumWidth(maxWidth);
     pageNumEdit->setMaximumWidth(maxWidth);
     pageNumEdit->setValidator(new QIntValidator(1, numPages, pageNumEdit));
@@ -520,15 +520,15 @@ void QPrintPreviewDialogPrivate::_q_zoomOut()
 
 void QPrintPreviewDialogPrivate::_q_pageNumEdited()
 {
-    bool ok = false;
-    int res = pageNumEdit->text().toInt(&ok);
+    auto ok = false;
+    auto res = pageNumEdit->text().toInt(&ok);
     if (ok)
         preview->setCurrentPage(res);
 }
 
 void QPrintPreviewDialogPrivate::_q_navigate(QAction* action)
 {
-    int curPage = preview->currentPage();
+    auto curPage = preview->currentPage();
     if (action == prevPageAction)
         preview->setCurrentPage(curPage - 1);
     else if (action == nextPageAction)
@@ -619,7 +619,7 @@ void QPrintPreviewDialogPrivate::_q_previewChanged()
 
 void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
 {
-    QString text = zoomFactor->lineEdit()->text();
+    auto text = zoomFactor->lineEdit()->text();
     bool ok;
     qreal factor = text.remove(QLatin1Char('%')).toFloat(&ok);
     factor = qMax(qreal(1.0), qMin(qreal(1000.0), factor));

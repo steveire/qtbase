@@ -53,7 +53,7 @@ public:
 QPrinterInfoPrivate::QPrinterInfoPrivate(const QString &id)
 {
     if (!id.isEmpty()) {
-        QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+        auto ps = QPlatformPrinterSupportPlugin::get();
         if (ps)
             m_printDevice = ps->createPrintDevice(id);
     }
@@ -104,7 +104,7 @@ QPrinterInfo::QPrinterInfo(const QPrinterInfo &other)
 QPrinterInfo::QPrinterInfo(const QPrinter &printer)
     : d_ptr(shared_null)
 {
-    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    auto ps = QPlatformPrinterSupportPlugin::get();
     if (ps) {
         QPrinterInfo pi(printer.printerName());
         if (pi.d_ptr.data() == shared_null)
@@ -316,7 +316,7 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 {
     Q_D(const QPrinterInfo);
     QList<QPrinter::PaperSize> list;
-    const QList<QPageSize> supportedPageSizes = d->m_printDevice.supportedPageSizes();
+    const auto supportedPageSizes = d->m_printDevice.supportedPageSizes();
     list.reserve(supportedPageSizes.size());
     for (const QPageSize &pageSize : supportedPageSizes)
         list.append(QPrinter::PaperSize(pageSize.id()));
@@ -338,7 +338,7 @@ QList<QPair<QString, QSizeF> > QPrinterInfo::supportedSizesWithNames() const
 {
     Q_D(const QPrinterInfo);
     QList<QPair<QString, QSizeF> > list;
-    const QList<QPageSize> supportedPageSizes = d->m_printDevice.supportedPageSizes();
+    const auto supportedPageSizes = d->m_printDevice.supportedPageSizes();
     list.reserve(supportedPageSizes.size());
     for (const QPageSize &pageSize : supportedPageSizes)
         list.append(qMakePair(pageSize.name(), pageSize.size(QPageSize::Millimeter)));
@@ -380,9 +380,9 @@ QList<QPrinter::DuplexMode> QPrinterInfo::supportedDuplexModes() const
 {
     Q_D(const QPrinterInfo);
     QList<QPrinter::DuplexMode> list;
-    const QList<QPrint::DuplexMode> supportedDuplexModes = d->m_printDevice.supportedDuplexModes();
+    const auto supportedDuplexModes = d->m_printDevice.supportedDuplexModes();
     list.reserve(supportedDuplexModes.size());
-    for (QPrint::DuplexMode mode : supportedDuplexModes)
+    for (auto mode : supportedDuplexModes)
         list << QPrinter::DuplexMode(mode);
     return list;
 }
@@ -401,7 +401,7 @@ QList<QPrinter::DuplexMode> QPrinterInfo::supportedDuplexModes() const
 */
 QStringList QPrinterInfo::availablePrinterNames()
 {
-    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    auto ps = QPlatformPrinterSupportPlugin::get();
     if (ps)
         return ps->availablePrintDeviceIds();
     return QStringList();
@@ -420,9 +420,9 @@ QStringList QPrinterInfo::availablePrinterNames()
 QList<QPrinterInfo> QPrinterInfo::availablePrinters()
 {
     QList<QPrinterInfo> list;
-    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    auto ps = QPlatformPrinterSupportPlugin::get();
     if (ps) {
-        const QStringList availablePrintDeviceIds = ps->availablePrintDeviceIds();
+        const auto availablePrintDeviceIds = ps->availablePrintDeviceIds();
         list.reserve(availablePrintDeviceIds.size());
         for (const QString &id : availablePrintDeviceIds)
             list.append(QPrinterInfo(id));
@@ -437,7 +437,7 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
 */
 QString QPrinterInfo::defaultPrinterName()
 {
-    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    auto ps = QPlatformPrinterSupportPlugin::get();
     if (ps)
         return ps->defaultPrintDeviceId();
     return QString();
@@ -459,7 +459,7 @@ QString QPrinterInfo::defaultPrinterName()
 
 QPrinterInfo QPrinterInfo::defaultPrinter()
 {
-    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    auto ps = QPlatformPrinterSupportPlugin::get();
     if (ps)
         return QPrinterInfo(ps->defaultPrintDeviceId());
     return QPrinterInfo();

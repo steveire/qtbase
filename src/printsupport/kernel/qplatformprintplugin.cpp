@@ -76,7 +76,7 @@ static void cleanupPrinterSupport()
 QPlatformPrinterSupport *QPlatformPrinterSupportPlugin::get()
 {
     if (!printerSupport) {
-        const QMultiMap<int, QString> keyMap = loader()->keyMap();
+        const auto keyMap = loader()->keyMap();
         if (!keyMap.isEmpty())
             printerSupport = qLoadPlugin<QPlatformPrinterSupport, QPlatformPrinterSupportPlugin>(loader(), keyMap.constBegin().value());
         if (printerSupport)
