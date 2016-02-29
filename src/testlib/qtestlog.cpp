@@ -101,7 +101,7 @@ namespace QTest {
         static inline void clearList(IgnoreResultList *&list)
         {
             while (list) {
-                IgnoreResultList *current = list;
+                auto current = list;
                 list = list->next;
                 delete current;
             }
@@ -109,13 +109,13 @@ namespace QTest {
 
         static void append(IgnoreResultList *&list, QtMsgType type, const QVariant &patternIn)
         {
-            QTest::IgnoreResultList *item = new QTest::IgnoreResultList(type, patternIn);
+            auto item = new QTest::IgnoreResultList(type, patternIn);
 
             if (!list) {
                 list = item;
                 return;
             }
-            IgnoreResultList *last = list;
+            auto last = list;
             for ( ; last->next; last = last->next) ;
             last->next = item;
         }
@@ -164,7 +164,7 @@ namespace QTest {
     public:
         static void addLogger(QAbstractTestLogger *logger)
         {
-            LoggerList *l = new LoggerList;
+            auto l = new LoggerList;
             l->logger = logger;
             l->next = loggers;
             loggers = l;
@@ -173,7 +173,7 @@ namespace QTest {
         static void destroyLoggers()
         {
             while (loggers) {
-                LoggerList *l = loggers;
+                auto l = loggers;
                 loggers = loggers->next;
                 delete l->logger;
                 delete l;
@@ -233,7 +233,7 @@ namespace QTest {
 
         static int loggerCount()
         {
-            int count = 0;
+            auto count = 0;
             FOREACH_LOGGER(++count);
             return count;
         }
@@ -258,7 +258,7 @@ namespace QTest {
         if (!ignoreResultList)
             return false;
         IgnoreResultList *last = 0;
-        IgnoreResultList *list = ignoreResultList;
+        auto list = ignoreResultList;
         while (list) {
             if (list->matches(type, message)) {
                 // remove the item from the list
@@ -293,7 +293,7 @@ namespace QTest {
             // the message is expected, so just swallow it.
             return;
 
-        QString msg = qFormatLogMessage(type, context, message);
+        auto msg = qFormatLogMessage(type, context, message);
 
         if (type != QtFatalMsg) {
             if (counter.load() <= 0)
@@ -347,8 +347,8 @@ void QTestLog::enterTestFunction(const char* function)
 
 int QTestLog::unhandledIgnoreMessages()
 {
-    int i = 0;
-    QTest::IgnoreResultList *list = QTest::ignoreResultList;
+    auto i = 0;
+    auto list = QTest::ignoreResultList;
     while (list) {
         ++i;
         list = list->next;
@@ -367,7 +367,7 @@ void QTestLog::leaveTestFunction()
 void QTestLog::printUnhandledIgnoreMessages()
 {
     QString message;
-    QTest::IgnoreResultList *list = QTest::ignoreResultList;
+    auto list = QTest::ignoreResultList;
     while (list) {
         if (list->pattern.type() == QVariant::String) {
             message = QStringLiteral("Did not receive message: \"") + list->pattern.toString() + QLatin1Char('"');

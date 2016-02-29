@@ -427,11 +427,11 @@ QTest::QBenchmarkMetric QBenchmarkPerfEventsMeasurer::metricForEvent(quint32 typ
 void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
 {
     initPerf();
-    const char *colon = strchr(name, ':');
+    auto colon = strchr(name, ':');
     int n = colon ? colon - name : strlen(name);
     const Events *ptr = eventlist;
     for ( ; ptr->type != PERF_TYPE_MAX; ++ptr) {
-        int c = strncmp(name, eventlist_strings + ptr->offset, n);
+        auto c = strncmp(name, eventlist_strings + ptr->offset, n);
         if (c == 0)
             break;
         if (c < 0) {
@@ -535,7 +535,7 @@ void QBenchmarkPerfEventsMeasurer::start()
 qint64 QBenchmarkPerfEventsMeasurer::checkpoint()
 {
     ::ioctl(fd, PERF_EVENT_IOC_DISABLE);
-    qint64 value = readValue();
+    auto value = readValue();
     ::ioctl(fd, PERF_EVENT_IOC_ENABLE);
     return value;
 }
@@ -586,8 +586,8 @@ static quint64 rawReadValue(int fd)
 
     size_t nread = 0;
     while (nread < sizeof results) {
-        char *ptr = reinterpret_cast<char *>(&results);
-        qint64 r = qt_safe_read(fd, ptr + nread, sizeof results - nread);
+        auto ptr = reinterpret_cast<char *>(&results);
+        auto r = qt_safe_read(fd, ptr + nread, sizeof results - nread);
         if (r == -1) {
             perror("QBenchmarkPerfEventsMeasurer::readValue: reading the results");
             exit(1);
@@ -604,7 +604,7 @@ static quint64 rawReadValue(int fd)
 
 qint64 QBenchmarkPerfEventsMeasurer::readValue()
 {
-    quint64 raw = rawReadValue(fd);
+    auto raw = rawReadValue(fd);
     if (metricType() == QTest::WalltimeMilliseconds) {
         // perf returns nanoseconds
         return raw / 1000000;

@@ -229,10 +229,10 @@ void QXmlTestLogger::addIncident(IncidentTypes type, const char *description,
                                 const char *file, int line)
 {
     QTestCharBuffer buf;
-    const char *tag = QTestResult::currentDataTag();
-    const char *gtag = QTestResult::currentGlobalDataTag();
-    const char *filler = (tag && gtag) ? ":" : "";
-    const bool notag = QTest::isEmpty(tag) && QTest::isEmpty(gtag);
+    auto tag = QTestResult::currentDataTag();
+    auto gtag = QTestResult::currentGlobalDataTag();
+    auto filler = (tag && gtag) ? ":" : "";
+    const auto notag = QTest::isEmpty(tag) && QTest::isEmpty(gtag);
 
     QTestCharBuffer quotedFile;
     QTestCharBuffer cdataGtag;
@@ -266,7 +266,7 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
         benchmarkMetricName(result.metric));
     xmlQuote(&quotedTag, result.context.tag.toUtf8().constData());
 
-    const qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
+    const auto valuePerIteration = qreal(result.value) / qreal(result.iterations);
     QTest::qt_asprintf(
         &buf,
         QTest::benchmarkResultFormatString(),
@@ -281,10 +281,10 @@ void QXmlTestLogger::addMessage(MessageTypes type, const QString &message,
                                 const char *file, int line)
 {
     QTestCharBuffer buf;
-    const char *tag = QTestResult::currentDataTag();
-    const char *gtag = QTestResult::currentGlobalDataTag();
-    const char *filler = (tag && gtag) ? ":" : "";
-    const bool notag = QTest::isEmpty(tag) && QTest::isEmpty(gtag);
+    auto tag = QTestResult::currentDataTag();
+    auto gtag = QTestResult::currentGlobalDataTag();
+    auto filler = (tag && gtag) ? ":" : "";
+    const auto notag = QTest::isEmpty(tag) && QTest::isEmpty(gtag);
 
     QTestCharBuffer quotedFile;
     QTestCharBuffer cdataGtag;
@@ -317,12 +317,12 @@ int QXmlTestLogger::xmlQuote(QTestCharBuffer* destBuf, char const* src, size_t n
 {
     if (n == 0) return 0;
 
-    char *dest = destBuf->data();
+    auto dest = destBuf->data();
     *dest = 0;
     if (!src) return 0;
 
-    char* begin = dest;
-    char* end = dest + n;
+    auto begin = dest;
+    auto end = dest + n;
 
     while (dest < end) {
         switch (*src) {
@@ -377,7 +377,7 @@ int QXmlTestLogger::xmlCdata(QTestCharBuffer *destBuf, char const* src, size_t n
 {
     if (!n) return 0;
 
-    char *dest = destBuf->data();
+    auto dest = destBuf->data();
 
     if (!src || n == 1) {
         *dest = 0;
@@ -387,8 +387,8 @@ int QXmlTestLogger::xmlCdata(QTestCharBuffer *destBuf, char const* src, size_t n
     static char const CDATA_END[] = "]]>";
     static char const CDATA_END_ESCAPED[] = "]]]><![CDATA[]>";
 
-    char* begin = dest;
-    char* end = dest + n;
+    auto begin = dest;
+    auto end = dest + n;
     while (dest < end) {
         if (!*src) {
             *dest = 0;
@@ -426,11 +426,11 @@ typedef int (*StringFormatFunction)(QTestCharBuffer*,char const*,size_t);
 */
 int allocateStringFn(QTestCharBuffer* str, char const* src, StringFormatFunction func)
 {
-    static const int MAXSIZE = 1024*1024*2;
+    static const auto MAXSIZE = 1024*1024*2;
 
-    int size = str->size();
+    auto size = str->size();
 
-    int res = 0;
+    auto res = 0;
 
     for (;;) {
         res = func(str, src, size);

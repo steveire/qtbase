@@ -129,7 +129,7 @@ namespace QTest {
         if (num <= 0)
             return 0;
 
-        int digits = 0;
+        auto digits = 0;
         qreal divisor = 1;
 
         while (num / divisor >= 1) {
@@ -148,26 +148,26 @@ namespace QTest {
         if (number == T(0))
             return QLatin1String("0");
 
-        QString beforeDecimalPoint = QString::number(qint64(number), 'f', 0);
+        auto beforeDecimalPoint = QString::number(qint64(number), 'f', 0);
         QString afterDecimalPoint = QString::number(number, 'f', 20);
         afterDecimalPoint.remove(0, beforeDecimalPoint.count() + 1);
 
-        int beforeUse = qMin(beforeDecimalPoint.count(), significantDigits);
-        int beforeRemove = beforeDecimalPoint.count() - beforeUse;
+        auto beforeUse = qMin(beforeDecimalPoint.count(), significantDigits);
+        auto beforeRemove = beforeDecimalPoint.count() - beforeUse;
 
         // Replace insignificant digits before the decimal point with zeros.
         beforeDecimalPoint.chop(beforeRemove);
-        for (int i = 0; i < beforeRemove; ++i) {
+        for (auto i = 0; i < beforeRemove; ++i) {
             beforeDecimalPoint.append(QLatin1Char('0'));
         }
 
-        int afterUse = significantDigits - beforeUse;
+        auto afterUse = significantDigits - beforeUse;
 
         // leading zeroes after the decimal point does not count towards the digit use.
         if (beforeDecimalPoint == QLatin1String("0") && afterDecimalPoint.isEmpty() == false) {
             ++afterUse;
 
-            int i = 0;
+            auto i = 0;
             while (i < afterDecimalPoint.count() && afterDecimalPoint.at(i) == QLatin1Char('0')) {
                 ++i;
             }
@@ -175,15 +175,15 @@ namespace QTest {
             afterUse += i;
         }
 
-        int afterRemove = afterDecimalPoint.count() - afterUse;
+        auto afterRemove = afterDecimalPoint.count() - afterUse;
         afterDecimalPoint.chop(afterRemove);
 
         QChar separator = QLatin1Char(',');
         QChar decimalPoint = QLatin1Char('.');
 
         // insert thousands separators
-        int length = beforeDecimalPoint.length();
-        for (int i = beforeDecimalPoint.length() -1; i >= 1; --i) {
+        auto length = beforeDecimalPoint.length();
+        for (auto i = beforeDecimalPoint.length() -1; i >= 1; --i) {
             if ((length - i) % 3 == 0)
                 beforeDecimalPoint.insert(i, separator);
         }
@@ -204,7 +204,7 @@ namespace QTest {
     {
         QString result = formatResult(number, significantDigits);
         qstrncpy(buffer, result.toLatin1().constData(), bufferSize);
-        int size = result.count();
+        auto size = result.count();
         return size;
     }
 }
@@ -243,13 +243,13 @@ void QPlainTestLogger::printMessage(const char *type, const char *msg, const cha
 
     QTestCharBuffer buf;
 
-    const char *fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
+    auto fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
         : "UnknownTestFunc";
-    const char *tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
-    const char *gtag = QTestResult::currentGlobalDataTag()
+    auto tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
+    auto gtag = QTestResult::currentGlobalDataTag()
                      ? QTestResult::currentGlobalDataTag()
                      : "";
-    const char *filler = (tag[0] && gtag[0]) ? ":" : "";
+    auto filler = (tag[0] && gtag[0]) ? ":" : "";
     if (file) {
         QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n"
 #ifdef Q_OS_WIN
@@ -272,7 +272,7 @@ void QPlainTestLogger::printMessage(const char *type, const char *msg, const cha
 
 void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
 {
-    const char *bmtag = QTest::benchmarkResult2String();
+    auto bmtag = QTest::benchmarkResult2String();
 
     char buf1[1024];
     qsnprintf(
@@ -283,21 +283,21 @@ void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
 
     char bufTag[1024];
     bufTag[0] = 0;
-    QByteArray tag = result.context.tag.toLocal8Bit();
+    auto tag = result.context.tag.toLocal8Bit();
     if (tag.isEmpty() == false) {
         qsnprintf(bufTag, sizeof(bufTag), ":\"%s\"", tag.data());
     }
 
 
     char fillFormat[8];
-    int fillLength = 5;
+    auto fillLength = 5;
     qsnprintf(fillFormat, sizeof(fillFormat), ":\n%%%ds", fillLength);
     char fill[1024];
     qsnprintf(fill, sizeof(fill), fillFormat, "");
 
-    const char * unitText = QTest::benchmarkMetricUnit(result.metric);
+    auto unitText = QTest::benchmarkMetricUnit(result.metric);
 
-    qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
+    auto valuePerIteration = qreal(result.value) / qreal(result.iterations);
     char resultBuffer[100] = "";
     QTest::formatResult(resultBuffer, 100, valuePerIteration, QTest::countSignificantDigits(result.value));
 
@@ -354,7 +354,7 @@ void QPlainTestLogger::startLogging()
 void QPlainTestLogger::stopLogging()
 {
     char buf[1024];
-    const int timeMs = qRound(QTestLog::msecsTotalTime());
+    const auto timeMs = qRound(QTestLog::msecsTotalTime());
     if (QTestLog::verboseLevel() < 0) {
         qsnprintf(buf, sizeof(buf), "Totals: %d passed, %d failed, %d skipped, %d blacklisted, %dms\n",
                   QTestLog::passCount(), QTestLog::failCount(),

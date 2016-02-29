@@ -106,7 +106,7 @@ bool QTestTable::isEmpty() const
 
 QTestData *QTestTable::newData(const char *tag)
 {
-    QTestData *dt = new QTestData(tag, this);
+    auto dt = new QTestData(tag, this);
     d->addRow(dt);
     return dt;
 }
@@ -158,7 +158,7 @@ int QTestTable::indexOf(const char *elementName) const
 
     const QTestTablePrivate::ElementList &elementList = d->elementList;
 
-    const It it = std::find_if(elementList.begin(), elementList.end(),
+    const auto it = std::find_if(elementList.begin(), elementList.end(),
                                NamePredicate(elementName));
     return it != elementList.end() ?
         int(it - elementList.begin()) : -1;

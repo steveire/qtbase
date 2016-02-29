@@ -90,7 +90,7 @@ QAbstractTestLogger::~QAbstractTestLogger()
 
 void QAbstractTestLogger::filterUnprintable(char *str) const
 {
-    unsigned char *idx = reinterpret_cast<unsigned char *>(str);
+    auto idx = reinterpret_cast<unsigned char *>(str);
     while (*idx) {
         if (((*idx < 0x20 && *idx != '\n' && *idx != '\t') || *idx == 0x7f))
             *idx = '?';
@@ -103,7 +103,7 @@ void QAbstractTestLogger::outputString(const char *msg)
     QTEST_ASSERT(stream);
     QTEST_ASSERT(msg);
 
-    char *filtered = new char[strlen(msg) + 1];
+    auto filtered = new char[strlen(msg) + 1];
     strcpy(filtered, msg);
     filterUnprintable(filtered);
 
@@ -132,14 +132,14 @@ extern void filter_unprintable(char *str);
  */
 int qt_asprintf(QTestCharBuffer *str, const char *format, ...)
 {
-    static const int MAXSIZE = 1024*1024*2;
+    static const auto MAXSIZE = 1024*1024*2;
 
     Q_ASSERT(str);
 
-    int size = str->size();
+    auto size = str->size();
 
     va_list ap;
-    int res = 0;
+    auto res = 0;
 
     for (;;) {
         va_start(ap, format);

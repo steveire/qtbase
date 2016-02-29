@@ -86,7 +86,7 @@ void QXunitTestLogger::startLogging()
 
 void QXunitTestLogger::stopLogging()
 {
-    QTestElement *iterator = listOfTestcases;
+    auto iterator = listOfTestcases;
 
     char buf[10];
 
@@ -103,7 +103,7 @@ void QXunitTestLogger::stopLogging()
     currentLogElement->addAttribute(QTest::AI_Errors, buf);
 
     QTestElement *property;
-    QTestElement *properties = new QTestElement(QTest::LET_Properties);
+    auto properties = new QTestElement(QTest::LET_Properties);
 
     property = new QTestElement(QTest::LET_Property);
     property->addAttribute(QTest::AI_Name, "QTestVersion");
@@ -125,7 +125,7 @@ void QXunitTestLogger::stopLogging()
     currentLogElement->addLogElement(iterator);
 
     /* For correct indenting, make sure every testcase knows its parent */
-    QTestElement* testcase = iterator;
+    auto testcase = iterator;
     while (testcase) {
         testcase->setParent(currentLogElement);
         testcase = testcase->nextElement();
@@ -133,7 +133,7 @@ void QXunitTestLogger::stopLogging()
 
     currentLogElement->addLogElement(errorLogElement);
 
-    QTestElement *it = currentLogElement;
+    auto it = currentLogElement;
     logFormatter->output(it);
 
     QAbstractTestLogger::stopLogging();
@@ -186,7 +186,7 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
     }
 
     if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XPass) {
-        QTestElement *failureElement = new QTestElement(QTest::LET_Failure);
+        auto failureElement = new QTestElement(QTest::LET_Failure);
         failureElement->addAttribute(QTest::AI_Result, typeBuf);
         if (file)
             failureElement->addAttribute(QTest::AI_File, file);
@@ -204,11 +204,11 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
         Check if we currently have a result, and if so, overwrite it
         iff the new result is worse.
     */
-    QTestElementAttribute* resultAttr =
+    auto resultAttr =
         const_cast<QTestElementAttribute*>(currentLogElement->attribute(QTest::AI_Result));
     if (resultAttr) {
-        const char* oldResult = resultAttr->value();
-        bool overwrite = false;
+        auto oldResult = resultAttr->value();
+        auto overwrite = false;
         if (!strcmp(oldResult, "pass")) {
             overwrite = true;
         }
@@ -252,14 +252,14 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
 
 void QXunitTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 {
-    QTestElement *benchmarkElement = new QTestElement(QTest::LET_Benchmark);
+    auto benchmarkElement = new QTestElement(QTest::LET_Benchmark);
 
     benchmarkElement->addAttribute(
         QTest::AI_Metric,
         QTest::benchmarkMetricName(QBenchmarkTestMethodData::current->result.metric));
     benchmarkElement->addAttribute(QTest::AI_Tag, result.context.tag.toUtf8().data());
 
-    const qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
+    const auto valuePerIteration = qreal(result.value) / qreal(result.iterations);
     benchmarkElement->addAttribute(QTest::AI_Value, QByteArray::number(valuePerIteration).constData());
 
     char buf[100];
@@ -270,9 +270,9 @@ void QXunitTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 
 void QXunitTestLogger::addTag(QTestElement* element)
 {
-    const char *tag = QTestResult::currentDataTag();
-    const char *gtag = QTestResult::currentGlobalDataTag();
-    const char *filler = (tag && gtag) ? ":" : "";
+    auto tag = QTestResult::currentDataTag();
+    auto gtag = QTestResult::currentGlobalDataTag();
+    auto filler = (tag && gtag) ? ":" : "";
     if ((!tag || !tag[0]) && (!gtag || !gtag[0])) {
         return;
     }
@@ -291,7 +291,7 @@ void QXunitTestLogger::addTag(QTestElement* element)
 
 void QXunitTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
 {
-    QTestElement *errorElement = new QTestElement(QTest::LET_Error);
+    auto errorElement = new QTestElement(QTest::LET_Error);
     const char *typeBuf = 0;
 
     switch (type) {
@@ -342,7 +342,7 @@ void QXunitTestLogger::addMessage(MessageTypes type, const QString &message, con
 
     // Also add the message to the system error log (i.e. stderr), if one exists
     if (errorLogElement) {
-        QTestElement *systemErrorElement = new QTestElement(QTest::LET_Error);
+        auto systemErrorElement = new QTestElement(QTest::LET_Error);
         systemErrorElement->addAttribute(QTest::AI_Description, message.toUtf8().constData());
         errorLogElement->addLogElement(systemErrorElement);
     }

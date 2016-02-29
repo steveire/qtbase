@@ -72,7 +72,7 @@ QTestData::QTestData(const char *tag, QTestTable *parent)
 
 QTestData::~QTestData()
 {
-    for (int i = 0; i < d->dataCount; ++i) {
+    for (auto i = 0; i < d->dataCount; ++i) {
         if (d->data[i])
             QMetaType::destroy(d->parent->elementTypeId(i), d->data[i]);
     }

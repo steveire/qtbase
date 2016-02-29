@@ -217,7 +217,7 @@ static bool checkStatement(bool statement, const char *msg, const char *file, in
     if (statement) {
         if (QTest::expectFailMode) {
             QTestLog::addXPass(msg, file, line);
-            bool doContinue = (QTest::expectFailMode == QTest::Continue);
+            auto doContinue = (QTest::expectFailMode == QTest::Continue);
             clearExpectFail();
             QTest::failed = true;
             return doContinue;
@@ -227,7 +227,7 @@ static bool checkStatement(bool statement, const char *msg, const char *file, in
 
     if (QTest::expectFailMode) {
         QTestLog::addXFail(QTest::expectFailComment, file, line);
-        bool doContinue = (QTest::expectFailMode == QTest::Continue);
+        auto doContinue = (QTest::expectFailMode == QTest::Continue);
         clearExpectFail();
         return doContinue;
     }
@@ -281,8 +281,8 @@ bool QTestResult::compare(bool success, const char *failureMsg,
                       "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
         }
     } else if (val1 || val2) {
-        size_t len1 = mbstowcs(NULL, actual, maxMsgLen);    // Last parameter is not ignored on QNX
-        size_t len2 = mbstowcs(NULL, expected, maxMsgLen);  // (result is never larger than this).
+        auto len1 = mbstowcs(NULL, actual, maxMsgLen);    // Last parameter is not ignored on QNX
+        auto len2 = mbstowcs(NULL, expected, maxMsgLen);  // (result is never larger than this).
         qsnprintf(msg, maxMsgLen, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
                   failureMsg,
                   actual, qMax(len1, len2) - len1 + 1, ":", val1 ? val1 : "<null>",

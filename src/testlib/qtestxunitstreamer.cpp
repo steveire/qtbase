@@ -65,7 +65,7 @@ void QTestXunitStreamer::indentForElement(const QTestElement* element, char* buf
 
     if (!element) return;
 
-    char* endbuf = buf + size;
+    auto endbuf = buf + size;
     element = element->parentElement();
     while (element && buf+2 < endbuf) {
         *(buf++) = ' ';
@@ -117,7 +117,7 @@ void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTe
     if (!attribute || !formatted )
         return;
 
-    QTest::AttributeIndex attrindex = attribute->index();
+    auto attrindex = attribute->index();
 
     // For errors within system-err, we only want to output `message'
     if (element && element->elementType() == QTest::LET_Error

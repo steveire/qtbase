@@ -77,15 +77,15 @@ void QCsvBenchmarkLogger::addIncident(QAbstractTestLogger::IncidentTypes, const 
 
 void QCsvBenchmarkLogger::addBenchmarkResult(const QBenchmarkResult &result)
 {
-    const char *fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
+    auto fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
         : "UnknownTestFunc";
-    const char *tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
-    const char *gtag = QTestResult::currentGlobalDataTag()
+    auto tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
+    auto gtag = QTestResult::currentGlobalDataTag()
                      ? QTestResult::currentGlobalDataTag()
                      : "";
-    const char *filler = (tag[0] && gtag[0]) ? ":" : "";
+    auto filler = (tag[0] && gtag[0]) ? ":" : "";
 
-    const char *metric = QTest::benchmarkMetricName(result.metric);
+    auto metric = QTest::benchmarkMetricName(result.metric);
 
     char buf[1024];
     // "function","[globaltag:]tag","metric",value_per_iteration,total,iterations

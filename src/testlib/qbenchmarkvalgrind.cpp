@@ -84,12 +84,12 @@ static void dumpOutput(const QByteArray &data, FILE *fh)
 qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
 {
     QFile file(fileName);
-    const bool openOk = file.open(QIODevice::ReadOnly | QIODevice::Text);
+    const auto openOk = file.open(QIODevice::ReadOnly | QIODevice::Text);
     Q_ASSERT(openOk);
     Q_UNUSED(openOk);
 
     qint64 val = -1;
-    bool valSeen = false;
+    auto valSeen = false;
     QRegExp rxValue(QLatin1String("^summary: (\\d+)"));
     while (!file.atEnd()) {
         const QString line(QLatin1String(file.readLine()));
@@ -111,22 +111,22 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
 QString QBenchmarkValgrindUtils::getNewestFileName()
 {
     QStringList nameFilters;
-    QString base = QBenchmarkGlobalData::current->callgrindOutFileBase;
+    auto base = QBenchmarkGlobalData::current->callgrindOutFileBase;
     Q_ASSERT(!base.isEmpty());
 
     nameFilters << QString::fromLatin1("%1.*").arg(base);
-    QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
+    auto fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
     Q_ASSERT(!fiList.empty());
-    int hiSuffix = -1;
+    auto hiSuffix = -1;
     QFileInfo lastFileInfo;
-    const QString pattern = QString::fromLatin1("%1.(\\d+)").arg(base);
+    const auto pattern = QString::fromLatin1("%1.(\\d+)").arg(base);
     QRegExp rx(pattern);
     foreach (const QFileInfo &fileInfo, fiList) {
-        const int index = rx.indexIn(fileInfo.fileName());
+        const auto index = rx.indexIn(fileInfo.fileName());
         Q_ASSERT(index == 0);
         Q_UNUSED(index);
         bool ok;
-        const int suffix = rx.cap(1).toInt(&ok);
+        const auto suffix = rx.cap(1).toInt(&ok);
         Q_ASSERT(ok);
         Q_ASSERT(suffix >= 0);
         if (suffix > hiSuffix) {
@@ -146,14 +146,14 @@ qint64 QBenchmarkValgrindUtils::extractLastResult()
 void QBenchmarkValgrindUtils::cleanup()
 {
     QStringList nameFilters;
-    QString base = QBenchmarkGlobalData::current->callgrindOutFileBase;
+    auto base = QBenchmarkGlobalData::current->callgrindOutFileBase;
     Q_ASSERT(!base.isEmpty());
     nameFilters
         << base // overall summary
         << QString::fromLatin1("%1.*").arg(base); // individual dumps
-    QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
+    auto fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
     foreach (const QFileInfo &fileInfo, fiList) {
-        const bool removeOk = QFile::remove(fileInfo.fileName());
+        const auto removeOk = QFile::remove(fileInfo.fileName());
         Q_ASSERT(removeOk);
         Q_UNUSED(removeOk);
     }
@@ -178,7 +178,7 @@ bool QBenchmarkValgrindUtils::runCallgrindSubProcess(const QStringList &origAppA
 
     // pass on original arguments that make sense (e.g. avoid wasting time producing output
     // that will be ignored anyway) ...
-    for (int i = 1; i < origAppArgs.size(); ++i) {
+    for (auto i = 1; i < origAppArgs.size(); ++i) {
         const QString arg(origAppArgs.at(i));
         if (arg == QLatin1String("-callgrind"))
             continue;
@@ -190,7 +190,7 @@ bool QBenchmarkValgrindUtils::runCallgrindSubProcess(const QStringList &origAppA
     process.waitForStarted(-1);
     QBenchmarkGlobalData::current->callgrindOutFileBase =
         QBenchmarkValgrindUtils::outFileBase(process.pid());
-    const bool finishedOk = process.waitForFinished(-1);
+    const auto finishedOk = process.waitForFinished(-1);
     exitCode = process.exitCode();
 
     dumpOutput(process.readAllStandardOutput(), stdout);
@@ -207,7 +207,7 @@ void QBenchmarkCallgrindMeasurer::start()
 qint64 QBenchmarkCallgrindMeasurer::checkpoint()
 {
     CALLGRIND_DUMP_STATS;
-    const qint64 result = QBenchmarkValgrindUtils::extractLastResult();
+    const auto result = QBenchmarkValgrindUtils::extractLastResult();
     return result;
 }
 

@@ -67,9 +67,9 @@ enum { IndentSpacesCount = 4 };
 static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv)
 {
     Q_ASSERT(caller); Q_ASSERT(argv); Q_UNUSED(argv);
-    const QMetaObject *mo = caller->metaObject();
+    auto mo = caller->metaObject();
     Q_ASSERT(mo);
-    QMetaMethod member = QMetaObjectPrivate::signal(mo, signal_index);
+    auto member = QMetaObjectPrivate::signal(mo, signal_index);
     Q_ASSERT(member.isValid());
 
     if (QTest::ignoreClasses() && QTest::ignoreClasses()->contains(mo->className())) {
@@ -83,7 +83,7 @@ static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv
     str += mo->className();
     str += '(';
 
-    QString objname = caller->objectName();
+    auto objname = caller->objectName();
     str += objname.toLocal8Bit();
     if (!objname.isEmpty())
         str += ' ';
@@ -93,10 +93,10 @@ static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv
     str += member.name();
     str += " (";
 
-    QList<QByteArray> args = member.parameterTypes();
-    for (int i = 0; i < args.count(); ++i) {
+    auto args = member.parameterTypes();
+    for (auto i = 0; i < args.count(); ++i) {
         const QByteArray &arg = args.at(i);
-        int typeId = QMetaType::type(args.at(i).constData());
+        auto typeId = QMetaType::type(args.at(i).constData());
         if (arg.endsWith('*') || arg.endsWith('&')) {
             str += '(';
             str += arg;
@@ -104,7 +104,7 @@ static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv
             if (arg.endsWith('&'))
                 str += '@';
 
-            quintptr addr = quintptr(*reinterpret_cast<void **>(argv[i + 1]));
+            auto addr = quintptr(*reinterpret_cast<void **>(argv[i + 1]));
             str.append(QByteArray::number(addr, 16));
         } else if (typeId != QMetaType::UnknownType) {
             Q_ASSERT(typeId != QMetaType::Void); // void parameter => metaobject is corrupt
@@ -124,9 +124,9 @@ static void qSignalDumperCallback(QObject *caller, int signal_index, void **argv
 static void qSignalDumperCallbackSlot(QObject *caller, int method_index, void **argv)
 {
     Q_ASSERT(caller); Q_ASSERT(argv); Q_UNUSED(argv);
-    const QMetaObject *mo = caller->metaObject();
+    auto mo = caller->metaObject();
     Q_ASSERT(mo);
-    QMetaMethod member = mo->method(method_index);
+    auto member = mo->method(method_index);
     if (!member.isValid())
         return;
 
@@ -140,7 +140,7 @@ static void qSignalDumperCallbackSlot(QObject *caller, int method_index, void **
     str += mo->className();
     str += '(';
 
-    QString objname = caller->objectName();
+    auto objname = caller->objectName();
     str += objname.toLocal8Bit();
     if (!objname.isEmpty())
         str += ' ';

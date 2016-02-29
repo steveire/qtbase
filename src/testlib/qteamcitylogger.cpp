@@ -107,17 +107,17 @@ void QTeamCityLogger::startLogging()
 {
     QAbstractTestLogger::startLogging();
 
-    QString testSuiteName = tcEscapedString(QString::fromUtf8(QTestResult::currentTestObjectName()));
+    auto testSuiteName = tcEscapedString(QString::fromUtf8(QTestResult::currentTestObjectName()));
 
-    QString str = QString(QLatin1String("##teamcity[testSuiteStarted name='%1']\n")).arg(testSuiteName);
+    auto str = QString(QLatin1String("##teamcity[testSuiteStarted name='%1']\n")).arg(testSuiteName);
     outputString(qPrintable(str));
 }
 
 void QTeamCityLogger::stopLogging()
 {
-    QString testSuiteName = tcEscapedString(QString::fromUtf8(QTestResult::currentTestObjectName()));
+    auto testSuiteName = tcEscapedString(QString::fromUtf8(QTestResult::currentTestObjectName()));
 
-    QString str = QString(QLatin1String("##teamcity[testSuiteFinished name='%1']\n")).arg(testSuiteName);
+    auto str = QString(QLatin1String("##teamcity[testSuiteFinished name='%1']\n")).arg(testSuiteName);
     outputString(qPrintable(str));
 
     QAbstractTestLogger::stopLogging();
@@ -142,7 +142,7 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
 
     QString buf;
 
-    QString tmpFuncName = escapedTestFuncName();
+    auto tmpFuncName = escapedTestFuncName();
 
     if (tmpFuncName != currTestFuncName) {
         buf = QString(QLatin1String("##teamcity[testStarted name='%1']\n")).arg(tmpFuncName);
@@ -156,7 +156,7 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
         return;
     }
 
-    QString detailedText = QString::fromUtf8(description);
+    auto detailedText = QString::fromUtf8(description);
     detailedText = tcEscapedString(detailedText);
 
     // Test failed
@@ -200,7 +200,7 @@ void QTeamCityLogger::addMessage(MessageTypes type, const QString &message,
     if (type != QAbstractTestLogger::QFatal && QTestLog::verboseLevel() < 0)
         return;
 
-    QString escapedMessage = tcEscapedString(message);
+    auto escapedMessage = tcEscapedString(message);
 
     QString buf;
 
@@ -223,8 +223,8 @@ QString QTeamCityLogger::tcEscapedString(const QString &str) const
 {
     QString formattedString;
 
-    for (int i = 0; i < str.length(); i++) {
-        QChar ch = str.at(i);
+    for (auto i = 0; i < str.length(); i++) {
+        auto ch = str.at(i);
 
         switch (ch.toLatin1()) {
         case '\n':
@@ -255,11 +255,11 @@ QString QTeamCityLogger::tcEscapedString(const QString &str) const
 
 QString QTeamCityLogger::escapedTestFuncName() const
 {
-    const char *fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
+    auto fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
                                                         : "UnknownTestFunc";
-    const char *tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
+    auto tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
 
-    QString str = QString(QLatin1String("%1(%2)")).arg(QString::fromUtf8(fn)).arg(QString::fromUtf8(tag));
+    auto str = QString(QLatin1String("%1(%2)")).arg(QString::fromUtf8(fn)).arg(QString::fromUtf8(tag));
     str = tcEscapedString(str);
 
     return str;

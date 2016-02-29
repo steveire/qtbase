@@ -72,7 +72,7 @@ QT_BEGIN_NAMESPACE
 static QSet<QByteArray> keywords()
 {
     // this list can be extended with new keywords as required
-   QSet<QByteArray> set = QSet<QByteArray>()
+   auto set = QSet<QByteArray>()
              << "*"
 #ifdef Q_OS_LINUX
             << "linux"
@@ -138,9 +138,9 @@ static QSet<QByteArray> keywords()
 #endif
             ;
 
-            QCoreApplication *app = QCoreApplication::instance();
+            auto app = QCoreApplication::instance();
             if (app) {
-                const QVariant platformName = app->property("platformName");
+                const auto platformName = app->property("platformName");
                 if (platformName.isValid())
                     set << platformName.toByteArray();
             }
@@ -150,20 +150,20 @@ static QSet<QByteArray> keywords()
 
 static bool checkCondition(const QByteArray &condition)
 {
-    static QSet<QByteArray> matchedConditions = keywords();
-    QList<QByteArray> conds = condition.split(' ');
+    static auto matchedConditions = keywords();
+    auto conds = condition.split(' ');
 
-    QByteArray distributionName = QSysInfo::productType().toLower().toUtf8();
-    QByteArray distributionRelease = QSysInfo::productVersion().toLower().toUtf8();
+    auto distributionName = QSysInfo::productType().toLower().toUtf8();
+    auto distributionRelease = QSysInfo::productVersion().toLower().toUtf8();
     if (!distributionName.isEmpty()) {
         if (matchedConditions.find(distributionName) == matchedConditions.end())
             matchedConditions.insert(distributionName);
         matchedConditions.insert(distributionName + "-" + distributionRelease);
     }
 
-    for (int i = 0; i < conds.size(); ++i) {
-        QByteArray c = conds.at(i);
-        bool result = c.startsWith('!');
+    for (auto i = 0; i < conds.size(); ++i) {
+        auto c = conds.at(i);
+        auto result = c.startsWith('!');
         if (result)
             c = c.mid(1);
 
@@ -197,7 +197,7 @@ namespace QTestPrivate {
 
 void parseBlackList()
 {
-    QString filename = QTest::qFindTestData(QStringLiteral("BLACKLIST"));
+    auto filename = QTest::qFindTestData(QStringLiteral("BLACKLIST"));
     if (filename.isEmpty())
         return;
     QFile ignored(filename);
@@ -207,14 +207,14 @@ void parseBlackList()
     QByteArray function;
 
     while (!ignored.atEnd()) {
-        QByteArray line = ignored.readLine().simplified();
+        auto line = ignored.readLine().simplified();
         if (line.isEmpty() || line.startsWith('#'))
             continue;
         if (line.startsWith('[')) {
             function = line.mid(1, line.length() - 2);
             continue;
         }
-        bool condition = checkCondition(line);
+        auto condition = checkCondition(line);
         if (condition) {
             if (!function.size()) {
                 ignoreAll = true;
@@ -231,7 +231,7 @@ void parseGpuBlackList()
 {
     if (!qgpu_features_ptr)
         return;
-    QString filename = QTest::qFindTestData(QStringLiteral("GPU_BLACKLIST"));
+    auto filename = QTest::qFindTestData(QStringLiteral("GPU_BLACKLIST"));
     if (filename.isEmpty())
         return;
     if (!gpuFeatures)
@@ -240,7 +240,7 @@ void parseGpuBlackList()
 
 void checkBlackLists(const char *slot, const char *data)
 {
-    bool ignore = ignoreAll;
+    auto ignore = ignoreAll;
 
     if (!ignore && ignoredTests) {
         QByteArray s = slot;

@@ -149,7 +149,7 @@ int QBenchmarkTestMethodData::adjustIterationCount(int suggestion)
 void QBenchmarkTestMethodData::setResult(
     qreal value, QTest::QBenchmarkMetric metric, bool setByMacro)
 {
-    bool accepted = false;
+    auto accepted = false;
 
     // Always accept the result if the iteration count has been
     // specified on the command line with -iterations.
@@ -292,8 +292,8 @@ typename T::value_type qAverage(const T &container)
 {
     typename T::const_iterator it = container.constBegin();
     typename T::const_iterator end = container.constEnd();
-    typename T::value_type acc = typename T::value_type();
-    int count = 0;
+    auto acc = typename T::value_type();
+    auto count = 0;
     while (it != end) {
         acc += *it;
         ++it;
